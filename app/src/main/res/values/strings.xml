@@ -375,6 +375,7 @@
 
     <string name="series_main_source">Основной</string>
     <string name="series_alt_source">Альтернативный</string>
+    <string name="series_alt_source_2">Альтернативный 2</string>
     <string name="series_empty_authors_title">Авторы не найдены</string>
     <string name="series_empty_authors_description">Попробуйте изменить источник или тип, если смотрите не в одном.</string>
     <string name="series_empty_episode_title">Эпизод не найден</string>

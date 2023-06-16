@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.*
+import com.gnoemes.shikimori.entity.sources.AlternativeSourceType
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.common.provider.ShareResourceProvider
@@ -39,6 +40,7 @@ class SeriesPresenter @Inject constructor(
     private var episode: Int? = null
     private var episodeId: Long? = null
     private var isAlternative: Boolean = false
+    private var alternativeSourceType: AlternativeSourceType? = null
     private var setting: TranslationSetting? = null
     private var query: String? = null
     private var rateId: Long = Constants.NO_ID
@@ -268,8 +270,8 @@ class SeriesPresenter @Inject constructor(
         analyzeType(newType)
     }
 
-    fun onSourceChanged(alternative: Boolean) {
-        if (isAlternative == alternative) return
+    fun onSourceChanged(alternative: Boolean, sourceType: AlternativeSourceType?) {
+        if (isAlternative == alternative || alternativeSourceType == sourceType) return
 
         viewState.showData(emptyList())
         viewState.changeSource(alternative)

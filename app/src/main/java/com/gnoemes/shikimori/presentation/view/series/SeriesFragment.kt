@@ -3,11 +3,10 @@ package com.gnoemes.shikimori.presentation.view.series
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
@@ -28,6 +27,7 @@ import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
+import com.gnoemes.shikimori.entity.sources.AlternativeSourceType
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
@@ -48,6 +48,8 @@ import kotlinx.android.synthetic.main.layout_default_placeholders.*
 import kotlinx.android.synthetic.main.layout_series_empty_authors.*
 import kotlinx.android.synthetic.main.layout_series_toolbar.*
 import kotlinx.android.synthetic.main.layout_toolbar_transparent_with_search.*
+import kotlinx.android.synthetic.main.layout_toolbar_transparent_with_search.appBarLayout
+import kotlinx.android.synthetic.main.layout_toolbar_transparent_with_search.toolbar
 import javax.inject.Inject
 
 class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
@@ -150,10 +152,27 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         episodeChip.onClick { getPresenter().showEpisodes() }
         sourceChangeBtn.onClick { showSources(true) }
 
-        mainSource.onClick { onSourceSelected(false) }
-        altSource.onClick { onSourceSelected(true) }
+        mainSource.onClick { onSourceSelected(false, null) }
+        altSource.onClick {
+            PopupMenu(this.context, altSource).apply {
+                inflate(R.menu.menu_sources)
+                show()
+            }.setOnMenuItemClickListener {
+                when (it.itemId) {
+                    R.id.item_alt_source -> {
+                        onSourceSelected(true, AlternativeSourceType.ANIME365)
+                        true
+                    }
+                    R.id.item_alt_source_2 -> {
+                        onSourceSelected(true, AlternativeSourceType.SHIKICINEMA)
+                        true
+                    }
+                    else -> true
+                }
+            }
+        }
 
-        actionBtn.onClick { onSourceSelected(true) }
+        actionBtn.onClick { onSourceSelected(true, null) }
         fab.onClick { getPresenter().onDiscussionClicked() }
         nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
     }
@@ -163,8 +182,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         showTypes(false)
     }
 
-    private fun onSourceSelected(isAlternative: Boolean) {
-        getPresenter().onSourceChanged(isAlternative)
+    private fun onSourceSelected(isAlternative: Boolean, sourceType: AlternativeSourceType?) {
+        getPresenter().onSourceChanged(isAlternative, sourceType)
         showSources(false)
     }
 
