@@ -28,6 +28,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val vkConverter: VkVideoConverter,
         private val sovetRomanticaConverter: SovetRomanticaVideoConverter,
         private val okConverter: OkVideoConverter,
+        private val mailRuVideoConverter: MailRuVideoConverter,
         private val myviConverter: MyviVideoConverter,
         private val allVideoConverter: AllVideoVideoConverter,
         private val animeJoyConverter: AnimeJoyVideoConverter
@@ -69,6 +70,7 @@ class SeriesRepositoryImpl @Inject constructor(
             when (payload.videoHosting) {
                 is VideoHosting.VK -> getVkFiles(payload)
                 is VideoHosting.OK -> getOkFiles(payload)
+                is VideoHosting.MAILRU -> getMailRuFiles(payload)
                 is VideoHosting.MYVI -> getMyviFiles(payload)
                 is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
@@ -98,6 +100,17 @@ class SeriesRepositoryImpl @Inject constructor(
             else api.getPlayerHtml(video.webPlayerUrl).map {
                 okConverter.parsePlaylists(it.string())
             }.map { okConverter.convertTracks(video, it) }
+
+    private fun getMailRuFiles(video: TranslationVideo): Single<Video>{
+        val videoId = mailRuVideoConverter.parseVideoId(video.webPlayerUrl)
+
+        return if (video.webPlayerUrl == null || videoId == null) Single.just(mailRuVideoConverter.parsePlaylists(null)).map { mailRuVideoConverter.convertTracks(video, it) }
+        else api.getMailRuVideoMeta(videoId)
+                .map { mailRuVideoConverter.saveCookies(it.raw()); it }
+                .map { mailRuVideoConverter.parsePlaylists(it.body()) }
+                .map { mailRuVideoConverter.convertTracks(video, it) }
+    }
+
 
     private fun getMyviFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(myviConverter.parsePlaylist(null)).map { myviConverter.convertTracks(video, it) }

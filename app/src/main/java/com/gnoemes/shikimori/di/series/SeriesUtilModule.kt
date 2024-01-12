@@ -46,6 +46,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindMailRuConverter(converter: MailRuVideoConverterImpl): MailRuVideoConverter
+
+    @Binds
+    @Reusable
     fun bindMyviConverter(converter: MyviVideoConverterImpl): MyviVideoConverter
 
     @Binds
