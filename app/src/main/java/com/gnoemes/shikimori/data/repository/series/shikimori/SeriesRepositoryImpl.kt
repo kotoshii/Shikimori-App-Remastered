@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.TopicApi
 import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.MailRuParser
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.OkParser
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.VkParser
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
@@ -30,7 +31,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val vkParser: VkParser,
         private val sovetRomanticaConverter: SovetRomanticaVideoConverter,
         private val okParser: OkParser,
-        private val mailRuVideoConverter: MailRuVideoConverter,
+        private val mailRuParser: MailRuParser,
         private val myviConverter: MyviVideoConverter,
         private val allVideoConverter: AllVideoVideoConverter,
         private val animeJoyConverter: AnimeJoyVideoConverter
@@ -104,13 +105,13 @@ class SeriesRepositoryImpl @Inject constructor(
                     .map { okParser.video(video, it) }
 
     private fun getMailRuFiles(video: TranslationVideo): Single<Video> =
-        if (video.webPlayerUrl == null) Single.just(mailRuVideoConverter.parsePlaylists(null)).map { mailRuVideoConverter.convertTracks(video, it) }
+        if (video.webPlayerUrl == null) Single.just(mailRuParser.video(video, emptyList()))
         else api.getPlayerHtml(video.webPlayerUrl)
-                .map { mailRuVideoConverter.parseVideoMetaUrl(it.string()) }
+                .map { mailRuParser.parseVideoMetaUrl(it.string()) }
                 .flatMap { api.getMailRuVideoMeta(it) }
-                .map { mailRuVideoConverter.saveCookies(it.raw()); it }
-                .map { mailRuVideoConverter.parsePlaylists(it.body()) }
-                .map { mailRuVideoConverter.convertTracks(video, it) }
+                .map { mailRuParser.saveCookies(it) }
+                .map { mailRuParser.tracks(it.body()) }
+                .map { mailRuParser.video(video, it) }
 
 
 
