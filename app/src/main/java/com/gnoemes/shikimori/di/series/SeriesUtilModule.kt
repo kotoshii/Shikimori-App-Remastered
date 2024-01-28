@@ -51,6 +51,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindNuumParser(parser: NuumParserImpl): NuumParser
+
+    @Binds
+    @Reusable
     fun bindMyviConverter(converter: MyviVideoConverterImpl): MyviVideoConverter
 
     @Binds

@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.data.network
 
 import com.gnoemes.shikimori.entity.series.data.*
+import com.shimori.dto.nuum.NuumStreamsMetadataResponse
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -43,8 +44,15 @@ interface VideoApi {
     @GET
     fun getPlayerHtml(@Url playerUrl: String) : Single<ResponseBody>
 
+    @Headers("Accept: text/plain")
+    @GET
+    fun getTextResponse(@Url playerUrl: String) : Single<ResponseBody>
+
     @GET
     fun getMailRuVideoMeta(@Url videoMetaUrl: String) : Single<Response<MailRuVideosResponse>>
+
+    @GET
+    fun getNuumStreamsMetadata(@Url metadataUrl: String) : Single<Response<NuumStreamsMetadataResponse>>
 
     @GET("https://shikiapp-api.vercel.app/api/anime/sovetromantica-videos")
     fun getSovetRomanticaVideoFiles(@Query("playlistUrl") playlistUrl: String) : Single<SovetRomanticaVideosResponse>
