@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.data.network
 
 import com.gnoemes.shikimori.entity.series.data.*
-import com.shimori.dto.nuum.NuumStreamsMetadataResponse
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.Response
