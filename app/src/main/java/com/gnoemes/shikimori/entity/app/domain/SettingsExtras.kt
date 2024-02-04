@@ -15,6 +15,7 @@ object SettingsExtras {
     ////////////////////////////////////////////////////////////////////////
     const val IS_ROMADZI_NAMING = "IS_ROMADZI_NAMING"
     const val ALLOW_R18_CONTENT = "ALLOW_R18_CONTENT"
+    const val ALT_SOURCE_BY_DEFAULT = "ALT_SOURCE_BY_DEFAULT"
     const val DOWNLOAD_FOLDER = "DOWNLOAD_FOLDER"
     const val IS_AUTO_INCREMENT = "IS_AUTO_INCREMENT"
     const val IS_AUTO_STATUS = "IS_AUTO_STATUS"

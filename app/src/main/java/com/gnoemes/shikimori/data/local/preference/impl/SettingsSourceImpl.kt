@@ -33,6 +33,10 @@ class SettingsSourceImpl @Inject constructor(
         get() = prefs.getBoolean(SettingsExtras.ALLOW_R18_CONTENT, false)
         set(value) = prefs.putBoolean(SettingsExtras.ALLOW_R18_CONTENT, value)
 
+    override var altSourceByDefault: Boolean
+        get() = prefs.getBoolean(SettingsExtras.ALT_SOURCE_BY_DEFAULT, false)
+        set(value) = prefs.putBoolean(SettingsExtras.ALT_SOURCE_BY_DEFAULT, value)
+
     override var isAskForPlayer: Boolean
         get() = prefs.getBoolean(SettingsExtras.IS_REMEMBER_PLAYER, true)
         set(value) = prefs.putBoolean(SettingsExtras.IS_REMEMBER_PLAYER, value)

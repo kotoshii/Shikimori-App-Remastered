@@ -38,7 +38,7 @@ class SeriesPresenter @Inject constructor(
 
     private var episode: Int? = null
     private var episodeId: Long? = null
-    private var isAlternative: Boolean = false
+    private var isAlternative: Boolean = settingsSource.altSourceByDefault
     private var setting: TranslationSetting? = null
     private var query: String? = null
     private var rateId: Long = Constants.NO_ID
@@ -60,6 +60,7 @@ class SeriesPresenter @Inject constructor(
 
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
+        viewState.changeSource(isAlternative)
 
         if (episode != null) {
             viewState.setEpisodeName(episode!!)

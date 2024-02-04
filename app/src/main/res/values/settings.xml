@@ -20,6 +20,11 @@
     <string name="settings_content_allow_r18_summary_on">Сейчас 18+ контент будет отображаться</string>
     <string name="settings_content_allow_r18_summary_off">Сейчас 18+ контент скрыт</string>
 
+    <string name="settings_content_alt_source_by_default_title">Открывать альтернативный источник по умолчанию</string>
+    <string name="settings_content_alt_source_by_default_key" translatable="false">ALT_SOURCE_BY_DEFAULT</string>
+    <string name="settings_content_alt_source_by_default_summary_on">Используется альтернативный источник</string>
+    <string name="settings_content_alt_source_by_default_summary_off">Используется основной источник</string>
+
     <string name="settings_content_download_folder_title">Папка загрузки</string>
     <string name="settings_content_download_folder_key" translatable="false">DOWNLOAD_FOLDER</string>
     <string name="settings_content_download_folder_summary">Укажите путь для скачивания</string>
