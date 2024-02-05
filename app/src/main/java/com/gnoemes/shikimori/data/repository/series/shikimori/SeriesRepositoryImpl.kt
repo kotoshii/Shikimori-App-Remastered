@@ -33,7 +33,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val nuumParser: NuumParser,
         private val myviParser: MyviParser,
         private val allVideoParser: AllVideoParser,
-        private val animeJoyConverter: AnimeJoyVideoConverter
+        private val animeJoyParser: AnimeJoyParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -134,10 +134,7 @@ class SeriesRepositoryImpl @Inject constructor(
                     .map { allVideoParser.video(video, it) }
 
     private fun getAnimeJoyFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(animeJoyConverter.parsePlaylists(null)).map { animeJoyConverter.convertTracks(video, it) }
-            else Single.just(animeJoyConverter.parsePlaylists(video.webPlayerUrl)).map {
-                animeJoyConverter.convertTracks(video, it)
-            }
+            Single.just(animeJoyParser.video(video, animeJoyParser.tracks(video.webPlayerUrl)))
 
     private fun getSovetRomanticaFiles(video: Video): Single<Video> =
             api.getSovetRomanticaVideoFiles(video.tracks[0].url)

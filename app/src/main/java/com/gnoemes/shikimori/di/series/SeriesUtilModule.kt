@@ -63,7 +63,7 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
-    fun bindAnimeJoyConverter(converter: AnimeJoyVideoConverterImpl): AnimeJoyVideoConverter
+    fun bindAnimeJoyParser(parser: AnimeJoyParserImpl): AnimeJoyParser
 
     @Binds
     @Reusable
