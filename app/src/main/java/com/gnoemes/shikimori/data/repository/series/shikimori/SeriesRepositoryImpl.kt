@@ -6,10 +6,7 @@ import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.TopicApi
 import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
-import com.gnoemes.shikimori.data.repository.series.shikimori.parser.MailRuParser
-import com.gnoemes.shikimori.data.repository.series.shikimori.parser.NuumParser
-import com.gnoemes.shikimori.data.repository.series.shikimori.parser.OkParser
-import com.gnoemes.shikimori.data.repository.series.shikimori.parser.VkParser
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.series.domain.*
@@ -34,7 +31,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val okParser: OkParser,
         private val mailRuParser: MailRuParser,
         private val nuumParser: NuumParser,
-        private val myviConverter: MyviVideoConverter,
+        private val myviParser: MyviParser,
         private val allVideoConverter: AllVideoVideoConverter,
         private val animeJoyConverter: AnimeJoyVideoConverter
 ) : SeriesRepository {
@@ -125,10 +122,10 @@ class SeriesRepositoryImpl @Inject constructor(
                 .map { nuumParser.video(video, it) }
 
     private fun getMyviFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(myviConverter.parsePlaylist(null)).map { myviConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                myviConverter.parsePlaylist(it.string())
-            }.map { myviConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(myviParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { myviParser.tracks(it.string()) }
+                    .map { myviParser.video(video, it) }
 
     private fun getAllVideoFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(allVideoConverter.parsePlaylists(null)).map { allVideoConverter.convertTracks(video, it) }
