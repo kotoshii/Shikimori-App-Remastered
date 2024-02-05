@@ -28,7 +28,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val episodeSource: EpisodeDbSource,
         private val syncSource: AnimeRateSyncDbSource,
         private val vkParser: VkParser,
-        private val sovetRomanticaConverter: SovetRomanticaVideoConverter,
+        private val sovetRomanticaParser: SovetRomanticaParser,
         private val okParser: OkParser,
         private val mailRuParser: MailRuParser,
         private val nuumParser: NuumParser,
@@ -73,6 +73,7 @@ class SeriesRepositoryImpl @Inject constructor(
     override fun getVideo(payload: TranslationVideo, alternative: Boolean): Single<Video> =
             when (payload.videoHosting) {
                 is VideoHosting.VK -> getVkFiles(payload)
+                is VideoHosting.SOVET_ROMANTICA -> getSovetRomanticaFiles(payload)
                 is VideoHosting.OK -> getOkFiles(payload)
                 is VideoHosting.MAILRU -> getMailRuFiles(payload)
                 is VideoHosting.NUUM -> getNuumFiles(payload)
@@ -92,7 +93,6 @@ class SeriesRepositoryImpl @Inject constructor(
                             payload.webPlayerUrl
                     ))
                         .map(videoConverter)
-                        .flatMap { if (it.hosting is VideoHosting.SOVET_ROMANTICA) getSovetRomanticaFiles(it) else Single.just(it) }
             }
 
     private fun getVkFiles(video: TranslationVideo): Single<Video> =
@@ -149,9 +149,15 @@ class SeriesRepositoryImpl @Inject constructor(
                     .map { dzenParser.tracks(it.first.string(), it.second) }
                     .map { dzenParser.video(video, it) }
 
-    private fun getSovetRomanticaFiles(video: Video): Single<Video> =
-            api.getSovetRomanticaVideoFiles(video.tracks[0].url)
-                    .map { sovetRomanticaConverter.convertTracks(video, it) }
+    private fun getSovetRomanticaFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(sovetRomanticaParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { sovetRomanticaParser.getMasterPlaylistUrl(it.string()) }
+                    .flatMap {
+                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
+                    }
+                    .map { sovetRomanticaParser.tracks(it.first.string(), it.second) }
+                    .map { sovetRomanticaParser.video(video, it) }
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =
             topicApi.getAnimeEpisodeTopic(animeId, episodeId)
