@@ -7,8 +7,11 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.data.EpisodeResponse
 import com.gnoemes.shikimori.entity.series.data.TranslationResponse
 import com.gnoemes.shikimori.entity.series.data.VideoResponse
+import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaEpisodesResponse
+import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaTranslationResponse
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import io.reactivex.Single
+import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -112,14 +115,11 @@ class ShimoriAnimeSourceImpl @Inject constructor(
     override fun getTranslationsShikicinema(animeId: Long, episodeId: Long, type: TranslationType, loadLength: Boolean): Single<List<TranslationResponse>> {
         val shikicinemaType = getShikicinemaType(type)
 
-        return if (loadLength) shikicinemaVideoApi.getEpisodes(animeId).flatMap { lengthResponse ->
-            shikicinemaVideoApi.getTranslations(animeId, "all", episodeId, shikicinemaType)
-                    .map { list ->
-                        list.map { response ->
-                            TranslationResponse(response, lengthResponse.length)
-                        }
-                    }
-        }
+        return if (loadLength) Single.zip(
+                shikicinemaVideoApi.getEpisodes(animeId),
+                shikicinemaVideoApi.getTranslations(animeId, "all", episodeId, shikicinemaType),
+                BiFunction { lengthResponse: ShikicinemaEpisodesResponse, translations: List<ShikicinemaTranslationResponse> -> translations.map { TranslationResponse(it, lengthResponse.length) } }
+        )
         else shikicinemaVideoApi.getTranslations(animeId, "all", episodeId, shikicinemaType)
                 .map { list ->
                     list.map { response ->
