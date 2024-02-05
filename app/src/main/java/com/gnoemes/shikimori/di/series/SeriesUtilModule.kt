@@ -67,6 +67,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindDzenParser(parser: DzenParserImpl): DzenParser
+
+    @Binds
+    @Reusable
     fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

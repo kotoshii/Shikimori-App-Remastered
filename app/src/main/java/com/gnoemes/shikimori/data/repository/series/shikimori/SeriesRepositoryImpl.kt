@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
+import okhttp3.ResponseBody
 import javax.inject.Inject
 
 class SeriesRepositoryImpl @Inject constructor(
@@ -33,7 +34,8 @@ class SeriesRepositoryImpl @Inject constructor(
         private val nuumParser: NuumParser,
         private val myviParser: MyviParser,
         private val allVideoParser: AllVideoParser,
-        private val animeJoyParser: AnimeJoyParser
+        private val animeJoyParser: AnimeJoyParser,
+        private val dzenParser: DzenParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -77,6 +79,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.MYVI -> getMyviFiles(payload)
                 is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
+                is VideoHosting.DZEN -> getDzenVideoFiles(payload)
                 else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
                     else source.getVideo(
                             payload.animeId,
@@ -135,6 +138,16 @@ class SeriesRepositoryImpl @Inject constructor(
 
     private fun getAnimeJoyFiles(video: TranslationVideo): Single<Video> =
             Single.just(animeJoyParser.video(video, animeJoyParser.tracks(video.webPlayerUrl)))
+
+    private fun getDzenVideoFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(dzenParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { dzenParser.getMasterPlaylistUrl(it.string()) }
+                    .flatMap {
+                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
+                    }
+                    .map { dzenParser.tracks(it.first.string(), it.second) }
+                    .map { dzenParser.video(video, it) }
 
     private fun getSovetRomanticaFiles(video: Video): Single<Video> =
             api.getSovetRomanticaVideoFiles(video.tracks[0].url)
