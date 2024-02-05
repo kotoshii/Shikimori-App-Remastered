@@ -43,6 +43,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindSibnetParser(parser: SibnetParserImpl): SibnetParser
+
+    @Binds
+    @Reusable
     fun bindOkParser(parser: OkParserImpl): OkParser
 
     @Binds
