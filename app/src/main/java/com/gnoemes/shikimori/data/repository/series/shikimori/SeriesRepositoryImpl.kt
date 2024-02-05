@@ -32,7 +32,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val mailRuParser: MailRuParser,
         private val nuumParser: NuumParser,
         private val myviParser: MyviParser,
-        private val allVideoConverter: AllVideoVideoConverter,
+        private val allVideoParser: AllVideoParser,
         private val animeJoyConverter: AnimeJoyVideoConverter
 ) : SeriesRepository {
 
@@ -128,10 +128,10 @@ class SeriesRepositoryImpl @Inject constructor(
                     .map { myviParser.video(video, it) }
 
     private fun getAllVideoFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(allVideoConverter.parsePlaylists(null)).map { allVideoConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                allVideoConverter.parsePlaylists(it.string())
-            }.map { allVideoConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(allVideoParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { allVideoParser.tracks(it.string()) }
+                    .map { allVideoParser.video(video, it) }
 
     private fun getAnimeJoyFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(animeJoyConverter.parsePlaylists(null)).map { animeJoyConverter.convertTracks(video, it) }

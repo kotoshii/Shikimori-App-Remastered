@@ -55,11 +55,11 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
-    fun bindMyviParser(converter: MyviParserImpl): MyviParser
+    fun bindMyviParser(parser: MyviParserImpl): MyviParser
 
     @Binds
     @Reusable
-    fun bindAllVideoConverter(converter: AllVideoVideoConverterImpl): AllVideoVideoConverter
+    fun bindAllVideoParser(parser: AllVideoParserImpl): AllVideoParser
 
     @Binds
     @Reusable
