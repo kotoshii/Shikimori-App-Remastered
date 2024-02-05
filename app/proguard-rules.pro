@@ -33,6 +33,7 @@
 -dontnote android.net.http.**
 -dontnote org.apache.http.**
 -dontwarn com.google.android.material.snackbar.**
+-dontwarn io.lindstrom.m3u8.**
 
 -keep class org.jsoup.**
 -keep class android.support.v4.app.** { *; }
