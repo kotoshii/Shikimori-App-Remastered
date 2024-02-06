@@ -246,6 +246,8 @@ class SeriesPresenter @Inject constructor(
             Utils.isHostingSupports(it.videoHosting) && if (tokenSource.getToken() != null) true else it.videoHosting !is VideoHosting.SMOTRET_ANIME
         }
 
+        if (filteredItems.isEmpty()) return
+
         Observable.fromIterable(filteredItems)
                 .flatMapSingle { interactor.getVideo(it, it.videoHosting is VideoHosting.SMOTRET_ANIME) }
                 .flatMap { video ->
