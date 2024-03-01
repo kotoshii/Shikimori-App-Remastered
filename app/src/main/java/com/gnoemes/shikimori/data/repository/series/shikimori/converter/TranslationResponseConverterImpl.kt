@@ -17,7 +17,7 @@ class TranslationResponseConverterImpl @Inject constructor() : TranslationRespon
                 it.type,
                 it.quality,
                 it.hosting,
-                it.author,
+                it.author.trim(),
                 it.episodesSize,
                 it.webPlayerUrl
         )
