@@ -36,7 +36,8 @@ class SeriesRepositoryImpl @Inject constructor(
         private val myviParser: MyviParser,
         private val allVideoParser: AllVideoParser,
         private val animeJoyParser: AnimeJoyParser,
-        private val dzenParser: DzenParser
+        private val dzenParser: DzenParser,
+        private val cdaParser: CdaParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -83,6 +84,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
                 is VideoHosting.DZEN -> getDzenVideoFiles(payload)
+                is VideoHosting.CDA -> getCdaFiles(payload)
                 else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
                     else source.getVideo(
                             payload.animeId,
@@ -166,6 +168,14 @@ class SeriesRepositoryImpl @Inject constructor(
                     }
                     .map { dzenParser.tracks(it.first.string(), it.second) }
                     .map { dzenParser.video(video, it) }
+
+    private fun getCdaFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(cdaParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { cdaParser.parsePlayerData(it.string()) }
+                    .flatMap { cdaParser.getVideoLinks(it) }
+                    .map { cdaParser.tracks(it) }
+                    .map { cdaParser.video(video, it) }
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =
             topicApi.getAnimeEpisodeTopic(animeId, episodeId)

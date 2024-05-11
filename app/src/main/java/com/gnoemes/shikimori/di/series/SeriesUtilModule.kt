@@ -75,6 +75,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindCdaParser(parser: CdaParserImpl): CdaParser
+
+    @Binds
+    @Reusable
     fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

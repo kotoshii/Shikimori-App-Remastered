@@ -53,6 +53,9 @@ interface VideoApi {
     @GET
     fun getNuumStreamsMetadata(@Url metadataUrl: String) : Single<Response<NuumStreamsMetadataResponse>>
 
+    @POST("https://www.cda.pl/")
+    fun cdaApiRequest(@Body request : CdaApiRequest): Single<Response<CdaApiResponse>>
+
     @GET("/api/anime/alternative/translation/{id}")
     fun getVideoAlternative(
             @Path("id") translationId: Long,
