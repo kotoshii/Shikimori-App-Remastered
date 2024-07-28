@@ -45,7 +45,7 @@ interface VideoApi {
 
     @Headers("Accept: text/plain")
     @GET
-    fun getTextResponse(@Url playerUrl: String) : Single<ResponseBody>
+    fun getTextResponse(@Url playerUrl: String, @Header("Referer") referer: String? = null) : Single<ResponseBody>
 
     @GET
     fun getMailRuVideoMeta(@Url videoMetaUrl: String) : Single<Response<MailRuVideosResponse>>

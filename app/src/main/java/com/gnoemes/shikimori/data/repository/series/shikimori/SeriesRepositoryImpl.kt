@@ -140,7 +140,7 @@ class SeriesRepositoryImpl @Inject constructor(
         if (video.webPlayerUrl == null) Single.just(nuumParser.video(video, emptyList()))
         else api.getNuumStreamsMetadata(nuumParser.getMetadataUrl(video.webPlayerUrl))
                 .map { nuumParser.getMasterPlaylistUrl(it.body()) }
-                .flatMap { api.getTextResponse(it) }
+                .flatMap { api.getTextResponse(it, "https://nuum.ru/") }
                 .map { nuumParser.tracks(it.string()) }
                 .map { nuumParser.video(video, it) }
 

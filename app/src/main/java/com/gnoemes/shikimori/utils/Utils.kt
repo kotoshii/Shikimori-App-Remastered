@@ -38,6 +38,7 @@ object Utils {
         is VideoHosting.SOVET_ROMANTICA, is VideoHosting.UNKNOWN -> mapOf(Pair("Referrer", video.player))
         is VideoHosting.SIBNET -> mapOf(Pair("Referer", video.player))
         is VideoHosting.MAILRU -> mapOf(Pair("Cookie", CookieManager.getInstance().getCookie(".my.mail.ru")))
+        is VideoHosting.NUUM -> mapOf(Pair("Referer", "https://nuum.ru/"))
         else -> emptyMap()
     }
 
