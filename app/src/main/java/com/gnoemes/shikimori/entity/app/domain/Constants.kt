@@ -19,6 +19,8 @@ object Constants {
 
     const val MAX_LIMIT = 1000
 
+    const val MAX_ANIME_LIMIT = 50
+
     const val EXIT_TIMEOUT = 3L * 1000
 
     const val DEFAULT_DEBOUNCE_INTERVAL = 300L

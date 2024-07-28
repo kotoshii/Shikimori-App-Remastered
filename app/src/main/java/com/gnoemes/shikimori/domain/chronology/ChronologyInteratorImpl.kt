@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.data.repository.search.SearchRepository
 import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.domain.search.SearchQueryBuilder
 import com.gnoemes.shikimori.entity.anime.domain.Anime
+import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyItem
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.common.domain.*
@@ -31,31 +32,39 @@ class ChronologyInteratorImpl @Inject constructor(
 
     override fun getAnimes(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
             animeRepository.getFranchise(id)
-                    .searchFranchiseItemsAndMergeWithRates(id, franchiseName, Type.ANIME, type)
+                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.ANIME, type) }
                     .applyErrorHandlerAndSchedulers()
 
     override fun getMangas(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
             mangaRepository.getFranchise(id)
-                    .searchFranchiseItemsAndMergeWithRates(id, franchiseName, Type.MANGA, type)
+                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.MANGA, type) }
                     .applyErrorHandlerAndSchedulers()
 
     override fun getRanobes(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
             ranobeRepository.getFranchise(id)
-                    .searchFranchiseItemsAndMergeWithRates(id, franchiseName, Type.RANOBE, type)
+                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.RANOBE, type) }
                     .applyErrorHandlerAndSchedulers()
 
-    private fun Single<Franchise>.searchFranchiseItemsAndMergeWithRates(id: Long, franchiseName: String?, type: Type, chronologyType: ChronologyType) =
-            this.flatMap { franchise ->
-                (if (franchiseName.isNullOrBlank()) searchQueryBuilder.createQueryFromIds(franchise.nodes.map { node -> node.id }.toMutableList())
-                else searchQueryBuilder.createQueryFromFranchise(franchiseName))
-                        .flatMap { query ->
-                            Single.zip(
-                                    searchRepository.getList(type, query),
-                                    getRates(type),
-                                    converter.invoke(id, franchise, chronologyType)
-                            )
-                        }
-            }
+    private fun searchFranchiseItemsAndMergeWithRates(id: Long, franchise: Franchise, type: Type, chronologyType: ChronologyType): Single<List<ChronologyItem>> {
+        val ids = franchise.nodes.map { node -> node.id }.toMutableList()
+        val chunks = ids.chunked(Constants.MAX_ANIME_LIMIT)
+
+
+        val singles = chunks.map {
+            searchQueryBuilder.createQueryFromIds(it.toMutableList())
+                    .flatMap { query ->
+                        searchRepository.getList(type, query)
+                    }
+        }
+
+        return Single.zip(
+                Single.zip(singles) {
+                    results -> results.flatMap { it as List<LinkedContent> }
+                },
+                getRates(type),
+                converter.invoke(id, franchise, chronologyType)
+        )
+    }
 
     private fun getRates(type: Type): Single<List<UserRate>> =
             if (userRepository.getUserStatus() == UserStatus.AUTHORIZED) userRepository.getMyUserId()
