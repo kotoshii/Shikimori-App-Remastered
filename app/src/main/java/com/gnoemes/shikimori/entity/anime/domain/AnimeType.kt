@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 enum class AnimeType(val type: String) {
     @SerializedName("tv")
     TV("tv"),
+    @SerializedName("tv_special")
+    TV_SPECIAL("tv_special"),
     @SerializedName("movie")
     MOVIE("movie"),
     @SerializedName("special")
@@ -21,6 +23,10 @@ enum class AnimeType(val type: String) {
     TV_24("tv_24"),
     @SerializedName("tv_48")
     TV_48("tv_48"),
+    @SerializedName("pv")
+    PV("pv"),
+    @SerializedName("cm")
+    CM("cm"),
     @SerializedName("")
     NONE("none");
 }
