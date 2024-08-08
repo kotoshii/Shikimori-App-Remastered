@@ -46,9 +46,12 @@ class ChronologyInteratorImpl @Inject constructor(
                     .applyErrorHandlerAndSchedulers()
 
     private fun searchFranchiseItemsAndMergeWithRates(id: Long, franchise: Franchise, type: Type, chronologyType: ChronologyType): Single<List<ChronologyItem>> {
+        if (franchise.nodes.isEmpty()) {
+            return Single.just(emptyList())
+        }
+
         val ids = franchise.nodes.map { node -> node.id }.toMutableList()
         val chunks = ids.chunked(Constants.MAX_ANIME_LIMIT)
-
 
         val singles = chunks.map {
             searchQueryBuilder.createQueryFromIds(it.toMutableList())
