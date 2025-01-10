@@ -177,6 +177,7 @@ class SimilarViewModelConverterImpl @Inject constructor(
         return when (type) {
             MangaType.MANGA -> context.getString(R.string.type_manga_translatable)
             MangaType.NOVEL -> context.getString(R.string.type_novel_translatable)
+            MangaType.LIGHT_NOVEL -> context.getString(R.string.type_novel_translatable)
             MangaType.ONE_SHOT -> context.getString(R.string.type_one_shot_translatable)
             MangaType.DOUJIN -> context.getString(R.string.type_doujin_translatable)
             MangaType.MANHUA -> context.getString(R.string.type_manhua_translatable)
