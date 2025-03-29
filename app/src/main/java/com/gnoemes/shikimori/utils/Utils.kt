@@ -14,7 +14,7 @@ object Utils {
             "ok.ru", "ok" -> VideoHosting.OK()
             "www.myvi.top", "www.myvi.tv", "myvi.top", "myvi.tv" -> VideoHosting.MYVI()
             "csst.online", "www.csst.online", "fsst.online", "www.fsst.online", "secvideo1.online", "www.secvideo1.online" -> VideoHosting.ALLVIDEO()
-            "animejoy.ru" -> VideoHosting.ANIMEJOY()
+            "animejoy.ru", "animejoy.site", "anime-joy.online" -> VideoHosting.ANIMEJOY()
             "dzen.ru" -> VideoHosting.DZEN()
             "nuum.ru" -> VideoHosting.NUUM()
             "my.mail.ru", "videoapi.my.mail.ru", "mail.ru" -> VideoHosting.MAILRU()
