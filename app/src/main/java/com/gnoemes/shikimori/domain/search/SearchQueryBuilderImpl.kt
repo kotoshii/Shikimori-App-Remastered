@@ -17,15 +17,21 @@ class SearchQueryBuilderImpl @Inject constructor(
         private const val DIVIDER = ","
     }
 
-    override fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<Map<String, String>> {
+    override fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int?, limit: Int?): Single<Map<String, String>> {
         val queryMap = ArrayMap<String, String>()
 
         if (filters.isNullOrEmpty()) return Single.fromCallable { getDefaultRequest(page, limit) }
 
         filters.forEach { entry -> queryMap[entry.key] = convertFilters(entry.value) }
 
-        queryMap[SearchConstants.PAGE] = page.toString()
-        queryMap[SearchConstants.LIMIT] = limit.toString()
+        if (page != null) {
+            queryMap[SearchConstants.PAGE] = page.toString()
+        }
+
+        if (limit != null) {
+            queryMap[SearchConstants.LIMIT] = limit.toString()
+        }
+
         queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
 
         return Single.just(queryMap)
@@ -88,10 +94,17 @@ class SearchQueryBuilderImpl @Inject constructor(
         return Single.just(queryMap)
     }
 
-    private fun getDefaultRequest(page: Int, limit: Int): MutableMap<String, String> {
+    private fun getDefaultRequest(page: Int?, limit: Int?): MutableMap<String, String> {
         val queryMap = ArrayMap<String, String>()
-        queryMap[SearchConstants.PAGE] = page.toString()
-        queryMap[SearchConstants.LIMIT] = limit.toString()
+
+        if (page != null) {
+            queryMap[SearchConstants.PAGE] = page.toString()
+        }
+
+        if (limit != null) {
+            queryMap[SearchConstants.LIMIT] = limit.toString()
+        }
+
         queryMap[SearchConstants.ORDER] = SearchConstants.ORDER_BY.RANKED.toString()
 
         queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()

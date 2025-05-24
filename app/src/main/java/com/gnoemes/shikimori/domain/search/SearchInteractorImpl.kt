@@ -30,13 +30,13 @@ class SearchInteractorImpl @Inject constructor(
                     .flatMap { repository.getMangaList(it) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<List<Character>> =
-            queryBuilder.createQueryFromFilters(filters, page, limit)
+    override fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Character>> =
+            queryBuilder.createQueryFromFilters(filters, null, null)
                     .flatMap { repository.getCharacterList(it) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<List<Person>> =
-            queryBuilder.createQueryFromFilters(filters, page, limit)
+    override fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Person>> =
+            queryBuilder.createQueryFromFilters(filters, null, null)
                     .flatMap { repository.getPersonList(it) }
                     .applyErrorHandlerAndSchedulers()
 
