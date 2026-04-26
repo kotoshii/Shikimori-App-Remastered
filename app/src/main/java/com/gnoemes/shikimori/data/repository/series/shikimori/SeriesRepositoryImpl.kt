@@ -2,10 +2,12 @@ package com.gnoemes.shikimori.data.repository.series.shikimori
 
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
 import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
+import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.TopicApi
 import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.series.domain.*
@@ -13,6 +15,7 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
+import okhttp3.ResponseBody
 import javax.inject.Inject
 
 class SeriesRepositoryImpl @Inject constructor(
@@ -20,28 +23,32 @@ class SeriesRepositoryImpl @Inject constructor(
         private val topicApi: TopicApi,
         private val source: AnimeSource,
         private val tokenSource: Anime365TokenSource,
+        private val settingsSource: SettingsSource,
         private val converter: EpisodeResponseConverter,
         private val translationConverter: TranslationResponseConverter,
         private val videoConverter: VideoResponseConverter,
         private val episodeSource: EpisodeDbSource,
         private val syncSource: AnimeRateSyncDbSource,
-        private val vkConverter: VkVideoConverter,
-        private val sovetRomanticaConverter: SovetRomanticaVideoConverter,
-        private val okConverter: OkVideoConverter,
-        private val mailRuVideoConverter: MailRuVideoConverter,
-        private val myviConverter: MyviVideoConverter,
-        private val allVideoConverter: AllVideoVideoConverter,
-        private val animeJoyConverter: AnimeJoyVideoConverter
+        private val vkParser: VkParser,
+        private val sovetRomanticaParser: SovetRomanticaParser,
+        private val sibnetParser: SibnetParser,
+        private val okParser: OkParser,
+        private val mailRuParser: MailRuParser,
+        private val nuumParser: NuumParser,
+        private val myviParser: MyviParser,
+        private val allVideoParser: AllVideoParser,
+        private val animeJoyParser: AnimeJoyParser,
+        private val dzenParser: DzenParser,
+        private val cdaParser: CdaParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
             (if (alternative) source.getEpisodesShikicinema(id) else source.getEpisodes(id, name))
                     .map { episodes -> episodes.filter { it.index > 0 }.sortedBy { it.index } }
                     .map { episodes ->
-                        if (alternative || tokenSource.getToken() != null) episodes
-                        else episodes.filterNot { episode ->
-                            episode.hostings.any { it is VideoHosting.SMOTRET_ANIME }
-                        }
+                        if (settingsSource.hideAnime365 && tokenSource.getToken() == null)
+                            episodes.filterNot { episode -> episode.hostings.any { it is VideoHosting.SMOTRET_ANIME } }
+                        else episodes
                     }
                     .flatMap {
                         Observable.fromIterable(it)
@@ -60,20 +67,24 @@ class SeriesRepositoryImpl @Inject constructor(
             (if (alternative) source.getTranslationsShikicinema(animeId, episodeId, type, loadLength) else source.getTranslations(animeId, name, episodeId, type))
                     .map(translationConverter)
                     .map { translations ->
-                        if (alternative || tokenSource.getToken() != null) translations
-                        else translations.filterNot { translation ->
-                            translation.hosting is VideoHosting.SMOTRET_ANIME
-                        }
+                        if (settingsSource.hideAnime365 && tokenSource.getToken() == null)
+                            translations.filterNot { translation -> translation.hosting is VideoHosting.SMOTRET_ANIME }
+                        else translations
                     }
 
     override fun getVideo(payload: TranslationVideo, alternative: Boolean): Single<Video> =
             when (payload.videoHosting) {
                 is VideoHosting.VK -> getVkFiles(payload)
+                is VideoHosting.SOVET_ROMANTICA -> getSovetRomanticaFiles(payload)
+                is VideoHosting.SIBNET -> getSibnetFiles(payload)
                 is VideoHosting.OK -> getOkFiles(payload)
                 is VideoHosting.MAILRU -> getMailRuFiles(payload)
+                is VideoHosting.NUUM -> getNuumFiles(payload)
                 is VideoHosting.MYVI -> getMyviFiles(payload)
                 is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
+                is VideoHosting.DZEN -> getDzenVideoFiles(payload)
+                is VideoHosting.CDA -> getCdaFiles(payload)
                 else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
                     else source.getVideo(
                             payload.animeId,
@@ -86,53 +97,85 @@ class SeriesRepositoryImpl @Inject constructor(
                             payload.webPlayerUrl
                     ))
                         .map(videoConverter)
-                        .flatMap { if (it.hosting is VideoHosting.SOVET_ROMANTICA) getSovetRomanticaFiles(it) else Single.just(it) }
             }
 
     private fun getVkFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(vkConverter.parsePlaylists(null)).map { vkConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                vkConverter.parsePlaylists(it.string())
-            }.map { vkConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(vkParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { vkParser.tracks(it.string()) }
+                    .map { vkParser.video(video, it) }
+
+    private fun getSovetRomanticaFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(sovetRomanticaParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { sovetRomanticaParser.getMasterPlaylistUrl(it.string()) }
+                    .flatMap {
+                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
+                    }
+                    .map { sovetRomanticaParser.tracks(it.first.string(), it.second) }
+                    .map { sovetRomanticaParser.video(video, it) }
+
+    private fun getSibnetFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(sibnetParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { sibnetParser.tracks(it.string()) }
+                    .map { sibnetParser.video(video, it) }
 
     private fun getOkFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(okConverter.parsePlaylists(null)).map { okConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                okConverter.parsePlaylists(it.string())
-            }.map { okConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(okParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { okParser.tracks(it.string()) }
+                    .map { okParser.video(video, it) }
 
     private fun getMailRuFiles(video: TranslationVideo): Single<Video> =
-        if (video.webPlayerUrl == null) Single.just(mailRuVideoConverter.parsePlaylists(null)).map { mailRuVideoConverter.convertTracks(video, it) }
+        if (video.webPlayerUrl == null) Single.just(mailRuParser.video(video, emptyList()))
         else api.getPlayerHtml(video.webPlayerUrl)
-                .map { mailRuVideoConverter.parseVideoMetaUrl(it.string()) }
+                .map { mailRuParser.parseVideoMetaUrl(it.string()) }
                 .flatMap { api.getMailRuVideoMeta(it) }
-                .map { mailRuVideoConverter.saveCookies(it.raw()); it }
-                .map { mailRuVideoConverter.parsePlaylists(it.body()) }
-                .map { mailRuVideoConverter.convertTracks(video, it) }
+                .map { mailRuParser.saveCookies(it) }
+                .map { mailRuParser.tracks(it.body()) }
+                .map { mailRuParser.video(video, it) }
 
-
+    private fun getNuumFiles(video: TranslationVideo): Single<Video> =
+        if (video.webPlayerUrl == null) Single.just(nuumParser.video(video, emptyList()))
+        else api.getNuumStreamsMetadata(nuumParser.getMetadataUrl(video.webPlayerUrl))
+                .map { nuumParser.getMasterPlaylistUrl(it.body()) }
+                .flatMap { api.getTextResponse(it, "https://nuum.ru/") }
+                .map { nuumParser.tracks(it.string()) }
+                .map { nuumParser.video(video, it) }
 
     private fun getMyviFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(myviConverter.parsePlaylist(null)).map { myviConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                myviConverter.parsePlaylist(it.string())
-            }.map { myviConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(myviParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { myviParser.tracks(it.string()) }
+                    .map { myviParser.video(video, it) }
 
     private fun getAllVideoFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(allVideoConverter.parsePlaylists(null)).map { allVideoConverter.convertTracks(video, it) }
-            else api.getPlayerHtml(video.webPlayerUrl).map {
-                allVideoConverter.parsePlaylists(it.string())
-            }.map { allVideoConverter.convertTracks(video, it) }
+            if (video.webPlayerUrl == null) Single.just(allVideoParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { allVideoParser.tracks(it.string()) }
+                    .map { allVideoParser.video(video, it) }
 
     private fun getAnimeJoyFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(animeJoyConverter.parsePlaylists(null)).map { animeJoyConverter.convertTracks(video, it) }
-            else Single.just(animeJoyConverter.parsePlaylists(video.webPlayerUrl)).map {
-                animeJoyConverter.convertTracks(video, it)
-            }
+            Single.just(animeJoyParser.video(video, animeJoyParser.tracks(video.webPlayerUrl)))
 
-    private fun getSovetRomanticaFiles(video: Video): Single<Video> =
-            api.getSovetRomanticaVideoFiles(video.tracks[0].url)
-                    .map { sovetRomanticaConverter.convertTracks(video, it) }
+    private fun getDzenVideoFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(dzenParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { dzenParser.getMasterPlaylistUrl(it.string()) }
+                    .flatMap {
+                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
+                    }
+                    .map { dzenParser.tracks(it.first.string(), it.second) }
+                    .map { dzenParser.video(video, it) }
+
+    private fun getCdaFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(cdaParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { cdaParser.parsePlayerData(it.string()) }
+                    .flatMap { cdaParser.getVideoLinks(it) }
+                    .map { cdaParser.tracks(it) }
+                    .map { cdaParser.video(video, it) }
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =
             topicApi.getAnimeEpisodeTopic(animeId, episodeId)

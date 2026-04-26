@@ -13,7 +13,9 @@ interface SettingsSource {
 
     var isRussianNaming: Boolean
 
-    var allowR18Content: Boolean;
+    var allowR18Content: Boolean
+
+    var altSourceByDefault: Boolean
 
     var isAskForPlayer : Boolean
 
@@ -34,4 +36,6 @@ interface SettingsSource {
     var rateSwipeToRightAction : RateSwipeAction
 
     var chronologyType : ChronologyType
+
+    var hideAnime365: Boolean
 }

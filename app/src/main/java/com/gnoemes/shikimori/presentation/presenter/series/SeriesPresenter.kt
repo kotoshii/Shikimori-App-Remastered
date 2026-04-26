@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.series
 
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
@@ -30,7 +31,8 @@ class SeriesPresenter @Inject constructor(
         private val settingsSource: SettingsSource,
         private val converter: TranslationsViewModelConverter,
         private val commonResourceProvider: CommonResourceProvider,
-        private val shareResourceProvider: ShareResourceProvider
+        private val shareResourceProvider: ShareResourceProvider,
+        private val tokenSource: Anime365TokenSource
 ) : BaseNetworkPresenter<SeriesView>() {
 
     lateinit var navigationData: SeriesNavigationData
@@ -38,7 +40,7 @@ class SeriesPresenter @Inject constructor(
 
     private var episode: Int? = null
     private var episodeId: Long? = null
-    private var isAlternative: Boolean = false
+    private var isAlternative: Boolean = settingsSource.altSourceByDefault
     private var setting: TranslationSetting? = null
     private var query: String? = null
     private var rateId: Long = Constants.NO_ID
@@ -60,6 +62,7 @@ class SeriesPresenter @Inject constructor(
 
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
+        viewState.changeSource(isAlternative)
 
         if (episode != null) {
             viewState.setEpisodeName(episode!!)
@@ -239,7 +242,11 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun showDownloadDialog(videos: List<TranslationVideo>) {
-        val filteredItems = videos.filter { Utils.isHostingSupports(it.videoHosting) }
+        val filteredItems = videos.filter {
+            Utils.isHostingSupports(it.videoHosting) && if (tokenSource.getToken() != null) true else it.videoHosting !is VideoHosting.SMOTRET_ANIME
+        }
+
+        if (filteredItems.isEmpty()) return
 
         Observable.fromIterable(filteredItems)
                 .flatMapSingle { interactor.getVideo(it, it.videoHosting is VideoHosting.SMOTRET_ANIME) }

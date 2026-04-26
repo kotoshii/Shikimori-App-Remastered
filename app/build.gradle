@@ -20,7 +20,7 @@ android {
             versionMajor 0
             versionMinor 8
             versionPatch 6
-            versionBuild 15
+            versionBuild 51
         }
         codeOptions {
             versionCodeType VersionCodeType.AUTO_INCREMENT_ONE_STEP
@@ -157,6 +157,8 @@ dependencies {
     kapt project(':storio-common-annotations-processor')
     kapt project(':storio-sqlite-annotations-processor')
     kapt project(':storio-content-resolver-annotations-processor')
+
+    implementation 'io.lindstrom:m3u8-parser:' + versions.m3u8Parser
 }
 
 apply plugin: 'com.google.gms.google-services'

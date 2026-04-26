@@ -58,6 +58,7 @@ class RateAdapterDelegate(
 
                 pinView.visibleIf { item.isPinned }
                 playBtn.visibleIf { item.type == Type.ANIME }
+                ratingView.visibleIf { item.rating != "-" }
             }
         }
     }

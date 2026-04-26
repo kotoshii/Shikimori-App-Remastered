@@ -39,15 +39,22 @@ interface VideoApi {
     @POST("/api/anime/player")
     fun getVideo(@Body request : VideoRequest) : Single<VideoResponse>
 
-    @Headers("Accept: text/html")
+    @Headers("Accept: text/html", "User-Agent: Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36")
     @GET
     fun getPlayerHtml(@Url playerUrl: String) : Single<ResponseBody>
+
+    @Headers("Accept: text/plain")
+    @GET
+    fun getTextResponse(@Url playerUrl: String, @Header("Referer") referer: String? = null) : Single<ResponseBody>
 
     @GET
     fun getMailRuVideoMeta(@Url videoMetaUrl: String) : Single<Response<MailRuVideosResponse>>
 
-    @GET("https://shikiapp-api.vercel.app/api/anime/sovetromantica-videos")
-    fun getSovetRomanticaVideoFiles(@Query("playlistUrl") playlistUrl: String) : Single<SovetRomanticaVideosResponse>
+    @GET
+    fun getNuumStreamsMetadata(@Url metadataUrl: String) : Single<Response<NuumStreamsMetadataResponse>>
+
+    @POST("https://www.cda.pl/")
+    fun cdaApiRequest(@Body request : CdaApiRequest): Single<Response<CdaApiResponse>>
 
     @GET("/api/anime/alternative/translation/{id}")
     fun getVideoAlternative(

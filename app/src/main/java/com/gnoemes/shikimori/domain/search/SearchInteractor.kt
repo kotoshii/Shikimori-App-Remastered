@@ -16,9 +16,9 @@ interface SearchInteractor {
 
     fun loadRanobeList(page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
 
-    fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int = 0, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Character>>
+    fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Character>>
 
-    fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int = 0, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Person>>
+    fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Person>>
 
     fun loadAnimeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Anime>>
 

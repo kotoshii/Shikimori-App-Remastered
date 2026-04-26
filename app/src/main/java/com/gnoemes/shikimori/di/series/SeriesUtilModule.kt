@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.di.series
 
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
 import com.gnoemes.shikimori.presentation.presenter.series.episodes.converter.EpisodeViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.series.episodes.converter.EpisodeViewModelConverterImpl
 import com.gnoemes.shikimori.presentation.presenter.series.translations.converter.TranslationsViewModelConverter
@@ -34,31 +35,47 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
-    fun bindvkConverter(converter: VkVideoConverterImpl): VkVideoConverter
+    fun bindVkParser(parser: VkParserImpl): VkParser
 
     @Binds
     @Reusable
-    fun bindSovetRomanticaConverter(converter: SovetRomanticaVideoConverterImpl): SovetRomanticaVideoConverter
+    fun bindSovetRomanticaParser(parser: SovetRomanticaParserImpl): SovetRomanticaParser
 
     @Binds
     @Reusable
-    fun bindOkConverter(converter: OkVideoConverterImpl): OkVideoConverter
+    fun bindSibnetParser(parser: SibnetParserImpl): SibnetParser
 
     @Binds
     @Reusable
-    fun bindMailRuConverter(converter: MailRuVideoConverterImpl): MailRuVideoConverter
+    fun bindOkParser(parser: OkParserImpl): OkParser
 
     @Binds
     @Reusable
-    fun bindMyviConverter(converter: MyviVideoConverterImpl): MyviVideoConverter
+    fun bindMailRuParser(parser: MailRuParserImpl): MailRuParser
 
     @Binds
     @Reusable
-    fun bindAllVideoConverter(converter: AllVideoVideoConverterImpl): AllVideoVideoConverter
+    fun bindNuumParser(parser: NuumParserImpl): NuumParser
 
     @Binds
     @Reusable
-    fun bindAnimeJoyConverter(converter: AnimeJoyVideoConverterImpl): AnimeJoyVideoConverter
+    fun bindMyviParser(parser: MyviParserImpl): MyviParser
+
+    @Binds
+    @Reusable
+    fun bindAllVideoParser(parser: AllVideoParserImpl): AllVideoParser
+
+    @Binds
+    @Reusable
+    fun bindAnimeJoyParser(parser: AnimeJoyParserImpl): AnimeJoyParser
+
+    @Binds
+    @Reusable
+    fun bindDzenParser(parser: DzenParserImpl): DzenParser
+
+    @Binds
+    @Reusable
+    fun bindCdaParser(parser: CdaParserImpl): CdaParser
 
     @Binds
     @Reusable
