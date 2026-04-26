@@ -89,4 +89,8 @@ class SettingsSourceImpl @Inject constructor(
             ChronologyType.values().find { it.ordinal == type } ?: ChronologyType.MAIN
         }
         set(value) = prefs.putInt(SettingsExtras.CHRONOLOGY_TYPE, value.ordinal)
+
+    override var hideAnime365: Boolean
+        get() = prefs.getBoolean(SettingsExtras.HIDE_ANIME_365, false)
+        set(value) = prefs.putBoolean(SettingsExtras.HIDE_ANIME_365, value)
 }

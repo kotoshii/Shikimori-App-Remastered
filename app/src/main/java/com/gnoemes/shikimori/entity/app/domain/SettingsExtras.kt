@@ -9,6 +9,7 @@ object SettingsExtras {
     const val USER_STATUS = "USER_STATUS"
     const val USER_ID = "USER_ID"
     const val ANIME_365_TOKEN = "ANIME_365_TOKEN"
+    const val HIDE_ANIME_365 = "HIDE_ANIME_365"
 
     ////////////////////////////////////////////////////////////////////////
     // GENERAL

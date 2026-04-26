@@ -36,4 +36,6 @@ interface SettingsSource {
     var rateSwipeToRightAction : RateSwipeAction
 
     var chronologyType : ChronologyType
+
+    var hideAnime365: Boolean
 }

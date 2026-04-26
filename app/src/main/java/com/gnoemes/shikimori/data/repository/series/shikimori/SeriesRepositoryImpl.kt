@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.data.repository.series.shikimori
 
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
 import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
+import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.TopicApi
 import com.gnoemes.shikimori.data.network.VideoApi
@@ -22,6 +23,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val topicApi: TopicApi,
         private val source: AnimeSource,
         private val tokenSource: Anime365TokenSource,
+        private val settingsSource: SettingsSource,
         private val converter: EpisodeResponseConverter,
         private val translationConverter: TranslationResponseConverter,
         private val videoConverter: VideoResponseConverter,
@@ -44,10 +46,9 @@ class SeriesRepositoryImpl @Inject constructor(
             (if (alternative) source.getEpisodesShikicinema(id) else source.getEpisodes(id, name))
                     .map { episodes -> episodes.filter { it.index > 0 }.sortedBy { it.index } }
                     .map { episodes ->
-                        if (alternative || tokenSource.getToken() != null) episodes
-                        else episodes.filterNot { episode ->
-                            episode.hostings.any { it is VideoHosting.SMOTRET_ANIME }
-                        }
+                        if (settingsSource.hideAnime365 && tokenSource.getToken() == null)
+                            episodes.filterNot { episode -> episode.hostings.any { it is VideoHosting.SMOTRET_ANIME } }
+                        else episodes
                     }
                     .flatMap {
                         Observable.fromIterable(it)
@@ -66,10 +67,9 @@ class SeriesRepositoryImpl @Inject constructor(
             (if (alternative) source.getTranslationsShikicinema(animeId, episodeId, type, loadLength) else source.getTranslations(animeId, name, episodeId, type))
                     .map(translationConverter)
                     .map { translations ->
-                        if (alternative || tokenSource.getToken() != null) translations
-                        else translations.filterNot { translation ->
-                            translation.hosting is VideoHosting.SMOTRET_ANIME
-                        }
+                        if (settingsSource.hideAnime365 && tokenSource.getToken() == null)
+                            translations.filterNot { translation -> translation.hosting is VideoHosting.SMOTRET_ANIME }
+                        else translations
                     }
 
     override fun getVideo(payload: TranslationVideo, alternative: Boolean): Single<Video> =

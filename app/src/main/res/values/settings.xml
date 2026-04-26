@@ -169,4 +169,7 @@
     <string name="settings_anime_365_title">Вход в Anime 365</string>
     <string name="settings_anime_365_summary">Смотрите с подпиской через любой плеер</string>
     <string name="settings_anime_365_success">Anime 365 теперь доступен, проверьте источники в списке авторов</string>
+
+    <string name="settings_hide_anime_365_key">HIDE_ANIME_365</string>
+    <string name="settings_hide_anime_365_title">Скрыть Anime 365 из выдачи, если вход не выполнен</string>
 </resources>
