@@ -13,8 +13,8 @@ object Utils {
             "vk.com", "vk" -> VideoHosting.VK()
             "ok.ru", "ok" -> VideoHosting.OK()
             "www.myvi.top", "www.myvi.tv", "myvi.top", "myvi.tv" -> VideoHosting.MYVI()
-            "csst.online", "www.csst.online", "fsst.online", "www.fsst.online", "secvideo1.online", "www.secvideo1.online" -> VideoHosting.ALLVIDEO()
-            "animejoy.ru", "animejoy.site", "anime-joy.online", "anime-joy.ru" -> VideoHosting.ANIMEJOY()
+            "csst.online", "www.csst.online", "fsst.online", "www.fsst.online", "secvideo1.online", "www.secvideo1.online", "dsst.online" -> VideoHosting.ALLVIDEO()
+            "animejoy.ru", "animejoya.ru", "animejoy.su" -> VideoHosting.ANIMEJOY()
             "dzen.ru" -> VideoHosting.DZEN()
             "nuum.ru" -> VideoHosting.NUUM()
             "my.mail.ru", "videoapi.my.mail.ru", "mail.ru" -> VideoHosting.MAILRU()
@@ -22,7 +22,7 @@ object Utils {
             "video.sibnet.ru", "sibnet", "sibnet.ru" -> VideoHosting.SIBNET()
             "sovetromantica.com", "sovetromantica" -> VideoHosting.SOVET_ROMANTICA()
             "smotretanime.ru", "smotretanime", "smotret-anime.online", "smotret-anime.com" -> VideoHosting.SMOTRET_ANIME()
-            "aniqit.com" -> VideoHosting.KODIK()
+            "aniqit.com", "kodikplayer.com" -> VideoHosting.KODIK()
             else -> (raw ?: "unknown").let { hosting -> VideoHosting.UNKNOWN(hosting, hosting) }
         }
     }

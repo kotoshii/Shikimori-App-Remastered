@@ -63,8 +63,8 @@ sealed class VideoHosting : Parcelable {
 
     @Parcelize
     data class KODIK(
-            override val type: String = "aniqit",
-            override val synonymType: String = "aniqit.com"
+            override val type: String = "kodikplayer.com",
+            override val synonymType: String = "kodikplayer.com"
     ) : VideoHosting()
 
     @Parcelize
