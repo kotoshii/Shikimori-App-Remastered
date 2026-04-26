@@ -56,11 +56,11 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
     companion object {
         private const val SHIKIMORI_PATTERN_OLD =
-            "https?://(?:www\\.)?shikimori\\.me/oauth/authorize/(?:.*)"
+            "https?://(?:www\\.)?shikimori\\.io/oauth/authorize/(?:.*)"
         private const val SHIKIMORI_PATTERN =
-            "https?://(?:www\\.)?shikimori\\.one/oauth/authorize/(?:.*)"
-        private const val SHIKIMORI_SIGN_UP_URL = "https://shikimori.one/users/sign_up"
-        private const val SHIKIMORI_SIGN_IN_URL = "https://shikimori.one/users/sign_in"
+            "https?://(?:www\\.)?shikimori\\.io/oauth/authorize/(?:.*)"
+        private const val SHIKIMORI_SIGN_UP_URL = "https://shikimori.io/users/sign_up"
+        private const val SHIKIMORI_SIGN_IN_URL = "https://shikimori.io/users/sign_in"
 
         private const val ANIME_365_SIGN_IN = "https://smotret-anime.com/users/login"
 
