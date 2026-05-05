@@ -21,7 +21,7 @@ object Utils {
             "ebd.cda.pl" -> VideoHosting.CDA()
             "video.sibnet.ru", "sibnet", "sibnet.ru" -> VideoHosting.SIBNET()
             "sovetromantica.com", "sovetromantica" -> VideoHosting.SOVET_ROMANTICA()
-            "smotretanime.ru", "smotretanime", "smotret-anime.online", "smotret-anime.com" -> VideoHosting.SMOTRET_ANIME()
+            "smotretanime.ru", "smotretanime", "smotret-anime.online", "smotret-anime.com", "smotret-anime.org" -> VideoHosting.SMOTRET_ANIME()
             "aniqit.com", "kodikplayer.com" -> VideoHosting.KODIK()
             else -> (raw ?: "unknown").let { hosting -> VideoHosting.UNKNOWN(hosting, hosting) }
         }
