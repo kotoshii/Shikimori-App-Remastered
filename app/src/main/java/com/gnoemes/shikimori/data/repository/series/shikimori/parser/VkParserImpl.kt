@@ -13,14 +13,14 @@ class VkParserImpl @Inject constructor() : VkParser {
     override fun tracks(html: String?): List<Track> {
         if (html.isNullOrEmpty()) return emptyList()
 
-        val regex = Regex("\"(url240|url360|url480|url720|url1080)\":\\s?\"(.*?)\"")
+        val regex = Regex("\"(mp4_144|mp4_240|mp4_360|mp4_480|mp4_720|mp4_1080)\":\\s?\"(.*?)\"")
         val matches = regex.findAll(html)
 
         return matches
                 .map { it.destructured.toList() }
                 .map {
                     val (key, value) = it
-                    Track(key.replace("url", ""), value)
+                    Track(key.replace("mp4_", ""), value)
                 }
                 .toList()
                 .sortedByDescending { it.quality.toInt() }
