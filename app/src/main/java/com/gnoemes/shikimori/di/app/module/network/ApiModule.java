@@ -22,7 +22,7 @@ import dagger.Provides;
 import retrofit2.Retrofit;
 
 @Module(includes = {RetrofitModule.class, CommonNetworkModule.class, VideoNetworkModule.class,
-        AuthCommonNetworkModule.class, DocumentVideoNetworkModule.class})
+        AuthCommonNetworkModule.class, DocumentVideoNetworkModule.class, GraphqlNetworkModule.class})
 public interface ApiModule {
 
     @Singleton

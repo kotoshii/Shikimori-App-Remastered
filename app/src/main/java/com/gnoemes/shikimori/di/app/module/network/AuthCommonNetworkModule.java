@@ -7,7 +7,9 @@ import com.gnoemes.shikimori.data.repository.app.TokenRepository;
 import com.gnoemes.shikimori.di.app.annotations.AuthCommonApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.utils.network.AuthHolder;
+import com.gnoemes.shikimori.utils.network.MissingPosterInterceptor;
 import com.gnoemes.shikimori.utils.network.ShikiAuthenticator;
+import com.gnoemes.shikimori.utils.network.ShikimoriRateLimiter;
 import com.gnoemes.shikimori.utils.network.TokenInterceptor;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
 
@@ -33,9 +35,14 @@ public interface AuthCommonNetworkModule {
     static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor,
                                             UserAgentInterceptor userAgentInterceptor,
                                             @AuthCommonApi Authenticator authenticator,
-                                            @AuthCommonApi TokenInterceptor tokenInterceptor) {
+                                            @AuthCommonApi TokenInterceptor tokenInterceptor,
+                                            MissingPosterInterceptor missingPosterInterceptor,
+                                            ShikimoriRateLimiter rateLimiter) {
         return new OkHttpClient.Builder()
                 .authenticator(authenticator)
+                //outermost, so it only ever sees the final body of an already re-authenticated call
+                .addInterceptor(missingPosterInterceptor)
+                .addInterceptor(rateLimiter)
                 .addInterceptor(tokenInterceptor)
                 .addInterceptor(userAgentInterceptor)
                 .addInterceptor(interceptor)
