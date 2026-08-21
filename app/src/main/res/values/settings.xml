@@ -158,7 +158,7 @@
     <string name="settings_general_rate_swipe_to_right_title">Смахивание вправо</string>
     <string name="settings_general_rate_swipe_to_right_key">RATE_SWIPE_TO_RIGHT_ACTION</string>
 
-    <string name="settings_donation_title">Поддержать разработчика</string>
+    <string name="settings_donation_title">Поддержать разработчика <b>оригинального приложения</b></string>
     <string name="settings_donation_message"><![CDATA[Приложение является <b>неофициальным.</b> Материальная поддержка мотивирует и позволяет оплатить сервер.]]></string>
 
     <string name="settings_system_options">Программные опции</string>
