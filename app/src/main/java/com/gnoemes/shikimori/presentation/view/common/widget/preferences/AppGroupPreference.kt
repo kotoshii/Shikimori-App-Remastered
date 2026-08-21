@@ -24,7 +24,7 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
     }
 
     var donationClickListener: View.OnClickListener? = null
-    var mailClickListener: View.OnClickListener? = null
+    var feedbackClickListener: View.OnClickListener? = null
     var trelloClickListener: View.OnClickListener? = null
     var forumClickListener: View.OnClickListener? = null
     var clubClickListener: View.OnClickListener? = null
@@ -35,10 +35,10 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
             donationView.onClick { donationClickListener?.onClick(it) }
             btn.onClick { donationClickListener?.onClick(it) }
 
-            sendLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_mail_setting))
+            sendLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_github_setting))
             sendLayout.title()?.text = context.getString(R.string.settings_about_send_title)
             sendLayout.summary()?.gone()
-            sendLayout.onClick { mailClickListener?.onClick(it) }
+            sendLayout.onClick { feedbackClickListener?.onClick(it) }
 
             trelloLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_trello_setting))
             trelloLayout.title()?.text = context.getString(R.string.settings_roadmap_title)

@@ -33,6 +33,8 @@ object Constants {
 
     const val GITHUB_RELEASES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"
 
+    const val GITHUB_ISSUES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/issues"
+
     const val FOUR_PDA_THEME_URL = "https://4pda.to/forum/index.php?showtopic=903970"
 
     const val APP_CLUB_URL = "https://shikimori.io/clubs/1609"
