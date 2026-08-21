@@ -29,7 +29,13 @@ object Constants {
 
     const val TASK_LONG_DELAY = 3500L
 
-    const val FOUR_PDA_THEME_URL = "https://4pda.ru/forum/index.php?showtopic=903970"
+    const val GITHUB_API_URL = "https://api.github.com/"
+
+    const val GITHUB_RELEASES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"
+
+    const val GITHUB_ISSUES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/issues"
+
+    const val FOUR_PDA_THEME_URL = "https://4pda.to/forum/index.php?showtopic=903970"
 
     const val APP_CLUB_URL = "https://shikimori.io/clubs/1609"
 
@@ -37,7 +43,7 @@ object Constants {
 
     const val SHIKICINEMA_URL = "https://smarthard.net/"
 
-    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"
+//    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"
 
     const val DEFAULT_DONATION_LINK = "https://money.yandex.ru/to/410016011857536"
 

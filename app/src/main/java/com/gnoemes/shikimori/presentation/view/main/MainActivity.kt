@@ -16,6 +16,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
+import com.gnoemes.shikimori.data.network.GithubApi
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
@@ -28,6 +29,7 @@ import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
+import io.reactivex.schedulers.Schedulers
 import ru.terrakok.cicerone.NavigatorHolder
 import ru.terrakok.cicerone.Router
 import ru.terrakok.cicerone.commands.Command
@@ -45,6 +47,9 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     @Inject
     lateinit var localNavigatorHolder: NavigatorHolder
 
+    @Inject
+    lateinit var githubApi: GithubApi
+
     private val tabs = arrayOf(
             Tab(R.id.tab_rates, BottomScreens.RATES),
             Tab(R.id.tab_calendar, BottomScreens.CALENDAR),
@@ -57,7 +62,10 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
-        if (savedInstanceState == null) syncValues()
+        if (savedInstanceState == null) {
+            syncValues()
+            checkForUpdate()
+        }
     }
 
     private fun initBottomNav() {
@@ -97,16 +105,26 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
                 .get()
                 .addOnSuccessListener {
                     val donationLink = it.documents.firstOrNull()?.data?.get("donationLink") as? String
-                    val version = it.documents.firstOrNull()?.data?.get("lastVersion")
-                    val hasUpdate = BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "") != version
-
                     val shimoriUrl = it.documents.firstOrNull()?.data?.get("shimori_url") as? String ?: Constants.SHIMORI_URL
 
-                    getDefaultSharedPreferences().putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
                     getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
                     getDefaultSharedPreferences().putString(SettingsExtras.SHIMORI_URL, shimoriUrl)
                     getDefaultSharedPreferences().putString(SettingsExtras.SHIKICINEMA_URL, Constants.SHIKICINEMA_URL)
                 }.addOnFailureListener { Crashlytics.logException(it) }
+    }
+
+    /**
+     * The old check compared the version name against `lastVersion` in the upstream firestore,
+     * which this fork does not control, so it always reported an update. This asks our own
+     * releases instead, and compares properly so only a genuinely newer tag counts.
+     */
+    private fun checkForUpdate() {
+        githubApi.getLatestRelease()
+                .subscribeOn(Schedulers.io())
+                .subscribe({ release ->
+                    val hasUpdate = compareVersions(release.tag, BuildConfig.VERSION_NAME) > 0
+                    getDefaultSharedPreferences().putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
+                }, { Crashlytics.logException(it) })
     }
 
     private fun invokeTabRootActionOrClearBackStack(screenKey: String) {

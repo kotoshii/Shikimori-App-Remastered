@@ -21,12 +21,8 @@ class SettingsFragment : BaseSettingsFragment() {
         super.onCreatePreferences(savedInstanceState, rootKey)
 
         (preference("info_group") as? AppGroupPreference)?.apply {
-            mailClickListener = View.OnClickListener {
-                val sendMail = Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "shimori.app@gmail.com", null))
-                sendMail.putExtra(Intent.EXTRA_EMAIL, arrayOf("shimori.app@gmail.com"))
-                startActivity(Intent.createChooser(sendMail, null))
-            }
-            trelloClickListener = View.OnClickListener { openWeb(Constants.ROAD_MAP_URL) }
+            feedbackClickListener = View.OnClickListener { openWeb(Constants.GITHUB_ISSUES_URL) }
+//            trelloClickListener = View.OnClickListener { openWeb(Constants.ROAD_MAP_URL) }
             forumClickListener = View.OnClickListener { openWeb(Constants.FOUR_PDA_THEME_URL) }
             clubClickListener = View.OnClickListener { openWeb(Constants.APP_CLUB_URL) }
             donationClickListener = View.OnClickListener { openWeb(prefs().getString(SettingsExtras.DONATION_LINK, Constants.DEFAULT_DONATION_LINK)!!) }

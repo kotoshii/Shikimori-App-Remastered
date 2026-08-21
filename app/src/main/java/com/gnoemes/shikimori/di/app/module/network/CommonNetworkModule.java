@@ -2,6 +2,8 @@ package com.gnoemes.shikimori.di.app.module.network;
 
 import com.gnoemes.shikimori.BuildConfig;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
+import com.gnoemes.shikimori.utils.network.MissingPosterInterceptor;
+import com.gnoemes.shikimori.utils.network.ShikimoriRateLimiter;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
 
 import java.util.concurrent.TimeUnit;
@@ -22,8 +24,14 @@ public interface CommonNetworkModule {
     @Provides
     @Singleton
     static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor,
-                                            UserAgentInterceptor userAgentInterceptor) {
+                                            UserAgentInterceptor userAgentInterceptor,
+                                            MissingPosterInterceptor missingPosterInterceptor,
+                                            ShikimoriRateLimiter rateLimiter) {
         return new OkHttpClient.Builder()
+                //application interceptor on purpose: it needs the final, decoded body, once per call
+                .addInterceptor(missingPosterInterceptor)
+                //innermost of the two, so the poster lookup it triggers is queued separately
+                .addInterceptor(rateLimiter)
                 .addNetworkInterceptor(userAgentInterceptor)
                 .addNetworkInterceptor(interceptor)
                 .connectTimeout(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
