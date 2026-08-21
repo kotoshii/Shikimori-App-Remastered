@@ -22,7 +22,8 @@ import dagger.Provides;
 import retrofit2.Retrofit;
 
 @Module(includes = {RetrofitModule.class, CommonNetworkModule.class, VideoNetworkModule.class,
-        AuthCommonNetworkModule.class, DocumentVideoNetworkModule.class, GraphqlNetworkModule.class})
+        AuthCommonNetworkModule.class, DocumentVideoNetworkModule.class, GraphqlNetworkModule.class,
+        GithubNetworkModule.class})
 public interface ApiModule {
 
     @Singleton

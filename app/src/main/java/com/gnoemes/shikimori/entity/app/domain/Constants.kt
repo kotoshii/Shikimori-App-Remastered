@@ -29,6 +29,10 @@ object Constants {
 
     const val TASK_LONG_DELAY = 3500L
 
+    const val GITHUB_API_URL = "https://api.github.com/"
+
+    const val GITHUB_RELEASES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"
+
     const val FOUR_PDA_THEME_URL = "https://4pda.ru/forum/index.php?showtopic=903970"
 
     const val APP_CLUB_URL = "https://shikimori.io/clubs/1609"

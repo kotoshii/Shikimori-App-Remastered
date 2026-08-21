@@ -90,7 +90,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         (toolbar.menu.findItem(R.id.item_version).actionView as TextView).apply {
             val indicator = context.drawable(R.drawable.ic_version_indicator)?.apply { tint(context.colorAttr(R.attr.colorSecondary)) }
             setCompoundDrawablesWithIntrinsicBounds(indicator, null, null, null)
-            onClick { startActivity(Intent(Intent.ACTION_VIEW, Constants.FOUR_PDA_THEME_URL.toUri())) }
+            onClick { startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri())) }
         }
     }
 
