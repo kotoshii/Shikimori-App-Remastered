@@ -343,6 +343,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
                     else withFormat(VideoFormat.MP4)
                 }
                 .withVideoUrl(it.url)
+                .withAudioUrl(it.audioUrl)
                 .withSubtitles(subtitles, Format.createTextSampleFormat(null, MimeTypes.TEXT_SSA, Format.NO_VALUE, null))
                 .get()
 
