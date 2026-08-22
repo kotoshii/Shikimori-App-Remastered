@@ -48,6 +48,7 @@ class SeriesPresenter @Inject constructor(
     private val items = mutableListOf<TranslationViewModel>()
     private lateinit var selectedVideo: TranslationVideo
     private var selectedDownloadUrl: String? = null
+    private var selectedDownloadAudioUrl: String? = null
     private var selectedDownloadVideo: Video? = null
     private var selectedPlayer: PlayerType? = null
 
@@ -366,6 +367,7 @@ class SeriesPresenter @Inject constructor(
         selectedDownloadUrl = if (video.hosting is VideoHosting.KODIK) {
             url.replaceAfterLast("mp4", "")
         } else url
+        selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
         selectedDownloadVideo = video
         viewState.checkPermissions()
     }
@@ -373,13 +375,13 @@ class SeriesPresenter @Inject constructor(
     fun onStoragePermissionsAccepted() {
         val downloadPath = settingsSource.downloadFolder
 
-        if (downloadPath.isNotEmpty()) downloadVideo(selectedDownloadUrl, selectedDownloadVideo)
+        if (downloadPath.isNotEmpty()) downloadVideo(selectedDownloadUrl, selectedDownloadAudioUrl, selectedDownloadVideo)
         else viewState.showFolderChooserDialog()
     }
 
-    private fun downloadVideo(url: String?, video: Video?) {
+    private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
         logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DOWNLOAD)
-        val data = DownloadVideoData(navigationData.animeId, navigationData.name, episode!!, url, Utils.getRequestHeadersForHosting(video))
+        val data = DownloadVideoData(navigationData.animeId, navigationData.name, episode!!, url, audioUrl, Utils.getRequestHeadersForHosting(video))
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)
                 .addToDisposables()
