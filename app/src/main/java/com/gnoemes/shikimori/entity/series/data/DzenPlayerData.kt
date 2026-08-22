@@ -1,17 +1,27 @@
 package com.gnoemes.shikimori.entity.series.data
 
+import com.google.gson.annotations.SerializedName
+
+/**
+ * Shape of the `var _params=({...})` block on a dzen embed page.
+ */
 data class DzenPlayerData(
-    val data: Data
+        @SerializedName("ssrData") val ssrData: SsrData?
 ) {
-    data class Data(
-        val content: Content
+    data class SsrData(
+            @SerializedName("exportResponse") val exportResponse: ExportResponse?
     ) {
-        data class Content(
-            val streams: List<Stream>
+        data class ExportResponse(
+                @SerializedName("content") val content: Content?
         ) {
-            data class Stream(
-                val url: String
-            )
+            data class Content(
+                    @SerializedName("streams") val streams: List<Stream>?
+            ) {
+                data class Stream(
+                        @SerializedName("url") val url: String?,
+                        @SerializedName("type") val type: String?
+                )
+            }
         }
     }
 }

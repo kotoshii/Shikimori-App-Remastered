@@ -74,6 +74,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     lateinit var settingsSource: PlayerSettingsSource
 
     companion object {
+        private const val DEFAULT_USER_AGENT = "sap"
         const val CONTROLLER_HIDE_DELAY = 3500L
         const val UNLOCK_HIDE_DELAY = 2000L
         const val FORWARD_REWIND_HIDE_DELAY = 750L
@@ -333,7 +334,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
     override fun playVideo(it: Track, subtitles: String?, needReset: Boolean, headers: Map<String, String>) {
         Log.i("PLAYER", "loading: ${it.url}")
-        val factory = DefaultHttpDataSourceFactory("sap", DefaultBandwidthMeter(), Constants.LONG_TIMEOUT * 1000, Constants.LONG_TIMEOUT * 1000, true)
+        //some hostings sign their links for a specific user agent, so it has to win over the default
+        val userAgent = headers["User-Agent"] ?: DEFAULT_USER_AGENT
+        val factory = DefaultHttpDataSourceFactory(userAgent, DefaultBandwidthMeter(), Constants.LONG_TIMEOUT * 1000, Constants.LONG_TIMEOUT * 1000, true)
         factory.defaultRequestProperties.set(headers)
 
         val source = MediaSourceHelper
