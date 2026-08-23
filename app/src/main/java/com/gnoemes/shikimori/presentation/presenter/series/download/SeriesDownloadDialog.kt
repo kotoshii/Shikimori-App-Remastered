@@ -44,6 +44,12 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
             title = arguments?.getString(TITLE_KEY)
         }
 
+        //these sources hand out picture and sound separately, the file only appears once both
+        //downloads finish and are joined, so say so before a quality is picked
+        val needsMerge = items.any { item -> item.video.tracks.find { it.url == item.url }?.audioUrl != null }
+        mergeNotice.visibility = if (needsMerge) View.VISIBLE else View.GONE
+        if (needsMerge) mergeNotice.setText(R.string.download_will_be_merged)
+
         val seriesAdapter = SeriesDownloadAdapter(items, (parentFragment as? SeriesDownloadCallback)) { dismiss() }
 
         with(recyclerView) {

@@ -9,7 +9,9 @@ data class CdaPlayerData(
             @SerializedName("id") val id: String,
             @SerializedName("qualities") val qualities: Qualities,
             @SerializedName("ts") val ts: Long,
-            @SerializedName("hash2") val hash2: String
+            @SerializedName("hash2") val hash2: String,
+            //cda stopped filling "file" and now ships hls/dash manifests instead
+            @SerializedName("manifest") val manifest: String? = null
     ) {
         data class Qualities (
                 @SerializedName("360p")

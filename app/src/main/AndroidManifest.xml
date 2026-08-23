@@ -87,6 +87,17 @@
             </intent-filter>
         </service>
 
+        <receiver android:name="com.gnoemes.shikimori.data.local.services.impl.DownloadCompleteReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="com.gnoemes.shikimori.data.local.services.impl.VideoMuxService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

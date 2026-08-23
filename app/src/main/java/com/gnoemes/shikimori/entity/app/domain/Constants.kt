@@ -29,6 +29,10 @@ object Constants {
 
     const val TASK_LONG_DELAY = 3500L
 
+    //dzen signs its stream links for the user agent that fetched the player page, so playback has
+    //to send the very same one. Keep in sync with VideoApi.getPlayerHtml
+    const val PLAYER_USER_AGENT = "Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36"
+
     const val GITHUB_API_URL = "https://api.github.com/"
 
     const val GITHUB_RELEASES_URL = "https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"

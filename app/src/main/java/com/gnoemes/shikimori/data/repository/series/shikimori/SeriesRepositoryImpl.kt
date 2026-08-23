@@ -162,19 +162,17 @@ class SeriesRepositoryImpl @Inject constructor(
     private fun getDzenVideoFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(dzenParser.video(video, emptyList()))
             else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { dzenParser.getMasterPlaylistUrl(it.string()) }
-                    .flatMap {
-                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
-                    }
-                    .map { dzenParser.tracks(it.first.string(), it.second) }
+                    .map { dzenParser.tracks(it.string()) }
                     .map { dzenParser.video(video, it) }
 
     private fun getCdaFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(cdaParser.video(video, emptyList()))
             else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { cdaParser.parsePlayerData(it.string()) }
-                    .flatMap { cdaParser.getVideoLinks(it) }
-                    .map { cdaParser.tracks(it) }
+                    .map { cdaParser.getManifestUrl(it.string()) }
+                    .flatMap {
+                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
+                    }
+                    .map { cdaParser.tracks(it.first.string(), it.second) }
                     .map { cdaParser.video(video, it) }
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =

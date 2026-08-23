@@ -28,6 +28,7 @@ public  class MediaSourceHelper {
     private DataSource.Factory factory;
     private VideoFormat format;
     private MediaSource videoSource;
+    private MediaSource audioSource;
     private MediaSource subtitlesSource;
     private List<MediaSource> videoSources;
 
@@ -65,6 +66,18 @@ public  class MediaSourceHelper {
         return this;
     }
 
+    /**
+     * Some hostings ship video and sound as separate files, so the two are merged back together.
+     * Always an mp4, whatever container the video itself uses.
+     */
+    public MediaSourceHelper withAudioUrl(@Nullable String url) {
+        if (TextUtils.isEmpty(url)) return this;
+
+        audioSource = new ExtractorMediaSource.Factory(factory)
+                .createMediaSource(Uri.parse(url));
+        return this;
+    }
+
     public MediaSourceHelper withSubtitles(@Nullable String url, Format format) {
         if (url == null) return this;
 
@@ -74,8 +87,13 @@ public  class MediaSourceHelper {
     }
 
     public MediaSource get() {
-        if (subtitlesSource == null) return videoSource;
-        else return new MergingMediaSource(videoSource, subtitlesSource);
+        List<MediaSource> sources = new ArrayList<>();
+        sources.add(videoSource);
+        if (audioSource != null) sources.add(audioSource);
+        if (subtitlesSource != null) sources.add(subtitlesSource);
+
+        if (sources.size() == 1) return videoSource;
+        else return new MergingMediaSource(sources.toArray(new MediaSource[sources.size()]));
     }
 
     private AdsMediaSource.MediaSourceFactory getMediaSourceFactory() {

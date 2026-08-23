@@ -8,7 +8,5 @@ interface DzenParser {
 
     fun video(video: TranslationVideo, tracks: List<Track>): Video
 
-    fun tracks(m3uContent: String?, masterPlaylistUrl: String?): List<Track>
-
-    fun getMasterPlaylistUrl(html: String?): String?
+    fun tracks(html: String?): List<Track>
 }

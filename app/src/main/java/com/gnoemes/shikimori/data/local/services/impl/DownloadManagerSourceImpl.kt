@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.services.DownloadSource
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
+import com.gnoemes.shikimori.entity.download.PendingMux
 import com.gnoemes.shikimori.utils.downloadManager
 import com.gnoemes.shikimori.utils.toUri
 import io.reactivex.Completable
@@ -23,21 +24,38 @@ class DownloadManagerSourceImpl @Inject constructor(
         else Completable.fromAction {
             val title = String.format(context.getString(R.string.episode_number), data.episodeIndex).plus(" ${data.animeName}")
 
-            val file = File(settingsSource.downloadFolder)
-            val path = Uri.withAppendedPath(Uri.fromFile(file), "anime/${data.animeName}/$title.mp4")
+            val folder = File(settingsSource.downloadFolder)
+            val manager = context.downloadManager() ?: return@fromAction
+            val audioLink = data.audioLink
 
-            val manager = context.downloadManager()
-            val request = DownloadManager.Request(data.link.toUri())
+            if (audioLink.isNullOrBlank()) {
+                manager.enqueue(request(data, title, "$title.mp4", data.link, folder))
+                return@fromAction
+            }
+
+            //hostings that keep the sound in its own file are downloaded as two parts under
+            //temporary names, VideoMuxService joins them once both are on disk
+            val videoId = manager.enqueue(request(data, title, "$title $VIDEO_SUFFIX.mp4", data.link, folder))
+            val audioId = manager.enqueue(request(data, "$title $AUDIO_SUFFIX", "$title $AUDIO_SUFFIX.m4a", audioLink, folder))
+
+            val output = File(folder, "anime/${data.animeName}/$title.mp4").absolutePath
+            PendingMuxStore(context).add(PendingMux(videoId, audioId, output))
+        }
+    }
+
+    private fun request(data: DownloadVideoData, title: String, fileName: String, link: String, folder: File) =
+            DownloadManager.Request(link.toUri())
                     .setTitle(title)
                     .setDescription(context.getString(R.string.app_name))
                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                     .apply {
                         allowScanningByMediaScanner()
-                        setDestinationUri(path)
+                        setDestinationUri(Uri.withAppendedPath(Uri.fromFile(folder), "anime/${data.animeName}/$fileName"))
                         data.requestHeaders.entries.forEach { addRequestHeader(it.key, it.value) }
                     }
 
-            manager?.enqueue(request)
-        }
+    companion object {
+        private const val VIDEO_SUFFIX = "(video)"
+        private const val AUDIO_SUFFIX = "(audio)"
     }
 }

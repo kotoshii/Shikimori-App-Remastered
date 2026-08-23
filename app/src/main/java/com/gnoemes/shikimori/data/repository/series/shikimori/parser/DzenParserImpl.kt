@@ -1,15 +1,11 @@
 package com.gnoemes.shikimori.data.repository.series.shikimori.parser
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.gnoemes.shikimori.entity.series.data.DzenPlayerData
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import io.lindstrom.m3u8.parser.MasterPlaylistParser
-import org.jsoup.Jsoup
 import javax.inject.Inject
 
 class DzenParserImpl @Inject constructor() : DzenParser {
@@ -17,42 +13,95 @@ class DzenParserImpl @Inject constructor() : DzenParser {
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
             Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    override fun tracks(m3uContent: String?, masterPlaylistUrl: String?): List<Track> {
-        if (m3uContent == null || masterPlaylistUrl == null) return emptyList()
+    /**
+     * The page used to expose `Dzen.player.init(...)` with a `master.m3u8` stream, both are gone.
+     * Streams now sit in a `var _params=({...})` block, and the progressive ones are plain mp4 files
+     * with the sound already inside, one per quality.
+     *
+     * The links are signed for the address and the user agent that asked for the page, so playback
+     * has to reuse the same one, see `Utils.getRequestHeadersForHosting`.
+     */
+    override fun tracks(html: String?): List<Track> {
+        if (html.isNullOrEmpty()) return emptyList()
 
-        val parser = MasterPlaylistParser()
-        val playlist = parser.readPlaylist(m3uContent.replace("\r", ""))
+        val params = extractParams(html) ?: return emptyList()
 
-        return playlist.variants()
-                .filter { !it.uri().contains("redundant") }
-                .map {
-                    val quality = it.resolution().get().height().toString()
-                    val url = masterPlaylistUrl.split("/").dropLast(1).plusElement(it.uri()).joinToString("/")
+        val streams = try {
+            Gson().fromJson(params, DzenPlayerData::class.java)?.ssrData?.exportResponse?.content?.streams
+        } catch (e: JsonSyntaxException) {
+            null
+        } ?: return emptyList()
+
+        return streams
+                .mapNotNull { stream ->
+                    val url = stream.url ?: return@mapNotNull null
+                    //hls and dash are adaptive playlists, the quality menu needs the plain files
+                    val quality = QUALITIES[stream.type] ?: return@mapNotNull null
 
                     Track(quality, url)
                 }
-                .sortedByDescending { it.quality.toInt() }
+                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
     }
 
-    override fun getMasterPlaylistUrl(html: String?): String? {
-        if (html.isNullOrEmpty()) return null
+    /**
+     * The page carries several `_params` blocks and only one of them holds the streams, so each is
+     * read in turn until the right one shows up.
+     */
+    private fun extractParams(html: String): String? {
+        var searchFrom = 0
 
-        val doc = Jsoup.parse(html)
-        val playerDataJson = doc
-                .select("body script")
-                .first()
-                ?.data()
-                ?.trim()
-                ?.replace("Dzen.player.init(", "")
-                ?.replace("\\);$".toRegex(), "")
-                ?: return null
+        while (true) {
+            val marker = html.indexOf(PARAMS_MARKER, searchFrom)
+            if (marker < 0) return null
 
-        return try {
-            val playerData = Gson().fromJson(playerDataJson, DzenPlayerData::class.java)
-            playerData.data.content.streams.find { it.url.contains("master.m3u8") }?.url
-        } catch (e: JsonSyntaxException) {
-            null
+            val objectStart = html.indexOf('{', marker)
+            if (objectStart < 0) return null
+
+            val json = readJsonObject(html, objectStart)
+            if (json != null && json.contains(SSR_DATA_MARKER)) return json
+
+            searchFrom = objectStart + 1
         }
+    }
+
+    /** Reads one balanced `{...}` starting at [start], ignoring braces inside strings. */
+    private fun readJsonObject(text: String, start: Int): String? {
+        var depth = 0
+        var inString = false
+        var escaped = false
+
+        for (i in start until text.length) {
+            val symbol = text[i]
+
+            when {
+                escaped -> escaped = false
+                inString && symbol == BACKSLASH -> escaped = true
+                symbol == '"' -> inString = !inString
+                inString -> Unit
+                symbol == '{' -> depth++
+                symbol == '}' -> {
+                    depth--
+                    if (depth == 0) return text.substring(start, i + 1)
+                }
+            }
+        }
+
+        return null
+    }
+
+    companion object {
+        private const val PARAMS_MARKER = "_params"
+        private const val SSR_DATA_MARKER = "\"ssrData\""
+        private const val BACKSLASH = '\\'
+
+        //dzen names its qualities the ok.ru way instead of by height
+        private val QUALITIES = mapOf(
+                "tiny" to "144",
+                "lowest" to "240",
+                "low" to "360",
+                "medium" to "480",
+                "high" to "720",
+                "fullhd" to "1080"
+        )
     }
 }

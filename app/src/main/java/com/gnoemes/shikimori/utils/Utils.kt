@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.utils
 
 import android.graphics.Bitmap
+import com.gnoemes.shikimori.entity.app.domain.Constants
 import android.webkit.CookieManager
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
@@ -39,6 +40,7 @@ object Utils {
         is VideoHosting.SIBNET -> mapOf(Pair("Referer", video.player))
         is VideoHosting.MAILRU -> mapOf(Pair("Cookie", CookieManager.getInstance().getCookie(".my.mail.ru")))
         is VideoHosting.NUUM -> mapOf(Pair("Referer", "https://nuum.ru/"))
+        is VideoHosting.DZEN -> mapOf(Pair("User-Agent", Constants.PLAYER_USER_AGENT))
         else -> emptyMap()
     }
 

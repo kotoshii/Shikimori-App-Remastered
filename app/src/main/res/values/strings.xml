@@ -430,6 +430,7 @@
     <string name="favorites_mangakas">Мангаки</string>
     <string name="favorites_other_people">Прочие люди</string>
 
+    <string name="download_will_be_merged">Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически. Дождитесь окончания обеих загрузок.</string>
     <string name="download_new_folder">Новая папка</string>
     <string name="download_new_folder_hint">Введите название новой папки</string>
     <string name="download_folder_empty">Папка пуста</string>
