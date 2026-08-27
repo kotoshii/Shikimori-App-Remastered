@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.data.network.impl
 
+import android.net.Uri
+import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.ShikicinemaVideoApi
 import com.gnoemes.shikimori.data.network.ShimoriVideoApi
@@ -7,6 +9,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.data.EpisodeResponse
 import com.gnoemes.shikimori.entity.series.data.TranslationResponse
 import com.gnoemes.shikimori.entity.series.data.VideoResponse
+import com.gnoemes.shikimori.entity.series.data.kodik.KodikSearchResponse
 import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaEpisodesResponse
 import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaTranslationResponse
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
@@ -21,8 +24,13 @@ class ShimoriAnimeSourceImpl @Inject constructor(
         private val shikicinemaVideoApi: ShikicinemaVideoApi
 ) : AnimeSource {
 
+    /**
+     * Kodik knows how many episodes it has - every search result carries the number for its own
+     * translation, so the list is as long as the most complete translation.
+     */
     override fun getEpisodes(id: Long, name: String): Single<List<EpisodeResponse>> {
-        return shimoriApi.getEpisodes(id, name)
+        return searchKodik(id)
+                .map { results -> results.map { it.episodes }.max() ?: 0 }
                 .map { episodes ->
                     (0..episodes).map {
                         EpisodeResponse(
@@ -37,15 +45,32 @@ class ShimoriAnimeSourceImpl @Inject constructor(
                 }
     }
 
+    /**
+     * One kodik search result is one translation of the whole title, so an episode's translations
+     * are the results that actually carry a link for that episode.
+     */
     override fun getTranslations(animeId: Long, name: String, episodeId: Long, type: TranslationType): Single<List<TranslationResponse>> {
-        val shimoriType = getShimoriType(type)
+        return searchKodik(animeId)
+                .map { results ->
+                    results.asSequence()
+                            .filter { it.translation?.type == type }
+                            .mapNotNull { result ->
+                                val url = result.episodeUrl(episodeId)?.let(::absoluteUrl)
+                                        ?: return@mapNotNull null
 
-        return shimoriApi.getTranslations(animeId, name, episodeId.toInt(), 1, shimoriType)
-                .map { list ->
-                    list.map { response ->
-                        val id = Random.nextLong()
-                        TranslationResponse(id, response)
-                    }
+                                TranslationResponse(
+                                        Random.nextLong(),
+                                        animeId,
+                                        episodeId.toInt(),
+                                        type,
+                                        result.quality,
+                                        Uri.parse(url).host,
+                                        result.translation?.title ?: "",
+                                        result.episodes,
+                                        url
+                                )
+                            }
+                            .toList()
                 }
     }
 
@@ -54,6 +79,13 @@ class ShimoriAnimeSourceImpl @Inject constructor(
 
         return shimoriApi.getVideo(animeId, episodeId, shimoriType, author, hosting, 1, videoId.toLongOrNull(), url, null)
     }
+
+    private fun searchKodik(animeId: Long): Single<List<KodikSearchResponse.Result>> =
+            api.getKodikSearch(BuildConfig.KodikToken, animeId, true, true)
+                    .map { it.results ?: emptyList() }
+
+    //kodik answers with scheme relative links
+    private fun absoluteUrl(url: String): String = if (url.startsWith("http")) url else "https:$url"
 
     override fun getEpisodesAlternative(id: Long, name: String): Single<List<EpisodeResponse>> =
             shimoriApi.getSeries(id, name)

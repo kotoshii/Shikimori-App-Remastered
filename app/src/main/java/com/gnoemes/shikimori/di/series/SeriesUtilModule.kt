@@ -79,6 +79,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindKodikParser(parser: KodikParserImpl): KodikParser
+
+    @Binds
+    @Reusable
     fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

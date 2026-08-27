@@ -10,12 +10,15 @@ import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import okhttp3.ResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 import javax.inject.Inject
 
 class SeriesRepositoryImpl @Inject constructor(
@@ -39,7 +42,8 @@ class SeriesRepositoryImpl @Inject constructor(
         private val allVideoParser: AllVideoParser,
         private val animeJoyParser: AnimeJoyParser,
         private val dzenParser: DzenParser,
-        private val cdaParser: CdaParser
+        private val cdaParser: CdaParser,
+        private val kodikParser: KodikParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -85,6 +89,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
                 is VideoHosting.DZEN -> getDzenVideoFiles(payload)
                 is VideoHosting.CDA -> getCdaFiles(payload)
+                is VideoHosting.KODIK -> getKodikFiles(payload)
                 else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
                     else source.getVideo(
                             payload.animeId,
@@ -164,6 +169,86 @@ class SeriesRepositoryImpl @Inject constructor(
             else api.getPlayerHtml(video.webPlayerUrl)
                     .map { dzenParser.tracks(it.string()) }
                     .map { dzenParser.video(video, it) }
+
+    private fun getKodikFiles(video: TranslationVideo): Single<Video> {
+        val playerUrl = video.webPlayerUrl
+                ?: return Single.just(kodikParser.video(video, emptyList()))
+
+        return api.getPlayerHtml(playerUrl)
+                .flatMap { getKodikLinks(it.string(), playerUrl) }
+                .map { kodikParser.tracks(it) }
+                .map { kodikParser.video(video, it) }
+    }
+
+    /**
+     * Kodik keeps the path it serves links from base64'd inside its player script, so that it can
+     * be moved. The known one is tried first and the script is only read when the answer says the
+     * path is wrong, because reading it means downloading the player bundle (47 KB gzipped) that
+     * would otherwise be paid for on every playback.
+     */
+    private fun getKodikLinks(html: String, playerUrl: String): Single<KodikLinksResponse> {
+        val params = kodikParser.linkRequestParams(html)
+        val url = kodikParser.linksUrl(playerUrl)
+
+        if (params.isEmpty() || url == null) {
+            return Single.error(IllegalStateException("kodik player page holds no request params"))
+        }
+
+        return api.getKodikLinks(url, params)
+                .flatMap { response ->
+                    when {
+                        hasLinks(response) -> Single.just(response.body()!!)
+                        looksLikeMovedEndpoint(response) -> retryFromPlayerScript(html, playerUrl, url, params, response)
+                        else -> Single.error<KodikLinksResponse>(kodikLinksError(url, response))
+                    }
+                }
+    }
+
+    private fun hasLinks(response: Response<KodikLinksResponse>): Boolean =
+            response.isSuccessful && response.body()?.links?.isNotEmpty() == true
+
+    /**
+     * A path that is simply gone answers **404**. A path that was retired but left routed answers
+     * **200 with an empty body** - which is exactly what the previous endpoint, `/tru`, still does.
+     * Both mean the same thing, so both send us to the player script to find where it went.
+     *
+     * Everything else - a timeout, a dropped connection, a 5xx - is deliberately *not* treated this
+     * way. Re-reading the script would not help, and the real error stays intact.
+     */
+    private fun looksLikeMovedEndpoint(response: Response<KodikLinksResponse>): Boolean =
+            response.code() == 404 || response.isSuccessful
+
+    private fun retryFromPlayerScript(
+            html: String,
+            playerUrl: String,
+            triedUrl: String,
+            params: Map<String, String>,
+            failed: Response<KodikLinksResponse>
+    ): Single<KodikLinksResponse> {
+        val scriptUrl = kodikParser.playerScriptUrl(html, playerUrl)
+                ?: return Single.error(kodikLinksError(triedUrl, failed))
+
+        return api.getTextResponse(scriptUrl)
+                .flatMap { script ->
+                    val movedUrl = kodikParser.rememberLinksUrl(script.string(), playerUrl)
+
+                    //the script naming the path we just tried means the endpoint was never the
+                    //problem - a 404 also comes back when the posted params are not accepted
+                    if (movedUrl == null || movedUrl == triedUrl) {
+                        Single.error<Response<KodikLinksResponse>>(kodikLinksError(triedUrl, failed))
+                    } else {
+                        api.getKodikLinks(movedUrl, params)
+                    }
+                }
+                .flatMap { retried ->
+                    if (hasLinks(retried)) Single.just(retried.body()!!)
+                    else Single.error<KodikLinksResponse>(kodikLinksError(triedUrl, retried))
+                }
+    }
+
+    private fun kodikLinksError(url: String, response: Response<KodikLinksResponse>): Throwable =
+            if (response.isSuccessful) IllegalStateException("kodik returned no links from $url")
+            else HttpException(response)
 
     private fun getCdaFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(cdaParser.video(video, emptyList()))

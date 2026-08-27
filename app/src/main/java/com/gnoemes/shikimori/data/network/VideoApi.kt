@@ -1,6 +1,8 @@
 package com.gnoemes.shikimori.data.network
 
 import com.gnoemes.shikimori.entity.series.data.*
+import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
+import com.gnoemes.shikimori.entity.series.data.kodik.KodikSearchResponse
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -55,6 +57,21 @@ interface VideoApi {
 
     @POST("https://www.cda.pl/")
     fun cdaApiRequest(@Body request : CdaApiRequest): Single<Response<CdaApiResponse>>
+
+    @GET("https://kodik-api.com/search")
+    fun getKodikSearch(@Query("token") token: String,
+                       @Query("shikimori_id") shikimoriId: Long,
+                       @Query("with_seasons") withSeasons: Boolean,
+                       @Query("with_episodes") withEpisodes: Boolean
+    ): Single<KodikSearchResponse>
+
+    /**
+     * The url is not fixed - kodik keeps the path base64'd in its player script so it can move it,
+     * see KodikParser.
+     */
+    @FormUrlEncoded
+    @POST
+    fun getKodikLinks(@Url url: String, @FieldMap params: Map<String, String>): Single<Response<KodikLinksResponse>>
 
     @GET("/api/anime/alternative/translation/{id}")
     fun getVideoAlternative(

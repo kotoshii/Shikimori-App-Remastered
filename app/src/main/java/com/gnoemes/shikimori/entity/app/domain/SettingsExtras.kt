@@ -56,6 +56,9 @@ object SettingsExtras {
     const val SHIMORI_URL = "SHIMORI_URL"
     const val SHIKICINEMA_URL = "SHIKICINEMA_URL"
 
+    //where kodik currently serves stream links from, see KodikParser
+    const val KODIK_LINKS_PATH = "KODIK_LINKS_PATH"
+
     const val CHRONOLOGY_TYPE = "CHRONOLOGY_TYPE"
     const val SORT_KEY_PART = "rate_sort"
     const val ORDER_KEY_PART = "rate_order"

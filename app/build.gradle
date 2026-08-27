@@ -66,6 +66,7 @@ android {
         it.buildConfigField 'String', 'ShikimoriBaseUrl', ShikimoriBaseUrl
         it.buildConfigField 'String', 'VideoBaseUrl', VideoBaseUrl
         it.buildConfigField 'String', 'VkRandomToken', VkRandomToken
+        it.buildConfigField 'String', 'KodikToken', KodikToken
     }
 
     compileOptions {
