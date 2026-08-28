@@ -43,7 +43,8 @@ class SeriesRepositoryImpl @Inject constructor(
         private val animeJoyParser: AnimeJoyParser,
         private val dzenParser: DzenParser,
         private val cdaParser: CdaParser,
-        private val kodikParser: KodikParser
+        private val kodikParser: KodikParser,
+        private val anime365Parser: Anime365Parser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -90,6 +91,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.DZEN -> getDzenVideoFiles(payload)
                 is VideoHosting.CDA -> getCdaFiles(payload)
                 is VideoHosting.KODIK -> getKodikFiles(payload)
+                is VideoHosting.SMOTRET_ANIME -> getAnime365Files(payload)
                 else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
                     else source.getVideo(
                             payload.animeId,
@@ -169,6 +171,22 @@ class SeriesRepositoryImpl @Inject constructor(
             else api.getPlayerHtml(video.webPlayerUrl)
                     .map { dzenParser.tracks(it.string()) }
                     .map { dzenParser.video(video, it) }
+
+    /**
+     * Anime365 resolves through a single authenticated call, so no backend is involved. Without a
+     * token, or without a paid subscription, the api answers with an error object and this produces
+     * a Video with no tracks - the web player stays available and is where such a user belongs.
+     */
+    private fun getAnime365Files(video: TranslationVideo): Single<Video> {
+        val playerUrl = video.webPlayerUrl
+                ?: return Single.just(anime365Parser.video(video, emptyList(), null))
+
+        val apiUrl = anime365Parser.apiUrl(playerUrl, tokenSource.getToken())
+                ?: return Single.just(anime365Parser.video(video, emptyList(), null))
+
+        return api.getAnime365Video(apiUrl)
+                .map { anime365Parser.video(video, anime365Parser.tracks(it), anime365Parser.subtitles(it, playerUrl)) }
+    }
 
     private fun getKodikFiles(video: TranslationVideo): Single<Video> {
         val playerUrl = video.webPlayerUrl

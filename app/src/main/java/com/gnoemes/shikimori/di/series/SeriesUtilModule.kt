@@ -83,6 +83,10 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindAnime365Parser(parser: Anime365ParserImpl): Anime365Parser
+
+    @Binds
+    @Reusable
     fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.data.network
 
 import com.gnoemes.shikimori.entity.series.data.*
+import com.gnoemes.shikimori.entity.series.data.anime365.Anime365VideoResponse
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikSearchResponse
 import io.reactivex.Single
@@ -72,6 +73,13 @@ interface VideoApi {
     @FormUrlEncoded
     @POST
     fun getKodikLinks(@Url url: String, @FieldMap params: Map<String, String>): Single<Response<KodikLinksResponse>>
+
+    /**
+     * The full url is built by Anime365Parser - anime365 serves on four domains and the access
+     * token goes in the query string.
+     */
+    @GET
+    fun getAnime365Video(@Url url: String): Single<Anime365VideoResponse>
 
     @GET("/api/anime/alternative/translation/{id}")
     fun getVideoAlternative(
