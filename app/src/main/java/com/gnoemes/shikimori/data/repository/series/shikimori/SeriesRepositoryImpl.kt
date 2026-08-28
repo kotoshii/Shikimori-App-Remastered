@@ -96,6 +96,9 @@ class SeriesRepositoryImpl @Inject constructor(
                 else -> Single.just(Video(payload.animeId, payload.episodeIndex.toLong(),
                         payload.webPlayerUrl.orEmpty(), payload.videoHosting, emptyList(), null, null))
             }
+                    //the parsers only know about tracks, so the translation's own details are
+                    //attached here rather than in each of them
+                    .map { it.copy(author = payload.author, translationType = payload.type) }
 
     private fun getVkFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(vkParser.video(video, emptyList()))

@@ -364,9 +364,11 @@ class SeriesPresenter @Inject constructor(
     }
 
     fun onTrackForDownloadSelected(url: String, video: Video) {
-        selectedDownloadUrl = if (video.hosting is VideoHosting.KODIK) {
-            url.replaceAfterLast("mp4", "")
-        } else url
+        //Kodik urls used to be truncated at ".mp4" here to turn the hls manifest into a direct file,
+        //because DownloadManager could only fetch one url. That file stopped existing - the shortened
+        //url answers 500 - and VideoDownloadService walks the playlist itself now, so the url is
+        //passed through untouched.
+        selectedDownloadUrl = url
         selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
         selectedDownloadVideo = video
         viewState.checkPermissions()
@@ -381,7 +383,21 @@ class SeriesPresenter @Inject constructor(
 
     private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
         logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DOWNLOAD)
-        val data = DownloadVideoData(navigationData.animeId, navigationData.name, episode!!, url, audioUrl, Utils.getRequestHeadersForHosting(video))
+        val data = DownloadVideoData(
+                navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
+                Utils.getRequestHeadersForHosting(video),
+                author = video?.author.orEmpty(),
+                //the chosen track carries the quality; "unknown" is what parsers use when they
+                //cannot tell, and the ui hides it the same way
+                quality = video?.tracks?.find { it.url == url }?.quality
+                        ?.takeIf { it.isNotBlank() && it != "unknown" }
+                        ?.let { "${it}p" }
+                        .orEmpty(),
+                kind = video?.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+                //synonymType, not type: it is uniformly domain-shaped across hostings, while type
+                //mixes short labels ("vk", "dzen") with full domains ("kodikplayer.com", "ebd.cda.pl")
+                hosting = video?.hosting?.synonymType.orEmpty()
+        )
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)
                 .addToDisposables()

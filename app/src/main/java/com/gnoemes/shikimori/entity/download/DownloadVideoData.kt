@@ -1,5 +1,9 @@
 package com.gnoemes.shikimori.entity.download
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
 data class DownloadVideoData(
         val animeId : Long,
         val animeName : String,
@@ -7,5 +11,10 @@ data class DownloadVideoData(
         val link : String?,
         //set when the hosting serves sound separately, downloaded alongside the video
         val audioLink : String? = null,
-        val requestHeaders : Map<String, String>
-)
+        val requestHeaders : Map<String, String>,
+        //without these two downloads of the same episode from different sources overwrite each other
+        val author : String = "",
+        val quality : String = "",
+        val kind : String = "",
+        val hosting : String = ""
+) : Parcelable
