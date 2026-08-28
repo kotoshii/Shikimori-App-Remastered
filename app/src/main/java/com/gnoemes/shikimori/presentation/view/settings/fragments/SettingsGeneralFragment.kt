@@ -1,12 +1,14 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
 import android.Manifest
+import android.content.Context
 import android.os.Bundle
 import android.os.Environment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.folderChooser
 import com.afollestad.materialdialogs.list.listItems
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
 import com.gnoemes.shikimori.utils.preference
@@ -36,6 +38,10 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
             setOnPreferenceClickListener { showRateSwipeActionDialog(key); true }
         }
 
+        //without an account the switch does nothing - SettingsSource.allowR18Content reports false
+        //while signed out no matter what is stored - so offering it would be a lie
+        preference(R.string.settings_content_allow_r18_key)?.isVisible = isAuthorized()
+
         preference(SettingsExtras.BACKUP_SETTINGS)?.apply {
             setOnPreferenceClickListener {
                 checkStoragePermissions {
@@ -44,6 +50,13 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
                 true
             }
         }
+    }
+
+    private fun isAuthorized(): Boolean {
+        val id = context?.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
+                ?.getLong(SettingsExtras.USER_ID, Constants.NO_ID)
+
+        return id != null && id != Constants.NO_ID
     }
 
     private fun getRateActionSummary(action: String): String {
