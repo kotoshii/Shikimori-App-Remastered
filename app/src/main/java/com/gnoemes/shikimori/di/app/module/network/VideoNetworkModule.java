@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.gnoemes.shikimori.BuildConfig;
 import com.gnoemes.shikimori.di.app.annotations.ShikicinemaVideoApi;
-import com.gnoemes.shikimori.di.app.annotations.ShimoriVideoApi;
 import com.gnoemes.shikimori.di.app.annotations.VideoApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras;
@@ -53,37 +52,6 @@ public interface VideoNetworkModule {
     @VideoApi
     static Retrofit provideRetrofit(@VideoApi Retrofit.Builder builder) {
         return builder.baseUrl(BuildConfig.VideoBaseUrl).build();
-    }
-
-    @Provides
-    @Singleton
-    @ShimoriVideoApi
-    static OkHttpClient provideShimoriOkHttpClient(HttpLoggingInterceptor interceptor) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(interceptor);
-        return NetworkExtensionsKt.enableTLS12(builder)
-                .connectTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
-                .build();
-    }
-
-    @Provides
-    @Singleton
-    @ShimoriVideoApi
-    static Retrofit.Builder providePlashikiRetrofitBuilder(@ShimoriVideoApi OkHttpClient client) {
-        return new Retrofit.Builder()
-                .client(client)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(GsonConverterFactory.create());
-    }
-
-    @Provides
-    @Singleton
-    @ShimoriVideoApi
-    static Retrofit providePlashikiRetrofit(Context context,  @ShimoriVideoApi Retrofit.Builder builder) {
-        String url = PreferenceKt.getDefaultSharedPreferences(context).getString(SettingsExtras.SHIMORI_URL, Constants.SHIMORI_URL);
-        if (url == null) url = Constants.SHIMORI_URL;
-        return builder.baseUrl(url).build();
     }
 
     @Provides

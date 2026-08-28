@@ -4,11 +4,9 @@ import android.net.Uri
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.ShikicinemaVideoApi
-import com.gnoemes.shikimori.data.network.ShimoriVideoApi
 import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.data.EpisodeResponse
 import com.gnoemes.shikimori.entity.series.data.TranslationResponse
-import com.gnoemes.shikimori.entity.series.data.VideoResponse
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikSearchResponse
 import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaEpisodesResponse
 import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaTranslationResponse
@@ -20,7 +18,6 @@ import kotlin.random.Random
 
 class ShimoriAnimeSourceImpl @Inject constructor(
         private val api: VideoApi,
-        private val shimoriApi: ShimoriVideoApi,
         private val shikicinemaVideoApi: ShikicinemaVideoApi
 ) : AnimeSource {
 
@@ -74,59 +71,12 @@ class ShimoriAnimeSourceImpl @Inject constructor(
                 }
     }
 
-    override fun getVideo(animeId: Long, episodeId: Int, videoId: String, language: String, type: TranslationType, author: String, hosting: String, url: String?): Single<VideoResponse> {
-        val shimoriType = getShimoriType(type)
-
-        return shimoriApi.getVideo(animeId, episodeId, shimoriType, author, hosting, 1, videoId.toLongOrNull(), url, null)
-    }
-
     private fun searchKodik(animeId: Long): Single<List<KodikSearchResponse.Result>> =
             api.getKodikSearch(BuildConfig.KodikToken, animeId, true, true)
                     .map { it.results ?: emptyList() }
 
     //kodik answers with scheme relative links
     private fun absoluteUrl(url: String): String = if (url.startsWith("http")) url else "https:$url"
-
-    override fun getEpisodesAlternative(id: Long, name: String): Single<List<EpisodeResponse>> =
-            shimoriApi.getSeries(id, name)
-                    .map { response ->
-                        response.map {
-                            EpisodeResponse(
-                                    it.id,
-                                    it.index.toInt(),
-                                    it.animeId,
-                                    emptyList(),
-                                    "",
-                                    emptyList()
-                            )
-                        }
-                    }
-
-    override fun getTranslationsAlternative(animeId: Long, name: String, episodeId: Long, type: TranslationType): Single<List<TranslationResponse>> {
-        val shimoriType = getShimoriType(type)
-
-        return shimoriApi.getTranslations(animeId, name, episodeId.toInt(), 2, shimoriType)
-                .map { list ->
-                    list.map { response ->
-                        TranslationResponse(response.id, response)
-                    }
-                }
-    }
-
-
-    override fun getVideoAlternative(translationId: Long, animeId: Long, episodeIndex: Long, token: String?): Single<VideoResponse> {
-        return shimoriApi.getVideo(
-                animeId,
-                episodeIndex.toInt(),
-                "dub",
-                "none",
-                "none",
-                2,
-                translationId,
-                null,
-                accessToken = token
-        )
-    }
 
     override fun getEpisodesShikicinema(id: Long): Single<List<EpisodeResponse>> {
         return shikicinemaVideoApi.getEpisodes(id)
@@ -160,12 +110,6 @@ class ShimoriAnimeSourceImpl @Inject constructor(
                 }
     }
 
-
-    private fun getShimoriType(type: TranslationType) = when (type) {
-        TranslationType.VOICE_RU -> "dub"
-        TranslationType.SUB_RU -> "subs"
-        else -> "raw"
-    }
 
     private fun getShikicinemaType(type: TranslationType) = when (type) {
         TranslationType.VOICE_RU -> "озвучка"

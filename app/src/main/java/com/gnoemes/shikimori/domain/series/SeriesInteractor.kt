@@ -16,7 +16,7 @@ interface SeriesInteractor {
 
     fun saveTranslationSettings(settings : TranslationSetting) : Completable
 
-    fun getVideo(payload : TranslationVideo, alternative: Boolean) : Single<Video>
+    fun getVideo(payload : TranslationVideo) : Single<Video>
 
     fun getEpisodeChanges() : Observable<EpisodeChanges>
 

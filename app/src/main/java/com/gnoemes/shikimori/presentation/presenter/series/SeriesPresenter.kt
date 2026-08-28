@@ -250,7 +250,7 @@ class SeriesPresenter @Inject constructor(
         if (filteredItems.isEmpty()) return
 
         Observable.fromIterable(filteredItems)
-                .flatMapSingle { interactor.getVideo(it, it.videoHosting is VideoHosting.SMOTRET_ANIME) }
+                .flatMapSingle { interactor.getVideo(it) }
                 .flatMap { video ->
                     Observable.just(video)
                             .flatMapIterable { it.tracks }
@@ -357,7 +357,7 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
-        interactor.getVideo(payload, payload.videoHosting is VideoHosting.SMOTRET_ANIME)
+        interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
                 .subscribe(onSubscribe::invoke, this::processErrors)
                 .addToDisposables()

@@ -43,8 +43,6 @@ object Constants {
 
     const val APP_CLUB_URL = "https://shikimori.io/clubs/1609"
 
-    const val SHIMORI_URL = "https://shimori-us.herokuapp.com/"
-
     const val SHIKICINEMA_URL = "https://smarthard.net/"
 
 //    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"

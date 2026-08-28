@@ -34,8 +34,8 @@ class SeriesInteractorImpl @Inject constructor(
             progressRepository.saveTranslationSettings(settings)
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getVideo(payload: TranslationVideo, alternative: Boolean): Single<Video> =
-            repository.getVideo(payload, alternative)
+    override fun getVideo(payload: TranslationVideo): Single<Video> =
+            repository.getVideo(payload)
                     .applyErrorHandlerAndSchedulers()
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =

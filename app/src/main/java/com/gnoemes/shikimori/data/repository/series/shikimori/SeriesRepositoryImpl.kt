@@ -9,7 +9,6 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
-import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -29,7 +28,6 @@ class SeriesRepositoryImpl @Inject constructor(
         private val settingsSource: SettingsSource,
         private val converter: EpisodeResponseConverter,
         private val translationConverter: TranslationResponseConverter,
-        private val videoConverter: VideoResponseConverter,
         private val episodeSource: EpisodeDbSource,
         private val syncSource: AnimeRateSyncDbSource,
         private val vkParser: VkParser,
@@ -77,7 +75,7 @@ class SeriesRepositoryImpl @Inject constructor(
                         else translations
                     }
 
-    override fun getVideo(payload: TranslationVideo, alternative: Boolean): Single<Video> =
+    override fun getVideo(payload: TranslationVideo): Single<Video> =
             when (payload.videoHosting) {
                 is VideoHosting.VK -> getVkFiles(payload)
                 is VideoHosting.SOVET_ROMANTICA -> getSovetRomanticaFiles(payload)
@@ -92,18 +90,11 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.CDA -> getCdaFiles(payload)
                 is VideoHosting.KODIK -> getKodikFiles(payload)
                 is VideoHosting.SMOTRET_ANIME -> getAnime365Files(payload)
-                else -> (if (alternative) source.getVideoAlternative(payload.videoId, payload.animeId, payload.episodeIndex.toLong(), tokenSource.getToken())
-                    else source.getVideo(
-                            payload.animeId,
-                            payload.episodeIndex,
-                            if (payload.videoId == Constants.NO_ID) "" else payload.videoId.toString(),
-                            payload.language,
-                            payload.type,
-                            payload.authorSimple,
-                            payload.videoHosting.synonymType,
-                            payload.webPlayerUrl
-                    ))
-                        .map(videoConverter)
+                //a hosting with no parser cannot be resolved to tracks. SeriesPresenter sends those
+                //to the web player before ever calling this, so it is only a safety net - and it is
+                //what the old backend did for them anyway, handing the player url straight back.
+                else -> Single.just(Video(payload.animeId, payload.episodeIndex.toLong(),
+                        payload.webPlayerUrl.orEmpty(), payload.videoHosting, emptyList(), null, null))
             }
 
     private fun getVkFiles(video: TranslationVideo): Single<Video> =

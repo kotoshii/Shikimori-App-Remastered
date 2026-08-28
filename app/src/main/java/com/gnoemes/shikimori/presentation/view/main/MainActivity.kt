@@ -105,10 +105,8 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
                 .get()
                 .addOnSuccessListener {
                     val donationLink = it.documents.firstOrNull()?.data?.get("donationLink") as? String
-                    val shimoriUrl = it.documents.firstOrNull()?.data?.get("shimori_url") as? String ?: Constants.SHIMORI_URL
 
                     getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
-                    getDefaultSharedPreferences().putString(SettingsExtras.SHIMORI_URL, shimoriUrl)
                     getDefaultSharedPreferences().putString(SettingsExtras.SHIKICINEMA_URL, Constants.SHIKICINEMA_URL)
                 }.addOnFailureListener { Crashlytics.logException(it) }
     }
