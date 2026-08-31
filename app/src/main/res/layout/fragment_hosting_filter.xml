@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The list scrolls, the Add button does not - it stays pinned at the bottom. That is why this
+    screen is a plain Fragment rather than a PreferenceFragmentCompat, which owns its whole layout
+    and cannot hold a button below its list.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="@dimen/margin_normal"
+            android:paddingBottom="@dimen/margin_normal" />
+
+        <TextView
+            android:id="@+id/emptyView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/margin_biggest"
+            android:layout_marginEnd="@dimen/margin_biggest"
+            android:gravity="center"
+            android:text="@string/settings_hosting_filter_empty"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/addButton"
+        style="@style/OutlinedButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_big"
+        android:minHeight="48dp"
+        android:textSize="14sp"
+        android:paddingStart="@dimen/margin_big"
+        android:paddingLeft="@dimen/margin_big"
+        android:paddingEnd="@dimen/margin_big"
+        android:paddingRight="@dimen/margin_big"
+        android:text="@string/settings_hosting_filter_add" />
+
+</LinearLayout>

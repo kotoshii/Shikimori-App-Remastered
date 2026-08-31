@@ -67,6 +67,13 @@ object SettingsExtras {
     //where kodik currently serves stream links from, see KodikParser
     const val KODIK_LINKS_PATH = "KODIK_LINKS_PATH"
 
+    //every hosting the app has shown, so the filter screen can offer them; and the ones hidden
+    const val SEEN_HOSTINGS = "SEEN_HOSTINGS"
+    //added by hand rather than met while browsing - only these can be deleted, since one the app
+    //keeps meeting would simply come back
+    const val MANUAL_HOSTINGS = "MANUAL_HOSTINGS"
+    const val HIDDEN_HOSTINGS = "HIDDEN_HOSTINGS"
+
     const val CHRONOLOGY_TYPE = "CHRONOLOGY_TYPE"
     const val SORT_KEY_PART = "rate_sort"
     const val ORDER_KEY_PART = "rate_order"

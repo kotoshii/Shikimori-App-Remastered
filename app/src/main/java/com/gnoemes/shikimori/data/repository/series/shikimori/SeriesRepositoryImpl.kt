@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSo
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
+import com.gnoemes.shikimori.utils.HostingFilter
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
@@ -19,6 +20,8 @@ import okhttp3.ResponseBody
 import retrofit2.HttpException
 import retrofit2.Response
 import javax.inject.Inject
+
+private const val UNKNOWN_HOSTING = "unknown"
 
 class SeriesRepositoryImpl @Inject constructor(
         private val api: VideoApi,
@@ -74,6 +77,8 @@ class SeriesRepositoryImpl @Inject constructor(
                             translations.filterNot { translation -> translation.hosting is VideoHosting.SMOTRET_ANIME }
                         else translations
                     }
+                    .map(::rememberHostings)
+                    .map(::filterHiddenHostings)
 
     override fun getVideo(payload: TranslationVideo): Single<Video> =
             when (payload.videoHosting) {
@@ -271,6 +276,32 @@ class SeriesRepositoryImpl @Inject constructor(
                     }
                     .map { cdaParser.tracks(it.first.string(), it.second) }
                     .map { cdaParser.video(video, it) }
+
+    /**
+     * Remembers every hosting the user is shown, so the filter screen has real names to offer -
+     * a fixed list of the `VideoHosting` subclasses would miss most of them, since anything the app
+     * does not recognise arrives as `UNKNOWN` carrying the raw name.
+     *
+     * Runs on every translations load, so it only writes when something genuinely new turns up.
+     */
+    private fun rememberHostings(translations: List<Translation>): List<Translation> {
+        val seen = settingsSource.seenHostings
+        val found = translations
+                .map { it.hosting.synonymType }
+                //"unknown" is the placeholder for a translation with no hosting at all, not a name
+                .filter { it.isNotBlank() && it != UNKNOWN_HOSTING }
+
+        if (!seen.containsAll(found)) settingsSource.seenHostings = seen + found
+
+        return translations
+    }
+
+    private fun filterHiddenHostings(translations: List<Translation>): List<Translation> {
+        val hidden = settingsSource.hiddenHostings
+        if (hidden.isEmpty()) return translations
+
+        return translations.filterNot { HostingFilter.isHidden(it.hosting.synonymType, hidden) }
+    }
 
     override fun getTopic(animeId: Long, episodeId: Int): Single<Long> =
             topicApi.getAnimeEpisodeTopic(animeId, episodeId)

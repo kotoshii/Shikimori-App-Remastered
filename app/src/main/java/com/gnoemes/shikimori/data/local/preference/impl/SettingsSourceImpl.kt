@@ -13,6 +13,7 @@ import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.utils.putBoolean
 import com.gnoemes.shikimori.utils.putInt
 import com.gnoemes.shikimori.utils.putString
+import com.gnoemes.shikimori.utils.putStringSet
 import javax.inject.Inject
 
 class SettingsSourceImpl @Inject constructor(
@@ -104,6 +105,15 @@ class SettingsSourceImpl @Inject constructor(
             ChronologyType.values().find { it.ordinal == type } ?: ChronologyType.MAIN
         }
         set(value) = prefs.putInt(SettingsExtras.CHRONOLOGY_TYPE, value.ordinal)
+
+    override var seenHostings: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.SEEN_HOSTINGS, emptySet()).orEmpty()
+        //a copy, because SharedPreferences must not be handed a set it still holds a reference to
+        set(value) = prefs.putStringSet(SettingsExtras.SEEN_HOSTINGS, LinkedHashSet(value))
+
+    override var hiddenHostings: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.HIDDEN_HOSTINGS, emptySet()).orEmpty()
+        set(value) = prefs.putStringSet(SettingsExtras.HIDDEN_HOSTINGS, LinkedHashSet(value))
 
     override var hideAnime365: Boolean
         get() = prefs.getBoolean(SettingsExtras.HIDE_ANIME_365, false)

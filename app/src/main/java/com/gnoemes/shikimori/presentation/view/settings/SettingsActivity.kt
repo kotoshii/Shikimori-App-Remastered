@@ -31,6 +31,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
             addBackButton { onBackPressed() }
             inflateMenu(R.menu.menu_setting)
             menu.findItem(R.id.item_accept).isVisible = false
+            menu.findItem(R.id.item_hint).isVisible = false
             setOnMenuItemClickListener {
                 (supportFragmentManager.findFragmentById(R.id.fragment_container) as? Toolbar.OnMenuItemClickListener)?.onMenuItemClick(it)
                         ?: false
@@ -109,4 +110,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
 
     override fun showToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = true }
     override fun hideToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = false }
+
+    override fun showToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = true }
+    override fun hideToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = false }
 }

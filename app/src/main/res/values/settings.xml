@@ -178,4 +178,20 @@
 
     <string name="settings_hide_anime_365_key">HIDE_ANIME_365</string>
     <string name="settings_hide_anime_365_title">Скрыть Anime 365 из выдачи, если вход не выполнен</string>
+
+    <string name="settings_hosting_filter_key" translatable="false">HOSTING_FILTER</string>
+    <string name="settings_hosting_filter_title">Скрытые хостинги</string>
+    <string name="settings_hosting_filter_summary">Не показывать выбранные хостинги в списке переводов</string>
+    <string name="settings_hosting_filter_empty">Фильтров пока нет, ничего не скрыто</string>
+    <string name="settings_hosting_filter_add">Добавить</string>
+    <string name="settings_hosting_filter_dialog_title">Добавить хостинг</string>
+    <string name="settings_hosting_filter_input_placeholder">Например youtube.com</string>
+    <string name="settings_hosting_filter_input_hint">Можно вставить ссылку целиком — домен определится сам. Субдомены тоже скрываются.</string>
+    <string name="settings_hosting_filter_input_error">Не похоже на ссылку</string>
+    <string name="settings_hosting_filter_delete">Удалить</string>
+    <string name="settings_hosting_filter_delete_message">Удалить домен из списка?</string>
+    <string name="settings_hosting_filter_hint_title">Как это работает</string>
+    <string name="settings_hosting_filter_hint_message">Хостинги появляются в списке сами, когда встречаются вам в приложении. Отметьте те, которые не нужно показывать в списке переводов.
+
+Если нужного хостинга ещё нет в списке, добавьте его вручную кнопкой внизу.</string>
 </resources>
