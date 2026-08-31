@@ -250,15 +250,21 @@ class SeriesPresenter @Inject constructor(
         if (filteredItems.isEmpty()) return
 
         Observable.fromIterable(filteredItems)
-                .flatMapSingle { interactor.getVideo(it) }
-                .flatMap { video ->
-                    Observable.just(video)
-                            .flatMapIterable { it.tracks }
-                            .map { converter.convertTrack(video, it) }
+                .flatMapSingle { payload ->
+                    interactor.getVideo(payload)
+                            .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
+                            //one author usually publishes the same episode to half a dozen hostings,
+                            //so a single broken parser used to take the whole dialog down with it -
+                            //that hosting is left out of the list instead
+                            .onErrorReturnItem(emptyList())
                 }
+                .flatMapIterable { it }
                 .toList()
                 .appendLoadingLogic(viewState)
-                .subscribe({ viewState.showDownloadDialog(filteredItems.first().author, it) }, this::processErrors)
+                .subscribe({ items ->
+                    if (items.isEmpty()) viewState.showTracksNotFoundError()
+                    else viewState.showDownloadDialog(filteredItems.first().author, items)
+                }, this::processErrors)
                 .addToDisposables()
     }
 
