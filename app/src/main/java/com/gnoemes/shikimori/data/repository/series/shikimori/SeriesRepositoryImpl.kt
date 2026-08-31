@@ -132,8 +132,25 @@ class SeriesRepositoryImpl @Inject constructor(
     private fun getOkFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(okParser.video(video, emptyList()))
             else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { okParser.tracks(it.string()) }
+                    .map { it.string() }
+                    .flatMap(::getOkTracks)
                     .map { okParser.video(video, it) }
+
+    /**
+     * ok.ru publishes a single progressive rendition and keeps the whole quality ladder in its
+     * master playlist, so the playlist is what the quality menu is built from. The progressive file
+     * is the fallback - for a page that offers no playlist, for android below N where the m3u8
+     * parser cannot run, and for a playlist that will not load or yields nothing.
+     */
+    private fun getOkTracks(html: String): Single<List<Track>> {
+        val playlistUrl = okParser.getMasterPlaylistUrl(html)
+                ?: return Single.just(okParser.tracks(html))
+
+        return api.getTextResponse(playlistUrl)
+                .map { okParser.tracks(it.string(), playlistUrl) }
+                .map { tracks -> if (tracks.isEmpty()) okParser.tracks(html) else tracks }
+                .onErrorReturn { okParser.tracks(html) }
+    }
 
     private fun getMailRuFiles(video: TranslationVideo): Single<Video> =
         if (video.webPlayerUrl == null) Single.just(mailRuParser.video(video, emptyList()))
