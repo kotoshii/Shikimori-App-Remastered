@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.series
 
 import android.Manifest
+import android.content.ClipData
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -82,7 +83,26 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     private val defaultCorners by lazy { context!!.dimen(R.dimen.margin_big) }
 
-    private val adapter by lazy { TranslationsAdapter(getPresenter()::onHostingClicked, getPresenter()::onMenuClicked) }
+    private val adapter by lazy {
+        TranslationsAdapter(getPresenter()::onHostingClicked, ::copyHostingUrl, getPresenter()::onMenuClicked)
+    }
+
+    /**
+     * Copying a link changes no state and needs a `Context`, so it is done here rather than routed
+     * through the presenter - the same way `EpisodesFragment` shows its own messages.
+     */
+    private fun copyHostingUrl(video: TranslationVideo) {
+        val url = video.webPlayerUrl
+        if (url.isNullOrBlank()) return
+
+        val context = context ?: return
+        context.clipboardManager().primaryClip = ClipData.newPlainText(video.videoHosting.synonymType, url)
+
+        //Always shown. This was skipped on api 33+ on the assumption that the system's own
+        //"copied" confirmation would cover it, but on Android 16 nothing appeared at all - the
+        //system ui does not show for an app targeting 28. Silence is worse than a possible double.
+        Toast.makeText(context, R.string.series_link_copied, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? = inflater.inflate(getFragmentLayout(), container, false)
 

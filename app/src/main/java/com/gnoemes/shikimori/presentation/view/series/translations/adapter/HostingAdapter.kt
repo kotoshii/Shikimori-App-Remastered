@@ -11,7 +11,8 @@ import com.gnoemes.shikimori.utils.onClick
 import kotlinx.android.synthetic.main.item_chip.view.*
 
 class HostingAdapter(
-        private val callback: (TranslationVideo) -> Unit
+        private val callback: (TranslationVideo) -> Unit,
+        private val longCallback: (TranslationVideo) -> Unit
 ) : RecyclerView.Adapter<HostingAdapter.ViewHolder>() {
 
     private val items = mutableListOf<TranslationVideo>()
@@ -36,6 +37,8 @@ class HostingAdapter(
 
         init {
             itemView.chip.onClick { callback.invoke(item) }
+            //true, so the tap that opens the player does not also fire
+            itemView.chip.setOnLongClickListener { longCallback.invoke(item); true }
         }
 
         fun bind(item: TranslationVideo) {
