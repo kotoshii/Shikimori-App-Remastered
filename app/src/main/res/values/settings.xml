@@ -162,6 +162,12 @@
     <string name="settings_donation_message"><![CDATA[Приложение является <b>неофициальным.</b> Материальная поддержка мотивирует и позволяет оплатить сервер.]]></string>
 
     <string name="settings_system_options">Программные опции</string>
+
+    <string name="settings_system_check_updates_title">Проверять обновления при запуске</string>
+    <string name="settings_system_check_updates_key" translatable="false">CHECK_UPDATES_ON_START</string>
+    <string name="settings_system_check_updates_summary_on">Приложение сообщит о новой версии на GitHub</string>
+    <string name="settings_system_check_updates_summary_off">Проверка выключена, обновляться придётся вручную</string>
+
     <string name="settings_backup">BACKUP_SETTINGS</string>
     <string name="settings_backup_title">Бэкап настроек</string>
 

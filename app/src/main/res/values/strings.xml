@@ -12,6 +12,23 @@
     <string name="download_notification_done">Загрузка завершена</string>
     <string name="download_notification_no_audio">Загружено, звук отдельным файлом</string>
     <string name="download_notification_failed">Не удалось загрузить</string>
+
+    <string name="update_notification_channel">Обновления приложения</string>
+    <string name="update_available_title">Доступна версия %s</string>
+    <string name="update_available_text">Нажмите «Изменения», чтобы посмотреть, что нового</string>
+    <string name="update_action_download">Загрузить</string>
+    <string name="update_action_changes">Изменения</string>
+    <string name="update_action_install">Установить</string>
+    <string name="update_action_close">Закрыть</string>
+    <string name="update_downloading">Загрузка обновления…</string>
+    <string name="update_downloaded_title">Обновление загружено</string>
+    <string name="update_downloaded_text">Версия %s готова к установке</string>
+    <string name="update_download_failed">Не удалось загрузить обновление</string>
+    <string name="update_signature_mismatch">Файл подписан другим ключом, установка отменена</string>
+    <string name="update_older_build">Загруженная сборка старше установленной, установка отменена</string>
+    <string name="update_install_failed">Не удалось открыть установщик</string>
+    <string name="update_changelog_title">Что нового в %s</string>
+    <string name="update_changelog_empty">Описание изменений отсутствует</string>
     <string name="main_exit_message">Для выхода из программы нажмите кнопку еще раз</string>
 
     <string name="common_rates">Списки</string>

@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- installing a downloaded release; the user must also allow this app as an install source -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -70,6 +73,13 @@
 
         <activity android:name=".presentation.view.screenshots.ScreenshotsActivity" />
 
+        <!-- draws nothing: asks for the install permission if needed, then opens the installer -->
+        <activity
+            android:name=".presentation.view.update.InstallActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="49adb365d3d365dabad78f3110d69bd84e717eea" />
@@ -96,6 +106,10 @@
 
         <service
             android:name="com.gnoemes.shikimori.data.local.services.impl.VideoDownloadService"
+            android:exported="false" />
+
+        <service
+            android:name="com.gnoemes.shikimori.data.local.services.impl.AppUpdateService"
             android:exported="false" />
 
         <service

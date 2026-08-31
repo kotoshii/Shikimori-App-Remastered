@@ -82,6 +82,15 @@
         android:title="@string/settings_system_options"
         app:iconSpaceReserved="false">
 
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/settings_system_check_updates_key"
+            android:layout="@layout/layout_preference"
+            android:summaryOff="@string/settings_system_check_updates_summary_off"
+            android:summaryOn="@string/settings_system_check_updates_summary_on"
+            android:title="@string/settings_system_check_updates_title"
+            app:iconSpaceReserved="false" />
+
         <Preference
             android:key="@string/settings_backup"
             android:layout="@layout/layout_preference"

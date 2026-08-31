@@ -51,6 +51,15 @@ object SettingsExtras {
     // OTHER
     ////////////////////////////////////////////////////////////////////////
     const val NEW_VERSION_AVAILABLE = "NEW_VERSION_AVAILABLE"
+
+    //the latest release, kept so the changelog dialog and the download work without asking github
+    //again - the settings badge can be tapped long after the check that set it
+    const val NEW_VERSION_TAG = "NEW_VERSION_TAG"
+    const val NEW_VERSION_CHANGELOG = "NEW_VERSION_CHANGELOG"
+    const val NEW_VERSION_APK_URL = "NEW_VERSION_APK_URL"
+
+    const val CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START"
+
     const val DONATION_LINK = "DONATION_LINK"
 
     const val SHIKICINEMA_URL = "SHIKICINEMA_URL"

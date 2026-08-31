@@ -16,8 +16,11 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
+import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
 import com.gnoemes.shikimori.data.network.GithubApi
+import com.gnoemes.shikimori.entity.app.data.GithubReleaseResponse
 import com.gnoemes.shikimori.entity.main.BottomScreens
+import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
 import com.gnoemes.shikimori.presentation.view.base.fragment.BottomNavigationProvider
@@ -37,6 +40,11 @@ import ru.terrakok.cicerone.commands.Replace
 import javax.inject.Inject
 
 class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider, BottomNavigationProvider {
+
+    companion object {
+        /** Set by the "Изменения" action of the update notification. */
+        const val EXTRA_SHOW_CHANGELOG = "EXTRA_SHOW_CHANGELOG"
+    }
 
     @InjectPresenter
     lateinit var mainPresenter: MainPresenter
@@ -66,6 +74,15 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
             syncValues()
             checkForUpdate()
         }
+
+        showChangelogIfRequested()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        //the notification reuses this activity rather than stacking a second copy of the app
+        setIntent(intent)
+        showChangelogIfRequested()
     }
 
     private fun initBottomNav() {
@@ -117,12 +134,58 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
      * releases instead, and compares properly so only a genuinely newer tag counts.
      */
     private fun checkForUpdate() {
+        //the check can be turned off in settings; the badge and anything already stored stay as
+        //they are, so an update found earlier is still reachable
+        if (!getDefaultSharedPreferences().getBoolean(SettingsExtras.CHECK_UPDATES_ON_START, true)) return
+
         githubApi.getLatestRelease()
                 .subscribeOn(Schedulers.io())
-                .subscribe({ release ->
-                    val hasUpdate = compareVersions(release.tag, BuildConfig.VERSION_NAME) > 0
-                    getDefaultSharedPreferences().putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
-                }, { Crashlytics.logException(it) })
+                .subscribe({ onReleaseChecked(it) }, { Crashlytics.logException(it) })
+    }
+
+    /**
+     * Keeps the newest release in preferences so the changelog dialog and the download work without
+     * asking github again - the settings badge can be tapped hours later, possibly offline.
+     */
+    private fun onReleaseChecked(release: GithubReleaseResponse) {
+        val hasUpdate = compareVersions(release.tag, BuildConfig.VERSION_NAME) > 0
+        val prefs = getDefaultSharedPreferences()
+
+        prefs.putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
+
+        if (!hasUpdate) {
+            //nothing newer - drop what an earlier check left, or the badge would open a stale changelog
+            prefs.remove(SettingsExtras.NEW_VERSION_TAG)
+            prefs.remove(SettingsExtras.NEW_VERSION_CHANGELOG)
+            prefs.remove(SettingsExtras.NEW_VERSION_APK_URL)
+            return
+        }
+
+        //tags are written as v0.8.10; the app talks about versions, not tags
+        val version = release.tag.orEmpty().trimStart('v', 'V')
+
+        prefs.putString(SettingsExtras.NEW_VERSION_TAG, version)
+        prefs.putString(SettingsExtras.NEW_VERSION_CHANGELOG, release.body)
+        prefs.putString(SettingsExtras.NEW_VERSION_APK_URL, release.apkUrl)
+
+        //this runs on an io thread and can outlive the activity, so the notification uses the app
+        AppUpdateService.notifyAvailable(applicationContext, version, release.apkUrl)
+    }
+
+    private fun showChangelogIfRequested() {
+        if (intent?.getBooleanExtra(EXTRA_SHOW_CHANGELOG, false) != true) return
+
+        //dropped once handled, or a rotation would bring the dialog back
+        intent.removeExtra(EXTRA_SHOW_CHANGELOG)
+        showChangelog()
+    }
+
+    /** Falls back to the releases page when no check has stored a release yet. */
+    private fun showChangelog() {
+        val dialog = ChangelogDialog.fromPreferences(this)
+
+        if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
+        else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
     private fun invokeTabRootActionOrClearBackStack(screenKey: String) {
