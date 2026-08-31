@@ -86,6 +86,12 @@ sealed class VideoHosting : Parcelable {
     ) : VideoHosting()
 
     @Parcelize
+    data class MATRESHKA(
+            override val type: String = "matreshka",
+            override val synonymType: String = "matreshka.tv"
+    ) : VideoHosting()
+
+    @Parcelize
     data class UNKNOWN(
             override val type: String = "unknown",
             override val synonymType: String = "unknown"

@@ -45,7 +45,8 @@ class SeriesRepositoryImpl @Inject constructor(
         private val dzenParser: DzenParser,
         private val cdaParser: CdaParser,
         private val kodikParser: KodikParser,
-        private val anime365Parser: Anime365Parser
+        private val anime365Parser: Anime365Parser,
+        private val matreshkaParser: MatreshkaParser
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -95,6 +96,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.CDA -> getCdaFiles(payload)
                 is VideoHosting.KODIK -> getKodikFiles(payload)
                 is VideoHosting.SMOTRET_ANIME -> getAnime365Files(payload)
+                is VideoHosting.MATRESHKA -> getMatreshkaFiles(payload)
                 //a hosting with no parser cannot be resolved to tracks. SeriesPresenter sends those
                 //to the web player before ever calling this, so it is only a safety net - and it is
                 //what the old backend did for them anyway, handing the player url straight back.
@@ -170,6 +172,12 @@ class SeriesRepositoryImpl @Inject constructor(
             else api.getPlayerHtml(video.webPlayerUrl)
                     .map { dzenParser.tracks(it.string()) }
                     .map { dzenParser.video(video, it) }
+
+    private fun getMatreshkaFiles(video: TranslationVideo): Single<Video> =
+            if (video.webPlayerUrl == null) Single.just(matreshkaParser.video(video, emptyList()))
+            else api.getPlayerHtml(video.webPlayerUrl)
+                    .map { matreshkaParser.tracks(it.string()) }
+                    .map { matreshkaParser.video(video, it) }
 
     /**
      * Anime365 resolves through a single authenticated call, so no backend is involved. Without a
