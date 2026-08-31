@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!--
+        Weighted rather than wrap_content on purpose: it gives the scroll view a bounded height, so
+        a long changelog scrolls inside the sheet instead of being cut off, and the button below
+        stays put. The sheet drags down only once this is scrolled to the top.
+    -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -23,32 +27,25 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <LinearLayout
+    <!--
+        Same outlined style as "Создать аккаунт", including its 14sp override - the style itself is
+        10sp, which is sized for the small action buttons and is unreadable here. Its colours are
+        theme attributes, so it follows the light and dark themes on its own.
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/downloadButton"
+        style="@style/OutlinedButtonStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:paddingStart="16dp"
         android:paddingLeft="16dp"
-        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
         android:paddingRight="16dp"
-        android:paddingBottom="8dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/closeButton"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/update_action_close" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/downloadButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:text="@string/update_action_download"
-            app:cornerRadius="4dp" />
-
-    </LinearLayout>
+        android:text="@string/update_action_download"
+        android:textSize="14sp" />
 
 </LinearLayout>

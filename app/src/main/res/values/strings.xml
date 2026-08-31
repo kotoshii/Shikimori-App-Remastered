@@ -19,7 +19,6 @@
     <string name="update_action_download">Загрузить</string>
     <string name="update_action_changes">Изменения</string>
     <string name="update_action_install">Установить</string>
-    <string name="update_action_close">Закрыть</string>
     <string name="update_downloading">Загрузка обновления…</string>
     <string name="update_downloaded_title">Обновление загружено</string>
     <string name="update_downloaded_text">Версия %s готова к установке</string>

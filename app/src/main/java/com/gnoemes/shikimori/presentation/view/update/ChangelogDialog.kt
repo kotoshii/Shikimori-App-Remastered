@@ -93,8 +93,6 @@ class ChangelogDialog : BaseBottomSheetDialogFragment() {
             //closing on download is deliberate: the progress is in the notification from here on
             dismiss()
         }
-
-        closeButton.onClick { dismiss() }
     }
 
     override fun getDialogLayout(): Int = R.layout.dialog_changelog
