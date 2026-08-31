@@ -10,6 +10,7 @@
     <string name="download_notification_converting">Подготовка файла…</string>
     <string name="download_notification_cancelled">Загрузка отменена</string>
     <string name="download_notification_done">Загрузка завершена</string>
+    <string name="download_notification_no_audio">Загружено, звук отдельным файлом</string>
     <string name="download_notification_failed">Не удалось загрузить</string>
     <string name="main_exit_message">Для выхода из программы нажмите кнопку еще раз</string>
 

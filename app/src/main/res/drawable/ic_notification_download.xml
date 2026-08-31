@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ic_download with the artwork scaled up to fill the canvas.
+
+    The status bar draws a notification icon in a fixed box, so how big it looks depends entirely on
+    how much of the 24dp canvas the artwork covers. In ic_download it covers only 12x15 of 24x24 -
+    about half - which reads as a small arrow. That padding is right in a list row, so that icon is
+    left alone and this one is used for notifications instead.
+
+    Only the alpha channel matters here: the system tints notification icons, so the fill colour is
+    ignored.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <group
+      android:pivotX="12"
+      android:pivotY="11.5"
+      android:scaleX="1.45"
+      android:scaleY="1.45"
+      android:translateY="0.5">
+    <path
+        android:pathData="M17,10l-1.41,-1.41L13,11.17L13,4L11,4v7.17L8.42,8.58 7,10l5,5Z"
+        android:fillColor="#000000"/>
+    <path
+        android:pathData="M6,17L18,17v2L6,19Z"
+        android:fillColor="#000000"/>
+  </group>
+</vector>

@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.utils.VideoMuxer
@@ -70,7 +71,10 @@ class VideoDownloadService : Service() {
         }
     }
 
-    private val executor = Executors.newSingleThreadExecutor()
+    //recreated after a cancel: shutdownNow() kills it for good, and stopSelf() does not destroy the
+    //service straight away, so a download started right after a cancel would otherwise arrive at a
+    //dead executor and throw RejectedExecutionException on the main thread
+    private var executor = Executors.newSingleThreadExecutor()
     private val pending = AtomicInteger(0)
 
     @Volatile
@@ -92,8 +96,14 @@ class VideoDownloadService : Service() {
         val folder = intent?.getStringExtra(EXTRA_FOLDER)
         val isCancel = intent?.getBooleanExtra(EXTRA_CANCEL, false) == true
 
-        //counted before the notification is built, so a newly queued download is included in it
-        if (!isCancel && data != null && folder != null) pending.incrementAndGet()
+        if (!isCancel && data != null && folder != null) {
+            //a new download undoes a previous cancel, on both the flag and the executor
+            cancelled = false
+            if (executor.isShutdown) executor = Executors.newSingleThreadExecutor()
+
+            //counted before the notification is built, so a newly queued download is included in it
+            pending.incrementAndGet()
+        }
 
         //startForegroundService demands a startForeground within a few seconds even when there is
         //nothing to do, so this happens before the extras are trusted. The title stays on whatever
@@ -144,17 +154,18 @@ class VideoDownloadService : Service() {
         Log.d(TAG, "dir exists=${directory.exists()} canWrite=${directory.canWrite()} " +
                 "parentExists=${directory.parentFile?.exists()} folderSetting=$folder")
 
-        var success = false
+        var result: Result? = null
         try {
             if (link == null) Log.e(TAG, "no link in DownloadVideoData - nothing to download")
-            else success = download(downloader, data, link, title, directory)
+            else result = download(downloader, data, link, title, directory)
         } catch (e: Throwable) {
             //never let the worker thread die silently - the notification alone says too little
             Log.e(TAG, "download threw", e)
         } finally {
-            Log.d(TAG, "finished success=$success")
+            Log.d(TAG, "finished success=${result != null} merged=${result?.merged} " +
+                    "file=${result?.file?.absolutePath}")
             //a cancel is not a failure, and the user already got its own notification
-            if (!cancelled) notifyFinished(title, success)
+            if (!cancelled) notifyFinished(title, result)
             currentTitle = null
             if (pending.decrementAndGet() == 0) {
                 stopForeground(true)
@@ -163,8 +174,16 @@ class VideoDownloadService : Service() {
         }
     }
 
+    /**
+     * What a finished download produced. [merged] is false only when a hosting served sound
+     * separately and the two files could not be joined - the video plays, but silently, so the user
+     * has to be told rather than handed a file that looks complete.
+     */
+    private class Result(val file: File, val merged: Boolean = true)
+
+    /** The finished download, or null if it failed. */
     private fun download(downloader: VideoFileDownloader, data: DownloadVideoData,
-                         link: String, title: String, directory: File): Boolean {
+                         link: String, title: String, directory: File): Result? {
         val audioLink = data.audioLink
         val output = File(directory, "$title.mp4")
 
@@ -173,34 +192,68 @@ class VideoDownloadService : Service() {
             val video = File(directory, "$title $VIDEO_SUFFIX.mp4")
             val audio = File(directory, "$title $AUDIO_SUFFIX.m4a")
 
-            if (!downloader.download(link, data.requestHeaders, video, progress(title, 0, 45))) return false
-            if (!downloader.download(audioLink, data.requestHeaders, audio, progress(title, 45, 90))) return false
+            //discarded rather than left behind: a lone video part is not a download, and the
+            //notification is about to say the download failed
+            if (!downloader.download(link, data.requestHeaders, video, progress(title, 0, 45))) {
+                return discard(video, audio)
+            }
+            if (!downloader.download(audioLink, data.requestHeaders, audio, progress(title, 45, 90))) {
+                return discard(video, audio)
+            }
 
             val muxed = VideoMuxer.isSupported &&
                     VideoMuxer.mux(video.absolutePath, audio.absolutePath, output.absolutePath,
                             muxProgress(title, R.string.download_notification_merging))
+            //a cancel during muxing leaves both parts and a partial output; none of it is wanted
+            if (cancelled) return discard(video, audio, output)
+
             if (muxed) {
                 video.delete()
                 audio.delete()
+                return Result(output)
             }
-            //the parts stay when muxing is unavailable or failed - they are still playable
-            return muxed || video.exists()
+
+            //Both parts stay when muxing is unavailable (it needs api 18, minSdk is 16) or failed.
+            //The video alone has no sound, so this is reported as a partial result - saying
+            //"finished" and then playing a silent file would be a lie.
+            return video.takeIf { it.exists() }?.let { Result(it, merged = false) }
         }
 
         //a playlist is downloaded as mpeg-ts first, because that is what the segments are
         val isStream = link.contains(".m3u8", ignoreCase = true)
         val target = if (isStream) File(directory, title + STREAM_EXTENSION) else output
 
-        if (!downloader.download(link, data.requestHeaders, target, progress(title, 0, 100))) return false
-        if (!isStream) return true
+        if (!downloader.download(link, data.requestHeaders, target, progress(title, 0, 100))) {
+            return discard(target)
+        }
+        if (!isStream) return Result(target)
 
         //mp4 is what a user expects; keep the .ts if the device cannot remux
         val remuxed = VideoMuxer.isSupported &&
                 VideoMuxer.remux(target.absolutePath, output.absolutePath,
                         muxProgress(title, R.string.download_notification_converting))
-        if (remuxed) target.delete()
+        //a cancel during remuxing leaves the .ts and a partial mp4
+        if (cancelled) return discard(target, output)
 
-        return true
+        if (remuxed) {
+            target.delete()
+            return Result(output)
+        }
+
+        //keeping the .ts is better than losing the download, and it plays with sound
+        return Result(target)
+    }
+
+    /**
+     * Deletes whatever a failed or cancelled download left behind and reports failure. Downloads
+     * are not resumable, so a half finished set of files is only clutter - and after a cancel the
+     * user expects it gone.
+     */
+    private fun discard(vararg files: File): Result? {
+        files.forEach { file ->
+            if (file.exists() && !file.delete()) Log.e(TAG, "could not delete ${file.absolutePath}")
+        }
+        return null
     }
 
     private fun progress(title: String, from: Int, to: Int) = object : VideoFileDownloader.Progress {
@@ -227,7 +280,7 @@ class VideoDownloadService : Service() {
      * The two paths are described differently on purpose: joining a separate audio file really is
      * "объединение видео и звука", but rewriting one mpeg-ts into mp4 combines nothing at all.
      */
-    private fun muxProgress(title: String, stageRes: Int): (Int) -> Unit {
+    private fun muxProgress(title: String, stageRes: Int): (Int) -> Boolean {
         var last = -1
         val stage = getString(stageRes)
 
@@ -236,6 +289,9 @@ class VideoDownloadService : Service() {
                 last = percent
                 notificationManager().notify(FOREGROUND_ID, notification(title, percent, true, stage))
             }
+            //MediaMuxer ignores thread interrupts, so returning false here is the only way a cancel
+            //can reach a mux that is already running
+            !cancelled
         }
     }
 
@@ -302,7 +358,7 @@ class VideoDownloadService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.drawable.ic_download)
+                .setSmallIcon(R.drawable.ic_notification_download)
                 .setProgress(100, percent, false)
                 .setOngoing(ongoing)
                 .setOnlyAlertOnce(true)
@@ -314,29 +370,66 @@ class VideoDownloadService : Service() {
     private fun cancelIntent(): PendingIntent {
         val intent = Intent(this, VideoDownloadService::class.java).putExtra(EXTRA_CANCEL, true)
 
-        //FLAG_IMMUTABLE is only required from Android 12 for apps targeting it, but it costs
-        //nothing here and keeps this correct if the target is ever raised
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        else PendingIntent.FLAG_UPDATE_CURRENT
-
-        return PendingIntent.getService(this, 0, intent, flags)
+        return PendingIntent.getService(this, 0, intent, pendingIntentFlags())
     }
+
+    /**
+     * FLAG_IMMUTABLE is only required from Android 12 for apps targeting it, but it costs nothing
+     * here and keeps these correct if the target is ever raised.
+     */
+    private fun pendingIntentFlags(): Int =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else PendingIntent.FLAG_UPDATE_CURRENT
 
     private fun finishedNotification(title: String, text: String) =
             NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_download)
+                    .setSmallIcon(R.drawable.ic_notification_download)
                     .setAutoCancel(true)
                     .build()
 
-    private fun notifyFinished(title: String, success: Boolean) {
-        val text = getString(if (success) R.string.download_notification_done else R.string.download_notification_failed)
+    private fun notifyFinished(title: String, result: Result?) {
+        val text = when {
+            result == null -> getString(R.string.download_notification_failed)
+            !result.merged -> getString(R.string.download_notification_no_audio)
+            else -> getString(R.string.download_notification_done)
+        }
+
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setSmallIcon(R.drawable.ic_notification_download)
+                .setAutoCancel(true)
+
+        if (result != null) openIntent(result.file)?.let(builder::setContentIntent)
 
         //a separate id, so the result survives the foreground notification going away
-        notificationManager().notify(FOREGROUND_ID + 1 + title.hashCode().and(0xFFF),
-                finishedNotification(title, text))
+        notificationManager().notify(FOREGROUND_ID + 1 + title.hashCode().and(0xFFF), builder.build())
+    }
+
+    /**
+     * Opens the downloaded file itself. There is deliberately no "open the containing folder" here:
+     * Android has no reliable intent for it and the result varies by device and file manager, while
+     * playing the file works everywhere.
+     *
+     * The uri has to come from `FileProvider` - handing another app a `file://` uri throws
+     * `FileUriExposedException` on Android 7+. The provider is already declared in the manifest and
+     * its `external-path` covers the download folder, so nothing else was needed.
+     */
+    private fun openIntent(file: File): PendingIntent? = try {
+        val uri = FileProvider.getUriForFile(this, "$packageName.provider", file)
+        val intent = Intent(Intent.ACTION_VIEW)
+                //a .ts is what is left when the device could not remux, and it still plays
+                .setDataAndType(uri, if (file.extension.equals("ts", true)) "video/mp2t" else "video/mp4")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        PendingIntent.getActivity(this, file.hashCode(), intent, pendingIntentFlags())
+    } catch (e: Exception) {
+        //an unshareable path must not cost the user their "download finished" notification
+        Log.e(TAG, "cannot build an open intent for ${file.absolutePath}", e)
+        null
     }
 
     private fun createChannel() {
