@@ -29,6 +29,15 @@
         android:title="@string/settings_authors"
         app:iconSpaceReserved="false">
 
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/settings_anime_alt_source_by_default_key"
+            android:layout="@layout/layout_preference"
+            android:summaryOff="@string/settings_anime_alt_source_by_default_summary_off"
+            android:summaryOn="@string/settings_anime_alt_source_by_default_summary_on"
+            android:title="@string/settings_anime_alt_source_by_default_title"
+            app:iconSpaceReserved="false" />
+
         <Preference
             android:defaultValue="fandub"
             android:key="@string/settings_anime_translation_type_key"
