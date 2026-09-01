@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Material's "delete outline" - a hollow waste bin.
+
+    Not the existing ic_delete, which is "delete sweep" (a bin with lines beside it, meaning "clear
+    several things"), and not the solid variant either: the rest of this row is light weight, so a
+    filled shape would sit heavily next to a checkbox and a line of text.
+
+    The fill below is only a placeholder. Tint it where it is used - the row does so with
+    ?attr/colorOnSurface - or it stays black and disappears in the dark theme.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M16,9v10H8V9h8m-1.5,-6h-5l-1,1H5v2h14V4h-3.5l-1,-1zM18,7H6v12c0,1.1 0.9,2 2,2h8c1.1,0 2,-0.9 2,-2V7z"
+      android:fillColor="#000000"/>
+</vector>

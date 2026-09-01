@@ -35,7 +35,12 @@ class WebPlayerActivity : BaseThemedActivity() {
     lateinit var settingsSource: PlayerSettingsSource
 
     companion object {
-        private val ANIME_365_REGEX = "smotret-anime\\.com".toRegex()
+        //anime365 serves on four domains at once and keeps moving between them - .com -> .net
+        //(2024) -> .org (2024). Links reaching the app today are .org, so matching only .com meant
+        //a subscriber's access token was never appended to any of them. Keep this in step with the
+        //smotret-anime entries in Utils.hostingFromString; the two older spellings there
+        //(smotretanime.ru, smotretanime) are dead and deliberately not matched.
+        private val ANIME_365_REGEX = "smotret-anime\\.(com|net|org|online)".toRegex()
     }
 
     @SuppressLint("SetJavaScriptEnabled")

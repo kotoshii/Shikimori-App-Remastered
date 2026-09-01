@@ -38,4 +38,10 @@ interface SettingsSource {
     var chronologyType : ChronologyType
 
     var hideAnime365: Boolean
+
+    /** Every hosting the app has displayed, so the filter screen has something to offer. */
+    var seenHostings: Set<String>
+
+    /** Hostings the user has chosen to hide, matched by domain and subdomain. */
+    var hiddenHostings: Set<String>
 }

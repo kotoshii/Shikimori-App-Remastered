@@ -58,6 +58,16 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
                         }
 
                         BottomSheetBehavior.from(bottomSheet).skipCollapsed = true
+
+                        //BottomSheetDialog's own listener on this view calls cancel() outright, so
+                        //the sheet vanished instead of closing. Hiding it slides it down, and the
+                        //dialog's callback cancels once the slide finishes - which keeps onCancel
+                        //firing exactly as before.
+                        it.findViewById<android.view.View>(R.id.touch_outside)?.setOnClickListener { _ ->
+                            if (isCancelable) {
+                                BottomSheetBehavior.from(bottomSheet).state = BottomSheetBehavior.STATE_HIDDEN
+                            }
+                        }
                     }
                 }
     }

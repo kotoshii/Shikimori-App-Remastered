@@ -17,9 +17,26 @@
         android:title="@string/settings_hide_anime_365_title"
         app:iconSpaceReserved="false" />
 
+    <Preference
+        android:key="@string/settings_hosting_filter_key"
+        android:layout="@layout/layout_preference"
+        android:summary="@string/settings_hosting_filter_summary"
+        android:title="@string/settings_hosting_filter_title"
+        app:fragment="com.gnoemes.shikimori.presentation.view.settings.fragments.HostingFilterFragment"
+        app:iconSpaceReserved="false" />
+
     <PreferenceCategory
         android:title="@string/settings_authors"
         app:iconSpaceReserved="false">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/settings_anime_alt_source_by_default_key"
+            android:layout="@layout/layout_preference"
+            android:summaryOff="@string/settings_anime_alt_source_by_default_summary_off"
+            android:summaryOn="@string/settings_anime_alt_source_by_default_summary_on"
+            android:title="@string/settings_anime_alt_source_by_default_title"
+            app:iconSpaceReserved="false" />
 
         <Preference
             android:defaultValue="fandub"

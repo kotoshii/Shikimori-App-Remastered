@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A plain EditText with its own hint line underneath, rather than a TextInputLayout: the hint has
+    to turn into a red error and back again, and doing it with a TextView is fewer moving parts than
+    depending on the material library's error/helperText behaviour.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/margin_biggest"
+    android:paddingEnd="@dimen/margin_biggest"
+    android:paddingLeft="@dimen/margin_biggest"
+    android:paddingRight="@dimen/margin_biggest"
+    android:paddingTop="@dimen/margin_normal"
+    android:paddingBottom="@dimen/margin_normal">
+
+    <EditText
+        android:id="@+id/hostingInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/settings_hosting_filter_input_placeholder"
+        android:imeOptions="actionDone"
+        android:inputType="textUri"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textColor="?attr/colorOnSurface"
+        android:textColorHint="?android:attr/textColorSecondary" />
+
+    <TextView
+        android:id="@+id/hostingHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_normal"
+        android:text="@string/settings_hosting_filter_input_hint"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textColor="?android:attr/textColorSecondary" />
+
+</LinearLayout>

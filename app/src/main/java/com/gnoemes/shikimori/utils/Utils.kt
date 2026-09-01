@@ -22,15 +22,26 @@ object Utils {
             "ebd.cda.pl" -> VideoHosting.CDA()
             "video.sibnet.ru", "sibnet", "sibnet.ru" -> VideoHosting.SIBNET()
             "sovetromantica.com", "sovetromantica" -> VideoHosting.SOVET_ROMANTICA()
-            "smotretanime.ru", "smotretanime", "smotret-anime.online", "smotret-anime.com", "smotret-anime.org" -> VideoHosting.SMOTRET_ANIME()
+            //anime365 keeps moving: .com -> .net (2024) -> .org (2024). All four still serve, and
+            //links in shikimori's video db are spread across them, so keep every one of them here.
+            "smotretanime.ru", "smotretanime", "smotret-anime.online", "smotret-anime.com", "smotret-anime.net", "smotret-anime.org" -> VideoHosting.SMOTRET_ANIME()
             "aniqit.com", "kodikplayer.com" -> VideoHosting.KODIK()
+            "matreshka.tv" -> VideoHosting.MATRESHKA()
             else -> (raw ?: "unknown").let { hosting -> VideoHosting.UNKNOWN(hosting, hosting) }
         }
     }
 
+    /**
+     * Whether the app can resolve real tracks for a hosting, and so offer the embedded player,
+     * a quality menu and downloading.
+     *
+     * SMOTRET_ANIME is here because Anime365Parser resolves it client side. It only produces tracks
+     * for a user with an anime365 token *and* a paid subscription; everyone else gets an empty
+     * track list and falls back to the web player, which appends the same token.
+     */
     fun isHostingSupports(hosting: VideoHosting): Boolean {
         return when (hosting) {
-            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.SOVET_ROMANTICA, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.NUUM, is VideoHosting.MAILRU, is VideoHosting.CDA -> true
+            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.SOVET_ROMANTICA, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.NUUM, is VideoHosting.MAILRU, is VideoHosting.CDA, is VideoHosting.MATRESHKA -> true
             else -> false
         }
     }

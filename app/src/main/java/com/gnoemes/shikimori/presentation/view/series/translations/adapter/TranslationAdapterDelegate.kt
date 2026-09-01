@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.item_translation.view.*
 
 class TranslationAdapterDelegate(
         private val callback: (TranslationVideo) -> Unit,
+        private val longCallback: (TranslationVideo) -> Unit,
         private val menuListener: (TranslationMenu) -> Unit
 ) : AbsListItemAdapterDelegate<TranslationViewModel, Any, TranslationAdapterDelegate.ViewHolder>() {
 
@@ -38,7 +39,8 @@ class TranslationAdapterDelegate(
         private val layoutManager by lazy { LinearLayoutManager(itemView.context, RecyclerView.HORIZONTAL, false) }
 
         private val videoHostingCallback = { videoData: TranslationVideo -> callback.invoke(videoData) }
-        private val adapter by lazy { HostingAdapter(videoHostingCallback) }
+        private val videoHostingLongCallback = { videoData: TranslationVideo -> longCallback.invoke(videoData) }
+        private val adapter by lazy { HostingAdapter(videoHostingCallback, videoHostingLongCallback) }
 
         init {
             if (itemView.hostingRecyclerView.onFlingListener == null) {

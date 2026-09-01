@@ -228,12 +228,25 @@ class SeriesPresenter @Inject constructor(
         loadWithEpisode()
     }
 
-    fun onShare(url: String) {
-        val videoUrl = if (url.contains("m3u8")) {
-            url.replaceAfterLast("mp4", "")
-        } else url
+    fun onShare(item: SeriesDownloadItem) {
+        //The url is shared exactly as the player uses it. An hls link used to be cut back at ".mp4"
+        //to turn it into a plain file, which kodik's urls are shaped for
+        //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
+        //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
+        //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
+        val videoUrl = item.url
 
-        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl)
+        //the same four things the downloaded file is named after, so a shared link and a saved file
+        //describe the episode alike. Blanks drop out rather than leaving separators behind - an
+        //unknown author, "не выбрано" for the kind, or a parser that could not tell the quality
+        val details = listOf(
+                item.video.author,
+                item.video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+                item.quality.orEmpty(),
+                item.hosting
+        ).filter { it.isNotBlank() }
+
+        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
     }
 
@@ -242,23 +255,46 @@ class SeriesPresenter @Inject constructor(
         viewState.showAuthorDialog(author)
     }
 
+    /**
+     * Anime365 is deliberately **not** filtered out when there is no token. Dropping it silently
+     * left the user with a shorter list and no reason for it - the login is asked for at the moment
+     * they pick it instead, see [needsAnime365Login]. Hiding it outright is a setting of its own,
+     * `hideAnime365`, which is the user's choice rather than ours.
+     */
     private fun showDownloadDialog(videos: List<TranslationVideo>) {
-        val filteredItems = videos.filter {
-            Utils.isHostingSupports(it.videoHosting) && if (tokenSource.getToken() != null) true else it.videoHosting !is VideoHosting.SMOTRET_ANIME
-        }
+        val filteredItems = videos.filter { Utils.isHostingSupports(it.videoHosting) }
 
         if (filteredItems.isEmpty()) return
 
-        Observable.fromIterable(filteredItems)
-                .flatMapSingle { interactor.getVideo(it, it.videoHosting is VideoHosting.SMOTRET_ANIME) }
-                .flatMap { video ->
-                    Observable.just(video)
-                            .flatMapIterable { it.tracks }
-                            .map { converter.convertTrack(video, it) }
+        //asking which hosting first means only that one is resolved. Resolving the whole group up
+        //front cost a page fetch per hosting, and all but the chosen one were thrown away
+        if (filteredItems.size == 1) showDownloadQualities(filteredItems)
+        else viewState.showDownloadHostingDialog(filteredItems.first().author, filteredItems, filteredItems.size < videos.size)
+    }
+
+    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(listOf(video))
+
+    private fun showDownloadQualities(videos: List<TranslationVideo>) {
+        if (videos.all(::needsAnime365Login)) {
+            viewState.showAnime365LoginRequired()
+            return
+        }
+
+        Observable.fromIterable(videos)
+                .flatMapSingle { payload ->
+                    interactor.getVideo(payload)
+                            .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
+                            //a hosting that cannot be resolved is left out rather than failing the
+                            //whole list, which matters when more than one is being resolved
+                            .onErrorReturnItem(emptyList())
                 }
+                .flatMapIterable { it }
                 .toList()
                 .appendLoadingLogic(viewState)
-                .subscribe({ viewState.showDownloadDialog(filteredItems.first().author, it) }, this::processErrors)
+                .subscribe({ items ->
+                    if (items.isEmpty()) viewState.showTracksNotFoundError()
+                    else viewState.showDownloadDialog(videos.first().author, items)
+                }, this::processErrors)
                 .addToDisposables()
     }
 
@@ -323,10 +359,22 @@ class SeriesPresenter @Inject constructor(
     //Only embedded player can process object payload
     //Others o uses urls
     private fun openVideo(payload: TranslationVideo, playerType: PlayerType) {
+        //anime365 resolves nothing without a login, so say so instead of opening a player that will
+        //find no tracks. The web player is the exception - it loads anime365's own page, which asks
+        //for the login itself
+        if (playerType != PlayerType.WEB && needsAnime365Login(payload)) {
+            viewState.showAnime365LoginRequired()
+            return
+        }
+
         if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, navigationData.rateId, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
         else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
+
+    /** Anime365 needs a paid account, and without the token nothing it hands back has tracks. */
+    private fun needsAnime365Login(video: TranslationVideo): Boolean =
+            video.videoHosting is VideoHosting.SMOTRET_ANIME && tokenSource.getToken() == null
 
     private fun showQualityChooser(tracks: List<Track>) {
         if (tracks.isEmpty()) {
@@ -357,16 +405,18 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
-        interactor.getVideo(payload, payload.videoHosting is VideoHosting.SMOTRET_ANIME)
+        interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
                 .subscribe(onSubscribe::invoke, this::processErrors)
                 .addToDisposables()
     }
 
     fun onTrackForDownloadSelected(url: String, video: Video) {
-        selectedDownloadUrl = if (video.hosting is VideoHosting.KODIK) {
-            url.replaceAfterLast("mp4", "")
-        } else url
+        //Kodik urls used to be truncated at ".mp4" here to turn the hls manifest into a direct file,
+        //because DownloadManager could only fetch one url. That file stopped existing - the shortened
+        //url answers 500 - and VideoDownloadService walks the playlist itself now, so the url is
+        //passed through untouched.
+        selectedDownloadUrl = url
         selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
         selectedDownloadVideo = video
         viewState.checkPermissions()
@@ -381,7 +431,21 @@ class SeriesPresenter @Inject constructor(
 
     private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
         logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DOWNLOAD)
-        val data = DownloadVideoData(navigationData.animeId, navigationData.name, episode!!, url, audioUrl, Utils.getRequestHeadersForHosting(video))
+        val data = DownloadVideoData(
+                navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
+                Utils.getRequestHeadersForHosting(video),
+                author = video?.author.orEmpty(),
+                //the chosen track carries the quality; "unknown" is what parsers use when they
+                //cannot tell, and the ui hides it the same way
+                quality = video?.tracks?.find { it.url == url }?.quality
+                        ?.takeIf { it.isNotBlank() && it != "unknown" }
+                        ?.let { "${it}p" }
+                        .orEmpty(),
+                kind = video?.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+                //synonymType, not type: it is uniformly domain-shaped across hostings, while type
+                //mixes short labels ("vk", "dzen") with full domains ("kodikplayer.com", "ebd.cda.pl")
+                hosting = video?.hosting?.synonymType.orEmpty()
+        )
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)
                 .addToDisposables()

@@ -65,6 +65,9 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
 
     interface SeriesDownloadCallback {
         fun onDownload(url: String, video: Video)
-        fun onShare(url: String)
+
+        //the whole item, not just its url: the shared text names the author, kind, quality and
+        //hosting, the same things the downloaded file is named after
+        fun onShare(item: SeriesDownloadItem)
     }
 }

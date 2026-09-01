@@ -8,12 +8,13 @@ import com.gnoemes.shikimori.presentation.view.series.episodes.adapter.SeriesPla
 
 class TranslationsAdapter(
         callback: (TranslationVideo) -> Unit,
+        longCallback: (TranslationVideo) -> Unit,
         menuListener: (TranslationMenu) -> Unit
 ) : BaseAdapter<Any>() {
 
     init {
         delegatesManager.apply {
-            addDelegate(TranslationAdapterDelegate(callback, menuListener))
+            addDelegate(TranslationAdapterDelegate(callback, longCallback, menuListener))
             addDelegate(SeriesPlaceholderAdapterDelegate())
         }
     }

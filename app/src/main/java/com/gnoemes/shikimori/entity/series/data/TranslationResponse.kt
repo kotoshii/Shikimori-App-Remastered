@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.entity.series.data
 
 import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaTranslationResponse
-import com.gnoemes.shikimori.entity.series.data.shimori.ShimoriTranslationResponse
 import com.gnoemes.shikimori.entity.series.domain.TranslationQuality
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
@@ -19,18 +18,6 @@ data class TranslationResponse(
         @field:SerializedName("episodesSize") val episodesSize: Int,
         val webPlayerUrl: String? = null
 ) {
-
-    constructor(id: Long, response: ShimoriTranslationResponse) : this(
-            id,
-            response.targetId,
-            response.episode,
-            response.kind,
-            response.quality,
-            response.hosting,
-            response.author ?: "",
-            response.episodesTotal ?: 0,
-            response.url
-    )
 
     constructor(response: ShikicinemaTranslationResponse, episodesSize: Int) : this(
             response.id,

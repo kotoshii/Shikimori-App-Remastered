@@ -79,6 +79,18 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
+    fun bindKodikParser(parser: KodikParserImpl): KodikParser
+
+    @Binds
+    @Reusable
+    fun bindAnime365Parser(parser: Anime365ParserImpl): Anime365Parser
+
+    @Binds
+    @Reusable
+    fun bindMatreshkaParser(parser: MatreshkaParserImpl): MatreshkaParser
+
+    @Binds
+    @Reusable
     fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

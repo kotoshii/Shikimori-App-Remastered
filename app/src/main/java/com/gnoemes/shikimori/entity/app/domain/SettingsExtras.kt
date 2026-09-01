@@ -51,10 +51,28 @@ object SettingsExtras {
     // OTHER
     ////////////////////////////////////////////////////////////////////////
     const val NEW_VERSION_AVAILABLE = "NEW_VERSION_AVAILABLE"
+
+    //the latest release, kept so the changelog dialog and the download work without asking github
+    //again - the settings badge can be tapped long after the check that set it
+    const val NEW_VERSION_TAG = "NEW_VERSION_TAG"
+    const val NEW_VERSION_CHANGELOG = "NEW_VERSION_CHANGELOG"
+    const val NEW_VERSION_APK_URL = "NEW_VERSION_APK_URL"
+
+    const val CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START"
+
     const val DONATION_LINK = "DONATION_LINK"
 
-    const val SHIMORI_URL = "SHIMORI_URL"
     const val SHIKICINEMA_URL = "SHIKICINEMA_URL"
+
+    //where kodik currently serves stream links from, see KodikParser
+    const val KODIK_LINKS_PATH = "KODIK_LINKS_PATH"
+
+    //every hosting the app has shown, so the filter screen can offer them; and the ones hidden
+    const val SEEN_HOSTINGS = "SEEN_HOSTINGS"
+    //added by hand rather than met while browsing - only these can be deleted, since one the app
+    //keeps meeting would simply come back
+    const val MANUAL_HOSTINGS = "MANUAL_HOSTINGS"
+    const val HIDDEN_HOSTINGS = "HIDDEN_HOSTINGS"
 
     const val CHRONOLOGY_TYPE = "CHRONOLOGY_TYPE"
     const val SORT_KEY_PART = "rate_sort"

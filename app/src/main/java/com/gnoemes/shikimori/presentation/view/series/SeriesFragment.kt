@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.series
 
 import android.Manifest
+import android.content.ClipData
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,6 +31,7 @@ import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
+import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadHostingDialog
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment
@@ -56,6 +58,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         ListDialogFragment.DialogCallback,
         EpisodesFragment.EpisodesCallback,
         SeriesDownloadDialog.SeriesDownloadCallback,
+        SeriesDownloadHostingDialog.Callback,
         HasSupportFragmentInjector {
 
     @Inject
@@ -82,7 +85,26 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     private val defaultCorners by lazy { context!!.dimen(R.dimen.margin_big) }
 
-    private val adapter by lazy { TranslationsAdapter(getPresenter()::onHostingClicked, getPresenter()::onMenuClicked) }
+    private val adapter by lazy {
+        TranslationsAdapter(getPresenter()::onHostingClicked, ::copyHostingUrl, getPresenter()::onMenuClicked)
+    }
+
+    /**
+     * Copying a link changes no state and needs a `Context`, so it is done here rather than routed
+     * through the presenter - the same way `EpisodesFragment` shows its own messages.
+     */
+    private fun copyHostingUrl(video: TranslationVideo) {
+        val url = video.webPlayerUrl
+        if (url.isNullOrBlank()) return
+
+        val context = context ?: return
+        context.clipboardManager().primaryClip = ClipData.newPlainText(video.videoHosting.synonymType, url)
+
+        //Always shown. This was skipped on api 33+ on the assumption that the system's own
+        //"copied" confirmation would cover it, but on Android 16 nothing appeared at all - the
+        //system ui does not show for an app targeting 28. Silence is worse than a possible double.
+        Toast.makeText(context, R.string.series_link_copied, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? = inflater.inflate(getFragmentLayout(), container, false)
 
@@ -217,7 +239,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun onDownload(url: String, video: Video) = getPresenter().onTrackForDownloadSelected(url, video)
-    override fun onShare(url: String) = getPresenter().onShare(url)
+    override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
+    override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 
     override fun onRateCreated(id: Long) = getPresenter().onRateCreated(id)
     override fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean) =
@@ -319,6 +342,11 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         dialog.show(childFragmentManager, "PlayerSelect")
     }
 
+    override fun showDownloadHostingDialog(title: String, videos: List<TranslationVideo>, hasUnsupported: Boolean) {
+        val dialog = SeriesDownloadHostingDialog.newInstance(title, videos, hasUnsupported)
+        dialog.show(childFragmentManager, "DownloadHostingDialog")
+    }
+
     override fun showDownloadDialog(title: String, items: List<SeriesDownloadItem>) {
         val dialog = SeriesDownloadDialog.newInstance(title, items)
         dialog.show(childFragmentManager, "DownloadDialog")
@@ -336,6 +364,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun showTracksNotFoundError() {
         Toast.makeText(requireContext(), R.string.series_tracks_empty, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showAnime365LoginRequired() {
+        Toast.makeText(requireContext(), R.string.series_anime_365_login_required, Toast.LENGTH_LONG).show()
     }
 
     override fun checkPermissions() {

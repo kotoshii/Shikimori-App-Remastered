@@ -19,6 +19,13 @@ object VideoMuxer {
 
     private const val DEFAULT_BUFFER_SIZE = 2 * 1024 * 1024
 
+    /**
+     * Reports 0..100 while samples are copied - muxing a long episode is not instant - and returns
+     * false to abort. The callback is the **only** way to stop this: `MediaExtractor` and
+     * `MediaMuxer` ignore thread interrupts, so cancelling the executor does not reach them.
+     */
+    private val NO_PROGRESS: (Int) -> Boolean = { true }
+
     val isSupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
 
@@ -26,12 +33,14 @@ object VideoMuxer {
      * Returns true only when [outputPath] holds a complete file, so the caller can decide whether
      * it is safe to delete the parts.
      */
-    fun mux(videoPath: String, audioPath: String, outputPath: String): Boolean {
+    fun mux(videoPath: String, audioPath: String, outputPath: String,
+            onProgress: (Int) -> Boolean = NO_PROGRESS): Boolean {
         if (!isSupported) return false
 
         var video: MediaExtractor? = null
         var audio: MediaExtractor? = null
         var muxer: MediaMuxer? = null
+        var complete = false
 
         return try {
             video = MediaExtractor().apply { setDataSource(videoPath) }
@@ -50,19 +59,104 @@ object VideoMuxer {
             muxer.start()
 
             val buffer = ByteBuffer.allocate(maxOf(videoFormat.maxInputSize(), audioFormat.maxInputSize()))
-            video.copyTrack(videoTrack, muxer, outVideo, buffer)
-            audio.copyTrack(audioTrack, muxer, outAudio, buffer)
+            //picture first, then sound, so the bar covers each half of the work
+            if (video.copyTrack(videoTrack, muxer, outVideo, buffer, videoFormat.durationUs(), 0, 50, onProgress) &&
+                    audio.copyTrack(audioTrack, muxer, outAudio, buffer, audioFormat.durationUs(), 50, 100, onProgress)) {
+                muxer.stop()
+                complete = true
+            }
 
-            muxer.stop()
-            true
+            complete
         } catch (e: Throwable) {
-            //a half written file is worse than none, the parts are kept instead
-            File(outputPath).takeIf { it.exists() }?.delete()
             false
         } finally {
             video.releaseQuietly()
             audio.releaseQuietly()
             muxer.releaseQuietly()
+            //deleted only after the muxer is released, so nothing still holds the file. A half
+            //written mp4 is worse than none - the parts are kept and the caller decides.
+            if (!complete) File(outputPath).takeIf { it.exists() }?.delete()
+        }
+    }
+
+    /**
+     * Rewrites a single container into mp4 without re-encoding, used for the mpeg-ts that comes out
+     * of an hls download. Every audio and video track is copied in one pass so the interleaving -
+     * and with it a/v sync - survives; copying track by track would not preserve it.
+     *
+     * Returns false when the device cannot do it, so the caller can keep the original file rather
+     * than lose the download.
+     */
+    fun remux(inputPath: String, outputPath: String, onProgress: (Int) -> Boolean = NO_PROGRESS): Boolean {
+        if (!isSupported) return false
+
+        var extractor: MediaExtractor? = null
+        var muxer: MediaMuxer? = null
+        var complete = false
+
+        return try {
+            val source = MediaExtractor().also { extractor = it }
+            source.setDataSource(inputPath)
+
+            val output = MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4).also { muxer = it }
+
+            val tracks = HashMap<Int, Int>()
+            var bufferSize = DEFAULT_BUFFER_SIZE
+            var duration = 0L
+
+            for (i in 0 until source.trackCount) {
+                val format = source.getTrackFormat(i)
+                val mime = format.getString(MediaFormat.KEY_MIME)
+                if (mime == null || (!mime.startsWith("video/") && !mime.startsWith("audio/"))) continue
+
+                tracks[i] = output.addTrack(format)
+                bufferSize = maxOf(bufferSize, format.maxInputSize())
+                if (mime.startsWith("video/")) duration = format.durationUs()
+                source.selectTrack(i)
+            }
+
+            if (tracks.isEmpty()) return false
+
+            output.start()
+
+            val buffer = ByteBuffer.allocate(bufferSize)
+            val info = MediaCodec.BufferInfo()
+            var aborted = false
+
+            while (true) {
+                val size = source.readSampleData(buffer, 0)
+                if (size < 0) break
+
+                val percent = if (duration > 0) (source.sampleTime * 100 / duration).toInt().coerceIn(0, 100) else 0
+                if (!onProgress(percent)) {
+                    aborted = true
+                    break
+                }
+
+                val outTrack = tracks[source.sampleTrackIndex]
+                if (outTrack != null) {
+                    info.offset = 0
+                    info.size = size
+                    info.presentationTimeUs = source.sampleTime
+                    info.flags = source.sampleFlags
+
+                    output.writeSampleData(outTrack, buffer, info)
+                }
+                source.advance()
+            }
+
+            if (!aborted) {
+                output.stop()
+                complete = true
+            }
+
+            complete
+        } catch (e: Throwable) {
+            false
+        } finally {
+            extractor.releaseQuietly()
+            muxer.releaseQuietly()
+            if (!complete) File(outputPath).takeIf { it.exists() }?.delete()
         }
     }
 
@@ -78,13 +172,25 @@ object VideoMuxer {
             if (containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
             else DEFAULT_BUFFER_SIZE
 
-    private fun MediaExtractor.copyTrack(track: Int, muxer: MediaMuxer, outTrack: Int, buffer: ByteBuffer) {
+    private fun MediaFormat.durationUs(): Long =
+            if (containsKey(MediaFormat.KEY_DURATION)) getLong(MediaFormat.KEY_DURATION) else 0L
+
+    /** False when [onProgress] asked to stop, so the caller can discard a half written file. */
+    private fun MediaExtractor.copyTrack(track: Int, muxer: MediaMuxer, outTrack: Int, buffer: ByteBuffer,
+                                         duration: Long = 0L, from: Int = 0, to: Int = 0,
+                                         onProgress: (Int) -> Boolean = NO_PROGRESS): Boolean {
         selectTrack(track)
         val info = MediaCodec.BufferInfo()
 
         while (true) {
             val size = readSampleData(buffer, 0)
             if (size < 0) break
+
+            val percent = if (duration > 0 && to > from) {
+                (from + (sampleTime * (to - from) / duration).toInt()).coerceIn(from, to)
+            } else from
+            //checked every sample, so a cancel lands quickly instead of at the end of the track
+            if (!onProgress(percent)) return false
 
             info.offset = 0
             info.size = size
@@ -97,6 +203,7 @@ object VideoMuxer {
         }
 
         unselectTrack(track)
+        return true
     }
 
     private fun MediaExtractor?.releaseQuietly() = try {

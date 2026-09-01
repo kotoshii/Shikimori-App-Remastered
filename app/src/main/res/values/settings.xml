@@ -20,11 +20,6 @@
     <string name="settings_content_allow_r18_summary_on">Сейчас 18+ контент будет отображаться</string>
     <string name="settings_content_allow_r18_summary_off">Сейчас 18+ контент скрыт</string>
 
-    <string name="settings_content_alt_source_by_default_title">Открывать альтернативный источник по умолчанию</string>
-    <string name="settings_content_alt_source_by_default_key" translatable="false">ALT_SOURCE_BY_DEFAULT</string>
-    <string name="settings_content_alt_source_by_default_summary_on">Используется альтернативный источник</string>
-    <string name="settings_content_alt_source_by_default_summary_off">Используется основной источник</string>
-
     <string name="settings_content_download_folder_title">Папка загрузки</string>
     <string name="settings_content_download_folder_key" translatable="false">DOWNLOAD_FOLDER</string>
     <string name="settings_content_download_folder_summary">Укажите путь для скачивания</string>
@@ -43,6 +38,13 @@
     <string name="settings_anime">Аниме</string>
     <string name="settings_authors">Список авторов</string>
     <string name="settings_anime_summary">Плеер, тип перевода</string>
+
+    <!-- moved here from the App screen; the key must stay ALT_SOURCE_BY_DEFAULT or every user
+         loses the choice they already made -->
+    <string name="settings_anime_alt_source_by_default_title">Открывать альтернативный источник по умолчанию</string>
+    <string name="settings_anime_alt_source_by_default_key" translatable="false">ALT_SOURCE_BY_DEFAULT</string>
+    <string name="settings_anime_alt_source_by_default_summary_on">Используется альтернативный источник</string>
+    <string name="settings_anime_alt_source_by_default_summary_off">Используется основной источник</string>
 
     <string name="settings_anime_translation_type_title">Предпочитаемый тип перевода</string>
     <string name="settings_anime_translation_type_key" translatable="false">TRANSLATION_TYPE</string>
@@ -162,6 +164,12 @@
     <string name="settings_donation_message"><![CDATA[Приложение является <b>неофициальным.</b> Материальная поддержка мотивирует и позволяет оплатить сервер.]]></string>
 
     <string name="settings_system_options">Программные опции</string>
+
+    <string name="settings_system_check_updates_title">Проверять обновления при запуске</string>
+    <string name="settings_system_check_updates_key" translatable="false">CHECK_UPDATES_ON_START</string>
+    <string name="settings_system_check_updates_summary_on">Приложение сообщит о новой версии на GitHub</string>
+    <string name="settings_system_check_updates_summary_off">Проверка выключена, обновляться придётся вручную</string>
+
     <string name="settings_backup">BACKUP_SETTINGS</string>
     <string name="settings_backup_title">Бэкап настроек</string>
 
@@ -172,4 +180,20 @@
 
     <string name="settings_hide_anime_365_key">HIDE_ANIME_365</string>
     <string name="settings_hide_anime_365_title">Скрыть Anime 365 из выдачи, если вход не выполнен</string>
+
+    <string name="settings_hosting_filter_key" translatable="false">HOSTING_FILTER</string>
+    <string name="settings_hosting_filter_title">Скрытые хостинги</string>
+    <string name="settings_hosting_filter_summary">Не показывать выбранные хостинги в списке переводов</string>
+    <string name="settings_hosting_filter_empty">Фильтров пока нет, ничего не скрыто</string>
+    <string name="settings_hosting_filter_add">Добавить</string>
+    <string name="settings_hosting_filter_dialog_title">Добавить хостинг</string>
+    <string name="settings_hosting_filter_input_placeholder">Например youtube.com</string>
+    <string name="settings_hosting_filter_input_hint">Можно вставить ссылку целиком — домен определится сам. Субдомены тоже скрываются.</string>
+    <string name="settings_hosting_filter_input_error">Не похоже на ссылку</string>
+    <string name="settings_hosting_filter_delete">Удалить</string>
+    <string name="settings_hosting_filter_delete_message">Удалить домен из списка?</string>
+    <string name="settings_hosting_filter_hint_title">Как это работает</string>
+    <string name="settings_hosting_filter_hint_message">Хостинги появляются в списке сами, когда встречаются вам в приложении. Отметьте те, которые не нужно показывать в списке переводов.
+
+Если нужного хостинга ещё нет в списке, добавьте его вручную кнопкой внизу.</string>
 </resources>

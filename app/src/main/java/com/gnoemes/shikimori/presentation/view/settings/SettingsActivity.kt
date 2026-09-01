@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras.NEW_VERSION_AVAILABLE
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.settings.fragments.SettingsFragment
+import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.utils.*
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.layout_toolbar.*
@@ -30,6 +31,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
             addBackButton { onBackPressed() }
             inflateMenu(R.menu.menu_setting)
             menu.findItem(R.id.item_accept).isVisible = false
+            menu.findItem(R.id.item_hint).isVisible = false
             setOnMenuItemClickListener {
                 (supportFragmentManager.findFragmentById(R.id.fragment_container) as? Toolbar.OnMenuItemClickListener)?.onMenuItemClick(it)
                         ?: false
@@ -90,10 +92,25 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         (toolbar.menu.findItem(R.id.item_version).actionView as TextView).apply {
             val indicator = context.drawable(R.drawable.ic_version_indicator)?.apply { tint(context.colorAttr(R.attr.colorSecondary)) }
             setCompoundDrawablesWithIntrinsicBounds(indicator, null, null, null)
-            onClick { startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri())) }
+            onClick { showChangelog() }
         }
+    }
+
+    /**
+     * The badge is the way back to an update whose notification was swiped away, so it shows the
+     * same changelog the notification offers. The releases page is the fallback for the one case
+     * that has nothing stored - a check that has not run since the preferences were cleared.
+     */
+    private fun showChangelog() {
+        val dialog = ChangelogDialog.fromPreferences(this)
+
+        if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
+        else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
     override fun showToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = true }
     override fun hideToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = false }
+
+    override fun showToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = true }
+    override fun hideToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = false }
 }

@@ -43,7 +43,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
     }
 
     private fun loadVideo(payload: TranslationVideo) {
-        interactor.getVideo(payload, payload.videoHosting is VideoHosting.SMOTRET_ANIME)
+        interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
                 .subscribe({ updateVideo(it) }, this::processLoadVideoErrors)
                 .addToDisposables()

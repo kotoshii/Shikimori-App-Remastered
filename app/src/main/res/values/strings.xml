@@ -2,6 +2,32 @@
     <string name="app_name">Shikimori App</string>
     <string name="appBarFixScrollingFooterBehavior">com.gnoemes.shikimori.utils.widgets.FixScrollingFooterBehavior</string>
     <string name="default_notification_channel_id">SHIKIMORI_NOTIFICATION_CHANNEL_ID</string>
+    <string name="download_notification_channel">Загрузка эпизодов</string>
+    <string name="download_notification_progress">Загрузка…</string>
+    <string name="download_notification_cancel">Отмена</string>
+    <string name="download_notification_queued">Загрузка… (ещё %d в очереди)</string>
+    <string name="download_notification_merging">Объединение видео и звука…</string>
+    <string name="download_notification_converting">Подготовка файла…</string>
+    <string name="download_notification_cancelled">Загрузка отменена</string>
+    <string name="download_notification_done">Загрузка завершена</string>
+    <string name="download_notification_no_audio">Загружено, звук отдельным файлом</string>
+    <string name="download_notification_failed">Не удалось загрузить</string>
+
+    <string name="update_notification_channel">Обновления приложения</string>
+    <string name="update_available_title">Доступна версия %s</string>
+    <string name="update_available_text">Нажмите «Изменения», чтобы посмотреть, что нового</string>
+    <string name="update_action_download">Загрузить</string>
+    <string name="update_action_changes">Изменения</string>
+    <string name="update_action_install">Установить</string>
+    <string name="update_downloading">Загрузка обновления…</string>
+    <string name="update_downloaded_title">Обновление загружено</string>
+    <string name="update_downloaded_text">Версия %s готова к установке</string>
+    <string name="update_download_failed">Не удалось загрузить обновление</string>
+    <string name="update_signature_mismatch">Файл подписан другим ключом, установка отменена</string>
+    <string name="update_older_build">Загруженная сборка старше установленной, установка отменена</string>
+    <string name="update_install_failed">Не удалось открыть установщик</string>
+    <string name="update_changelog_title">Что нового в %s</string>
+    <string name="update_changelog_empty">Описание изменений отсутствует</string>
     <string name="main_exit_message">Для выхода из программы нажмите кнопку еще раз</string>
 
     <string name="common_rates">Списки</string>
@@ -376,12 +402,14 @@
 
     <string name="series_main_source">Основной</string>
     <string name="series_alt_source">Альтернативный</string>
+    <string name="series_link_copied">Ссылка скопирована</string>
     <string name="series_empty_authors_title">Авторы не найдены</string>
-    <string name="series_empty_authors_description">Попробуйте изменить источник или тип, если смотрите не в одном.</string>
+    <string name="series_empty_authors_description">Попробуйте изменить источник или тип, если смотрите не в одном. Также проверьте скрытые хостинги в настройках.</string>
     <string name="series_empty_episode_title">Эпизод не найден</string>
     <string name="series_empty_episode_description">Тайтл не вышел или видео не выложили.</string>
     <string name="series_add_video">Добавить видео</string>
     <string name="series_tracks_empty">Не удалось найти видео. Похоже, что оно было удалено.</string>
+    <string name="series_anime_365_login_required">Для Anime 365 нужен вход. Выполните его в настройках — «Вход в Anime 365».</string>
 
     <string name="player_web">Веб-плеер</string>
     <string name="player_embedded">Внутренний плеер (BETA)</string>
@@ -430,6 +458,8 @@
     <string name="favorites_mangakas">Мангаки</string>
     <string name="favorites_other_people">Прочие люди</string>
 
+    <string name="download_choose_hosting">Этот перевод есть на нескольких источниках. Выберите один — список качеств откроется следующим шагом.</string>
+    <string name="download_choose_hosting_unsupported">Часть источников этого перевода не поддерживается приложением, поэтому их нет в списке.</string>
     <string name="download_will_be_merged">Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически. Дождитесь окончания обеих загрузок.</string>
     <string name="download_new_folder">Новая папка</string>
     <string name="download_new_folder_hint">Введите название новой папки</string>

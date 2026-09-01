@@ -2,7 +2,9 @@ package com.gnoemes.shikimori.data.local.preference.impl
 
 import android.content.SharedPreferences
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.di.app.annotations.SettingsQualifier
+import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
@@ -11,10 +13,12 @@ import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.utils.putBoolean
 import com.gnoemes.shikimori.utils.putInt
 import com.gnoemes.shikimori.utils.putString
+import com.gnoemes.shikimori.utils.putStringSet
 import javax.inject.Inject
 
 class SettingsSourceImpl @Inject constructor(
-        @SettingsQualifier private val prefs: SharedPreferences
+        @SettingsQualifier private val prefs: SharedPreferences,
+        private val userSource: UserSource
 ) : SettingsSource {
 
     override var isAutoStatus: Boolean
@@ -29,8 +33,20 @@ class SettingsSourceImpl @Inject constructor(
         get() = prefs.getBoolean(SettingsExtras.IS_ROMADZI_NAMING, true)
         set(value) = prefs.putBoolean(SettingsExtras.IS_ROMADZI_NAMING, value)
 
+    /**
+     * Reports false whenever nobody is signed in, whatever is stored.
+     *
+     * Upstream only hides the toggle when logged out, which leaves a stored `true` in force - a user
+     * who enabled r18 and then signed out kept seeing r18 content. Gating the **value** instead
+     * covers all three readers at once - `SearchQueryBuilderImpl`, `FilterSourceImpl` and
+     * `PosterSourceImpl` - rather than relying on each of them to remember to check.
+     *
+     * The stored choice is deliberately left alone by the setter, so signing back in restores it.
+     * `PosterSourceImpl` compares this value against the one its cache was built with, so signing
+     * out invalidates the poster cache on its own.
+     */
     override var allowR18Content: Boolean
-        get() = prefs.getBoolean(SettingsExtras.ALLOW_R18_CONTENT, false)
+        get() = userSource.getUserId() != Constants.NO_ID && prefs.getBoolean(SettingsExtras.ALLOW_R18_CONTENT, false)
         set(value) = prefs.putBoolean(SettingsExtras.ALLOW_R18_CONTENT, value)
 
     override var altSourceByDefault: Boolean
@@ -89,6 +105,15 @@ class SettingsSourceImpl @Inject constructor(
             ChronologyType.values().find { it.ordinal == type } ?: ChronologyType.MAIN
         }
         set(value) = prefs.putInt(SettingsExtras.CHRONOLOGY_TYPE, value.ordinal)
+
+    override var seenHostings: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.SEEN_HOSTINGS, emptySet()).orEmpty()
+        //a copy, because SharedPreferences must not be handed a set it still holds a reference to
+        set(value) = prefs.putStringSet(SettingsExtras.SEEN_HOSTINGS, LinkedHashSet(value))
+
+    override var hiddenHostings: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.HIDDEN_HOSTINGS, emptySet()).orEmpty()
+        set(value) = prefs.putStringSet(SettingsExtras.HIDDEN_HOSTINGS, LinkedHashSet(value))
 
     override var hideAnime365: Boolean
         get() = prefs.getBoolean(SettingsExtras.HIDE_ANIME_365, false)

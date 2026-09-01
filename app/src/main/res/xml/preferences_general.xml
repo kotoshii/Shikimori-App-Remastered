@@ -24,15 +24,6 @@
             android:title="@string/settings_content_allow_r18_title"
             app:iconSpaceReserved="false" />
 
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="@string/settings_content_alt_source_by_default_key"
-            android:layout="@layout/layout_preference"
-            android:summaryOff="@string/settings_content_alt_source_by_default_summary_off"
-            android:summaryOn="@string/settings_content_alt_source_by_default_summary_on"
-            android:title="@string/settings_content_alt_source_by_default_title"
-            app:iconSpaceReserved="false" />
-
         <Preference
             android:key="@string/settings_content_download_folder_key"
             android:layout="@layout/layout_preference"
@@ -81,6 +72,15 @@
     <PreferenceCategory
         android:title="@string/settings_system_options"
         app:iconSpaceReserved="false">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/settings_system_check_updates_key"
+            android:layout="@layout/layout_preference"
+            android:summaryOff="@string/settings_system_check_updates_summary_off"
+            android:summaryOn="@string/settings_system_check_updates_summary_on"
+            android:title="@string/settings_system_check_updates_title"
+            app:iconSpaceReserved="false" />
 
         <Preference
             android:key="@string/settings_backup"

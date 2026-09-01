@@ -10,69 +10,113 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License"></a>
 </p>
 
-Android client for [shikimori.io](https://shikimori.io). Anime and manga database, your lists, forum, and watching episodes in the app.
-
-This is a fork of [gnoemes/Shikimori-App-Remastered](https://github.com/gnoemes/Shikimori-App-Remastered). The original is still around, but it gets updated mostly when Shikimori breaks something, and builds go to the author's Telegram instead of GitHub. This fork is kept working, and APKs are published here.
-
-## Install
-
-[Download the latest APK](https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest)
-
-Needs Android 4.1 or newer. Allow installs from unknown sources, and when you open the app Play Protect will probably ask to scan or verify it. That happens with any APK installed outside the store.
-
-Versions are `major.minor.patch`, like `0.8.8`. Older releases had a fourth build number in the end, like `0.8.7.1`. It is not used anymore.
-
-## Screenshots
-
 <p align="center">
-  <img src="docs/screenshots/anime_catalog.png" width="19%" alt="Catalog">
-  <img src="docs/screenshots/anime.png" width="19%" alt="Anime page">
-  <img src="docs/screenshots/character.png" width="19%" alt="Character">
-  <img src="docs/screenshots/calendar.png" width="19%" alt="Calendar">
-  <img src="docs/screenshots/settings.png" width="19%" alt="Settings">
+  <b>Русский</b> · <a href="README.en.md">English</a>
 </p>
 
-## What's different from the original
+Android-клиент для [shikimori.io](https://shikimori.io). База аниме и манги, ваши списки, форум и просмотр эпизодов прямо в приложении.
 
-Both apps can watch episodes. The difference is mostly in where the work happens.
+Это форк [gnoemes/Shikimori-App-Remastered](https://github.com/gnoemes/Shikimori-App-Remastered). Оригинал никуда не делся, но обновляется в основном тогда, когда что-то ломается на Шикимори, а сборки выкладываются в телеграм автора, а не на GitHub. Этот форк поддерживается в рабочем состоянии, APK публикуются здесь.
 
-**Video hosts**
+## Содержание
 
-- The app parses hosts itself. 11 parsers here, 3 in the original. When a host changes its site or moves to a new domain, it gets fixed in the app instead of waiting for the backend.
-- Working hosts: VK, OK, mail.ru, Sibnet, SovetRomantica, AnimeJoy, AllVideo, Dzen, cda.pl.
-- cda.pl was added here.
-- A setting to open the secondary source by default instead of the main one.
-- A setting to hide Anime 365 from the list when you are not logged in, since those links do not play without an account.
+- [Содержание](#содержание)
+- [Установка](#установка)
+- [Скриншоты](#скриншоты)
+- [Чем отличается от оригинала](#чем-отличается-от-оригинала)
+  - [Основные возможности](#основные-возможности)
+  - [Мелочи](#мелочи)
+  - [Попутно исправлено](#попутно-исправлено)
+- [Сборка](#сборка)
+- [Благодарности](#благодарности)
 
-**Shikimori API**
+## Установка
 
-- 🎉 **Posters are back!** Shikimori stopped sending them in the JSON API for anything added recently and returns a grey placeholder instead. The app now asks their GraphQL API for the real image, so covers show up again in the catalog, calendar, search, anime and manga pages, chronology, your lists and the forum.
-- Much fewer "Too Many Requests" errors. Shikimori limits both how fast and how many requests you send. All requests now go through one queue that spaces them out, which mostly showed up when opening an anime page and then chronology right after.
-- The update check reads releases from this repo.
+[Скачать последний APK](https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest)
 
-**Fixed along the way**
+Нужен Android 4.1 или новее. Разрешите установку из неизвестных источников. При первом запуске Play Protect, скорее всего, предложит проверить приложение — так бывает с любым APK, установленным не из магазина.
 
-- Light novels were shown as manga on some screens.
-- Some anime kinds were missing.
-- Chronology skipped entries, and could hang on titles with an empty franchise.
-- Switching episodes could pick the wrong author.
-- Downloading an Anime 365 episode could crash.
-- Other minor bug fixes.
+Версии выглядят как `major.minor.patch`, например `0.8.8`. В старых релизах в конце был четвёртый номер сборки, например `0.8.7.1`. Сейчас он не используется.
 
-## Building
+## Скриншоты
 
-Old project with an old toolchain. StorIO is used with deprecated modules and code generation, which is what keeps everything pinned to 2018 versions. Moving to Room would fix that.
+<p align="center">
+  <img src="docs/screenshots/anime_catalog.png" width="170" alt="Каталог">
+  <img src="docs/screenshots/anime.png" width="170" alt="Страница аниме">
+  <img src="docs/screenshots/character.png" width="170" alt="Персонаж">
+  <img src="docs/screenshots/calendar.png" width="170" alt="Календарь">
+  <img src="docs/screenshots/anime_list.png" width="170" alt="Список аниме">
+  <img src="docs/screenshots/translation_list.png" width="170" alt="Переводы">
+  <img src="docs/screenshots/hosting_picker.png" width="170" alt="Выбор хостинга">
+  <img src="docs/screenshots/domain_filter.png" width="170" alt="Фильтр хостингов">
+  <img src="docs/screenshots/changelog.png" width="170" alt="Список изменений">
+  <img src="docs/screenshots/settings.png" width="170" alt="Настройки">
+</p>
 
-- JDK 8. Gradle 4.10.1 and AGP 3.2.1 do not run on newer ones.
-- [Android Studio 4.1.1](https://developer.android.com/studio/archive) or older.
+## Чем отличается от оригинала
+
+Оба приложения позволяют смотреть аниме онлайн.
+
+### Основные возможности
+
+#### 🖼 Постеры вернулись
+
+Шикимори перестал отдавать обложки в JSON API для всего, что добавлено недавно, и возвращает серую заглушку. Приложение запрашивает настоящую картинку через их GraphQL API, поэтому обложки снова на своих местах — в каталоге, календаре, поиске, на страницах аниме и манги, в хронологии, ваших списках и на форуме.
+
+#### 🎬 Одиннадцать видеохостингов — и ничего лишнего
+
+**Kodik, VK, OK, mail.ru, Sibnet, SovetRomantica, AnimeJoy, AllVideo, Dzen, cda.pl и matreshka.tv.** \
+Приложение напрямую подключается к каждому из них с вашего телефона — без промежуточного сервера с нашей стороны. Меньше ожидания и меньше вещей за пределами приложения, которые могут внезапно перестать работать. Если хост изменит свой плеер, исправление появится в следующем обновлении приложения. Anime 365 тоже поддерживается, но для него нужна подписка с их стороны.
+
+#### 🧹 В списке эпизодов только нужные хостинги
+
+Хост может быть недоступен, заблокирован в вашем регионе или просто медленно работать именно у вас. Спрячьте любой из них в настройках, и он больше не будет отображаться в списке эпизодов. Никаких жёстко заданных значений — фильтр работает с теми хостами, которые реально появляются в вашем списке.
+
+#### 📥 Приложение само управляет загрузками
+
+В итоге вы получаете настоящий видеофайл, который можно воспроизвести — приложение само скачивает его, а не передаёт ссылку системному менеджеру загрузок Android. Прогресс загрузки и кнопка отмены отображаются в уведомлении, а после завершения нажатие на него открывает файл.
+
+#### 🎯 Сначала хостинг, потом качества
+
+Если один и тот же перевод доступен на нескольких хостингах, приложение сначала предлагает выбрать нужный, а уже потом загружает доступные качества только для него. Не приходится ждать загрузки информации с хостингов, которые вы всё равно не выберете.
+
+#### 🔄 Сообщает о выходе новой версии
+
+При запуске приложение проверяет этот репозиторий на наличие новой версии. Ничего не устанавливается автоматически: вы получаете список изменений и кнопку для обновления, а APK скачивается прямо внутри приложения, а не через браузер.
+
+### Небольшие изменения
+
+- Второстепенный источник теперь может открываться по умолчанию вместо основного.
+- Долгое нажатие на хост позволяет скопировать ссылку на эпизод.
+- Гораздо меньше ошибок «Too Many Requests». Shikimori ограничивает как частоту, так и количество запросов, поэтому теперь все запросы проходят через единую очередь с интервалами между ними. Особенно сильно проблема проявлялась при открытии страницы аниме и его хронологии сразу после этого.
+
+### Исправления
+
+- Раньше один неработающий хост мог уронить всё приложение или оставить список загрузок пустым. Теперь он просто исключается, а остальные продолжают работать.
+- ok.ru перестал воспроизводить видео после изменения плеера на сайте. Выбор качества снова работает — от 144p до 1080p.
+- При отправке эпизода из Kodik создавалась ссылка, которую нельзя было открыть.
+- После неудачного запроса экран мог оставаться пустым, пока вы не вернётесь назад.
+- Ранобэ на некоторых экранах отображались как манга, а некоторые типы аниме вообще отсутствовали.
+- В хронологии пропускались некоторые записи, а на тайтлах с пустой франшизой она могла зависнуть.
+- При переключении эпизодов мог выбраться неправильный автор.
+- Скачивание эпизода с Anime 365 могло привести к вылету приложения.
+- Другие мелкие исправления.
+
+
+## Сборка
+
+Старый проект со старым тулчейном. StorIO используется с устаревшими модулями и кодогенерацией — именно это держит всё на версиях 2018 года. Переход на Room это исправил бы.
+
+- JDK 8. Gradle 4.10.1 и AGP 3.2.1 на новых не запускаются.
+- [Android Studio 4.1.1](https://developer.android.com/studio/archive) или более ранняя версия.
 - Android SDK 28.
 
 ```
 ./gradlew assembleDebug
 ```
 
-There is no signing config in the repo, so release builds come out unsigned.
+Конфигурации подписи в репозитории нет, поэтому release-сборки получаются неподписанными.
 
-## Credits
+## Благодарности
 
-Original app by [gnoemes](https://github.com/gnoemes). GPL-3.0, same as the original, see [LICENSE](LICENSE).
+Оригинальное приложение — [gnoemes](https://github.com/gnoemes). Лицензия GPL-3.0, как и у оригинала, см. [LICENSE](LICENSE).

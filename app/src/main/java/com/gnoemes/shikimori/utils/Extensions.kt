@@ -184,6 +184,10 @@ fun <T> Single<T>.appendLoadingLogic(viewState: BaseView): Single<T> =
                 .doAfterTerminate { viewState.onHideLoading() }
                 .doOnEvent { _, _ -> viewState.onHideLoading() }
                 .doOnSuccess { viewState.showContent(true) }
+                //content was hidden on subscribe, so a failure that nobody recognises used to leave
+                //the screen blank for good. Errors that do have a view of their own - network and
+                //http codes - hide it again in BaseNetworkPresenter.processErrors.
+                .doOnError { viewState.showContent(true) }
 
 fun <T> Single<T>.appendLightLoadingLogic(viewState: BaseView): Single<T> =
         this.doOnSubscribe { viewState.onShowLightLoading() }
