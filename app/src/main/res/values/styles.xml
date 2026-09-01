@@ -263,4 +263,23 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+    <!--
+        Replaces the material-dialogs style of the same name to add scrollbars="none". The first
+        three items are copied from the library and have to stay in step with it.
+
+        Without this a dialog title flashes a grey bar over its last letter for a moment as the
+        dialog opens. Two things have to line up for it. androidx.preference puts
+        android:scrollbars=vertical into the activity's own theme - PreferenceFragmentCompat.onCreate
+        calls getTheme().applyStyle(PreferenceThemeOverlay) - so every view inflated from a settings
+        screen, dialogs included, has a vertical scrollbar enabled. And DialogTitleLayout lays the
+        title out at 2 * (measuredHeight / 2), so an odd measured height leaves the view one pixel
+        shorter than its text. The title then reports itself as scrollable and draws a thumb.
+    -->
+    <style name="MD_Dialog_Title_Text">
+        <item name="android:textColor">?android:textColorPrimary</item>
+        <item name="android:textSize">@dimen/md_title_textsize</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:scrollbars">none</item>
+    </style>
+
 </resources>
