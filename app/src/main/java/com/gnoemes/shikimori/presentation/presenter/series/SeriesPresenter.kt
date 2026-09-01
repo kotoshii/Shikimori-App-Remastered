@@ -229,9 +229,12 @@ class SeriesPresenter @Inject constructor(
     }
 
     fun onShare(item: SeriesDownloadItem) {
-        val videoUrl = if (item.url.contains("m3u8")) {
-            item.url.replaceAfterLast("mp4", "")
-        } else item.url
+        //The url is shared exactly as the player uses it. An hls link used to be cut back at ".mp4"
+        //to turn it into a plain file, which kodik's urls are shaped for
+        //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
+        //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
+        //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
+        val videoUrl = item.url
 
         //the same four things the downloaded file is named after, so a shared link and a saved file
         //describe the episode alike. Blanks drop out rather than leaving separators behind - an
