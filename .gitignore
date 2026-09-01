@@ -31,11 +31,7 @@ app/debug/output.json
 app/release/output.json
 
 CLAUDE.md
-docs/ARCHITECTURE.md
-docs/BUILD_AND_RELEASE.md
-docs/ROADMAP.md
-docs/ROADMAP_NOTES.md
-docs/WORKLOG.md
+docs/_internal
 
 
 
