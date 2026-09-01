@@ -41,11 +41,16 @@ Versions are `major.minor.patch`, like `0.8.8`. Older releases had a fourth buil
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/anime_catalog.png" width="19%" alt="Catalog">
-  <img src="docs/screenshots/anime.png" width="19%" alt="Anime page">
-  <img src="docs/screenshots/character.png" width="19%" alt="Character">
-  <img src="docs/screenshots/calendar.png" width="19%" alt="Calendar">
-  <img src="docs/screenshots/settings.png" width="19%" alt="Settings">
+  <img src="docs/screenshots/anime_catalog.png" width="170" alt="Catalog">
+  <img src="docs/screenshots/anime.png" width="170" alt="Anime page">
+  <img src="docs/screenshots/character.png" width="170" alt="Character">
+  <img src="docs/screenshots/calendar.png" width="170" alt="Calendar">
+  <img src="docs/screenshots/anime_list.png" width="170" alt="Anime list">
+  <img src="docs/screenshots/translation_list.png" width="170" alt="Translation list">
+  <img src="docs/screenshots/hosting_picker.png" width="170" alt="Hosting picker">
+  <img src="docs/screenshots/domain_filter.png" width="170" alt="Hosting filter">
+  <img src="docs/screenshots/changelog.png" width="170" alt="Changelog">
+  <img src="docs/screenshots/settings.png" width="170" alt="Settings">
 </p>
 
 ## What's different from the original
