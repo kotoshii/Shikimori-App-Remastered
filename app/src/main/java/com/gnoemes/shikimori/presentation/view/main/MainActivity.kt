@@ -165,7 +165,9 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val version = release.tag.orEmpty().trimStart('v', 'V')
 
         prefs.putString(SettingsExtras.NEW_VERSION_TAG, version)
-        prefs.putString(SettingsExtras.NEW_VERSION_CHANGELOG, release.body)
+        //localizedBody, not body: the notes carry english after a marker and the dialog shows only
+        //the russian half of them
+        prefs.putString(SettingsExtras.NEW_VERSION_CHANGELOG, release.localizedBody)
         prefs.putString(SettingsExtras.NEW_VERSION_APK_URL, release.apkUrl)
 
         //this runs on an io thread and can outlive the activity, so the notification uses the app
