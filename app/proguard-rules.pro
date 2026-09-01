@@ -62,6 +62,11 @@
 -dontwarn org.slf4j.**
 -keep public class * extends androidx.preference.PreferenceFragmentCompat
 
+# HostingFilterFragment is a plain Fragment, so the rule above does not cover it, and the only
+# thing naming it is preferences_anime.xml. R8 dropped it from the release build and opening
+# the screen crashed the app. Anything else reached by app:fragment needs a line here too.
+-keep public class com.gnoemes.shikimori.presentation.view.settings.fragments.HostingFilterFragment { <init>(); }
+
 # ServiceLoader support
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
