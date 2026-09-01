@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
+import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
 import com.gnoemes.shikimori.presentation.presenter.common.AddToEndSingleTagStrategy
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragmentView
@@ -28,6 +29,9 @@ interface SeriesView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun showPlayerDialog()
+
+    @StateStrategyType(SkipStrategy::class)
+    fun showDownloadHostingDialog(title : String, videos: List<TranslationVideo>, hasUnsupported: Boolean)
 
     @StateStrategyType(SkipStrategy::class)
     fun showDownloadDialog(title : String, items: List<SeriesDownloadItem>)
@@ -57,6 +61,9 @@ interface SeriesView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun showTracksNotFoundError()
+
+    @StateStrategyType(SkipStrategy::class)
+    fun showAnime365LoginRequired()
 
     @StateStrategyType(SkipStrategy::class)
     fun scrollToPosition(position: Int)

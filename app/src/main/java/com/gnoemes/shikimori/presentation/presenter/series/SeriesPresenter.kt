@@ -242,20 +242,37 @@ class SeriesPresenter @Inject constructor(
         viewState.showAuthorDialog(author)
     }
 
+    /**
+     * Anime365 is deliberately **not** filtered out when there is no token. Dropping it silently
+     * left the user with a shorter list and no reason for it - the login is asked for at the moment
+     * they pick it instead, see [needsAnime365Login]. Hiding it outright is a setting of its own,
+     * `hideAnime365`, which is the user's choice rather than ours.
+     */
     private fun showDownloadDialog(videos: List<TranslationVideo>) {
-        val filteredItems = videos.filter {
-            Utils.isHostingSupports(it.videoHosting) && if (tokenSource.getToken() != null) true else it.videoHosting !is VideoHosting.SMOTRET_ANIME
-        }
+        val filteredItems = videos.filter { Utils.isHostingSupports(it.videoHosting) }
 
         if (filteredItems.isEmpty()) return
 
-        Observable.fromIterable(filteredItems)
+        //asking which hosting first means only that one is resolved. Resolving the whole group up
+        //front cost a page fetch per hosting, and all but the chosen one were thrown away
+        if (filteredItems.size == 1) showDownloadQualities(filteredItems)
+        else viewState.showDownloadHostingDialog(filteredItems.first().author, filteredItems, filteredItems.size < videos.size)
+    }
+
+    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(listOf(video))
+
+    private fun showDownloadQualities(videos: List<TranslationVideo>) {
+        if (videos.all(::needsAnime365Login)) {
+            viewState.showAnime365LoginRequired()
+            return
+        }
+
+        Observable.fromIterable(videos)
                 .flatMapSingle { payload ->
                     interactor.getVideo(payload)
                             .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
-                            //one author usually publishes the same episode to half a dozen hostings,
-                            //so a single broken parser used to take the whole dialog down with it -
-                            //that hosting is left out of the list instead
+                            //a hosting that cannot be resolved is left out rather than failing the
+                            //whole list, which matters when more than one is being resolved
                             .onErrorReturnItem(emptyList())
                 }
                 .flatMapIterable { it }
@@ -263,7 +280,7 @@ class SeriesPresenter @Inject constructor(
                 .appendLoadingLogic(viewState)
                 .subscribe({ items ->
                     if (items.isEmpty()) viewState.showTracksNotFoundError()
-                    else viewState.showDownloadDialog(filteredItems.first().author, items)
+                    else viewState.showDownloadDialog(videos.first().author, items)
                 }, this::processErrors)
                 .addToDisposables()
     }
@@ -329,10 +346,22 @@ class SeriesPresenter @Inject constructor(
     //Only embedded player can process object payload
     //Others o uses urls
     private fun openVideo(payload: TranslationVideo, playerType: PlayerType) {
+        //anime365 resolves nothing without a login, so say so instead of opening a player that will
+        //find no tracks. The web player is the exception - it loads anime365's own page, which asks
+        //for the login itself
+        if (playerType != PlayerType.WEB && needsAnime365Login(payload)) {
+            viewState.showAnime365LoginRequired()
+            return
+        }
+
         if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, navigationData.rateId, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
         else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
+
+    /** Anime365 needs a paid account, and without the token nothing it hands back has tracks. */
+    private fun needsAnime365Login(video: TranslationVideo): Boolean =
+            video.videoHosting is VideoHosting.SMOTRET_ANIME && tokenSource.getToken() == null
 
     private fun showQualityChooser(tracks: List<Track>) {
         if (tracks.isEmpty()) {

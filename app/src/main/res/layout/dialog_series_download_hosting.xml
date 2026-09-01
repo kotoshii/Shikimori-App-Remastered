@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    Mirrors dialog_series_download so the two steps of the download flow look the same.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/hostingNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
+        android:text="@string/download_choose_hosting"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/hostingUnsupportedNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
+        android:text="@string/download_choose_hosting_unsupported"
+        android:textColor="?attr/colorOnPrimarySecondary"
+        android:textSize="13sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- no top padding: VerticalSpaceItemDecorator already insets the first card by 16dp, the same
+         way it does in the quality sheet -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

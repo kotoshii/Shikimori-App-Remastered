@@ -31,6 +31,7 @@ import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
+import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadHostingDialog
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment
@@ -57,6 +58,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         ListDialogFragment.DialogCallback,
         EpisodesFragment.EpisodesCallback,
         SeriesDownloadDialog.SeriesDownloadCallback,
+        SeriesDownloadHostingDialog.Callback,
         HasSupportFragmentInjector {
 
     @Inject
@@ -238,6 +240,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun onDownload(url: String, video: Video) = getPresenter().onTrackForDownloadSelected(url, video)
     override fun onShare(url: String) = getPresenter().onShare(url)
+    override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 
     override fun onRateCreated(id: Long) = getPresenter().onRateCreated(id)
     override fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean) =
@@ -339,6 +342,11 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         dialog.show(childFragmentManager, "PlayerSelect")
     }
 
+    override fun showDownloadHostingDialog(title: String, videos: List<TranslationVideo>, hasUnsupported: Boolean) {
+        val dialog = SeriesDownloadHostingDialog.newInstance(title, videos, hasUnsupported)
+        dialog.show(childFragmentManager, "DownloadHostingDialog")
+    }
+
     override fun showDownloadDialog(title: String, items: List<SeriesDownloadItem>) {
         val dialog = SeriesDownloadDialog.newInstance(title, items)
         dialog.show(childFragmentManager, "DownloadDialog")
@@ -356,6 +364,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun showTracksNotFoundError() {
         Toast.makeText(requireContext(), R.string.series_tracks_empty, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showAnime365LoginRequired() {
+        Toast.makeText(requireContext(), R.string.series_anime_365_login_required, Toast.LENGTH_LONG).show()
     }
 
     override fun checkPermissions() {

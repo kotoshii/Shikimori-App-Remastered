@@ -409,6 +409,7 @@
     <string name="series_empty_episode_description">Тайтл не вышел или видео не выложили.</string>
     <string name="series_add_video">Добавить видео</string>
     <string name="series_tracks_empty">Не удалось найти видео. Похоже, что оно было удалено.</string>
+    <string name="series_anime_365_login_required">Для Anime 365 нужен вход. Выполните его в настройках — «Вход в Anime 365».</string>
 
     <string name="player_web">Веб-плеер</string>
     <string name="player_embedded">Внутренний плеер (BETA)</string>
@@ -457,6 +458,8 @@
     <string name="favorites_mangakas">Мангаки</string>
     <string name="favorites_other_people">Прочие люди</string>
 
+    <string name="download_choose_hosting">Этот перевод есть на нескольких источниках. Выберите один — список качеств откроется следующим шагом.</string>
+    <string name="download_choose_hosting_unsupported">Часть источников этого перевода не поддерживается приложением, поэтому их нет в списке.</string>
     <string name="download_will_be_merged">Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически. Дождитесь окончания обеих загрузок.</string>
     <string name="download_new_folder">Новая папка</string>
     <string name="download_new_folder_hint">Введите название новой папки</string>
