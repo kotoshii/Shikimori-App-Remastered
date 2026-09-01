@@ -239,7 +239,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun onDownload(url: String, video: Video) = getPresenter().onTrackForDownloadSelected(url, video)
-    override fun onShare(url: String) = getPresenter().onShare(url)
+    override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
     override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 
     override fun onRateCreated(id: Long) = getPresenter().onRateCreated(id)

@@ -228,12 +228,22 @@ class SeriesPresenter @Inject constructor(
         loadWithEpisode()
     }
 
-    fun onShare(url: String) {
-        val videoUrl = if (url.contains("m3u8")) {
-            url.replaceAfterLast("mp4", "")
-        } else url
+    fun onShare(item: SeriesDownloadItem) {
+        val videoUrl = if (item.url.contains("m3u8")) {
+            item.url.replaceAfterLast("mp4", "")
+        } else item.url
 
-        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl)
+        //the same four things the downloaded file is named after, so a shared link and a saved file
+        //describe the episode alike. Blanks drop out rather than leaving separators behind - an
+        //unknown author, "не выбрано" for the kind, or a parser that could not tell the quality
+        val details = listOf(
+                item.video.author,
+                item.video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+                item.quality.orEmpty(),
+                item.hosting
+        ).filter { it.isNotBlank() }
+
+        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
     }
 

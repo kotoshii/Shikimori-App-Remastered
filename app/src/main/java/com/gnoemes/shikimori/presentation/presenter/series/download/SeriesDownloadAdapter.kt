@@ -30,7 +30,7 @@ class SeriesDownloadAdapter(
 
         init {
             itemView.episodeContainer.onClick { callback?.onDownload(item.url, item.video); onAction.invoke() }
-            itemView.sharingBtn.onClick { callback?.onShare(item.url) }
+            itemView.sharingBtn.onClick { callback?.onShare(item) }
         }
 
         fun bind(item: SeriesDownloadItem) {
