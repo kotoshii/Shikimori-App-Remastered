@@ -4,6 +4,9 @@ import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.services.FilterSource
+import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
+import com.gnoemes.shikimori.data.repository.search.MangaGenreFilter
+import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.manga.domain.MangaType
@@ -15,8 +18,18 @@ import javax.inject.Inject
 
 class FilterSourceImpl @Inject constructor(
         private val context: Context,
-        private val settingsSource: SettingsSource
+        private val settingsSource: SettingsSource,
+        private val genreVocabulary: GenreVocabularySource
 ) : FilterSource {
+
+    companion object {
+        /**
+         * Adult genres per vocabulary, hidden unless adult content is on. Erotica is 17+ rather
+         * than adult and stays visible, as it always has - see docs/_internal/GENRES_V2_SPIKE.md.
+         */
+        private val R18_ANIME = setOf(12L, 33L, 34L)    //Хентай, Яой, Юри
+        private val R18_MANGA = setOf(602L, 65L, 75L)   //the same three, manga ids
+    }
 
     override fun getAnimeFilters(): List<FilterCategory> = listOf(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
@@ -102,13 +115,25 @@ class FilterSourceImpl @Inject constructor(
                     .map { (name, value) -> convert(FilterType.STATUS.value, value, name) }
                     .toMutableList()
 
-    private fun getGenres(anime: Boolean): MutableList<FilterItem> =
-            getList(R.array.genres)
-                    .zip(getList(R.array.genres_names))
-                    .asSequence()
-                    .mapNotNull { pair -> Genre.values().find { it.equalsName(pair.second) }?.let { if (it.hasContentId(anime)) it else null }?.let { if (!settingsSource.allowR18Content && it.isR18) null else it }?.let { Pair(pair.first, if (anime) it.animeId else it.mangaId) } }
-                    .map { (name, value) -> convert(FilterType.GENRE.value, value, name) }
-                    .toMutableList()
+    /**
+     * v2 genres, from the accumulated vocabulary rather than the hardcoded [Genre] enum - the enum
+     * knows 48 genres where v2 has 80, and none of the ones added since 2024.
+     *
+     * Two things are left out: adult genres while adult content is off, and, for manga and ranobe,
+     * the genres shikimori cannot actually filter by. Offering a genre that always returns nothing
+     * is worse than not offering it - see [MangaGenreFilter].
+     */
+    private fun getGenres(anime: Boolean): MutableList<FilterItem> {
+        val type = if (anime) GenreEntryType.ANIME else GenreEntryType.MANGA
+        val adult = if (anime) R18_ANIME else R18_MANGA
+
+        return genreVocabulary.genres(type)
+                .asSequence()
+                .filter { settingsSource.allowR18Content || it.id !in adult }
+                .filter { anime || MangaGenreFilter.isFilterable(it.id) }
+                .map { FilterItem(FilterType.GENRE.value, it.id.toString(), it.russianName, it.kind) }
+                .toMutableList()
+    }
 
     private fun convert(action: String, value: String?, text: String?) = FilterItem(action, value, text)
 

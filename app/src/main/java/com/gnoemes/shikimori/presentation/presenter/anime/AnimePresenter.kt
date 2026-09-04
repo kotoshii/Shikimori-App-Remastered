@@ -125,7 +125,7 @@ open class AnimePresenter @Inject constructor(
         logEvent(AnalyticEvent.ANIME_DETAILS_STUDIO)
     }
 
-    override fun onGenreClicked(genre: Genre) {
+    override fun onGenreClicked(genre: GenreV2) {
         super.onGenreClicked(genre)
         logEvent(AnalyticEvent.ANIME_DETAILS_GENRE)
     }

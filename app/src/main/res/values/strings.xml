@@ -318,6 +318,10 @@
     <string name="filters_hint">Долгое нажатие на элемент исключает его.</string>
     <string name="filters_genres">Жанры</string>
     <string name="filter_genres_main">Главные</string>
+    <!-- genres v2 splits one flat list into three kinds; these title the filter sheet sections -->
+    <string name="filter_genres_demographic">Аудитория</string>
+    <string name="filter_genres_genres">Жанры</string>
+    <string name="filter_genres_themes">Темы</string>
     <string name="filter_genres_other">Список</string>
     <string name="filter_custom">Кастомный фильтр</string>
     <string name="filter_custom_seasons">Кастомный фильтр сезонов</string>
@@ -609,10 +613,11 @@
         <item>name</item>
     </string-array>
 
+    <!-- no "by chapters": graphql OrderEnum has no such value, and the catalog searches through
+         graphql since genres v2. Sorting the ui offers has to be sorting the api can do. -->
     <string-array name="manga_search_sort">
         <item>@string/sort_score</item>
         <item>@string/sort_popularity</item>
-        <item>@string/sort_chapters_readed</item>
         <item>@string/sort_date</item>
         <item>@string/sort_name</item>
     </string-array>
@@ -620,7 +625,6 @@
     <string-array name="manga_search_sort_values">
         <item>ranked</item>
         <item>popularity</item>
-        <item>chapters</item>
         <item>aired_on</item>
         <item>name</item>
     </string-array>

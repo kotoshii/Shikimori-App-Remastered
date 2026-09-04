@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.search.filter.genres.adapter
 
 import com.gnoemes.shikimori.entity.search.domain.FilterType
+import com.gnoemes.shikimori.entity.search.presentation.FilterGenreSection
 import com.gnoemes.shikimori.entity.search.presentation.FilterMainGenreCategory
 import com.gnoemes.shikimori.entity.search.presentation.FilterOtherGenreCategory
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
@@ -13,17 +14,21 @@ class FilterGenreAdapter(
 
     init {
         delegatesManager.apply {
+            addDelegate(FilterGenreSectionAdapterDelegate(invertCallback, selectCallback))
             addDelegate(FilterGenreMainCategoryAdapterDelegate(invertCallback, selectCallback))
             addDelegate(FilterGenreOtherCategoryAdapterDelegate(invertCallback, selectCallback))
         }
     }
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
+        //sections are told apart by their title, so swapping anime for manga rebinds them
+        oldItem is FilterGenreSection && newItem is FilterGenreSection -> oldItem.titleRes == newItem.titleRes
         oldItem is FilterMainGenreCategory && newItem is FilterMainGenreCategory -> true
         else -> oldItem is FilterOtherGenreCategory && newItem is FilterOtherGenreCategory
     }
 
     override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean = when {
+        oldItem is FilterGenreSection && newItem is FilterGenreSection -> oldItem == newItem
         oldItem is FilterMainGenreCategory && newItem is FilterMainGenreCategory -> oldItem == newItem
         oldItem is FilterOtherGenreCategory && newItem is FilterOtherGenreCategory -> oldItem == newItem
         else -> false

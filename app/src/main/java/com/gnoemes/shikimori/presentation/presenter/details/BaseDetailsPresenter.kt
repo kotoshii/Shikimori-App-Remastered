@@ -203,7 +203,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
         }
     }
 
-    protected open fun onGenreClicked(genre: Genre) {
+    protected open fun onGenreClicked(genre: GenreV2) {
         router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(genre), type))
     }
 

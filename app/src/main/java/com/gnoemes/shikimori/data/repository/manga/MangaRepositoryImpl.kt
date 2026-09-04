@@ -12,8 +12,12 @@ import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.domain.Roles
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
+import com.gnoemes.shikimori.data.repository.common.TitleGenreSource
+import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
+import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 
 class MangaRepositoryImpl @Inject constructor(
@@ -23,13 +27,24 @@ class MangaRepositoryImpl @Inject constructor(
         private val linkConverter: LinkResponseConverter,
         private val franchiseConverter: FranchiseResponseConverter,
         private val mangaConverter: MangaResponseConverter,
-        private val rolesConverter: RolesResponseConverter
+        private val rolesConverter: RolesResponseConverter,
+        private val genreSource: TitleGenreSource
 ) : MangaRepository {
 
+    /**
+     * Genres come from graphql rather than from this rest response: only graphql carries the v2
+     * taxonomy at all, and the rest response's own `genres` array is empty for titles added from
+     * 2025 onward. The lookup never fails, so a details screen still loads when it comes back
+     * empty - see docs/_internal/GENRES_V2_SPIKE.md.
+     */
     override fun getDetails(id: Long): Single<MangaDetails> =
-            api.getDetails(id)
-                    .map(detailsConverter)
-                    .flatMap { syncRate(it).toSingleDefault(it) }
+            Single.zip(
+                    api.getDetails(id).map(detailsConverter),
+                    genreSource.genres(GenreEntryType.MANGA, id),
+                    BiFunction { details: MangaDetails, genres: List<GenreV2> ->
+                        details.copy(genres = genres)
+                    }
+            ).flatMap { syncRate(it).toSingleDefault(it) }
 
     override fun getRoles(id: Long): Single<Roles> =
             api.getRoles(id)

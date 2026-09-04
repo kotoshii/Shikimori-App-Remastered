@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.entity.manga.domain
 
-import com.gnoemes.shikimori.entity.common.domain.Genre
+import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
@@ -25,7 +25,7 @@ data class MangaDetails(
         val franchise : String?,
         val favoured: Boolean,
         val topicId: Long?,
-        val genres: List<Genre>,
+        val genres: List<GenreV2>,
         val userRate: UserRate?,
         val rateScoresStats: List<Statistic>,
         val rateStatusesStats: List<Statistic>

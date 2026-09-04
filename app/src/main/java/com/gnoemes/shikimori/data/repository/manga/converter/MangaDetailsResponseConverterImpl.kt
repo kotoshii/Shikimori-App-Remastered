@@ -35,7 +35,10 @@ class MangaDetailsResponseConverterImpl @Inject constructor(
             t.franchise,
             t.favoured,
             t.topicId,
-            genreConverter.apply(t.genres),
+            //v2 genres are fetched from graphql and filled in by MangaRepositoryImpl and
+            //RanobeRepositoryImpl. This rest response only carries the v1 list, which is
+            //empty for recent titles - see docs/_internal/GENRES_V2_SPIKE.md
+            emptyList(),
             rateConverter.convertUserRateResponse(t.id, t.userRate),
             t.rateScoresStats.map { convertStatistic(it) },
             t.rateStatusesStats.map { convertStatistic(it) }
