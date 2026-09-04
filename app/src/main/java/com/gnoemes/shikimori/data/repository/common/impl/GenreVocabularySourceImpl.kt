@@ -24,6 +24,9 @@ class GenreVocabularySourceImpl @Inject constructor(
         val stored = decode(read(type))
         val known = if (stored.isEmpty()) seed(type).also { write(type, encode(it)) } else stored
 
+        //plain string order, which is by code unit: latin labels come before cyrillic ones, so an
+        //acronym like CGDCT leads its section. Chosen by the user over sorting it to the end.
+        //Deliberately not a Collator either - the order must not change with the phone's locale
         return known.sortedWith(compareBy({ it.kind.ordinal }, { it.russianName }))
     }
 
@@ -78,12 +81,15 @@ class GenreVocabularySourceImpl @Inject constructor(
         val root = org.json.JSONObject(json)
         val array = root.getJSONArray(if (type == GenreEntryType.ANIME) "anime" else "manga")
 
-        (0 until array.length()).map { index ->
+        (0 until array.length()).mapNotNull { index ->
             val item = array.getJSONObject(index)
+            val russian = item.optString("russian").takeIf { it.isNotBlank() }
+                    ?: return@mapNotNull null
+
             GenreV2(
                     item.getLong("id"),
                     item.optString("name"),
-                    item.optString("russian"),
+                    russian,
                     GenreV2.Kind.of(item.optString("kind"))
             )
         }
@@ -116,6 +122,10 @@ class GenreVocabularySourceImpl @Inject constructor(
         if (parts.size < 4) return@mapNotNull null
 
         val id = parts[0].toLongOrNull() ?: return@mapNotNull null
+        //a label-less genre would draw as a blank chip nobody can identify, so it is dropped here
+        //as well as on the way in - this is the last gate before the filter screen
+        if (parts[3].isBlank()) return@mapNotNull null
+
         val kind = try {
             GenreV2.Kind.valueOf(parts[1])
         } catch (e: IllegalArgumentException) {

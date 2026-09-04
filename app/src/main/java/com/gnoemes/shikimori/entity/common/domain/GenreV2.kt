@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.entity.common.domain
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
+import java.util.Locale
 
 /**
  * A genre as shikimori's v2 taxonomy describes it - the graphql `Genre` type.
@@ -36,7 +37,7 @@ data class GenreV2(
              * still renders as an ordinary chip instead of the genre disappearing, which is how
              * the v1 converter lost every genre it did not know.
              */
-            fun of(raw: String?): Kind = when (raw?.toLowerCase()) {
+            fun of(raw: String?): Kind = when (raw?.toLowerCase(Locale.ROOT)) {
                 "demographic" -> DEMOGRAPHIC
                 "genre" -> GENRE
                 "theme" -> THEME
