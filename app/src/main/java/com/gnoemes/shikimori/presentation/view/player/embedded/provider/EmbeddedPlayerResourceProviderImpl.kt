@@ -10,6 +10,8 @@ class EmbeddedPlayerResourceProviderImpl @Inject constructor(
 
     override val hostingErrorMessage: String
         get() = context.getString(R.string.player_hosting_error)
+    override val hostingChallengeMessage: String
+        get() = context.getString(R.string.series_hosting_challenge)
     override val playerErrorMessage: String
         get() = context.getString(R.string.player_error)
     override val translationNotFound: String
