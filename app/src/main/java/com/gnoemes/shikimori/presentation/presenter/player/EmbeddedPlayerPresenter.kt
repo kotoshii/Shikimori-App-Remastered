@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.HttpStatusCode
+import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
@@ -91,7 +92,11 @@ class EmbeddedPlayerPresenter @Inject constructor(
     }
 
     private fun processLoadVideoErrors(throwable: Throwable) {
-        if (throwable is ServiceCodeException && throwable.serviceCode == HttpStatusCode.NOT_FOUND) {
+        //an anti-bot check is not the video being gone, and the player cannot get past it, so say
+        //what happened and leave rather than sit on an empty screen
+        if (throwable is HostingChallengeException) {
+            viewState.showMessage(resourceProvider.hostingChallengeMessage, true)
+        } else if (throwable is ServiceCodeException && throwable.serviceCode == HttpStatusCode.NOT_FOUND) {
             viewState.showMessage(resourceProvider.playerErrorMessage)
         } else super.processErrors(throwable)
     }

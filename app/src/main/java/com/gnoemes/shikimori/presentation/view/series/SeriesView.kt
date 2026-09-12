@@ -66,6 +66,9 @@ interface SeriesView : BaseFragmentView {
     fun showAnime365LoginRequired()
 
     @StateStrategyType(SkipStrategy::class)
+    fun showHostingChallengeError()
+
+    @StateStrategyType(SkipStrategy::class)
     fun scrollToPosition(position: Int)
 
     fun showEpisodeLoading(show: Boolean)
