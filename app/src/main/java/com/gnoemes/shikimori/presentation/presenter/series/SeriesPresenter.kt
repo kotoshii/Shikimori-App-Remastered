@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.entity.series.domain.*
@@ -280,20 +281,30 @@ class SeriesPresenter @Inject constructor(
             return
         }
 
+        //remembered rather than thrown, because a failed hosting is dropped from the list instead
+        //of failing it - but if that leaves nothing at all, the reason is worth reporting
+        var challenged = false
+
         Observable.fromIterable(videos)
                 .flatMapSingle { payload ->
                     interactor.getVideo(payload)
                             .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
                             //a hosting that cannot be resolved is left out rather than failing the
                             //whole list, which matters when more than one is being resolved
-                            .onErrorReturnItem(emptyList())
+                            .onErrorReturn {
+                                if (it is HostingChallengeException) challenged = true
+                                emptyList<SeriesDownloadItem>()
+                            }
                 }
                 .flatMapIterable { it }
                 .toList()
                 .appendLoadingLogic(viewState)
                 .subscribe({ items ->
-                    if (items.isEmpty()) viewState.showTracksNotFoundError()
-                    else viewState.showDownloadDialog(videos.first().author, items)
+                    when {
+                        items.isNotEmpty() -> viewState.showDownloadDialog(videos.first().author, items)
+                        challenged -> viewState.showHostingChallengeError()
+                        else -> viewState.showTracksNotFoundError()
+                    }
                 }, this::processErrors)
                 .addToDisposables()
     }
@@ -407,8 +418,17 @@ class SeriesPresenter @Inject constructor(
     private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
         interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
-                .subscribe(onSubscribe::invoke, this::processErrors)
+                .subscribe(onSubscribe::invoke, this::processVideoErrors)
                 .addToDisposables()
+    }
+
+    /**
+     * A hosting that asks for an anti-bot check has a cause worth naming - otherwise it reads as
+     * the video being gone, which is what the generic path says.
+     */
+    private fun processVideoErrors(throwable: Throwable) {
+        if (throwable is HostingChallengeException) viewState.showHostingChallengeError()
+        else processErrors(throwable)
     }
 
     fun onTrackForDownloadSelected(url: String, video: Video) {

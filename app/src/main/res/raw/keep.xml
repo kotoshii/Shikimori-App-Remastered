@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    @raw/extra_ca_roots is only ever reached through @xml/network_security_config, which the
+    manifest points at. The resource shrinker does follow that chain, but this project has already
+    shipped one release where the shrinking step dropped resources without a warning (0.8.9, see
+    BUILD_AND_RELEASE.md), and losing this one would silently take vk.com off Android 8.1 again -
+    in the release build only, where it is hardest to notice.
+
+    This file is not packaged into the apk; it only adds to the shrinker's keep set.
+-->
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/extra_ca_roots" />

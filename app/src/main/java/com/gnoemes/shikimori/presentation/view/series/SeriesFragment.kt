@@ -370,6 +370,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         Toast.makeText(requireContext(), R.string.series_anime_365_login_required, Toast.LENGTH_LONG).show()
     }
 
+    override fun showHostingChallengeError() {
+        Toast.makeText(requireContext(), R.string.series_hosting_challenge, Toast.LENGTH_LONG).show()
+    }
+
     override fun checkPermissions() {
         KotlinPermissions.with(activity!!)
                 .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
