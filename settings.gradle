@@ -1,1 +1,19 @@
-include ':app', ':storio-sqlite', ':storio-sqlite-annotations', ':storio-common', ':storio-content-resolver-annotations', ':storio-content-resolver-annotations-processor', ':storio-sqlite-annotations-processor', ':storio-content-resolver', ':storio-common-annotations-processor'
+include ':app'
+
+// StorIO 3.0.1, vendored and patched for AndroidX. It lives under vendor/ only to keep the repo
+// root readable - the gradle project paths stay ':storio-*', so nothing outside this file refers to
+// where the directories actually sit. See docs/_internal/ARCHITECTURE.md, "The vendored storio-*
+// modules", before touching any of them: storio-sqlite also holds an app drawable.
+[
+        'storio-common',
+        'storio-common-annotations-processor',
+        'storio-content-resolver',
+        'storio-content-resolver-annotations',
+        'storio-content-resolver-annotations-processor',
+        'storio-sqlite',
+        'storio-sqlite-annotations',
+        'storio-sqlite-annotations-processor'
+].each { name ->
+    include ":$name"
+    project(":$name").projectDir = new File(settingsDir, "vendor/$name")
+}
