@@ -5,9 +5,7 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.HttpStatusCode
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
-import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -16,6 +14,7 @@ import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerVie
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
+import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
 @InjectViewState
@@ -31,6 +30,11 @@ class EmbeddedPlayerPresenter @Inject constructor(
     private var currentTrack = 0
     private lateinit var payload: TranslationVideo
 
+    //the episode prev/next is loading, if any. A further tap counts from it, so two fast taps skip two
+    //episodes ahead instead of loading the same one twice. Back to null once the load ends, either way
+    private var pendingEpisode: Int? = null
+    private var episodeDisposable: Disposable? = null
+
     private val videos = hashSetOf<Video>()
 
     override fun initData() {
@@ -40,15 +44,8 @@ class EmbeddedPlayerPresenter @Inject constructor(
 
         viewState.setTitle(navigationData.animeName)
 
-        loadVideo(payload)
+        loadEpisodeVideo(currentEpisode, payload)
         updateControls()
-    }
-
-    private fun loadVideo(payload: TranslationVideo) {
-        interactor.getVideo(payload)
-                .appendLoadingLogic(viewState)
-                .subscribe({ updateVideo(it) }, this::processLoadVideoErrors)
-                .addToDisposables()
     }
 
     private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
@@ -92,31 +89,30 @@ class EmbeddedPlayerPresenter @Inject constructor(
                 .addToDisposables()
     }
 
-    private fun processLoadVideoErrors(throwable: Throwable) {
-        //an anti-bot check is not the video being gone, and the player cannot get past it, so say
-        //what happened and leave rather than sit on an empty screen
-        if (throwable is HostingChallengeException) {
-            viewState.showMessage(resourceProvider.hostingChallengeMessage, true)
-        } else if (throwable is ServiceCodeException && throwable.serviceCode == HttpStatusCode.NOT_FOUND) {
-            viewState.showMessage(resourceProvider.playerErrorMessage)
-        } else super.processErrors(throwable)
-    }
+    fun loadNextEpisode() = loadEpisode((pendingEpisode ?: currentEpisode) + 1)
 
-    fun loadNextEpisode() = loadEpisode(currentEpisode + 1)
-
-    fun loadPrevEpisode() = loadEpisode(currentEpisode - 1)
+    fun loadPrevEpisode() = loadEpisode((pendingEpisode ?: currentEpisode) - 1)
 
     //currentEpisode moves only once the new episode's video is in hand, so a failed switch leaves the
     //title, the buttons and the watched mark on the episode that is still playing
     private fun loadEpisode(episode: Int) {
-        val video = videos.find { it.episodeId.toInt() == episode }
+        if (episode < 1 || episode > navigationData.episodesSize) return
 
+        //a tap replaces whatever was loading, the episode the player opened on included - otherwise a
+        //slow load lands on top of the episode the user has since switched to
+        episodeDisposable?.dispose()
+        pendingEpisode = episode
+
+        val video = videos.find { it.episodeId.toInt() == episode }
         if (video != null) {
+            //appendLoadingLogic hides the progress bar when its chain ends, which disposing skips, and
+            //an already loaded episode starts no new chain to hide it
+            viewState.onHideLoading()
             showEpisode(episode, video)
             return
         }
 
-        loadTranslations(navigationData.payload.type, episode.toLong())
+        episodeDisposable = loadTranslations(navigationData.payload.type, episode.toLong())
                 .subscribe({ translations ->
                     val translation = translations.find {
                         if (payload.author.isNotEmpty()) it.author == payload.author && it.hosting == payload.videoHosting
@@ -124,31 +120,38 @@ class EmbeddedPlayerPresenter @Inject constructor(
                     }
 
                     if (translation != null) loadEpisodeVideo(episode, payload.copy(videoId = translation.videoId, episodeIndex = episode, webPlayerUrl = translation.webPlayerUrl))
-                    else viewState.showMessage(resourceProvider.translationNotFound)
-                }, { processEpisodeErrors(episode, it) })
-                .addToDisposables()
+                    else {
+                        pendingEpisode = null
+                        viewState.showMessage(resourceProvider.translationNotFound)
+                    }
+                }, { processVideoErrors(episode, it) })
+                .also { it.addToDisposables() }
     }
 
     private fun loadEpisodeVideo(episode: Int, newPayload: TranslationVideo) {
-        interactor.getVideo(newPayload)
+        episodeDisposable = interactor.getVideo(newPayload)
                 .appendLoadingLogic(viewState)
                 .subscribe({
                     payload = newPayload
                     showEpisode(episode, it)
-                }, { processEpisodeErrors(episode, it) })
-                .addToDisposables()
+                }, { processVideoErrors(episode, it) })
+                .also { it.addToDisposables() }
     }
 
     private fun showEpisode(episode: Int, video: Video) {
+        pendingEpisode = null
         currentEpisode = episode
         updateVideo(video)
         updateControls()
     }
 
-    //this screen's navigator is a no-op, so BaseNetworkPresenter.processErrors would show nothing -
-    //the episode that was playing keeps playing and the user is told the switch failed
-    private fun processEpisodeErrors(episode: Int, throwable: Throwable) {
-        Log.w(TAG, "switching to episode $episode failed", throwable)
+    //for the first video and for a switch alike. This screen's navigator is a no-op, so
+    //BaseNetworkPresenter.processErrors would show nothing: say the video could not be loaded and stay,
+    //so whatever is playing keeps playing and prev/next still work. An anti-bot check is not the video
+    //being gone, and the player cannot get past it, so that one says what happened and leaves
+    private fun processVideoErrors(episode: Int, throwable: Throwable) {
+        pendingEpisode = null
+        Log.w(TAG, "loading episode $episode failed", throwable)
         if (throwable is HostingChallengeException) viewState.showMessage(resourceProvider.hostingChallengeMessage, true)
         else viewState.showMessage(resourceProvider.playerErrorMessage)
     }
