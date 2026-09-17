@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.player
 
+import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
@@ -101,36 +102,55 @@ class EmbeddedPlayerPresenter @Inject constructor(
         } else super.processErrors(throwable)
     }
 
-    fun loadNextEpisode() {
-        currentEpisode += 1
-        loadPrevOrNextEpisode()
+    fun loadNextEpisode() = loadEpisode(currentEpisode + 1)
+
+    fun loadPrevEpisode() = loadEpisode(currentEpisode - 1)
+
+    //currentEpisode moves only once the new episode's video is in hand, so a failed switch leaves the
+    //title, the buttons and the watched mark on the episode that is still playing
+    private fun loadEpisode(episode: Int) {
+        val video = videos.find { it.episodeId.toInt() == episode }
+
+        if (video != null) {
+            showEpisode(episode, video)
+            return
+        }
+
+        loadTranslations(navigationData.payload.type, episode.toLong())
+                .subscribe({ translations ->
+                    val translation = translations.find {
+                        if (payload.author.isNotEmpty()) it.author == payload.author && it.hosting == payload.videoHosting
+                        else it.author.isEmpty() && it.hosting == payload.videoHosting
+                    }
+
+                    if (translation != null) loadEpisodeVideo(episode, payload.copy(videoId = translation.videoId, episodeIndex = episode, webPlayerUrl = translation.webPlayerUrl))
+                    else viewState.showMessage(resourceProvider.translationNotFound)
+                }, { processEpisodeErrors(episode, it) })
+                .addToDisposables()
     }
 
-    fun loadPrevEpisode() {
-        currentEpisode -= 1
-        loadPrevOrNextEpisode()
+    private fun loadEpisodeVideo(episode: Int, newPayload: TranslationVideo) {
+        interactor.getVideo(newPayload)
+                .appendLoadingLogic(viewState)
+                .subscribe({
+                    payload = newPayload
+                    showEpisode(episode, it)
+                }, { processEpisodeErrors(episode, it) })
+                .addToDisposables()
     }
 
-    private fun loadPrevOrNextEpisode() {
-        val video = videos.find { it.episodeId.toInt() == currentEpisode }
+    private fun showEpisode(episode: Int, video: Video) {
+        currentEpisode = episode
+        updateVideo(video)
+        updateControls()
+    }
 
-        return if (video != null) {
-            updateVideo(video)
-            updateControls()
-        } else loadTranslations(navigationData.payload.type, currentEpisode.toLong()).map { translations ->
-            val translation = translations.find {
-                if (payload.author.isNotEmpty()) it.author == payload.author && it.hosting == payload.videoHosting
-                else it.author.isEmpty() && it.hosting == payload.videoHosting
-            }
-
-            if (translation != null) {
-                payload = payload.copy(videoId = translation.videoId, episodeIndex = currentEpisode, webPlayerUrl = translation.webPlayerUrl)
-                loadVideo(payload)
-            } else {
-                viewState.showMessage(resourceProvider.translationNotFound)
-            }
-            updateControls()
-        }.subscribe().addToDisposables()
+    //this screen's navigator is a no-op, so BaseNetworkPresenter.processErrors would show nothing -
+    //the episode that was playing keeps playing and the user is told the switch failed
+    private fun processEpisodeErrors(episode: Int, throwable: Throwable) {
+        Log.w(TAG, "switching to episode $episode failed", throwable)
+        if (throwable is HostingChallengeException) viewState.showMessage(resourceProvider.hostingChallengeMessage, true)
+        else viewState.showMessage(resourceProvider.playerErrorMessage)
     }
 
     fun onResolutionChanged(newResolution: String) {
@@ -144,5 +164,9 @@ class EmbeddedPlayerPresenter @Inject constructor(
 
     private val animeId: Long
         get() = navigationData.payload.animeId
+
+    companion object {
+        private const val TAG = "EmbeddedPlayer"
+    }
 
 }

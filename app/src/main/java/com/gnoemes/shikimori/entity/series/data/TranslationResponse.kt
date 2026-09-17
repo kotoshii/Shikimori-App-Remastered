@@ -19,9 +19,11 @@ data class TranslationResponse(
         val webPlayerUrl: String? = null
 ) {
 
-    constructor(response: ShikicinemaTranslationResponse, episodesSize: Int) : this(
+    //animeId is the id the translations were requested for, not the one in the response - the
+    //response's key has been renamed under us before, and a missing key silently parses as 0
+    constructor(response: ShikicinemaTranslationResponse, animeId: Long, episodesSize: Int) : this(
             response.id,
-            response.anime_id,
+            animeId,
             response.episode,
             response.kind,
             response.quality,

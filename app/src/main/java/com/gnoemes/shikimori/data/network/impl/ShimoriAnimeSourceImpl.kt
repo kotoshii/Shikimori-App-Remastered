@@ -100,12 +100,12 @@ class ShimoriAnimeSourceImpl @Inject constructor(
         return if (loadLength) Single.zip(
                 shikicinemaVideoApi.getEpisodes(animeId),
                 shikicinemaVideoApi.getTranslations(animeId, "all", episodeId, shikicinemaType),
-                BiFunction { lengthResponse: ShikicinemaEpisodesResponse, translations: List<ShikicinemaTranslationResponse> -> translations.map { TranslationResponse(it, lengthResponse.length) } }
+                BiFunction { lengthResponse: ShikicinemaEpisodesResponse, translations: List<ShikicinemaTranslationResponse> -> translations.map { TranslationResponse(it, animeId, lengthResponse.length) } }
         )
         else shikicinemaVideoApi.getTranslations(animeId, "all", episodeId, shikicinemaType)
                 .map { list ->
                     list.map { response ->
-                        TranslationResponse(response, 0)
+                        TranslationResponse(response, animeId, 0)
                     }
                 }
     }

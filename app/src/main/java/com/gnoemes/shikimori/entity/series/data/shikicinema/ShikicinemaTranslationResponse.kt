@@ -5,10 +5,12 @@ import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.google.gson.annotations.SerializedName
 import java.net.URL
 
+//smarthard.net answers in snake_case on a cache miss and in camelCase on a cache hit (x-cache: HIT),
+//so the two renamed keys accept both spellings
 data class ShikicinemaTranslationResponse (
         @SerializedName("id") val id: Long,
         @SerializedName("url") val url: String,
-        @SerializedName("anime_id") val anime_id: Long,
+        @SerializedName("anime_id", alternate = ["animeId"]) val anime_id: Long,
         @SerializedName("anime_english") private val anime_english: String,
         @SerializedName("anime_russian") private val anime_russian: String,
         @SerializedName("episode") val episode: Int,
@@ -16,7 +18,7 @@ data class ShikicinemaTranslationResponse (
         @SerializedName("language") private val language: String,
         @SerializedName("quality") val _quality: String?,
         @SerializedName("author") val author: String?,
-        @SerializedName("watches_count") val watches_count: Long?,
+        @SerializedName("watches_count", alternate = ["watchesCount"]) val watches_count: Long?,
         @SerializedName("uploader") val uploader: String
 ) {
     val quality: TranslationQuality
