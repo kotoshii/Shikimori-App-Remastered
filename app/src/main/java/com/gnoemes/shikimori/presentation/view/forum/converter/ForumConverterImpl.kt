@@ -11,7 +11,8 @@ class ForumConverterImpl @Inject constructor(
 ) : ForumConverter {
 
     override fun apply(t: List<Forum>): List<Forum> {
-        val list = t.toMutableList()
+        // shikimori.io's own forum menu does not list these either
+        val list = t.filterNot { it.type == ForumType.HIDDEN || it.type == ForumType.PREMODERATION }.toMutableList()
         list.add(0, Forum(0, "", ForumType.ALL, ""))
         return list.map { convertForum(it) }
     }
@@ -37,6 +38,10 @@ class ForumConverterImpl @Inject constructor(
             ForumType.SITE -> R.string.forum_site
             ForumType.VISUAL_NOVELS -> R.string.forum_vn
             ForumType.ARTICLES -> R.string.forum_articles
+            ForumType.TIERLISTS -> R.string.forum_tierlists
+            ForumType.CRITIQUES -> R.string.forum_critiques
+            ForumType.HIDDEN -> R.string.forum_hidden
+            ForumType.PREMODERATION -> R.string.forum_premoderation
         }
     }
 }

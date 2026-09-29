@@ -16,5 +16,10 @@ enum class ForumType(val type : String) {
     @field:SerializedName("collections") COLLECTIONS("collections") ,
     @field:SerializedName("cosplay") COSPLAY("cosplay") ,
     @field:SerializedName("my_clubs") MY_CLUBS("my_clubs"),
-    @field:SerializedName("articles") ARTICLES("articles");
+    @field:SerializedName("articles") ARTICLES("articles"),
+    @field:SerializedName("tierlists") TIERLISTS("tierlists"),
+    @field:SerializedName("critiques") CRITIQUES("critiques"),
+    // moderation forums: topics can belong to them, but the forum list does not show them
+    @field:SerializedName("hidden") HIDDEN("hidden"),
+    @field:SerializedName("premoderation") PREMODERATION("premoderation");
 }

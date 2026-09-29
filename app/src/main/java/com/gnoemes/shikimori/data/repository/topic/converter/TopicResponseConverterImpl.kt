@@ -20,6 +20,8 @@ class TopicResponseConverterImpl @Inject constructor(
             return null
         }
 
+        val forum = forumConverter.convertResponse(it.forum) ?: return null
+
         return Topic(
                 it.id,
                 it.title,
@@ -28,7 +30,7 @@ class TopicResponseConverterImpl @Inject constructor(
                 it.footer,
                 it.dateCreated,
                 it.commentsCount,
-                forumConverter.convertResponse(it.forum),
+                forum,
                 userConverter.convertResponse(it.user)!!,
                 convertType(it.type, it.description, it.descriptionHtml),
                 it.linkedType,

@@ -6,5 +6,5 @@ import io.reactivex.functions.Function
 
 interface ForumResponseConverter : Function<List<ForumResponse>, List<Forum>> {
 
-    fun convertResponse(it: ForumResponse): Forum
+    fun convertResponse(it: ForumResponse): Forum?
 }
