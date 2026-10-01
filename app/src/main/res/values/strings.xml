@@ -618,11 +618,10 @@
         <item>name</item>
     </string-array>
 
-    <!-- no "by chapters": graphql OrderEnum has no such value, and the catalog searches through
-         graphql since genres v2. Sorting the ui offers has to be sorting the api can do. -->
     <string-array name="manga_search_sort">
         <item>@string/sort_score</item>
         <item>@string/sort_popularity</item>
+        <item>@string/sort_chapters_readed</item>
         <item>@string/sort_date</item>
         <item>@string/sort_name</item>
     </string-array>
@@ -630,6 +629,7 @@
     <string-array name="manga_search_sort_values">
         <item>ranked</item>
         <item>popularity</item>
+        <item>chapters</item>
         <item>aired_on</item>
         <item>name</item>
     </string-array>
