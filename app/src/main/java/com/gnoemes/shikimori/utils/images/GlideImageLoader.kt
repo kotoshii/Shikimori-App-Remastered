@@ -26,7 +26,7 @@ class GlideImageLoader @Inject constructor(
         GlideApp.with(image)
                 .asBitmap()
                 .load(url)
-                .error(R.drawable.missing_original)
+                .error(missingPoster(image))
                 .centerCrop()
                 .into(image)
     }
@@ -35,7 +35,7 @@ class GlideImageLoader @Inject constructor(
         GlideApp.with(image)
                 .asBitmap()
                 .dontAnimate()
-                .error(R.drawable.missing_original)
+                .error(missingPoster(image))
                 .centerCrop()
                 .load(url)
                 .override(image.measuredWidth / 2, image.measuredHeight / 2)
@@ -64,4 +64,12 @@ class GlideImageLoader @Inject constructor(
     override fun clearImage(image: ImageView) {
         glide.clear(image)
     }
+
+    //the request's centerCrop does not reach a plain .error drawable, which was then drawn with the
+    //ImageView's default fitCenter - fit by height, with gaps on both sides of a poster card
+    private fun missingPoster(image: ImageView) =
+            GlideApp.with(image)
+                    .asBitmap()
+                    .load(R.drawable.missing_original)
+                    .centerCrop()
 }
