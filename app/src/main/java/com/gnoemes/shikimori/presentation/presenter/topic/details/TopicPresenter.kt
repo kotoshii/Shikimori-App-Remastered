@@ -15,6 +15,8 @@ import com.gnoemes.shikimori.presentation.view.topic.details.TopicView
 import com.gnoemes.shikimori.presentation.view.topic.details.converter.CommentViewModelConverter
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -39,13 +41,17 @@ class TopicPresenter @Inject constructor(
         viewState.showCommentsMore(false)
     }
 
+    //parsing a long post's bbcode can take seconds, so it runs off the main thread, and before the
+    //loading logic so the spinner stays up until the text is ready
     private fun loadTopic() =
             interactor.getDetails(id)
+                    .observeOn(Schedulers.computation())
+                    .map { it to converter.convertTopic(it) }
+                    .observeOn(AndroidSchedulers.mainThread())
                     .appendLoadingLogic(viewState)
-                    .doOnSuccess { topic = it }
-                    .doOnSuccess { viewState.setTitle(resourceProvider.getTopicName(it.forum.type)) }
-                    .map { converter.convertTopic(it) }
-                    .subscribe(this::setData, this::processErrors)
+                    .doOnSuccess { (loaded, _) -> topic = loaded }
+                    .doOnSuccess { (loaded, _) -> viewState.setTitle(resourceProvider.getTopicName(loaded.forum.type)) }
+                    .subscribe({ (_, item) -> setData(item) }, this::processErrors)
 
     private fun setData(item: TopicViewModel) {
         viewState.setUserData(item.userData)
