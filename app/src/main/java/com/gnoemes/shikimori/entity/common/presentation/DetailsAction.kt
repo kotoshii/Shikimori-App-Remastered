@@ -1,12 +1,12 @@
 package com.gnoemes.shikimori.entity.common.presentation
 
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.common.domain.Genre
+import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 
 sealed class DetailsAction {
     data class ChangeRateStatus(val newStatus: RateStatus, val id: Long = Constants.NO_ID) : DetailsAction()
-    data class GenreClicked(val genre: Genre) : DetailsAction()
+    data class GenreClicked(val genre: GenreV2) : DetailsAction()
     data class Video(val url: String) : DetailsAction()
     data class StudioClicked(val id: Long) : DetailsAction()
     data class WatchOnline(val id: Long? = null) : DetailsAction()

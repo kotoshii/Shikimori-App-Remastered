@@ -4,7 +4,7 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.search.SearchInteractor
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
-import com.gnoemes.shikimori.entity.common.domain.Genre
+import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.presentation.SearchItem
@@ -152,9 +152,10 @@ class SearchPresenter @Inject constructor(
         putFilter(filterItem)
     }
 
-    private fun onGenreSearch(genre: Genre) {
-        val id = if (type == Type.ANIME) genre.animeId else genre.mangaId
-        val filterItem = FilterItem(SearchConstants.GENRE, id, genre.russianName)
+    private fun onGenreSearch(genre: GenreV2) {
+        //the id already matches the screen it came from - anime and manga genres are separate
+        //namespaces, and these were fetched for this title's own entry type
+        val filterItem = FilterItem(SearchConstants.GENRE, genre.id.toString(), genre.russianName)
         putFilter(filterItem)
     }
 

@@ -43,9 +43,14 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
 
         val tags = mutableListOf<DetailsTagItem>()
 
-        it.genres.forEach {
-            tags.add(DetailsTagItem(it.animeId.toLong(), DetailsTagItem.TagType.GENRE, it.russianName, it))
-        }
+        //demographic first, then genres, then the long tail of themes - GenreV2.Kind is
+        //declared in that order, and sortedBy is stable so shikimori's own order survives
+        //inside each kind
+        it.genres
+                .sortedBy { genre -> genre.kind.ordinal }
+                .forEach { genre ->
+                    tags.add(DetailsTagItem(genre.id, DetailsTagItem.TagType.GENRE, genre.russianName, genre))
+                }
 
         val info = mutableListOf<Any>()
 

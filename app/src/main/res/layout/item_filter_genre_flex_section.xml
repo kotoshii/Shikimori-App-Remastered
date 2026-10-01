@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    Genre section for the filter sheet.
+
+    ⚠️ A FlexboxLayout, not a RecyclerView with a FlexboxLayoutManager like
+    item_filter_genre_section. A nested RecyclerView measuring wrap_content inside the sheet's own
+    scrolling list only lays out part of its children once there are enough of them: the themes
+    section (53 chips) lost its tail entirely - everything after "Супер сила", CGDCT included - and
+    left a phantom gap where a chip should have been. There is nothing to recycle here anyway, the
+    list is fixed and short.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/categoryNameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="24dp"
+        android:textAllCaps="true"
+        android:textColor="?attr/colorOnPrimarySecondary"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="SmallSp"
+        tools:text="Темы" />
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/chipContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="24dp"
+        app:flexWrap="wrap"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/categoryNameView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,972 @@
+{
+ "anime": [
+  {
+   "id": 15,
+   "name": "Kids",
+   "russian": "Детское",
+   "kind": "demographic"
+  },
+  {
+   "id": 43,
+   "name": "Josei",
+   "russian": "Дзёсей",
+   "kind": "demographic"
+  },
+  {
+   "id": 42,
+   "name": "Seinen",
+   "russian": "Сэйнэн",
+   "kind": "demographic"
+  },
+  {
+   "id": 25,
+   "name": "Shoujo",
+   "russian": "Сёдзё",
+   "kind": "demographic"
+  },
+  {
+   "id": 27,
+   "name": "Shounen",
+   "russian": "Сёнен",
+   "kind": "demographic"
+  },
+  {
+   "id": 5,
+   "name": "Avant Garde",
+   "russian": "Авангард",
+   "kind": "genre"
+  },
+  {
+   "id": 543,
+   "name": "Gourmet",
+   "russian": "Гурман",
+   "kind": "genre"
+  },
+  {
+   "id": 8,
+   "name": "Drama",
+   "russian": "Драма",
+   "kind": "genre"
+  },
+  {
+   "id": 4,
+   "name": "Comedy",
+   "russian": "Комедия",
+   "kind": "genre"
+  },
+  {
+   "id": 36,
+   "name": "Slice of Life",
+   "russian": "Повседневность",
+   "kind": "genre"
+  },
+  {
+   "id": 2,
+   "name": "Adventure",
+   "russian": "Приключения",
+   "kind": "genre"
+  },
+  {
+   "id": 22,
+   "name": "Romance",
+   "russian": "Романтика",
+   "kind": "genre"
+  },
+  {
+   "id": 37,
+   "name": "Supernatural",
+   "russian": "Сверхъестественное",
+   "kind": "genre"
+  },
+  {
+   "id": 30,
+   "name": "Sports",
+   "russian": "Спорт",
+   "kind": "genre"
+  },
+  {
+   "id": 129,
+   "name": "Girls Love",
+   "russian": "Сёдзё-ай",
+   "kind": "genre"
+  },
+  {
+   "id": 133,
+   "name": "Boys Love",
+   "russian": "Сёнен-ай",
+   "kind": "genre"
+  },
+  {
+   "id": 7,
+   "name": "Mystery",
+   "russian": "Тайна",
+   "kind": "genre"
+  },
+  {
+   "id": 117,
+   "name": "Suspense",
+   "russian": "Триллер",
+   "kind": "genre"
+  },
+  {
+   "id": 14,
+   "name": "Horror",
+   "russian": "Ужасы",
+   "kind": "genre"
+  },
+  {
+   "id": 24,
+   "name": "Sci-Fi",
+   "russian": "Фантастика",
+   "kind": "genre"
+  },
+  {
+   "id": 10,
+   "name": "Fantasy",
+   "russian": "Фэнтези",
+   "kind": "genre"
+  },
+  {
+   "id": 12,
+   "name": "Hentai",
+   "russian": "Хентай",
+   "kind": "genre"
+  },
+  {
+   "id": 1,
+   "name": "Action",
+   "russian": "Экшен",
+   "kind": "genre"
+  },
+  {
+   "id": 539,
+   "name": "Erotica",
+   "russian": "Эротика",
+   "kind": "genre"
+  },
+  {
+   "id": 9,
+   "name": "Ecchi",
+   "russian": "Этти",
+   "kind": "genre"
+  },
+  {
+   "id": 34,
+   "name": "Yuri",
+   "russian": "Юри",
+   "kind": "genre"
+  },
+  {
+   "id": 33,
+   "name": "Yaoi",
+   "russian": "Яой",
+   "kind": "genre"
+  },
+  {
+   "id": 119,
+   "name": "CGDCT",
+   "russian": "CGDCT",
+   "kind": "theme"
+  },
+  {
+   "id": 143,
+   "name": "Anthropomorphic",
+   "russian": "Антропоморфизм",
+   "kind": "theme"
+  },
+  {
+   "id": 17,
+   "name": "Martial Arts",
+   "russian": "Боевые искусства",
+   "kind": "theme"
+  },
+  {
+   "id": 32,
+   "name": "Vampire",
+   "russian": "Вампиры",
+   "kind": "theme"
+  },
+  {
+   "id": 104,
+   "name": "Adult Cast",
+   "russian": "Взрослые персонажи",
+   "kind": "theme"
+  },
+  {
+   "id": 103,
+   "name": "Video Game",
+   "russian": "Видеоигры",
+   "kind": "theme"
+  },
+  {
+   "id": 38,
+   "name": "Military",
+   "russian": "Военное",
+   "kind": "theme"
+  },
+  {
+   "id": 141,
+   "name": "Survival",
+   "russian": "Выживание",
+   "kind": "theme"
+  },
+  {
+   "id": 35,
+   "name": "Harem",
+   "russian": "Гарем",
+   "kind": "theme"
+  },
+  {
+   "id": 3,
+   "name": "Racing",
+   "russian": "Гонки",
+   "kind": "theme"
+  },
+  {
+   "id": 197,
+   "name": "Urban Fantasy",
+   "russian": "Городское фэнтези",
+   "kind": "theme"
+  },
+  {
+   "id": 112,
+   "name": "Gag Humor",
+   "russian": "Гэг-юмор",
+   "kind": "theme"
+  },
+  {
+   "id": 39,
+   "name": "Detective",
+   "russian": "Детектив",
+   "kind": "theme"
+  },
+  {
+   "id": 105,
+   "name": "Gore",
+   "russian": "Жестокость",
+   "kind": "theme"
+  },
+  {
+   "id": 134,
+   "name": "Childcare",
+   "russian": "Забота о детях",
+   "kind": "theme"
+  },
+  {
+   "id": 198,
+   "name": "Villainess",
+   "russian": "Злодейка",
+   "kind": "theme"
+  },
+  {
+   "id": 146,
+   "name": "High Stakes Game",
+   "russian": "Игра с высокими ставками",
+   "kind": "theme"
+  },
+  {
+   "id": 145,
+   "name": "Idols (Female)",
+   "russian": "Идолы (Жен.)",
+   "kind": "theme"
+  },
+  {
+   "id": 150,
+   "name": "Idols (Male)",
+   "russian": "Идолы (Муж.)",
+   "kind": "theme"
+  },
+  {
+   "id": 108,
+   "name": "Visual Arts",
+   "russian": "Изобразительное искусство",
+   "kind": "theme"
+  },
+  {
+   "id": 142,
+   "name": "Performing Arts",
+   "russian": "Исполнительское искусство",
+   "kind": "theme"
+  },
+  {
+   "id": 13,
+   "name": "Historical",
+   "russian": "Исторический",
+   "kind": "theme"
+  },
+  {
+   "id": 130,
+   "name": "Isekai",
+   "russian": "Исэкай",
+   "kind": "theme"
+  },
+  {
+   "id": 140,
+   "name": "Iyashikei",
+   "russian": "Иясикэй",
+   "kind": "theme"
+  },
+  {
+   "id": 102,
+   "name": "Team Sports",
+   "russian": "Командный спорт",
+   "kind": "theme"
+  },
+  {
+   "id": 29,
+   "name": "Space",
+   "russian": "Космос",
+   "kind": "theme"
+  },
+  {
+   "id": 144,
+   "name": "Crossdressing",
+   "russian": "Кроссдрессинг",
+   "kind": "theme"
+  },
+  {
+   "id": 137,
+   "name": "Otaku Culture",
+   "russian": "Культура отаку",
+   "kind": "theme"
+  },
+  {
+   "id": 107,
+   "name": "Love Polygon",
+   "russian": "Любовный многоугольник",
+   "kind": "theme"
+  },
+  {
+   "id": 135,
+   "name": "Magical Sex Shift",
+   "russian": "Магическая смена пола",
+   "kind": "theme"
+  },
+  {
+   "id": 124,
+   "name": "Mahou Shoujo",
+   "russian": "Махо-сёдзё",
+   "kind": "theme"
+  },
+  {
+   "id": 147,
+   "name": "Medical",
+   "russian": "Медицина",
+   "kind": "theme"
+  },
+  {
+   "id": 18,
+   "name": "Mecha",
+   "russian": "Меха",
+   "kind": "theme"
+  },
+  {
+   "id": 6,
+   "name": "Mythology",
+   "russian": "Мифология",
+   "kind": "theme"
+  },
+  {
+   "id": 19,
+   "name": "Music",
+   "russian": "Музыка",
+   "kind": "theme"
+  },
+  {
+   "id": 149,
+   "name": "Educational",
+   "russian": "Образовательное",
+   "kind": "theme"
+  },
+  {
+   "id": 138,
+   "name": "Organized Crime",
+   "russian": "Организованная преступность",
+   "kind": "theme"
+  },
+  {
+   "id": 20,
+   "name": "Parody",
+   "russian": "Пародия",
+   "kind": "theme"
+  },
+  {
+   "id": 148,
+   "name": "Pets",
+   "russian": "Питомцы",
+   "kind": "theme"
+  },
+  {
+   "id": 40,
+   "name": "Psychological",
+   "russian": "Психологическое",
+   "kind": "theme"
+  },
+  {
+   "id": 111,
+   "name": "Time Travel",
+   "russian": "Путешествие во времени",
+   "kind": "theme"
+  },
+  {
+   "id": 139,
+   "name": "Workplace",
+   "russian": "Работа",
+   "kind": "theme"
+  },
+  {
+   "id": 125,
+   "name": "Reverse Harem",
+   "russian": "Реверс-гарем",
+   "kind": "theme"
+  },
+  {
+   "id": 106,
+   "name": "Reincarnation",
+   "russian": "Реинкарнация",
+   "kind": "theme"
+  },
+  {
+   "id": 151,
+   "name": "Love Status Quo",
+   "russian": "Романтический подтекст",
+   "kind": "theme"
+  },
+  {
+   "id": 21,
+   "name": "Samurai",
+   "russian": "Самураи",
+   "kind": "theme"
+  },
+  {
+   "id": 118,
+   "name": "Combat Sports",
+   "russian": "Спортивные единоборства",
+   "kind": "theme"
+  },
+  {
+   "id": 11,
+   "name": "Strategy Game",
+   "russian": "Стратегические игры",
+   "kind": "theme"
+  },
+  {
+   "id": 31,
+   "name": "Super Power",
+   "russian": "Супер сила",
+   "kind": "theme"
+  },
+  {
+   "id": 114,
+   "name": "Award Winning",
+   "russian": "Удостоено наград",
+   "kind": "theme"
+  },
+  {
+   "id": 131,
+   "name": "Delinquents",
+   "russian": "Хулиганы",
+   "kind": "theme"
+  },
+  {
+   "id": 23,
+   "name": "School",
+   "russian": "Школа",
+   "kind": "theme"
+  },
+  {
+   "id": 136,
+   "name": "Showbiz",
+   "russian": "Шоу-бизнес",
+   "kind": "theme"
+  }
+ ],
+ "manga": [
+  {
+   "id": 77,
+   "name": "Kids",
+   "russian": "Детское",
+   "kind": "demographic"
+  },
+  {
+   "id": 87,
+   "name": "Josei",
+   "russian": "Дзёсей",
+   "kind": "demographic"
+  },
+  {
+   "id": 52,
+   "name": "Seinen",
+   "russian": "Сэйнэн",
+   "kind": "demographic"
+  },
+  {
+   "id": 63,
+   "name": "Shoujo",
+   "russian": "Сёдзё",
+   "kind": "demographic"
+  },
+  {
+   "id": 47,
+   "name": "Shounen",
+   "russian": "Сёнен",
+   "kind": "demographic"
+  },
+  {
+   "id": 90,
+   "name": "Avant Garde",
+   "russian": "Авангард",
+   "kind": "genre"
+  },
+  {
+   "id": 544,
+   "name": "Gourmet",
+   "russian": "Гурман",
+   "kind": "genre"
+  },
+  {
+   "id": 50,
+   "name": "Drama",
+   "russian": "Драма",
+   "kind": "genre"
+  },
+  {
+   "id": 49,
+   "name": "Comedy",
+   "russian": "Комедия",
+   "kind": "genre"
+  },
+  {
+   "id": 54,
+   "name": "Slice of Life",
+   "russian": "Повседневность",
+   "kind": "genre"
+  },
+  {
+   "id": 68,
+   "name": "Adventure",
+   "russian": "Приключения",
+   "kind": "genre"
+  },
+  {
+   "id": 62,
+   "name": "Romance",
+   "russian": "Романтика",
+   "kind": "genre"
+  },
+  {
+   "id": 48,
+   "name": "Supernatural",
+   "russian": "Сверхъестественное",
+   "kind": "genre"
+  },
+  {
+   "id": 76,
+   "name": "Sports",
+   "russian": "Спорт",
+   "kind": "genre"
+  },
+  {
+   "id": 170,
+   "name": "Girls Love",
+   "russian": "Сёдзё-ай",
+   "kind": "genre"
+  },
+  {
+   "id": 165,
+   "name": "Boys Love",
+   "russian": "Сёнен-ай",
+   "kind": "genre"
+  },
+  {
+   "id": 46,
+   "name": "Mystery",
+   "russian": "Тайна",
+   "kind": "genre"
+  },
+  {
+   "id": 153,
+   "name": "Suspense",
+   "russian": "Триллер",
+   "kind": "genre"
+  },
+  {
+   "id": 80,
+   "name": "Horror",
+   "russian": "Ужасы",
+   "kind": "genre"
+  },
+  {
+   "id": 53,
+   "name": "Sci-Fi",
+   "russian": "Фантастика",
+   "kind": "genre"
+  },
+  {
+   "id": 57,
+   "name": "Fantasy",
+   "russian": "Фэнтези",
+   "kind": "genre"
+  },
+  {
+   "id": 602,
+   "name": "Hentai",
+   "russian": "Хентай",
+   "kind": "genre"
+  },
+  {
+   "id": 56,
+   "name": "Action",
+   "russian": "Экшен",
+   "kind": "genre"
+  },
+  {
+   "id": 601,
+   "name": "Erotica",
+   "russian": "Эротика",
+   "kind": "genre"
+  },
+  {
+   "id": 51,
+   "name": "Ecchi",
+   "russian": "Этти",
+   "kind": "genre"
+  },
+  {
+   "id": 75,
+   "name": "Yuri",
+   "russian": "Юри",
+   "kind": "genre"
+  },
+  {
+   "id": 65,
+   "name": "Yaoi",
+   "russian": "Яой",
+   "kind": "genre"
+  },
+  {
+   "id": 173,
+   "name": "CGDCT",
+   "russian": "CGDCT",
+   "kind": "theme"
+  },
+  {
+   "id": 180,
+   "name": "Anthropomorphic",
+   "russian": "Антропоморфизм",
+   "kind": "theme"
+  },
+  {
+   "id": 66,
+   "name": "Martial Arts",
+   "russian": "Боевые искусства",
+   "kind": "theme"
+  },
+  {
+   "id": 64,
+   "name": "Vampire",
+   "russian": "Вампиры",
+   "kind": "theme"
+  },
+  {
+   "id": 159,
+   "name": "Adult Cast",
+   "russian": "Взрослые персонажи",
+   "kind": "theme"
+  },
+  {
+   "id": 175,
+   "name": "Video Game",
+   "russian": "Видеоигры",
+   "kind": "theme"
+  },
+  {
+   "id": 70,
+   "name": "Military",
+   "russian": "Военное",
+   "kind": "theme"
+  },
+  {
+   "id": 176,
+   "name": "Survival",
+   "russian": "Выживание",
+   "kind": "theme"
+  },
+  {
+   "id": 71,
+   "name": "Harem",
+   "russian": "Гарем",
+   "kind": "theme"
+  },
+  {
+   "id": 84,
+   "name": "Racing",
+   "russian": "Гонки",
+   "kind": "theme"
+  },
+  {
+   "id": 199,
+   "name": "Urban Fantasy",
+   "russian": "Городское фэнтези",
+   "kind": "theme"
+  },
+  {
+   "id": 168,
+   "name": "Gag Humor",
+   "russian": "Гэг-юмор",
+   "kind": "theme"
+  },
+  {
+   "id": 89,
+   "name": "Detective",
+   "russian": "Детектив",
+   "kind": "theme"
+  },
+  {
+   "id": 127,
+   "name": "Gore",
+   "russian": "Жестокость",
+   "kind": "theme"
+  },
+  {
+   "id": 169,
+   "name": "Childcare",
+   "russian": "Забота о детях",
+   "kind": "theme"
+  },
+  {
+   "id": 192,
+   "name": "Villainess",
+   "russian": "Злодейка",
+   "kind": "theme"
+  },
+  {
+   "id": 184,
+   "name": "High Stakes Game",
+   "russian": "Игра с высокими ставками",
+   "kind": "theme"
+  },
+  {
+   "id": 190,
+   "name": "Idols (Female)",
+   "russian": "Идолы (Жен.)",
+   "kind": "theme"
+  },
+  {
+   "id": 191,
+   "name": "Idols (Male)",
+   "russian": "Идолы (Муж.)",
+   "kind": "theme"
+  },
+  {
+   "id": 166,
+   "name": "Visual Arts",
+   "russian": "Изобразительное искусство",
+   "kind": "theme"
+  },
+  {
+   "id": 167,
+   "name": "Performing Arts",
+   "russian": "Исполнительское искусство",
+   "kind": "theme"
+  },
+  {
+   "id": 69,
+   "name": "Historical",
+   "russian": "Исторический",
+   "kind": "theme"
+  },
+  {
+   "id": 172,
+   "name": "Isekai",
+   "russian": "Исэкай",
+   "kind": "theme"
+  },
+  {
+   "id": 154,
+   "name": "Iyashikei",
+   "russian": "Иясикэй",
+   "kind": "theme"
+  },
+  {
+   "id": 157,
+   "name": "Team Sports",
+   "russian": "Командный спорт",
+   "kind": "theme"
+  },
+  {
+   "id": 85,
+   "name": "Space",
+   "russian": "Космос",
+   "kind": "theme"
+  },
+  {
+   "id": 74,
+   "name": "Crossdressing",
+   "russian": "Кроссдрессинг",
+   "kind": "theme"
+  },
+  {
+   "id": 177,
+   "name": "Otaku Culture",
+   "russian": "Культура отаку",
+   "kind": "theme"
+  },
+  {
+   "id": 158,
+   "name": "Love Polygon",
+   "russian": "Любовный многоугольник",
+   "kind": "theme"
+  },
+  {
+   "id": 162,
+   "name": "Magical Sex Shift",
+   "russian": "Магическая смена пола",
+   "kind": "theme"
+  },
+  {
+   "id": 160,
+   "name": "Mahou Shoujo",
+   "russian": "Махо-сёдзё",
+   "kind": "theme"
+  },
+  {
+   "id": 185,
+   "name": "Medical",
+   "russian": "Медицина",
+   "kind": "theme"
+  },
+  {
+   "id": 186,
+   "name": "Memoir",
+   "russian": "Мемуары",
+   "kind": "theme"
+  },
+  {
+   "id": 83,
+   "name": "Mecha",
+   "russian": "Меха",
+   "kind": "theme"
+  },
+  {
+   "id": 72,
+   "name": "Mythology",
+   "russian": "Мифология",
+   "kind": "theme"
+  },
+  {
+   "id": 78,
+   "name": "Music",
+   "russian": "Музыка",
+   "kind": "theme"
+  },
+  {
+   "id": 187,
+   "name": "Educational",
+   "russian": "Образовательное",
+   "kind": "theme"
+  },
+  {
+   "id": 171,
+   "name": "Organized Crime",
+   "russian": "Организованная преступность",
+   "kind": "theme"
+  },
+  {
+   "id": 86,
+   "name": "Parody",
+   "russian": "Пародия",
+   "kind": "theme"
+  },
+  {
+   "id": 183,
+   "name": "Pets",
+   "russian": "Питомцы",
+   "kind": "theme"
+  },
+  {
+   "id": 67,
+   "name": "Psychological",
+   "russian": "Психологическое",
+   "kind": "theme"
+  },
+  {
+   "id": 174,
+   "name": "Time Travel",
+   "russian": "Путешествие во времени",
+   "kind": "theme"
+  },
+  {
+   "id": 181,
+   "name": "Workplace",
+   "russian": "Работа",
+   "kind": "theme"
+  },
+  {
+   "id": 164,
+   "name": "Reverse Harem",
+   "russian": "Реверс-гарем",
+   "kind": "theme"
+  },
+  {
+   "id": 161,
+   "name": "Reincarnation",
+   "russian": "Реинкарнация",
+   "kind": "theme"
+  },
+  {
+   "id": 188,
+   "name": "Love Status Quo",
+   "russian": "Романтический подтекст",
+   "kind": "theme"
+  },
+  {
+   "id": 88,
+   "name": "Samurai",
+   "russian": "Самураи",
+   "kind": "theme"
+  },
+  {
+   "id": 156,
+   "name": "Combat Sports",
+   "russian": "Спортивные единоборства",
+   "kind": "theme"
+  },
+  {
+   "id": 79,
+   "name": "Strategy Game",
+   "russian": "Стратегические игры",
+   "kind": "theme"
+  },
+  {
+   "id": 82,
+   "name": "Super Power",
+   "russian": "Супер сила",
+   "kind": "theme"
+  },
+  {
+   "id": 126,
+   "name": "Award Winning",
+   "russian": "Удостоено наград",
+   "kind": "theme"
+  },
+  {
+   "id": 179,
+   "name": "Delinquents",
+   "russian": "Хулиганы",
+   "kind": "theme"
+  },
+  {
+   "id": 60,
+   "name": "School",
+   "russian": "Школа",
+   "kind": "theme"
+  },
+  {
+   "id": 152,
+   "name": "Showbiz",
+   "russian": "Шоу-бизнес",
+   "kind": "theme"
+  }
+ ]
+}

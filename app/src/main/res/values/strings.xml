@@ -318,6 +318,10 @@
     <string name="filters_hint">Долгое нажатие на элемент исключает его.</string>
     <string name="filters_genres">Жанры</string>
     <string name="filter_genres_main">Главные</string>
+    <!-- genres v2 splits one flat list into three kinds; these title the filter sheet sections -->
+    <string name="filter_genres_demographic">Аудитория</string>
+    <string name="filter_genres_genres">Жанры</string>
+    <string name="filter_genres_themes">Темы</string>
     <string name="filter_genres_other">Список</string>
     <string name="filter_custom">Кастомный фильтр</string>
     <string name="filter_custom_seasons">Кастомный фильтр сезонов</string>
@@ -366,6 +370,10 @@
     <string name="forum_vn">Визуальные новеллы</string>
     <string name="forum_off_topic">Оффтопик</string>
     <string name="forum_articles">Статьи</string>
+    <string name="forum_tierlists">Тирлисты</string>
+    <string name="forum_critiques">Рецензии</string>
+    <string name="forum_hidden">Скрытый</string>
+    <string name="forum_premoderation">Премодерация</string>
     <string name="forum_my_clubs_empty">Подходящих тем не найдено.\nВступайте в клубы, чтобы получать рассылку.</string>
 
     <string name="comment_more_format_message">Загрузить еще %d из</string>

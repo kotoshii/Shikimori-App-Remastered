@@ -57,7 +57,7 @@ class SearchViewModelConverterImpl @Inject constructor(
         val nameText = name.plus(String.format(context.getString(R.string.volumes_format), it.volumes.unknownIfZero(), it.chapters.unknownIfZero()))
         return SearchItem(
                 it.id,
-                Type.MANGA,
+                if (it.isRanobe) Type.RANOBE else Type.MANGA,
                 nameText,
                 it.image,
                 it.type.type

@@ -11,7 +11,7 @@ class ForumConverterImpl @Inject constructor(
 ) : ForumConverter {
 
     override fun apply(t: List<Forum>): List<Forum> {
-        val list = t.toMutableList()
+        val list = t.filterNot { it.type in UNLISTABLE }.toMutableList()
         list.add(0, Forum(0, "", ForumType.ALL, ""))
         return list.map { convertForum(it) }
     }
@@ -37,6 +37,26 @@ class ForumConverterImpl @Inject constructor(
             ForumType.SITE -> R.string.forum_site
             ForumType.VISUAL_NOVELS -> R.string.forum_vn
             ForumType.ARTICLES -> R.string.forum_articles
+            ForumType.TIERLISTS -> R.string.forum_tierlists
+            ForumType.CRITIQUES -> R.string.forum_critiques
+            ForumType.HIDDEN -> R.string.forum_hidden
+            ForumType.PREMODERATION -> R.string.forum_premoderation
         }
+    }
+
+    companion object {
+        /**
+         * Forums `/api/forums` returns but the forum screen must not offer:
+         * - hidden and premoderation are moderation forums, absent from shikimori.io's own menu;
+         * - tierlists and reviews cannot be opened: `/api/topics` answers 422 for those `forum`
+         *   values (checked 2026-10-01). Their topics still turn up in "all", which is why the
+         *   types themselves stay in [ForumType].
+         */
+        private val UNLISTABLE = setOf(
+                ForumType.HIDDEN,
+                ForumType.PREMODERATION,
+                ForumType.TIERLISTS,
+                ForumType.REVIEWS
+        )
     }
 }

@@ -44,4 +44,13 @@ interface SettingsSource {
 
     /** Hostings the user has chosen to hide, matched by domain and subdomain. */
     var hiddenHostings: Set<String>
+
+    /**
+     * The v2 genre vocabularies, encoded one genre per entry. Written only by
+     * `GenreVocabularySource`, which merges into them and never removes - see its documentation
+     * for why that matters.
+     */
+    var animeGenres: Set<String>
+
+    var mangaGenres: Set<String>
 }

@@ -40,18 +40,14 @@ Android-клиент для [shikimori.io](https://shikimori.io). База ан�
 
 ## Скриншоты
 
-<p align="center">
-  <img src="docs/screenshots/anime_catalog.png" width="170" alt="Каталог">
-  <img src="docs/screenshots/anime.png" width="170" alt="Страница аниме">
-  <img src="docs/screenshots/character.png" width="170" alt="Персонаж">
-  <img src="docs/screenshots/calendar.png" width="170" alt="Календарь">
-  <img src="docs/screenshots/anime_list.png" width="170" alt="Список аниме">
-  <img src="docs/screenshots/translation_list.png" width="170" alt="Переводы">
-  <img src="docs/screenshots/hosting_picker.png" width="170" alt="Выбор хостинга">
-  <img src="docs/screenshots/domain_filter.png" width="170" alt="Фильтр хостингов">
-  <img src="docs/screenshots/changelog.png" width="170" alt="Список изменений">
-  <img src="docs/screenshots/settings.png" width="170" alt="Настройки">
-</p>
+Больше скриншотов [здесь](docs/screenshots)
+
+<p align="center"><!--
+--><img src="docs/screenshots/anime_catalog.png" width="22%" hspace="4" alt="Каталог"><!--
+--><img src="docs/screenshots/anime.png" width="22%" hspace="4" alt="Страница аниме"><!--
+--><img src="docs/screenshots/anime_list.png" width="22%" hspace="4" alt="Список аниме"><!--
+--><img src="docs/screenshots/translation_list.png" width="22%" hspace="4" alt="Переводы"><!--
+--></p>
 
 ## Чем отличается от оригинала
 

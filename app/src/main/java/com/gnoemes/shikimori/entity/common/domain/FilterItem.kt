@@ -7,7 +7,13 @@ import kotlinx.android.parcel.Parcelize
 data class FilterItem(
         val action: String,
         val value: String?,
-        val localizedText: String?
+        val localizedText: String?,
+        /**
+         * Set for genres only, so the filter sheet can group them into demographic / genre / theme
+         * sections. Everything else leaves it null. Deliberately not part of [equals] - two filters
+         * are the same when their action and value are, which is what selection state compares.
+         */
+        val genreKind: GenreV2.Kind? = null
 ) : Parcelable {
 
     override fun toString(): String {

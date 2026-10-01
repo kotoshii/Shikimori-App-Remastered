@@ -9,6 +9,8 @@ import com.gnoemes.shikimori.presentation.presenter.topic.converter.TopicViewMod
 import com.gnoemes.shikimori.presentation.presenter.topic.provider.TopicResourceProvider
 import com.gnoemes.shikimori.presentation.view.topic.list.TopicListView
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 @InjectViewState
@@ -28,8 +30,14 @@ class TopicListPresenter @Inject constructor(
         if (type == ForumType.MY_CLUBS) viewState.setMyClubsEmptyText()
     }
 
+    //parsing the topics' bbcode can take seconds on a long post, so it runs off the main thread
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<TopicViewModel>> {
-        return { page: Int -> interactor.getList(type, page).map(converter) }
+        return { page: Int ->
+            interactor.getList(type, page)
+                    .observeOn(Schedulers.computation())
+                    .map(converter)
+                    .observeOn(AndroidSchedulers.mainThread())
+        }
     }
 
 }

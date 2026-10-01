@@ -287,12 +287,17 @@
         <pattern ignoreCase="true">[list]<var name="content" scope="listScope" />[/list]</pattern>
         <template>&lt;ul&gt;<var name="content"/>&lt;/ul&gt;</template>
     </code>
+    <!-- The [/list] stops end the last item at the end of its list. Without them every fallback
+         below re-parsed the whole rest of the post before failing, once per list: a long article
+         with five lists took 20 s on a desktop and froze the app. -->
     <scope name="listScope" ignoreText="true">
         <code>
             <pattern>[*]<var scope="ROOT"/><constant value="[*]" ghost="true"/></pattern>
+            <pattern>[*]<var scope="ROOT"/><constant value="[/list]" ghost="true"/></pattern>
             <pattern>*<var scope="ROOT"/><constant value="*" ghost="true"/></pattern>
             <pattern>[*]<var scope="ROOT"/><constant value="*" ghost="true"/></pattern>
             <pattern>*<var scope="ROOT"/><constant value="[*]" ghost="true"/></pattern>
+            <pattern>*<var scope="ROOT"/><constant value="[/list]" ghost="true"/></pattern>
             <pattern>[*]<var scope="ROOT"/></pattern>
             <pattern>*<var scope="ROOT"/></pattern>
             <template>&lt;li&gt;<var/>&lt;/li&gt;</template>

@@ -31,7 +31,6 @@ app/debug/output.json
 app/release/output.json
 
 CLAUDE.md
-docs/_internal
-
+.claude/
 
 

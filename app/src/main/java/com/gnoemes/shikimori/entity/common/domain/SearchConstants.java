@@ -6,6 +6,7 @@ public class SearchConstants {
 
     public static final String ADVANCED = "advanced";
     public static final String GENRE = "genre";
+    public static final String GENRE_V2 = "genre_v2";
     public static final String TYPE = "kind";
     public static final String STATUS = "status";
 

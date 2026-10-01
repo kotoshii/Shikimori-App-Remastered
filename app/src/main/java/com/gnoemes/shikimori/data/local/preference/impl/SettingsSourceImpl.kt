@@ -115,6 +115,14 @@ class SettingsSourceImpl @Inject constructor(
         get() = prefs.getStringSet(SettingsExtras.HIDDEN_HOSTINGS, emptySet()).orEmpty()
         set(value) = prefs.putStringSet(SettingsExtras.HIDDEN_HOSTINGS, LinkedHashSet(value))
 
+    override var animeGenres: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.ANIME_GENRES_V2, emptySet()).orEmpty()
+        set(value) = prefs.putStringSet(SettingsExtras.ANIME_GENRES_V2, LinkedHashSet(value))
+
+    override var mangaGenres: Set<String>
+        get() = prefs.getStringSet(SettingsExtras.MANGA_GENRES_V2, emptySet()).orEmpty()
+        set(value) = prefs.putStringSet(SettingsExtras.MANGA_GENRES_V2, LinkedHashSet(value))
+
     override var hideAnime365: Boolean
         get() = prefs.getBoolean(SettingsExtras.HIDE_ANIME_365, false)
         set(value) = prefs.putBoolean(SettingsExtras.HIDE_ANIME_365, value)

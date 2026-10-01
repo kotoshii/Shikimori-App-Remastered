@@ -1,7 +1,8 @@
 package com.gnoemes.shikimori.presentation.presenter.search.converter
 
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
-import com.gnoemes.shikimori.entity.common.domain.Genre
+import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.*
 import com.gnoemes.shikimori.utils.exist
@@ -33,49 +34,36 @@ class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConver
         }
     }
 
+    /**
+     * Three flat sections - audience, genres, themes - in that order, coarse to fine, matching the
+     * order the details chips are in.
+     *
+     * The old layout was a hardcoded nine "main" genres plus everything else in alphabet buckets.
+     * v2 groups genres itself, and six of those nine were demographics or renamed, so the grouping
+     * is taken from the api instead. The vocabulary arrives already sorted by kind and label
+     * (`GenreVocabularySource`), so the order inside a section needs no work here.
+     */
     override fun convertGenres(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any> {
-        val items = mutableListOf<Any>()
-
-        val mainGenres = mutableListOf(
-                Genre.SHOUNEN, Genre.SHOUNEN_AI, Genre.SEINEN,
-                Genre.SHOUJO, Genre.SHOUJO_AI, Genre.JOSEI,
-                Genre.COMEDY, Genre.ROMANCE, Genre.SCHOOL
-        )
-
         val applied = appliedFilters[category.filterType.value]
 
-        val mainCategoryFilters = category.filters
-                .asSequence()
-                .filter {
-                    mainGenres.exist { genre -> genre.animeId == it.value || genre.mangaId == it.value }
-                }
-                .map {
-                    val statuses = getAppliedStatus(it, applied)
-                    convertFilter(it, statuses.first, statuses.second)
-                }
-                .toMutableList()
+        //UNKNOWN goes with the genres: a kind shikimori adds later still has to appear somewhere,
+        //and a chip in the wrong section beats a chip nobody can find
+        val sections = listOf(
+                R.string.filter_genres_demographic to setOf(GenreV2.Kind.DEMOGRAPHIC),
+                R.string.filter_genres_genres to setOf(GenreV2.Kind.GENRE, GenreV2.Kind.UNKNOWN, null),
+                R.string.filter_genres_themes to setOf(GenreV2.Kind.THEME)
+        )
 
-        items.add(FilterMainGenreCategory(mainCategoryFilters))
+        return sections.mapNotNull { (titleRes, kinds) ->
+            val filters = category.filters
+                    .filter { it.genreKind in kinds }
+                    .map {
+                        val statuses = getAppliedStatus(it, applied)
+                        convertFilter(it, statuses.first, statuses.second)
+                    }
 
-
-        val otherCategoryFilters = category.filters
-                .asSequence()
-                .filter {
-                    !mainGenres.exist { genre -> genre.animeId == it.value || genre.mangaId == it.value }
-                }
-                .sortedBy { it.localizedText }
-                .map {
-                    val statuses = getAppliedStatus(it, applied)
-                    convertFilter(it, statuses.first, statuses.second)
-                }
-                .groupBy { it.text.first().toUpperCase() }
-                .entries
-                .map { FilterGenreItem(it.key.toString(), it.value) }
-                .toMutableList()
-
-        items.add(FilterOtherGenreCategory(otherCategoryFilters))
-
-        return items
+            if (filters.isEmpty()) null else FilterGenreSection(titleRes, filters)
+        }
     }
 
     override fun convertSeasons(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<FilterViewModel> {
