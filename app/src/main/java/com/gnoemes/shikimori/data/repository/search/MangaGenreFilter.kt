@@ -1,13 +1,16 @@
 package com.gnoemes.shikimori.data.repository.search
 
 /**
- * Works around shikimori having migrated its **anime** catalog filter to v2 genres and **not its
- * manga one**.
+ * ⚠️ **Unused since the catalog went back to rest**, kept until the dead code cleanup. Rest's
+ * `genre_v2` filters all 81 manga genres (verified 2026-10-01), so neither workaround below is
+ * needed there - and [mapArgument] must not be applied to `genre_v2`, whose ids are v2 ones.
+ *
+ * Works around shikimori's **graphql** manga filter not knowing v2 genres.
  *
  * All 80 anime genres can be filtered by. Of the 81 manga genres, only the 40 whose ids date back
- * to v1 work; the 41 added by v2 return **no results at all**, on graphql and on rest alike, even
- * though a manga happily reports them as its own genres (Monster carries `Удостоено наград`=126,
- * and filtering by 126 finds nothing). Measured 2026-09-02.
+ * to v1 work; the 41 added by v2 return **no results at all** on graphql (and on rest's old `genre`
+ * argument), even though a manga happily reports them as its own genres (Monster carries
+ * `Удостоено наград`=126, and filtering by 126 finds nothing). Measured 2026-09-02.
  *
  * Two things are done about it:
  *

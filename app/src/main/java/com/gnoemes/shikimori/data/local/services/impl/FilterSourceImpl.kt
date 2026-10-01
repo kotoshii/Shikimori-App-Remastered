@@ -5,7 +5,6 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.services.FilterSource
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
-import com.gnoemes.shikimori.data.repository.search.MangaGenreFilter
 import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.common.domain.*
@@ -119,9 +118,8 @@ class FilterSourceImpl @Inject constructor(
      * v2 genres, from the accumulated vocabulary rather than the hardcoded [Genre] enum - the enum
      * knows 48 genres where v2 has 80, and none of the ones added since 2024.
      *
-     * Two things are left out: adult genres while adult content is off, and, for manga and ranobe,
-     * the genres shikimori cannot actually filter by. Offering a genre that always returns nothing
-     * is worse than not offering it - see [MangaGenreFilter].
+     * Adult genres are left out while adult content is off. Every other genre is offered, manga
+     * and ranobe included: the catalog's rest `genre_v2` filters all of them.
      */
     private fun getGenres(anime: Boolean): MutableList<FilterItem> {
         val type = if (anime) GenreEntryType.ANIME else GenreEntryType.MANGA
@@ -130,7 +128,6 @@ class FilterSourceImpl @Inject constructor(
         return genreVocabulary.genres(type)
                 .asSequence()
                 .filter { settingsSource.allowR18Content || it.id !in adult }
-                .filter { anime || MangaGenreFilter.isFilterable(it.id) }
                 .map { FilterItem(FilterType.GENRE.value, it.id.toString(), it.russianName, it.kind) }
                 .toMutableList()
     }

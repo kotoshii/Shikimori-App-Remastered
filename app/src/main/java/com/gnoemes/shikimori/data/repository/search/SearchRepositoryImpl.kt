@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.entity.common.data.graphql.GraphqlRequest
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.common.data.graphql.SearchQueryResponse
 import com.gnoemes.shikimori.entity.common.domain.LinkedContent
+import com.gnoemes.shikimori.entity.common.domain.SearchConstants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.roles.domain.Character
@@ -36,30 +37,39 @@ class SearchRepositoryImpl @Inject constructor(
 ) : SearchRepository {
 
     /**
-     * Anime, manga and ranobe searches go through graphql, because **genre filtering only works
-     * there**: shikimori's v2 genres are not exposed by the rest api, and a v2 genre id sent to
-     * `/api/animes` matches nothing (five ids even mean something else there). See
-     * docs/_internal/GENRES_V2_SPIKE.md.
-     *
-     * The whole catalog moved rather than only genre-filtered searches - one screen paging through
-     * two apis would order its results differently depending on which filters were set.
-     *
-     * `animesApi`, `mangaApi`, `ranobeApi` and their converters are left injected although nothing
-     * in this class calls them any more - the interfaces themselves are still used elsewhere for
-     * details, roles, similar and franchise, and nothing is removed without asking.
+     * Anime, manga and ranobe searches go through rest, with the genre filter sent as `genre_v2`
+     * (see [withGenreV2]). Rest has the real posters of titles shikimori now gates as 18+ (yuri,
+     * yaoi, hentai, shoujo-ai/shounen-ai), which graphql answers with a null poster even with the
+     * user's token.
      */
     override fun getAnimeList(queryMap: Map<String, String>): Single<List<Anime>> =
-            searchGraphql(GenreEntryType.ANIME, queryMap, isRanobe = false)
-                    .map { graphqlConverter.convertAnimes(it.data?.animes) }
+            animesApi.getList(withGenreV2(queryMap))
+                    .map(animeResponseConverter)
 
     override fun getMangaList(queryMap: Map<String, String>): Single<List<Manga>> =
-            searchGraphql(GenreEntryType.MANGA, queryMap, isRanobe = false)
-                    .map { graphqlConverter.convertMangas(it.data?.mangas) }
+            mangaApi.getList(withGenreV2(queryMap))
+                    .map(mangaResponseConverter)
 
     override fun getRanobeList(queryMap: Map<String, String>): Single<List<Manga>> =
-            searchGraphql(GenreEntryType.MANGA, queryMap, isRanobe = true)
-                    .map { graphqlConverter.convertMangas(it.data?.mangas) }
+            ranobeApi.getList(withGenreV2(queryMap))
+                    .map(mangaResponseConverter)
 
+    /**
+     * The filter holds v2 genre ids, and rest's `genre` only knows the v1 vocabulary - five ids
+     * even mean something else there. `genre_v2` takes the same comma separated ids with the same
+     * `!` exclusion prefix, returns what the graphql catalog did in the same order, and for manga
+     * and ranobe filters every v2 genre, where graphql only manages 40 of 81. Verified against the
+     * live api on 2026-10-01. See docs/_internal/GENRES_V2_SPIKE.md.
+     */
+    private fun withGenreV2(queryMap: Map<String, String>): Map<String, String> {
+        val genre = queryMap[SearchConstants.GENRE] ?: return queryMap
+        return queryMap - SearchConstants.GENRE + (SearchConstants.GENRE_V2 to genre)
+    }
+
+    /**
+     * The graphql catalog search, unused since the catalog went back to rest. Kept, with
+     * [graphqlSearchApi] and [graphqlConverter], until the dead code cleanup.
+     */
     private fun searchGraphql(
             type: GenreEntryType,
             queryMap: Map<String, String>,
