@@ -203,7 +203,6 @@
 
     <string name="calendar_date_format" translatable="false">%s, %s</string>
     <string name="calendar_must_aired">Сейчас на ТВ</string>
-    <string name="calendar_my_ongoings">Мои онгоинги</string>
     <string name="calendar_nothing">Ничего не найдено.\n Добавляйте аниме в списки для отслеживания выхода новых серий</string>
     <string name="calendar_search_hint">Онгоинги и анонсы</string>
     <string name="calendar_aired_already">Вышедшее сегодня</string>
