@@ -11,7 +11,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.utils.drawable
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.onClick
-import kotlinx.android.synthetic.main.view_donation_group.view.*
+import kotlinx.android.synthetic.main.view_app_info_group.view.*
 
 class AppGroupPreference @JvmOverloads constructor(context: Context,
                                                    attrs: AttributeSet? = null,
@@ -19,7 +19,7 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
 ) : PreferenceGroup(context, attrs, defStyleInt) {
 
     init {
-        layoutResource = R.layout.view_donation_group
+        layoutResource = R.layout.view_app_info_group
     }
 
     var feedbackClickListener: View.OnClickListener? = null
