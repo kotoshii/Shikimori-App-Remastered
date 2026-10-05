@@ -144,7 +144,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
             is DetailsAction.WatchOnline -> onWatchOnline()
             is DetailsAction.EditRate -> onEditRate()
             is DetailsAction.OpenInBrowser -> onOpenInBrowser()
-            is DetailsAction.ClearHistory -> onClearHistory()
             is DetailsAction.Video -> onOpenWeb(action.url)
             is DetailsAction.GenreClicked -> onGenreClicked(action.genre)
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(action.newStatus)
@@ -211,9 +210,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     }
 
     protected open fun onScreenshotsClicked(pos: Int) {
-    }
-
-    protected open fun onClearHistory() {
     }
 
     protected open fun onOpenInBrowser() {

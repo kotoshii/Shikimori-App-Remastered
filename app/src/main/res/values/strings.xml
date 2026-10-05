@@ -404,7 +404,6 @@
     <string name="series_empty_authors_description">Попробуйте изменить источник или тип, если смотрите не в одном. Также проверьте скрытые хостинги в настройках.</string>
     <string name="series_empty_episode_title">Эпизод не найден</string>
     <string name="series_empty_episode_description">Тайтл не вышел или видео не выложили.</string>
-    <string name="series_add_video">Добавить видео</string>
     <string name="series_tracks_empty">Не удалось найти видео. Похоже, что оно было удалено.</string>
     <string name="series_anime_365_login_required">Для Anime 365 нужен вход. Выполните его в настройках — «Вход в Anime 365».</string>
     <string name="series_hosting_challenge">Хостинг просит пройти капчу. Откройте видео в браузере и попробуйте снова.</string>

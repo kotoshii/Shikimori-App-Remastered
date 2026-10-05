@@ -180,10 +180,6 @@ open class AnimePresenter @Inject constructor(
         router.navigateTo(Screens.SCREENSHOTS, data)
     }
 
-    override fun onClearHistory() {
-
-    }
-
     override fun onStatisticClicked() {
         Single.zip(Single.just(currentAnime.rateScoresStats), Single.just(currentAnime.rateStatusesStats), BiFunction<List<Statistic>, List<Statistic>, Pair<List<UserStatisticItem>, List<UserStatisticItem>>> { t1, t2 ->
             val scores = viewModelConverter.convertScores(t1)
