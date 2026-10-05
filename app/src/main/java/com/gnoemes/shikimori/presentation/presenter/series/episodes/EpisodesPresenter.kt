@@ -4,7 +4,6 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -106,8 +105,6 @@ class EpisodesPresenter @Inject constructor(
             return
         }
 
-        logEvent(AnalyticEvent.ANIME_EPISODES_CHECKED_MANUALLY)
-
         createRateIfNotExist(rateId)
                 .doOnSuccess { viewState.onRateCreated(it) }
                 .flatMapCompletable { interactor.sendEpisodeChanges(EpisodeChanges.Changes(it, item.animeId, item.index, newStatus)) }
@@ -130,7 +127,6 @@ class EpisodesPresenter @Inject constructor(
 
     fun onSearchClicked() {
         viewState.showSearchView()
-        logEvent(AnalyticEvent.ANIME_EPISODES_SEARCH_OPENED)
     }
 
     fun onSearchClosed() {
@@ -142,8 +138,6 @@ class EpisodesPresenter @Inject constructor(
         items.clear()
         viewState.showAlternativeLabel(isAlternativeSource)
         onRefresh()
-
-        if (isAlternativeSource) logEvent(AnalyticEvent.ANIME_EPISODES_ALTERNATIVE)
     }
 
     fun onQueryChanged(newText: String?) {

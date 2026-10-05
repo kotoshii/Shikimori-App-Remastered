@@ -42,7 +42,6 @@ ext.versions = [
         exoplayer         : '2.9.6',
 
         kefirBB           : '1.5',
-        firebase          : '16.0.6',
 
         advancedVersioning: '1.6.0',
 

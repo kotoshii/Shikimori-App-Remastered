@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.presenter.more
 
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.more.MoreCategory
@@ -62,7 +61,6 @@ class MorePresenter @Inject constructor(
 
     private fun onSettingsClicked() {
         router.navigateTo(Screens.SETTINGS)
-        logEvent(AnalyticEvent.NAVIGATION_SETTINGS)
     }
 
     private fun onProfileClicked() {
@@ -75,6 +73,5 @@ class MorePresenter @Inject constructor(
 
     private fun openAuth(type: AuthType) {
         router.navigateTo(Screens.AUTHORIZATION, type)
-        logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }

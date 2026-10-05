@@ -4,7 +4,6 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.similar.SimilarInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -81,7 +80,6 @@ class SimilarPresenter @Inject constructor(
         ratesInteractor.changeRateStatus(id, newStatus)
                 .subscribe(this::onRefresh, this::processErrors)
                 .addToDisposables()
-        logEvent(AnalyticEvent.RATE_DROP_MENU)
     }
 
     private fun createRate(item: SimilarViewModel, newStatus: RateStatus) {

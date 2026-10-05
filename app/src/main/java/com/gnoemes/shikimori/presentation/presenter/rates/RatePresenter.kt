@@ -9,7 +9,6 @@ import com.gnoemes.shikimori.domain.rates.RateChangesInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Task
 import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
@@ -306,7 +305,6 @@ class RatePresenter @Inject constructor(
     private fun onEditRate(rate: RateViewModel) {
         val userRate = getUserRate(rate.rawRate)
         viewState.showRateDialog(rate.name, userRate)
-        logEvent(AnalyticEvent.RATE_DIALOG)
     }
 
     private fun getUserRate(rate: Rate?) = UserRate(
@@ -360,7 +358,6 @@ class RatePresenter @Inject constructor(
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
         val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, episodesAired!!, progress)
         router.navigateTo(Screens.SERIES, navigationData)
-        analyticInteractor.logEvent(AnalyticEvent.NAVIGATION_ANIME_TRANSLATIONS_FROM_RATES)
     }
 
     fun onChangeRateStatus(id: Long, newStatus: RateStatus) {
@@ -374,7 +371,6 @@ class RatePresenter @Inject constructor(
             val task = Task {
                 ratesInteractor.changeRateStatus(id, newStatus)
                         .subscribeAndRefresh(id)
-                logEvent(AnalyticEvent.RATE_DROP_MENU)
             }
             taskInteractor.newTask(task)
                     .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getChangeRateStatusMessage(item.type, newStatus), item.id) }
@@ -557,7 +553,6 @@ class RatePresenter @Inject constructor(
 
     private fun openAuth(type: AuthType) {
         router.navigateTo(Screens.AUTHORIZATION, type)
-        logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }
 

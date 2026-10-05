@@ -10,13 +10,11 @@ import com.gnoemes.shikimori.data.local.db.impl.EpisodeDbSourceImpl;
 import com.gnoemes.shikimori.data.local.db.impl.MangaRateSyncDbSourceImpl;
 import com.gnoemes.shikimori.data.local.services.DownloadSource;
 import com.gnoemes.shikimori.data.local.services.impl.DownloadManagerSourceImpl;
-import com.gnoemes.shikimori.data.repository.app.AnalyticRepository;
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository;
 import com.gnoemes.shikimori.data.repository.app.TaskRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenSource;
 import com.gnoemes.shikimori.data.repository.app.impl.AuthorizationRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.app.impl.FirebaseAnalyticRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TaskRepostioryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenSourceImpl;
@@ -75,10 +73,6 @@ public interface RepositoryModule {
     @Binds
     @Reusable
     DownloadRepository bindDownloadRepository(DownloadRepositoryImpl repository);
-
-    @Binds
-    @Singleton
-    AnalyticRepository bindAnalyticRepository(FirebaseAnalyticRepositoryImpl repository);
 
     @Binds
     @Singleton

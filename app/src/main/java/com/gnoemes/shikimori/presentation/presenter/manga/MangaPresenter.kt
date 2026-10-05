@@ -7,7 +7,6 @@ import com.gnoemes.shikimori.domain.ranobe.RanobeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.related.RelatedInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
@@ -126,7 +125,6 @@ class MangaPresenter @Inject constructor(
         super.onChronology()
         val data = ChronologyNavigationData(id, type, currentManga.franchise)
         router.navigateTo(Screens.CHRONOLOGY, data)
-        logEvent(AnalyticEvent.ANIME_DETAILS_CHRONOLOGY)
     }
 
     override fun onOpenInBrowser() = onOpenWeb(currentManga.url)
