@@ -88,14 +88,6 @@
         </receiver>
 
         <service
-            android:name=".domain.app.NotificationsService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <service
             android:name="com.gnoemes.shikimori.data.local.services.impl.VideoDownloadService"
             android:exported="false" />
 
@@ -114,10 +106,6 @@
                 android:resource="@xml/provider_paths"
                 tools:replace="android:resource" />
         </provider>
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
 
     </application>
 

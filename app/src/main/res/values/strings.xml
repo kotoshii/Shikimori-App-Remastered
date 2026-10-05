@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Shikimori App</string>
     <string name="appBarFixScrollingFooterBehavior">com.gnoemes.shikimori.utils.widgets.FixScrollingFooterBehavior</string>
-    <string name="default_notification_channel_id">SHIKIMORI_NOTIFICATION_CHANNEL_ID</string>
     <string name="download_notification_channel">Загрузка эпизодов</string>
     <string name="download_notification_progress">Загрузка…</string>
     <string name="download_notification_cancel">Отмена</string>
