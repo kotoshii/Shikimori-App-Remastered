@@ -9,8 +9,9 @@ import com.google.gson.annotations.SerializedName
  * `/assets/globals/missing_*.jpg` placeholders instead, because poster files are not named after
  * the content id anymore. GraphQL is the only place where the real file names are published.
  *
- * `*Alt*` fields are jpeg/png renditions of the webp ones. They are preferred because the app
- * supports API 16, while lossless/transparent webp requires API 18.
+ * `*Alt*` fields are jpeg/png renditions of the webp ones. They were preferred while the app
+ * supported API 16 (lossless/transparent webp requires API 18); since `minSdk 21` the webp ones
+ * would load as well.
  *
  * Measured sizes (identical to their REST counterparts unless stated):
  * - [mainUrl] 225x320 - REST `original` is 225x318

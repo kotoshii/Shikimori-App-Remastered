@@ -13,7 +13,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
@@ -73,7 +72,7 @@ class WebPlayerActivity : BaseThemedActivity() {
                 allowUniversalAccessFromFileURLs = true
                 userAgentString = "Mozilla/5.0 (Linux; Android 4.4; Nexus 5 Build/_BuildID_) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/30.0.0.0 Mobile Safari/537.36"
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             }
         }
 
@@ -98,10 +97,8 @@ class WebPlayerActivity : BaseThemedActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (hasFocus) hideSystemUi()
-            else showSystemUI()
-        }
+        if (hasFocus) hideSystemUi()
+        else showSystemUI()
     }
 
     private fun showNoAdsMessage() {
@@ -137,7 +134,6 @@ class WebPlayerActivity : BaseThemedActivity() {
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private fun hideSystemUi() {
         window.decorView
                 .systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE

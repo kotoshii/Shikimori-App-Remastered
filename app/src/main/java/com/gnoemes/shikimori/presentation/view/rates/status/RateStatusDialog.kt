@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.rates.status
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -62,13 +61,11 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
 
         navView.apply {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                val item = items.firstOrNull { it.isSelected }
-                if (item != null) {
-                    itemTextColor = context.colorStateList(item.tint)
-                    itemIconTintList = context.colorStateList(item.tint)
-                    setItemBackgroundResource(item.selector)
-                }
+            val item = items.firstOrNull { it.isSelected }
+            if (item != null) {
+                itemTextColor = context.colorStateList(item.tint)
+                itemIconTintList = context.colorStateList(item.tint)
+                setItemBackgroundResource(item.selector)
             }
 
             setNavigationItemSelectedListener { menu ->

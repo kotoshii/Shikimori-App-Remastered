@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.utils.widgets;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -9,7 +8,6 @@ import android.util.SparseArray;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 public class UniqueStateLinearLayout extends LinearLayout {
 
@@ -25,7 +23,6 @@ public class UniqueStateLinearLayout extends LinearLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     public UniqueStateLinearLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }

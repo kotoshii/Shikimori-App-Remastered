@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.chronology
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,10 +44,8 @@ class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
         val items = ChronologyType.values().toMutableList()
 
         navView.apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
-                itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
-            }
+            setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
+            itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
             setNavigationItemSelectedListener { menu ->
                 (parentFragment as? Callback)?.onTypeChanged(items.first { it.ordinal == menu.itemId })
                 dismiss()

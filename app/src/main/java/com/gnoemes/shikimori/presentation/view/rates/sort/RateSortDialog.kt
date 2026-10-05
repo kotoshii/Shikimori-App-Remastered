@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.rates.sort
 
 import android.content.Context
 import android.graphics.Point
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -47,10 +46,8 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
         }
 
         navView.apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
-                itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
-            }
+            setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
+            itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
             setNavigationItemSelectedListener { menu ->
                 (parentFragment as? RateSortCallback)?.onSortClicked(sorts.first { it.type.order == menu.itemId }.type)
                 dismiss()

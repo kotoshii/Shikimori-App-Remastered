@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.player.embedded
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -167,13 +166,10 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                hideSystemUi()
-            }
+            hideSystemUi()
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private fun hideSystemUi() {
         window.decorView.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE

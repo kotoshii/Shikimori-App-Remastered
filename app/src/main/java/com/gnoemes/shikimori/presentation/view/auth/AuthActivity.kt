@@ -1,11 +1,9 @@
 package com.gnoemes.shikimori.presentation.view.auth
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Build
 import android.os.Bundle
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -131,7 +129,6 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
             return false
         }
 
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
@@ -209,18 +206,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
         private fun interceptCode(url: String?) {
             if (url == TOKEN_URL) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    webView.evaluateJavascript("(function() { return JSON.stringify(document.getElementsByTagName('html')[0].innerHTML); })();") { s ->
-                        processCode(s)
-                    }
-                } else {
-                    //TODO remove, add js interface
-                    Toast.makeText(
-                        applicationContext,
-                        "Авторизация на вашей версии Android временно не возможна",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    onBackPressed()
+                webView.evaluateJavascript("(function() { return JSON.stringify(document.getElementsByTagName('html')[0].innerHTML); })();") { s ->
+                    processCode(s)
                 }
                 webView.gone()
                 progressBar.visible()
