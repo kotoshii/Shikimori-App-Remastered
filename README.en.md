@@ -34,7 +34,7 @@ This is a fork of [gnoemes/Shikimori-App-Remastered](https://github.com/gnoemes/
 
 [Download the latest APK](https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest)
 
-Needs Android 4.1 or newer. Allow installs from unknown sources, and when you open the app Play Protect will probably ask to scan or verify it. That happens with any APK installed outside the store.
+Needs Android 5.0 or newer. Allow installs from unknown sources, and when you open the app Play Protect will probably ask to scan or verify it. That happens with any APK installed outside the store.
 
 Versions are `major.minor.patch`, like `0.8.8`. Older releases had a fourth build number in the end, like `0.8.7.1`. It is not used anymore.
 
