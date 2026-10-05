@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.di.app.module.network;
 
-import com.gnoemes.shikimori.BuildConfig;
 import com.gnoemes.shikimori.di.app.annotations.ShikicinemaVideoApi;
 import com.gnoemes.shikimori.di.app.annotations.VideoApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
@@ -45,7 +44,9 @@ public interface VideoNetworkModule {
     @Singleton
     @VideoApi
     static Retrofit provideRetrofit(@VideoApi Retrofit.Builder builder) {
-        return builder.baseUrl(BuildConfig.VideoBaseUrl).build();
+        //Retrofit requires a base url, but every VideoApi call passes a full one. Keep https: a
+        //protocol-relative player url ("//host/...") takes its scheme from here.
+        return builder.baseUrl("https://localhost/").build();
     }
 
     @Provides
