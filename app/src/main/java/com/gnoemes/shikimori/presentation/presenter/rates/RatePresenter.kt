@@ -5,7 +5,6 @@ import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
 import com.gnoemes.shikimori.domain.rates.PinnedRateInteractor
-import com.gnoemes.shikimori.domain.rates.RateChangesInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
@@ -50,7 +49,6 @@ class RatePresenter @Inject constructor(
         private val ratesInteractor: RatesInteractor,
         private val seriesInteractor: SeriesInteractor,
         private val sortResourceProvider: SortResourceProvider,
-        private val changesInteractor: RateChangesInteractor,
         private val taskInteractor: CancelableTaskInteractor,
         private val pinInteractor: PinnedRateInteractor,
         private val resourceProvider: CommonResourceProvider,
@@ -398,8 +396,7 @@ class RatePresenter @Inject constructor(
                     .subscribeAndRefresh(rate.id!!)
 
     private fun Completable.subscribeAndRefresh(id: Long) {
-        this.andThen(changesInteractor.sendRateChanges(id))
-                .doOnComplete { loadUserOrCategories() }
+        this.doOnComplete { loadUserOrCategories() }
                 .subscribe(this@RatePresenter::onRefresh, this@RatePresenter::processErrors)
                 .addToDisposables()
     }
