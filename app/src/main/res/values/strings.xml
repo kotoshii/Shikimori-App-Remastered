@@ -111,7 +111,6 @@
     <string name="status_ongoing">Онгоинг</string>
     <string name="status_released">Завершен</string>
 
-    <string name="rate_add">Добавить</string>
     <string name="rate_empty">Здесь пока ничего нет</string>
     <string name="rate_watching">Смотрю</string>
     <string name="rate_reading">Читаю</string>
@@ -522,16 +521,6 @@
         <item>@string/common_manga</item>
     </string-array>
 
-    <string-array name="anime_rate_stasuses_empty">
-        <item>@string/rate_add</item>
-        <item>@string/rate_watching</item>
-        <item>@string/rate_planned</item>
-        <item>@string/rate_rewatch</item>
-        <item>@string/rate_completed</item>
-        <item>@string/rate_on_hold</item>
-        <item>@string/rate_dropped</item>
-    </string-array>
-
     <string-array name="anime_rate_stasuses">
         <item>@string/rate_watching</item>
         <item>@string/rate_planned</item>
@@ -561,16 +550,6 @@
     </string-array>
 
     <string-array name="manga_rate_stasuses">
-        <item>@string/rate_reading</item>
-        <item>@string/rate_planned</item>
-        <item>@string/rate_rereading</item>
-        <item>@string/rate_readed</item>
-        <item>@string/rate_on_hold</item>
-        <item>@string/rate_dropped</item>
-    </string-array>
-
-    <string-array name="manga_rate_stasuses_empty">
-        <item>@string/rate_add</item>
         <item>@string/rate_reading</item>
         <item>@string/rate_planned</item>
         <item>@string/rate_rereading</item>

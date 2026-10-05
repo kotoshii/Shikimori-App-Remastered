@@ -75,7 +75,6 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 
-    <color name="rate_default">#daf1ff</color>
     <color name="rate_default_transparent">#1f3d5afe</color>
     <color name="rate_default_dark">#3d5afe</color>
     <color name="rate_watched">#eef6dc</color>
