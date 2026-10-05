@@ -22,7 +22,6 @@ class SettingsFragment : BaseSettingsFragment() {
             feedbackClickListener = View.OnClickListener { openWeb(Constants.GITHUB_ISSUES_URL) }
 //            trelloClickListener = View.OnClickListener { openWeb(Constants.ROAD_MAP_URL) }
             forumClickListener = View.OnClickListener { openWeb(Constants.FOUR_PDA_THEME_URL) }
-            clubClickListener = View.OnClickListener { openWeb(Constants.APP_CLUB_URL) }
         }
     }
 

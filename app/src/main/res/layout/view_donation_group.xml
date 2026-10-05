@@ -38,10 +38,6 @@
 
         <include
             android:id="@+id/fourPdaLayout"
-            layout="@layout/layout_preference" />
-
-        <include
-            android:id="@+id/clubLayout"
             layout="@layout/layout_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
