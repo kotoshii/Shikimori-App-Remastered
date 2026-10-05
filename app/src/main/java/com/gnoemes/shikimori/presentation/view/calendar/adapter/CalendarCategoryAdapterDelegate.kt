@@ -64,7 +64,7 @@ class CalendarCategoryAdapterDelegate(
                 dateTextView.text = item.date
                 with(recyclerView) {
                     isNestedScrollingEnabled = false
-                    adapter = CalendarAnimeAdapter(itemView.context, imageLoader, callback, item.items).apply { if (!hasObservers()) setHasStableIds(true) }
+                    adapter = CalendarAnimeAdapter(imageLoader, callback, item.items).apply { if (!hasObservers()) setHasStableIds(true) }
                     layoutManager = LinearLayoutManager(itemView.context, LinearLayoutManager.HORIZONTAL, false).apply { initialPrefetchItemCount = 3 }
                 }
             }
