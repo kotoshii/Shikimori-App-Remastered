@@ -81,10 +81,6 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="49adb365d3d365dabad78f3110d69bd84e717eea" />
-
         <receiver android:name="com.gnoemes.shikimori.utils.widgets.MockMediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

@@ -2,7 +2,6 @@ import org.moallemi.gradle.internal.VersionCodeType
 
 apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -140,10 +139,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:' + versions.firebaseMessaging
     implementation 'com.google.firebase:firebase-firestore:' + versions.firebaseFirestore
     implementation 'com.google.firebase:firebase-storage:' + versions.firebaseStorage
-
-    implementation('com.crashlytics.sdk.android:crashlytics:' + versions.crashlytics) {
-        transitive = true
-    }
 
     implementation 'com.github.ome450901:SimpleRatingBar:' + versions.ratingBar
     implementation 'org.jsoup:jsoup:' + versions.jsoup

@@ -44,8 +44,6 @@ ext.versions = [
         kefirBB           : '1.5',
         firebase          : '16.0.6',
 
-        fabric            : '1.27.1',
-        crashlytics       : '2.9.9@aar',
         advancedVersioning: '1.6.0',
 
         ratingBar         : '1.4.2',

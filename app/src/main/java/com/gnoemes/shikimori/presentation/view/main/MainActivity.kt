@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
@@ -44,6 +43,8 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     companion object {
         /** Set by the "Изменения" action of the update notification. */
         const val EXTRA_SHOW_CHANGELOG = "EXTRA_SHOW_CHANGELOG"
+
+        private const val TAG = "MainActivity"
     }
 
     @InjectPresenter
@@ -125,7 +126,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
                     getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
                     getDefaultSharedPreferences().putString(SettingsExtras.SHIKICINEMA_URL, Constants.SHIKICINEMA_URL)
-                }.addOnFailureListener { Crashlytics.logException(it) }
+                }
     }
 
     /**
@@ -140,7 +141,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
         githubApi.getLatestRelease()
                 .subscribeOn(Schedulers.io())
-                .subscribe({ onReleaseChecked(it) }, { Crashlytics.logException(it) })
+                .subscribe({ onReleaseChecked(it) }, { Log.w(TAG, "update check failed", it) })
     }
 
     /**

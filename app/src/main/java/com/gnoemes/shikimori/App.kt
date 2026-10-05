@@ -5,10 +5,8 @@ import android.app.Application
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.util.Log
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
-import io.fabric.sdk.android.Fabric
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 import net.danlew.android.joda.JodaTimeAndroid
@@ -29,7 +27,6 @@ class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcast
     override fun onCreate() {
         super.onCreate()
         RxJavaPlugins.setErrorHandler(::logUndeliverable)
-        Fabric.with(this, Crashlytics())
         JodaTimeAndroid.init(this)
         DaggerAppComponent.builder().create(this).inject(this)
     }
