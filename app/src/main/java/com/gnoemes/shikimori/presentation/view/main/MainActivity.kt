@@ -27,7 +27,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabContainer
 import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import io.reactivex.schedulers.Schedulers
@@ -71,7 +70,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         initBottomNav()
         initContainer()
         if (savedInstanceState == null) {
-            syncValues()
             checkForUpdate()
         }
 
@@ -112,19 +110,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
             }
         }
         ta.commitNow()
-    }
-
-    private fun syncValues() {
-        val db = FirebaseFirestore.getInstance()
-
-        db.collection("app")
-                .get()
-                .addOnSuccessListener {
-                    val donationLink = it.documents.firstOrNull()?.data?.get("donationLink") as? String
-
-                    getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
-                    getDefaultSharedPreferences().putString(SettingsExtras.SHIKICINEMA_URL, Constants.SHIKICINEMA_URL)
-                }
     }
 
     /**

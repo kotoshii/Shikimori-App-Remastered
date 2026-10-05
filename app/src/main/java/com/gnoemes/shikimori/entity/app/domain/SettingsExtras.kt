@@ -62,8 +62,6 @@ object SettingsExtras {
 
     const val DONATION_LINK = "DONATION_LINK"
 
-    const val SHIKICINEMA_URL = "SHIKICINEMA_URL"
-
     //where kodik currently serves stream links from, see KodikParser
     const val KODIK_LINKS_PATH = "KODIK_LINKS_PATH"
 

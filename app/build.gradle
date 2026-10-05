@@ -135,7 +135,6 @@ dependencies {
 
     implementation 'org.kefirsf:kefirbb:' + versions.kefirBB
 
-    implementation 'com.google.firebase:firebase-firestore:' + versions.firebaseFirestore
     implementation 'com.google.firebase:firebase-storage:' + versions.firebaseStorage
 
     implementation 'com.github.ome450901:SimpleRatingBar:' + versions.ratingBar

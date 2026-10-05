@@ -48,7 +48,6 @@ ext.versions = [
         ratingBar         : '1.4.2',
         jsoup             : '1.10.2',
 
-        firebaseFirestore : '20.1.0',
         firebaseStorage   : '19.1.0',
 
         slidr             : '2.1.0',
