@@ -4,10 +4,8 @@ import androidx.annotation.NonNull;
 
 public class SearchConstants {
 
-    public static final String ADVANCED = "advanced";
     public static final String GENRE = "genre";
     public static final String GENRE_V2 = "genre_v2";
-    public static final String TYPE = "kind";
     public static final String STATUS = "status";
 
     ////////////////////////////////////////////////////////////////////
@@ -19,7 +17,6 @@ public class SearchConstants {
     public static final String LIMIT = "limit";
     public static final String DURATION = "duration";
     public static final String RATE = "mylist";
-    public static final String SCORE = "score";
     public static final String SEASON = "season";
     public static final String ORDER = "order";
     public static final String IDS = "ids";
