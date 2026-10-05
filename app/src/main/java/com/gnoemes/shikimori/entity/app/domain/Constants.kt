@@ -43,8 +43,6 @@ object Constants {
 
     const val SHIKICINEMA_URL = "https://smarthard.net/"
 
-//    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"
-
     const val MAX_PINNED_RATES = 3
 
     const val BACKUP_FILE_NAME= "shimori-backup.json"

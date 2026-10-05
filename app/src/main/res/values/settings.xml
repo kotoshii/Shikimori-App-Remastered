@@ -148,9 +148,6 @@
 
     <string name="settings_feedback">Обратная связь</string>
 
-    <string name="settings_roadmap_title">План развития в Trello</string>
-    <string name="settings_roadmap_key" translatable="false">OPEN_ROAD_MAP</string>
-
     <string name="settings_general_rate_swipe_to_left_title">Смахивание влево</string>
     <string name="settings_general_rate_swipe_to_left_key">RATE_SWIPE_TO_LEFT_ACTION</string>
 

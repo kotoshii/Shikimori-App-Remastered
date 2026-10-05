@@ -20,7 +20,6 @@ class SettingsFragment : BaseSettingsFragment() {
 
         (preference("info_group") as? AppGroupPreference)?.apply {
             feedbackClickListener = View.OnClickListener { openWeb(Constants.GITHUB_ISSUES_URL) }
-//            trelloClickListener = View.OnClickListener { openWeb(Constants.ROAD_MAP_URL) }
             forumClickListener = View.OnClickListener { openWeb(Constants.FOUR_PDA_THEME_URL) }
         }
     }

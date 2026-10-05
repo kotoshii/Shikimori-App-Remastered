@@ -23,7 +23,6 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
     }
 
     var feedbackClickListener: View.OnClickListener? = null
-//    var trelloClickListener: View.OnClickListener? = null
     var forumClickListener: View.OnClickListener? = null
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
@@ -32,11 +31,6 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
             sendLayout.title()?.text = context.getString(R.string.settings_about_send_title)
             sendLayout.summary()?.gone()
             sendLayout.onClick { feedbackClickListener?.onClick(it) }
-
-//            trelloLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_trello_setting))
-//            trelloLayout.title()?.text = context.getString(R.string.settings_roadmap_title)
-//            trelloLayout.summary()?.gone()
-//            trelloLayout.onClick { trelloClickListener?.onClick(it) }
 
             fourPdaLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_4pda_setting))
             fourPdaLayout.title()?.text = context.getString(R.string.settings_about_forum_title)
