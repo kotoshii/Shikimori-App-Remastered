@@ -105,7 +105,6 @@ class UserPresenter @Inject constructor(
     fun onAction(action: UserProfileAction) {
         when (action) {
             is UserProfileAction.History -> onHistoryClicked()
-            is UserProfileAction.Bans -> onBansClicked()
             is UserProfileAction.About -> onAboutClicked()
             is UserProfileAction.Message -> onMessageClicked()
             is UserProfileAction.MessageBox -> onMessageBoxClicked()
@@ -180,10 +179,6 @@ class UserPresenter @Inject constructor(
 
     private fun onAboutClicked() {
         onOpenWeb(URLEncoder.encode(currentUser.nickname, "utf-8").appendHostIfNeed())
-    }
-
-    private fun onBansClicked() {
-        router.navigateTo(Screens.USER_BANS, id)
     }
 
     private fun onHistoryClicked() {
