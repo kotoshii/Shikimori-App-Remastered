@@ -115,8 +115,8 @@ class FilterSourceImpl @Inject constructor(
                     .toMutableList()
 
     /**
-     * v2 genres, from the accumulated vocabulary rather than the hardcoded [Genre] enum - the enum
-     * knows 48 genres where v2 has 80, and none of the ones added since 2024.
+     * v2 genres, from the accumulated vocabulary. The old hardcoded genre list knew 48 genres where
+     * v2 has 80, and none of the ones added since 2024.
      *
      * Adult genres are left out while adult content is off. Every other genre is offered, manga
      * and ranobe included: the catalog's rest `genre_v2` filters all of them.
