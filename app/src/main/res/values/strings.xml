@@ -51,8 +51,6 @@
     <string name="common_cancel_variant">Отменить</string>
     <string name="common_next">Далее</string>
     <string name="common_sign_in">Войти</string>
-    <string name="common_sign_up">Регистрация</string>
-    <string name="common_sign_as_guest">Войти как гость</string>
     <string name="common_characters">Персонажи</string>
     <string name="common_character">Персонаж</string>
     <string name="common_chronology">Хронология</string>

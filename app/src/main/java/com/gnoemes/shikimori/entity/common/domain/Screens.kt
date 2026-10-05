@@ -17,7 +17,6 @@ object Screens {
     // Activities
     ////////////////////////////////////////////////////////////////////////
     const val AUTHORIZATION = "AUTHORIZATION"
-    const val WELCOME = "WELCOME"
     const val MAIN = "MAIN"
     const val WEB = "WEB"
     const val SETTINGS = "SETTINGS"
