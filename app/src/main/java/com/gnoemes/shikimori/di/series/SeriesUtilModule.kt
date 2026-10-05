@@ -89,8 +89,4 @@ interface SeriesUtilModule {
     @Reusable
     fun bindMatreshkaParser(parser: MatreshkaParserImpl): MatreshkaParser
 
-    @Binds
-    @Reusable
-    fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
-
 }
