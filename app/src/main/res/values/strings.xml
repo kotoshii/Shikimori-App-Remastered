@@ -83,7 +83,6 @@
     <string name="common_reset">Сброс</string>
     <string name="common_accept">Принять</string>
     <string name="common_age_rating">Возрастной рейтинг</string>
-    <string name="common_guest">Гость</string>
     <string name="common_clubs">Клубы</string>
     <string name="common_comments">Комментарии</string>
     <string name="common_download">Скачать</string>
@@ -335,11 +334,7 @@
     <br><b>!2013</b> - кроме 2013 года
     <br><b>!summer_2001</b> - кроме Лета 2001 года]]></string>
 
-    <string name="more_authorized_hint">Перейти в профиль</string>
-    <string name="more_guest_hint">Авторизоваться</string>
     <string name="more_settings">Настройки</string>
-
-    <string name="dialog_auth_message">Войдите или зарегистрируйтесь для доступа ко всем возможностям приложения</string>
 
     <string name="topic_news">Новости</string>
     <string name="topic_my_feed">Моя лента</string>

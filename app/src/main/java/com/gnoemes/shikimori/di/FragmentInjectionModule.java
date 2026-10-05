@@ -9,7 +9,6 @@ import com.gnoemes.shikimori.di.club.UserClubsModule;
 import com.gnoemes.shikimori.di.favorites.FavoritesModule;
 import com.gnoemes.shikimori.di.friends.FriendsModule;
 import com.gnoemes.shikimori.di.manga.MangaModule;
-import com.gnoemes.shikimori.di.more.MoreModule;
 import com.gnoemes.shikimori.di.person.PersonModule;
 import com.gnoemes.shikimori.di.rate.RateModule;
 import com.gnoemes.shikimori.di.search.FilterModule;
@@ -30,7 +29,6 @@ import com.gnoemes.shikimori.presentation.view.clubs.UserClubsFragment;
 import com.gnoemes.shikimori.presentation.view.favorites.FavoritesFragment;
 import com.gnoemes.shikimori.presentation.view.friends.FriendsFragment;
 import com.gnoemes.shikimori.presentation.view.manga.MangaFragment;
-import com.gnoemes.shikimori.presentation.view.more.MoreFragment;
 import com.gnoemes.shikimori.presentation.view.person.PersonFragment;
 import com.gnoemes.shikimori.presentation.view.rates.RateFragment;
 import com.gnoemes.shikimori.presentation.view.search.SearchFragment;
@@ -75,10 +73,6 @@ public interface FragmentInjectionModule {
     @BottomChildScope
     @ContributesAndroidInjector(modules = SearchModule.class)
     SearchFragment searchFragment();
-
-    @BottomChildScope
-    @ContributesAndroidInjector(modules = MoreModule.class)
-    MoreFragment moreFragment();
 
     @BottomChildScope
     @ContributesAndroidInjector(modules = ShikimoriMainModule.class)
