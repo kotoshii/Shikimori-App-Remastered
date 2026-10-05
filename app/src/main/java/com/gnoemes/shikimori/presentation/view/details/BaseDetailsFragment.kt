@@ -24,7 +24,6 @@ import com.gnoemes.shikimori.presentation.view.common.adapter.InfoAdapter
 import com.gnoemes.shikimori.presentation.view.common.adapter.TagAdapter
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.LinkDialogFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.StatisticDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.*
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
@@ -37,7 +36,7 @@ import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
 abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
-        BaseDetailsView, ListDialogFragment.DialogCallback, ListDialogFragment.DialogIdCallback, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
+        BaseDetailsView, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -161,10 +160,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                 searchView.isIconified = true
             }
         }
-    }
-
-    override fun dialogItemCallback(tag: String?, url: String) {
-        getPresenter().onOpenWeb(url)
     }
 
     override fun onUpdateRate(rate: UserRate) {

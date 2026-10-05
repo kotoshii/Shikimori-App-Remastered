@@ -15,7 +15,6 @@ import com.gnoemes.shikimori.presentation.presenter.manga.MangaPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentViewHolder
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.gone
@@ -71,10 +70,6 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         actionBtn.gone()
     }
 
-    override fun dialogItemIdCallback(tag: String?, id: Long) {
-        getPresenter().onMangaClicked(id)
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS
     ///////////////////////////////////////////////////////////////////////////
@@ -91,14 +86,6 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
     override fun showRateDialog(title: String, userRate: UserRate?) {
         val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = false, title = title)
         dialog.show(childFragmentManager, "RateTag")
-    }
-
-    override fun showChronology(it: List<Pair<String, String>>) {
-        val dialog = ListDialogFragment.newInstance(true)
-        dialog.apply {
-            setTitle(R.string.common_chronology_read)
-            setItems(it)
-        }.show(childFragmentManager, "ChronologyTag")
     }
 
 }

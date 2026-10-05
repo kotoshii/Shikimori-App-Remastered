@@ -31,8 +31,5 @@ interface BaseDetailsView : BaseFragmentView {
     fun showLinks(it: List<Link>)
 
     @StateStrategyType(SkipStrategy::class)
-    fun showChronology(it: List<Pair<String, String>>)
-
-    @StateStrategyType(SkipStrategy::class)
     fun showStatistic(title : String, scores : List<UserStatisticItem>, rates : List<UserStatisticItem>)
 }
