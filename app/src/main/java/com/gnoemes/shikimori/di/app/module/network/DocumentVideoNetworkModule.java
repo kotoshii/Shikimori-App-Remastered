@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.di.app.module.network;
 
 import com.gnoemes.shikimori.di.app.annotations.DocumentVideoApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
-import com.gnoemes.shikimori.utils.network.NetworkExtensionsKt;
 import com.gnoemes.shikimori.utils.network.PlayShikimoriConverterFactory;
 
 import java.util.concurrent.TimeUnit;
@@ -24,9 +23,8 @@ public interface DocumentVideoNetworkModule {
     @Singleton
     @DocumentVideoApi
     static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(interceptor);
-        return NetworkExtensionsKt.enableTLS12(builder)
+        return new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
                 .connectTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .build();

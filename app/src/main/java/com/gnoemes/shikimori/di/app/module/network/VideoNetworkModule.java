@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.di.app.annotations.VideoApi;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras;
 import com.gnoemes.shikimori.utils.PreferenceKt;
-import com.gnoemes.shikimori.utils.network.NetworkExtensionsKt;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,9 +28,8 @@ public interface VideoNetworkModule {
     @Singleton
     @VideoApi
     static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(interceptor);
-        return NetworkExtensionsKt.enableTLS12(builder)
+        return new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
                 .connectTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .build();
@@ -58,9 +56,8 @@ public interface VideoNetworkModule {
     @Singleton
     @ShikicinemaVideoApi
     static OkHttpClient provideShikicinemaOkHttpClient(HttpLoggingInterceptor interceptor) {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(interceptor);
-        return NetworkExtensionsKt.enableTLS12(builder)
+        return new OkHttpClient.Builder()
+                .addInterceptor(interceptor)
                 .connectTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(Constants.LONG_TIMEOUT, TimeUnit.SECONDS)
                 .build();
