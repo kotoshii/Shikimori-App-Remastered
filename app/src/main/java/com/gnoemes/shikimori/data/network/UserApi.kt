@@ -1,12 +1,10 @@
 package com.gnoemes.shikimori.data.network
 
-import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.club.data.ClubResponse
 import com.gnoemes.shikimori.entity.rates.data.RateResponse
 import com.gnoemes.shikimori.entity.rates.data.UserRateCreateOrUpdateRequest
 import com.gnoemes.shikimori.entity.rates.data.UserRateResponse
 import com.gnoemes.shikimori.entity.user.data.*
-import com.gnoemes.shikimori.entity.user.domain.MessageType
 import io.reactivex.Completable
 import io.reactivex.Single
 import retrofit2.http.*
@@ -66,9 +64,6 @@ interface UserApi {
 
     @GET("/api/users/{id}/unread_messages")
     fun getUnreadMessages(@Path("id") id: Long): Single<UserUnreadMessagesCount>
-
-    @GET("/api/users/{id}/messages")
-    fun getUserMessages(@Path("id") id: Long, @Query("type") type: MessageType, @Query("limit") limit: Int = Constants.DEFAULT_LIMIT): Single<List<MessageResponse>>
 
     @GET("/api/users/{id}/history")
     fun getUserHistory(@Path("id") id: Long, @Query("page") page: Int, @Query("limit") limit: Int): Single<List<UserHistoryResponse>>

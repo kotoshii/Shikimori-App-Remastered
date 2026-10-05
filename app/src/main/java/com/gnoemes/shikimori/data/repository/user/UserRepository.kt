@@ -12,8 +12,6 @@ interface UserRepository {
 
     fun getMyUserBrief(): Single<UserBrief>
 
-    fun getUserMessages(type: MessageType): Single<List<Message>>
-
     fun getDetails(id: Long): Single<UserDetails>
 
     fun getFriends(id: Long): Single<List<UserBrief>>

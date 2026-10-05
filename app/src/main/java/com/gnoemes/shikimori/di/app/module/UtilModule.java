@@ -6,8 +6,6 @@ import com.gnoemes.shikimori.data.repository.common.RateResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.impl.RateResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.user.converter.FavoriteListResponseConverter;
 import com.gnoemes.shikimori.data.repository.user.converter.FavoriteListResponseConverterImpl;
-import com.gnoemes.shikimori.data.repository.user.converter.MessageResponseConverter;
-import com.gnoemes.shikimori.data.repository.user.converter.MessageResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.user.converter.UserDetailsResponseConverter;
 import com.gnoemes.shikimori.data.repository.user.converter.UserDetailsResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.user.converter.UserHistoryConverter;
@@ -83,8 +81,4 @@ public interface UtilModule {
     @Binds
     @Reusable
     FavoriteListResponseConverter bindFavoriteListResponseConverter(FavoriteListResponseConverterImpl converter);
-
-    @Binds
-    @Reusable
-    MessageResponseConverter bindMessageResponseConverter(MessageResponseConverterImpl converter);
 }

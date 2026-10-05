@@ -9,8 +9,6 @@ import io.reactivex.Single
 interface UserInteractor {
     fun getMyUserId(): Single<Long>
 
-    fun getUserMessages(type: MessageType): Single<List<Message>>
-
     fun getDetails(id: Long): Single<UserDetails>
 
     fun getFriends(id: Long): Single<List<UserBrief>>

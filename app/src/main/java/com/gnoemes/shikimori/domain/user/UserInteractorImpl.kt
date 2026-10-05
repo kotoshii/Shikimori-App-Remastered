@@ -14,8 +14,6 @@ class UserInteractorImpl @Inject constructor(
 
     override fun getMyUserId(): Single<Long> = repository.getMyUserId().applyErrorHandlerAndSchedulers()
 
-    override fun getUserMessages(type: MessageType): Single<List<Message>> = repository.getUserMessages(type).applyErrorHandlerAndSchedulers()
-
     override fun getDetails(id: Long): Single<UserDetails> =
             repository.getDetails(id)
                     .flatMap { detals ->
