@@ -4,10 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.app.Service
 import android.content.BroadcastReceiver
-import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.multidex.MultiDex
 import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
@@ -64,11 +62,6 @@ class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcast
             //because with the crash gone this log line is the only trace left.
             else -> Log.e(TAG_RX, "undeliverable error, dropped", cause)
         }
-    }
-
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
     }
 
     companion object {
