@@ -17,8 +17,4 @@ class CommentRepositoryImpl @Inject constructor(
                     .map(converter)
                     //server returns N+1 elements, if next page exists
                     .map { if (it.isNotEmpty()) it.take(limit) else it }
-
-    override fun getSingle(id: Long): Single<Comment> =
-            api.getComment(id)
-                    .map{converter.convertResponse(it)}
 }

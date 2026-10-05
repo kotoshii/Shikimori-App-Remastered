@@ -8,6 +8,4 @@ import io.reactivex.Single
 interface CommentInteractor {
 
     fun getList(id: Long, type: CommentableType, page: Int, limit: Int = Constants.DEFAULT_LIMIT, desc: Int = 1): Single<List<Comment>>
-
-    fun getSingle(id: Long): Single<Comment>
 }
