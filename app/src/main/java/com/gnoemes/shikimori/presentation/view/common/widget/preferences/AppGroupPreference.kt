@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.common.widget.preferences
 
 import android.content.Context
-import android.text.Html
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
@@ -23,7 +22,6 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
         layoutResource = R.layout.view_donation_group
     }
 
-    var donationClickListener: View.OnClickListener? = null
     var feedbackClickListener: View.OnClickListener? = null
 //    var trelloClickListener: View.OnClickListener? = null
     var forumClickListener: View.OnClickListener? = null
@@ -31,10 +29,6 @@ class AppGroupPreference @JvmOverloads constructor(context: Context,
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         with(holder.itemView) {
-            message.text = Html.fromHtml(context.getString(R.string.settings_donation_message))
-            donationView.onClick { donationClickListener?.onClick(it) }
-            btn.onClick { donationClickListener?.onClick(it) }
-
             sendLayout.icon()?.setImageDrawable(context.drawable(R.drawable.icon_github_setting))
             sendLayout.title()?.text = context.getString(R.string.settings_about_send_title)
             sendLayout.summary()?.gone()

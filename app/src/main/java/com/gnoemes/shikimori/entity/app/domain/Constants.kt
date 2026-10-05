@@ -47,8 +47,6 @@ object Constants {
 
 //    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"
 
-    const val DEFAULT_DONATION_LINK = "https://money.yandex.ru/to/410016011857536"
-
     const val MAX_PINNED_RATES = 3
 
     const val BACKUP_FILE_NAME= "shimori-backup.json"

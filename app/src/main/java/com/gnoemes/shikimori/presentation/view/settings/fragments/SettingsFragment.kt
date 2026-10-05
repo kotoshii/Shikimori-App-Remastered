@@ -6,10 +6,8 @@ import android.os.Bundle
 import android.view.View
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.common.widget.preferences.AppGroupPreference
 import com.gnoemes.shikimori.utils.preference
-import com.gnoemes.shikimori.utils.prefs
 import com.gnoemes.shikimori.utils.toUri
 
 class SettingsFragment : BaseSettingsFragment() {
@@ -25,7 +23,6 @@ class SettingsFragment : BaseSettingsFragment() {
 //            trelloClickListener = View.OnClickListener { openWeb(Constants.ROAD_MAP_URL) }
             forumClickListener = View.OnClickListener { openWeb(Constants.FOUR_PDA_THEME_URL) }
             clubClickListener = View.OnClickListener { openWeb(Constants.APP_CLUB_URL) }
-            donationClickListener = View.OnClickListener { openWeb(prefs().getString(SettingsExtras.DONATION_LINK, Constants.DEFAULT_DONATION_LINK)!!) }
         }
     }
 

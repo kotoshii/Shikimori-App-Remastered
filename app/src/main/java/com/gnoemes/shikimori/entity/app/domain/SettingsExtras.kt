@@ -60,6 +60,7 @@ object SettingsExtras {
 
     const val CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START"
 
+    //no longer written; kept so a value stored by older versions stays out of backup files
     const val DONATION_LINK = "DONATION_LINK"
 
     //where kodik currently serves stream links from, see KodikParser
