@@ -18,7 +18,7 @@ import javax.inject.Inject
 class OkParserImpl @Inject constructor() : OkParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     /**
      * Everything the player needs sits in the `data-options` attribute of the player element, under

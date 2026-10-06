@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import com.gnoemes.shikimori.entity.series.domain.VideoFormat;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
@@ -30,11 +29,9 @@ public  class MediaSourceHelper {
     private MediaSource videoSource;
     private MediaSource audioSource;
     private MediaSource subtitlesSource;
-    private List<MediaSource> videoSources;
 
     public MediaSourceHelper(DataSource.Factory factory) {
         this.factory = factory;
-        videoSources = new ArrayList<>();
     }
 
     public static MediaSourceHelper withFactory(DataSource.Factory factory) {
@@ -43,18 +40,6 @@ public  class MediaSourceHelper {
 
     public MediaSourceHelper withFormat(VideoFormat format) {
         this.format = format;
-        return this;
-    }
-
-    public MediaSourceHelper withVideoUrls(@NonNull String... urls) {
-        for (String url : urls) {
-            if (!TextUtils.isEmpty(url)) {
-                videoSources.add(getMediaSourceFactory()
-                        .createMediaSource(Uri.parse(url)));
-            }
-        }
-
-        videoSource = new ConcatenatingMediaSource(videoSources.toArray(new MediaSource[videoSources.size()]));
         return this;
     }
 

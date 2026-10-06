@@ -55,8 +55,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
     private fun updateVideo(video: Video, needReset: Boolean = true) {
         videos.add(video)
 
-        if (!Utils.isHostingSupports(video.hosting)) viewState.showMessage(resourceProvider.hostingErrorMessage)
-        else if (video.tracks.isNotEmpty()) setTrack(video, needReset)
+        if (video.tracks.isNotEmpty()) setTrack(video, needReset)
         else viewState.showMessage(resourceProvider.playerErrorMessage, true)
     }
 

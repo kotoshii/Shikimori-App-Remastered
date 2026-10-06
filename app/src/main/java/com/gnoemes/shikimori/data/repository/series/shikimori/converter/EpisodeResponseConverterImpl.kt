@@ -6,9 +6,6 @@ import javax.inject.Inject
 
 class EpisodeResponseConverterImpl @Inject constructor(): EpisodeResponseConverter {
 
-    override fun apply(t: List<EpisodeResponse>): List<Episode> =
-            t.map { convertResponse(it, false) }
-
     override fun convertResponse(it : EpisodeResponse, isWatched : Boolean) : Episode {
         return Episode(
                 it.id,

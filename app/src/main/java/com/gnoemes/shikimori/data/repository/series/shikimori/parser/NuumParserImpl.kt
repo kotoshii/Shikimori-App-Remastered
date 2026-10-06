@@ -12,7 +12,7 @@ import io.lindstrom.m3u8.parser.MasterPlaylistParser
 class NuumParserImpl @Inject constructor() : NuumParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun tracks(m3uContent: String?): List<Track> {

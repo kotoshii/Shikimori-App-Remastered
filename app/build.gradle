@@ -63,7 +63,6 @@ android {
         it.buildConfigField 'String', 'ShikimoriClientId', ShikimoriClientId
         it.buildConfigField 'String', 'ShikimoriClientSecret', ShikimoriClientSecret
         it.buildConfigField 'String', 'ShikimoriBaseUrl', ShikimoriBaseUrl
-        it.buildConfigField 'String', 'VkRandomToken', VkRandomToken
         it.buildConfigField 'String', 'KodikToken', KodikToken
     }
 

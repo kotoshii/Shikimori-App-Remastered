@@ -413,7 +413,6 @@
     <string name="player_error">Произошла ошибка во время загрузки видео</string>
     <string name="player_no_ads">Хостинг может показать рекламу</string>
     <string name="player_seconds_short">сек.</string>
-    <string name="player_hosting_error">Этот хостинг не поддерживается плеером</string>
 
     <string name="profile_write">Написать</string>
     <string name="profile_message_box">Почта</string>

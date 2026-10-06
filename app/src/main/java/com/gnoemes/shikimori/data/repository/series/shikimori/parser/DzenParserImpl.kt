@@ -11,7 +11,7 @@ import javax.inject.Inject
 class DzenParserImpl @Inject constructor() : DzenParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     /**
      * The page used to expose `Dzen.player.init(...)` with a `master.m3u8` stream, both are gone.

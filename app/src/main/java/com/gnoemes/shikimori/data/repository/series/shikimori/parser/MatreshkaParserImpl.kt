@@ -12,7 +12,7 @@ import javax.inject.Inject
 class MatreshkaParserImpl @Inject constructor() : MatreshkaParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     /**
      * Shikicinema hands out matreshka links already in embed form

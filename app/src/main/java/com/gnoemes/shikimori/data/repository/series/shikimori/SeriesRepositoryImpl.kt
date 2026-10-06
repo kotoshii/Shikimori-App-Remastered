@@ -101,7 +101,7 @@ class SeriesRepositoryImpl @Inject constructor(
                 //to the web player before ever calling this, so it is only a safety net - and it is
                 //what the old backend did for them anyway, handing the player url straight back.
                 else -> Single.just(Video(payload.animeId, payload.episodeIndex.toLong(),
-                        payload.webPlayerUrl.orEmpty(), payload.videoHosting, emptyList(), null, null))
+                        payload.webPlayerUrl.orEmpty(), payload.videoHosting, emptyList(), null))
             }
                     //the parsers only know about tracks, so the translation's own details are
                     //attached here rather than in each of them

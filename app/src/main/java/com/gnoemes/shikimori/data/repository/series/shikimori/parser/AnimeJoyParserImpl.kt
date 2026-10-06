@@ -9,7 +9,7 @@ import javax.inject.Inject
 class AnimeJoyParserImpl @Inject constructor() : AnimeJoyParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     override fun tracks(embedUrl: String?): List<Track> {
         return embedUrl
