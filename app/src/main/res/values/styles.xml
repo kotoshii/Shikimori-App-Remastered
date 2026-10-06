@@ -80,12 +80,6 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <style name="RateProgressLabelStyle">
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="android:textColor">?attr/colorOnPrimarySecondary</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="CircleShapeAppearance" parent="ShapeAppearance.MaterialComponents">
         <item name="cornerSizeBottomLeft">24dp</item>
         <item name="cornerSizeBottomRight">24dp</item>
@@ -219,20 +213,6 @@
         <item name="cornerSize">16sp</item>
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerFamily">rounded</item>
-    </style>
-
-    <style name="RightRoundShapeStyle" parent="ShapeAppearance.MaterialComponents">
-        <item name="cornerSize">4dp</item>
-        <item name="cornerSizeTopLeft">0dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerFamily">rounded</item>
-    </style>
-
-    <style name="LeftRoundShapeStyle" parent="ShapeAppearance.MaterialComponents">
-        <item name="cornerSize">4dp</item>
-        <item name="cornerSizeTopRight">0dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerFamily">rounded</item>
     </style>
 
