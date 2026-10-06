@@ -14,12 +14,6 @@ interface UserApi {
     @GET("/api/users/whoami")
     fun getCurrentUserBrief(): Single<UserBriefResponse>
 
-    @GET("/api/users")
-    fun getList(@Query("page") page: Int, @Query("limit") limit: Int): Single<List<UserBriefResponse>>
-
-    @GET("/api/users/{id}/info")
-    fun getUserBriefInfo(@Path("id") id: Long): Single<UserBriefResponse>
-
     @GET("/api/users/{id}/friends")
     fun getUserFriends(@Path("id") id: Long): Single<List<UserBriefResponse>>
 
@@ -61,9 +55,6 @@ interface UserApi {
 
     @GET("/api/users/{id}/favourites")
     fun getUserFavourites(@Path("id") id: Long): Single<FavoriteListResponse>
-
-    @GET("/api/users/{id}/unread_messages")
-    fun getUnreadMessages(@Path("id") id: Long): Single<UserUnreadMessagesCount>
 
     @GET("/api/users/{id}/history")
     fun getUserHistory(@Path("id") id: Long, @Query("page") page: Int, @Query("limit") limit: Int): Single<List<UserHistoryResponse>>
