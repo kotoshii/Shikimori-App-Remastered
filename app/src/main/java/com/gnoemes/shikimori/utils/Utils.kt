@@ -17,7 +17,6 @@ object Utils {
             "csst.online", "www.csst.online", "fsst.online", "www.fsst.online", "secvideo1.online", "www.secvideo1.online", "dsst.online" -> VideoHosting.ALLVIDEO()
             "animejoy.ru", "animejoya.ru", "animejoy.su" -> VideoHosting.ANIMEJOY()
             "dzen.ru" -> VideoHosting.DZEN()
-            "nuum.ru" -> VideoHosting.NUUM()
             "my.mail.ru", "videoapi.my.mail.ru", "mail.ru" -> VideoHosting.MAILRU()
             "ebd.cda.pl" -> VideoHosting.CDA()
             "video.sibnet.ru", "sibnet", "sibnet.ru" -> VideoHosting.SIBNET()
@@ -45,7 +44,7 @@ object Utils {
      */
     fun isHostingSupports(hosting: VideoHosting): Boolean {
         return when (hosting) {
-            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.NUUM, is VideoHosting.MAILRU, is VideoHosting.CDA, is VideoHosting.MATRESHKA -> true
+            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.MAILRU, is VideoHosting.CDA, is VideoHosting.MATRESHKA -> true
             else -> false
         }
     }
@@ -54,7 +53,6 @@ object Utils {
         is VideoHosting.SOVET_ROMANTICA -> mapOf(Pair("Referrer", video.player))
         is VideoHosting.SIBNET -> mapOf(Pair("Referer", video.player))
         is VideoHosting.MAILRU -> mapOf(Pair("Cookie", CookieManager.getInstance().getCookie(".my.mail.ru")))
-        is VideoHosting.NUUM -> mapOf(Pair("Referer", "https://nuum.ru/"))
         is VideoHosting.DZEN -> mapOf(Pair("User-Agent", Constants.PLAYER_USER_AGENT))
         else -> emptyMap()
     }

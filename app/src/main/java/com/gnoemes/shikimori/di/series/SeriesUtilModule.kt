@@ -51,10 +51,6 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
-    fun bindNuumParser(parser: NuumParserImpl): NuumParser
-
-    @Binds
-    @Reusable
     fun bindMyviParser(parser: MyviParserImpl): MyviParser
 
     @Binds
