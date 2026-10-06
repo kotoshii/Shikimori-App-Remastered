@@ -1,13 +1,9 @@
 package com.gnoemes.shikimori.di.app.module;
 
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource;
-import com.gnoemes.shikimori.data.local.db.ChapterDbSource;
 import com.gnoemes.shikimori.data.local.db.EpisodeDbSource;
-import com.gnoemes.shikimori.data.local.db.MangaRateSyncDbSource;
 import com.gnoemes.shikimori.data.local.db.impl.AnimeRateSyncDbSourceImpl;
-import com.gnoemes.shikimori.data.local.db.impl.ChapterDbSourceImpl;
 import com.gnoemes.shikimori.data.local.db.impl.EpisodeDbSourceImpl;
-import com.gnoemes.shikimori.data.local.db.impl.MangaRateSyncDbSourceImpl;
 import com.gnoemes.shikimori.data.local.services.DownloadSource;
 import com.gnoemes.shikimori.data.local.services.impl.DownloadManagerSourceImpl;
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository;
@@ -86,15 +82,7 @@ public interface RepositoryModule {
 
     @Binds
     @Singleton
-    ChapterDbSource bindChapterDbSource(ChapterDbSourceImpl source);
-
-    @Binds
-    @Singleton
     AnimeRateSyncDbSource bindAnimeRateSyncDbSource(AnimeRateSyncDbSourceImpl source);
-
-    @Binds
-    @Reusable
-    MangaRateSyncDbSource bindMangaRateSyncDbSource(MangaRateSyncDbSourceImpl source);
 
     @Binds
     @Singleton

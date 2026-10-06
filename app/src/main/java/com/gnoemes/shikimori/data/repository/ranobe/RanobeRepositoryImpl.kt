@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.data.repository.ranobe
 
-import com.gnoemes.shikimori.data.local.db.MangaRateSyncDbSource
 import com.gnoemes.shikimori.data.network.RanobeApi
 import com.gnoemes.shikimori.data.repository.common.FranchiseResponseConverter
 import com.gnoemes.shikimori.data.repository.common.LinkResponseConverter
@@ -15,14 +14,12 @@ import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
 import com.gnoemes.shikimori.data.repository.common.TitleGenreSource
 import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
-import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 
 class RanobeRepositoryImpl @Inject constructor(
         private val api: RanobeApi,
-        private val syncDbSource: MangaRateSyncDbSource,
         private val detailsConverter: MangaDetailsResponseConverter,
         private val linkConverter: LinkResponseConverter,
         private val franchiseConverter: FranchiseResponseConverter,
@@ -44,7 +41,7 @@ class RanobeRepositoryImpl @Inject constructor(
                     BiFunction { details: MangaDetails, genres: List<GenreV2> ->
                         details.copy(genres = genres)
                     }
-            ).flatMap { syncRate(it).toSingleDefault(it) }
+            )
 
     override fun getRoles(id: Long): Single<Roles> =
             api.getRoles(id)
@@ -57,9 +54,4 @@ class RanobeRepositoryImpl @Inject constructor(
     override fun getFranchise(id: Long): Single<Franchise> =
             api.getFranchise(id)
                     .map(franchiseConverter)
-
-    private fun syncRate(details: MangaDetails): Completable =
-            Single.fromCallable { details }
-                    .filter { details.userRate != null }
-                    .flatMapCompletable { syncDbSource.saveRate(it.userRate!!) }
 }
