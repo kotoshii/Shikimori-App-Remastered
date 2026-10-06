@@ -17,7 +17,6 @@ object Screens {
     // Activities
     ////////////////////////////////////////////////////////////////////////
     const val AUTHORIZATION = "AUTHORIZATION"
-    const val MAIN = "MAIN"
     const val WEB = "WEB"
     const val SETTINGS = "SETTINGS"
     const val SHARE = "SHARE"
@@ -27,7 +26,6 @@ object Screens {
     // Other
     ////////////////////////////////////////////////////////////////////////
     const val TOPICS = "TOPICS"
-    const val EPISODES = "EPISODES"
     const val SERIES = "SERIES"
     const val USER_HISTORY = "USER_HISTORY"
     const val USER_FRIENDS = "USER_FRIENDS"
