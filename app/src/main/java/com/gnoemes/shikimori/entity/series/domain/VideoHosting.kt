@@ -20,12 +20,6 @@ sealed class VideoHosting : Parcelable {
     ) : VideoHosting()
 
     @Parcelize
-    data class MYVI(
-            override val type: String = "myvi",
-            override val synonymType: String = "myvi.top"
-    ) : VideoHosting()
-
-    @Parcelize
     data class ALLVIDEO(
             override val type: String = "csst.online",
             override val synonymType: String = "csst.online"
@@ -41,12 +35,6 @@ sealed class VideoHosting : Parcelable {
     data class DZEN(
             override val type: String = "dzen",
             override val synonymType: String = "dzen.ru"
-    ) : VideoHosting()
-
-    @Parcelize
-    data class NUUM(
-            override val type: String = "nuum",
-            override val synonymType: String = "nuum.ru"
     ) : VideoHosting()
 
     @Parcelize
