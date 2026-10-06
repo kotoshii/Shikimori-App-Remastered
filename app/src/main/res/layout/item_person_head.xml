@@ -23,8 +23,7 @@
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="@dimen/image_default_width"
-            android:layout_height="@dimen/image_default_height"
-            tools:src="@drawable/test_preview2" />
+            android:layout_height="@dimen/image_default_height" />
 
     </com.google.android.material.card.MaterialCardView>
 
