@@ -16,8 +16,6 @@ interface EpisodeDbSource {
 
     fun getWatchedEpisodesCount(animeId: Long): Single<Int>
 
-    fun getWatchedAnimeIds(): Single<List<Long>>
-
     fun clearEpisodes(animeId: Long): Completable
 
     fun getFirstNotWatchedEpisodeIndex(animeId: Long) : Single<Int>

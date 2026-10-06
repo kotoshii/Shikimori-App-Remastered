@@ -5,7 +5,6 @@ import androidx.collection.ArrayMap
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
-import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -54,43 +53,6 @@ class SearchQueryBuilderImpl @Inject constructor(
             queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
         }
 
-        return Single.just(queryMap)
-    }
-
-    override fun createMyListQueryFromIds(ids: MutableCollection<Long>, status: RateStatus, searchQuery: String?, page: Int, limit: Int): Single<Map<String, String>> {
-        val queryMap = ArrayMap<String, String>()
-
-        if (!TextUtils.isEmpty(searchQuery)) {
-            queryMap[SearchConstants.SEARCH] = searchQuery
-        }
-
-        if (ids.isNotEmpty()) {
-            val query = convertQuery(ids.map { it.toString() })
-
-            queryMap[SearchConstants.IDS] = query
-            queryMap[SearchConstants.PAGE] = page.toString()
-            queryMap[SearchConstants.LIMIT] = limit.toString()
-
-            queryMap[SearchConstants.RATE] = status.status
-            queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
-        }
-        return Single.just(queryMap)
-    }
-
-    override fun createQueryFromFranchise(franchise: String, searchQuery: String?, page: Int, limit: Int): Single<Map<String, String>> {
-        val queryMap = ArrayMap<String, String>()
-
-        if (!TextUtils.isEmpty(searchQuery)) {
-            queryMap[SearchConstants.SEARCH] = searchQuery
-        }
-
-        if (franchise.isNotEmpty()) {
-            queryMap[SearchConstants.FRANCHISE] = franchise
-            queryMap[SearchConstants.PAGE] = page.toString()
-            queryMap[SearchConstants.LIMIT] = limit.toString()
-
-            queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
-        }
         return Single.just(queryMap)
     }
 

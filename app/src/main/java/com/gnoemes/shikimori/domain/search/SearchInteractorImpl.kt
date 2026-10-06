@@ -15,21 +15,6 @@ class SearchInteractorImpl @Inject constructor(
         private val queryBuilder: SearchQueryBuilder
 ) : SearchInteractor {
 
-    override fun loadAnimeList(page: Int, limit: Int): Single<List<Anime>> =
-            queryBuilder.createQueryFromFilters(null, page, limit)
-                    .flatMap { repository.getAnimeList(it) }
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun loadMangaList(page: Int, limit: Int): Single<List<Manga>> =
-            queryBuilder.createQueryFromFilters(null, page, limit)
-                    .flatMap { repository.getMangaList(it) }
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun loadRanobeList(page: Int, limit: Int): Single<List<Manga>> =
-            queryBuilder.createQueryFromFilters(null, page, limit)
-                    .flatMap { repository.getMangaList(it) }
-                    .applyErrorHandlerAndSchedulers()
-
     override fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Character>> =
             queryBuilder.createQueryFromFilters(filters, null, null)
                     .flatMap { repository.getCharacterList(it) }

@@ -71,17 +71,6 @@ class EpisodeDbSourceImpl @Inject constructor(
                     .asRxSingle()
                     .onErrorReturnItem(0)
 
-    override fun getWatchedAnimeIds(): Single<List<Long>> =
-            storIOSQLite
-                    .get()
-                    .listOfObjects(EpisodeDao::class.java)
-                    .withQuery(EpisodeTable.ALL_QUERY)
-                    .prepare()
-                    .asRxSingle()
-                    .map { items -> items.reversed().map { it.animeId } }
-                    .onErrorReturnItem(emptyList())
-
-
     override fun clearEpisodes(animeId: Long): Completable =
             storIOSQLite
                     .delete()

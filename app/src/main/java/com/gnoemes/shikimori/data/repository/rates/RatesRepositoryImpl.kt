@@ -55,10 +55,6 @@ class RatesRepositoryImpl @Inject constructor(
             }
 
     //Call only if my user
-    override fun syncRate(id: Long): Completable =
-            getRate(id)
-                    .flatMapCompletable { syncRate(it) }
-
     override fun syncRate(rate: UserRate): Completable =
             when (rate.targetType) {
                 Type.ANIME -> syncAnimeRate(rate)

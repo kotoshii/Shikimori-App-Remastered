@@ -28,8 +28,4 @@ interface UserInteractor {
     fun removeFriend(id: Long): Completable
 
     fun getUserStatus(): UserStatus
-
-    fun setUserStatus(status: UserStatus)
-
-    fun clearUser()
 }

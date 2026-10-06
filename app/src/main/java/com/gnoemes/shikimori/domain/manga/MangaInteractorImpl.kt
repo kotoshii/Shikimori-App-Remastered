@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.domain.manga
 import com.gnoemes.shikimori.data.repository.manga.MangaRepository
 import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.domain.Roles
-import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import io.reactivex.Single
@@ -23,9 +22,5 @@ class MangaInteractorImpl @Inject constructor(
 
     override fun getLinks(id: Long): Single<List<Link>> =
             repository.getLinks(id)
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun getSimilar(id: Long): Single<List<Manga>> =
-            repository.getSimilar(id)
                     .applyErrorHandlerAndSchedulers()
 }

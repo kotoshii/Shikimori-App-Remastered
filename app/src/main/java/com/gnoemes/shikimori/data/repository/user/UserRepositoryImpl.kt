@@ -73,6 +73,4 @@ class UserRepositoryImpl @Inject constructor(
     override fun getUserStatus(): UserStatus = userSource.getUserStatus()
 
     override fun setUserStatus(status: UserStatus) = userSource.setUserStatus(status)
-
-    override fun clearUser() = userSource.clearUser()
 }

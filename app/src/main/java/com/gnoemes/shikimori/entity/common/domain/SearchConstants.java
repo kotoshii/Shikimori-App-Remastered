@@ -16,14 +16,12 @@ public class SearchConstants {
     public static final String PAGE = "page";
     public static final String LIMIT = "limit";
     public static final String DURATION = "duration";
-    public static final String RATE = "mylist";
     public static final String SEASON = "season";
     public static final String ORDER = "order";
     public static final String IDS = "ids";
     public static final String CENSORED = "censored";
     public static final String AGE_RATING = "rating";
     public static final String STUDIO = "studio";
-    public static final String FRANCHISE = "franchise";
 
     ////////////////////////////////////////////////////////////////////
     // Values

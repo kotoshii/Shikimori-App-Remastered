@@ -40,8 +40,4 @@ class UserInteractorImpl @Inject constructor(
     override fun removeFriend(id: Long): Completable = repository.removeFriend(id).applyErrorHandlerAndSchedulers()
 
     override fun getUserStatus(): UserStatus = repository.getUserStatus()
-
-    override fun setUserStatus(status: UserStatus) = repository.setUserStatus(status)
-
-    override fun clearUser() = repository.clearUser()
 }

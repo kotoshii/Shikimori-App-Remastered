@@ -16,8 +16,6 @@ interface RatesRepository {
 
     fun getUserRates(id: Long, targetId: Long? = null, target: Type? = null, statuses: String? = null, page: Int = 1, limit: Int = Constants.MAX_LIMIT): Single<List<UserRate>>
 
-    fun syncRate(id: Long): Completable
-
     fun syncRate(rate: UserRate): Completable
 
     fun deleteRate(id: Long): Completable

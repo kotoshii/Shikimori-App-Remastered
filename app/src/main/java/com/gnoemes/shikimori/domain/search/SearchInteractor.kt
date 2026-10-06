@@ -10,12 +10,6 @@ import io.reactivex.Single
 
 interface SearchInteractor {
 
-    fun loadAnimeList(page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Anime>>
-
-    fun loadMangaList(page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
-
-    fun loadRanobeList(page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
-
     fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Character>>
 
     fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Person>>

@@ -33,6 +33,4 @@ interface UserRepository {
     fun getUserStatus(): UserStatus
 
     fun setUserStatus(status: UserStatus)
-
-    fun clearUser()
 }

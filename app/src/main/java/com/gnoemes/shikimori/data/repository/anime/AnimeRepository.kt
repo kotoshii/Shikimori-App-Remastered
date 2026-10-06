@@ -22,6 +22,4 @@ interface AnimeRepository {
 
     fun getScreenshots(id: Long): Single<List<Screenshot>>
 
-    fun getLocalWatchedAnimeIds(): Single<LinkedHashSet<Long>>
-
 }

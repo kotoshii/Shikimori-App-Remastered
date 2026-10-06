@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.data.repository.anime
 
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
-import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
 import com.gnoemes.shikimori.data.network.AnimeApi
 import com.gnoemes.shikimori.data.repository.anime.converter.AnimeDetailsResponseConverter
 import com.gnoemes.shikimori.data.repository.common.AnimeResponseConverter
@@ -26,7 +25,6 @@ import javax.inject.Inject
 class AnimeRepositoryImpl @Inject constructor(
         private val api: AnimeApi,
         private val syncDbSource: AnimeRateSyncDbSource,
-        private val episodeDbSource: EpisodeDbSource,
         private val linkConverter: LinkResponseConverter,
         private val animeConverter: AnimeResponseConverter,
         private val franchiseConverter: FranchiseResponseConverter,
@@ -69,10 +67,6 @@ class AnimeRepositoryImpl @Inject constructor(
     override fun getScreenshots(id: Long): Single<List<Screenshot>> =
             api.getScreenshots(id)
                     .map { list -> list.map { Screenshot(it.original?.appendHostIfNeed(), it.preview?.appendHostIfNeed()) } }
-
-    override fun getLocalWatchedAnimeIds(): Single<LinkedHashSet<Long>> =
-            episodeDbSource.getWatchedAnimeIds()
-                    .map { LinkedHashSet(it) }
 
     private fun syncRate(details: AnimeDetails): Completable =
             Single.fromCallable { details }
