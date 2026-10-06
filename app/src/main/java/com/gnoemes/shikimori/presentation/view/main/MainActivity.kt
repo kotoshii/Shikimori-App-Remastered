@@ -21,7 +21,6 @@ import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
-import com.gnoemes.shikimori.presentation.view.base.fragment.BottomNavigationProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.TabContainer
 import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
@@ -36,7 +35,7 @@ import ru.terrakok.cicerone.commands.Command
 import ru.terrakok.cicerone.commands.Replace
 import javax.inject.Inject
 
-class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider, BottomNavigationProvider {
+class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider {
 
     companion object {
         /** Set by the "Изменения" action of the update notification. */
@@ -188,14 +187,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val fragment: Fragment? = fm.findFragmentByTag(screenKey)
         fragment.ifNotNull {
             (it as RouterProvider).localRouter.backTo(null)
-        }
-    }
-
-    override fun changeTab(screen: String) {
-        val tab = tabs.find { it.screenKey == screen }
-        if (tab != null) {
-            clearBackStack(tab.screenKey)
-            bottomNav.selectedItemId = tab.id
         }
     }
 
