@@ -2,7 +2,6 @@
 <resources>
     <string name="settings_general">Приложение</string>
     <string name="settings_general_summary">Списки, контент</string>
-    <string name="settings_notifications">Уведомления</string>
     <string name="settings_player">Плеер</string>
     <string name="settings_theme">Оформление</string>
     <string name="settings_theme_summary">Темы, ночной режим</string>

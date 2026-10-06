@@ -4,47 +4,36 @@ import android.content.SharedPreferences
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.di.app.annotations.SettingsQualifier
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
-import com.gnoemes.shikimori.utils.putBoolean
-import com.gnoemes.shikimori.utils.putLong
 import javax.inject.Inject
 
 class PlayerSettingsSourceImpl @Inject constructor(
         @SettingsQualifier private val prefs: SharedPreferences
 ) : PlayerSettingsSource {
 
-    override var isGesturesEnabled: Boolean
+    override val isGesturesEnabled: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_GESTURES_ENABLED, true)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_GESTURES_ENABLED, value)
 
-    override var isVolumeAndBrightnessGesturesEnabled: Boolean
+    override val isVolumeAndBrightnessGesturesEnabled: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_VOLUME_BRIGHTNESS_GESTURES_ENABLED, true)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_VOLUME_BRIGHTNESS_GESTURES_ENABLED, value)
 
-    override var isVolumeAndBrightnessInverted: Boolean
+    override val isVolumeAndBrightnessInverted: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_VOLUME_AND_BRIGHTNESS_INVERTED, false)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_VOLUME_AND_BRIGHTNESS_INVERTED, value)
 
-    override var isForwardRewindSlide: Boolean
+    override val isForwardRewindSlide: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_FORWARD_REWIND_SLIDE, false)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_FORWARD_REWIND_SLIDE, value)
 
-    override var isOpenLandscape: Boolean
+    override val isOpenLandscape: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_OPEN_LANDSCAPE, true)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_OPEN_LANDSCAPE, value)
 
-    override var isZoomProportional: Boolean
+    override val isZoomProportional: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_ZOOM_PROPORTIONAL, true)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_ZOOM_PROPORTIONAL, value)
 
-    override var isAutoPip: Boolean
+    override val isAutoPip: Boolean
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_AUTO_PIP, true)
-        set(value) = prefs.putBoolean(SettingsExtras.PLAYER_IS_AUTO_PIP, value)
 
-    override var forwardRewindOffset: Long
+    override val forwardRewindOffset: Long
         get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET, 10000)
-        set(value) = prefs.putLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET, value)
 
-    override var forwardRewindOffsetBig: Long
+    override val forwardRewindOffsetBig: Long
         get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, 90000)
-        set(value) = prefs.putLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, value)
 }

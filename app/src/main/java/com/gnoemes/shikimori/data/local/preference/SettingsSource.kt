@@ -7,43 +7,41 @@ import com.gnoemes.shikimori.entity.series.domain.TranslationType
 
 interface SettingsSource {
 
-    var isAutoStatus : Boolean
+    val isAutoStatus : Boolean
 
-    var isAutoIncrement : Boolean
+    val isAutoIncrement : Boolean
 
-    var isRussianNaming: Boolean
+    val isRussianNaming: Boolean
 
-    var allowR18Content: Boolean
+    val allowR18Content: Boolean
 
-    var altSourceByDefault: Boolean
+    val altSourceByDefault: Boolean
 
-    var isAskForPlayer : Boolean
+    val isAskForPlayer : Boolean
 
-    var isNotificationsEnabled : Boolean
+    val translationType : TranslationType
 
-    var translationType : TranslationType
+    val playerType : PlayerType
 
-    var playerType : PlayerType
+    val useLocalTranslationSettings : Boolean
 
-    var useLocalTranslationSettings : Boolean
+    val downloadFolder : String
 
-    var downloadFolder : String
+    val isExternalBestQuality : Boolean
 
-    var isExternalBestQuality : Boolean
+    val rateSwipeToLeftAction : RateSwipeAction
 
-    var rateSwipeToLeftAction : RateSwipeAction
-
-    var rateSwipeToRightAction : RateSwipeAction
+    val rateSwipeToRightAction : RateSwipeAction
 
     var chronologyType : ChronologyType
 
-    var hideAnime365: Boolean
+    val hideAnime365: Boolean
 
     /** Every hosting the app has displayed, so the filter screen has something to offer. */
     var seenHostings: Set<String>
 
     /** Hostings the user has chosen to hide, matched by domain and subdomain. */
-    var hiddenHostings: Set<String>
+    val hiddenHostings: Set<String>
 
     /**
      * The v2 genre vocabularies, encoded one genre per entry. Written only by

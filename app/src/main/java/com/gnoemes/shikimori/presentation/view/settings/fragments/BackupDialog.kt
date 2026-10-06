@@ -331,7 +331,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 SettingsExtras.IS_BEST_EXTERNAL_QUALITY to true,
                 SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION to "",
                 SettingsExtras.RATE_SWIPE_TO_RIGHT_ACTION to "",
-                SettingsExtras.IS_NOTIFICATIONS_ENABLED to true,
                 SettingsExtras.PLAYER_IS_GESTURES_ENABLED to true,
                 SettingsExtras.PLAYER_IS_VOLUME_BRIGHTNESS_GESTURES_ENABLED to true,
                 SettingsExtras.PLAYER_IS_VOLUME_AND_BRIGHTNESS_INVERTED to true,
