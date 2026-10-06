@@ -30,11 +30,6 @@ object SettingsExtras {
     const val BACKUP_SETTINGS = "BACKUP_SETTINGS"
 
     ////////////////////////////////////////////////////////////////////////
-    // NOTIFICATIONS
-    ////////////////////////////////////////////////////////////////////////
-    const val IS_NOTIFICATIONS_ENABLED = "IS_NOTIFICATIONS_ENABLED"
-
-    ////////////////////////////////////////////////////////////////////////
     // PLAYER
     ////////////////////////////////////////////////////////////////////////
     const val PLAYER_IS_GESTURES_ENABLED = "PLAYER_IS_GESTURES_ENABLED"
@@ -60,9 +55,8 @@ object SettingsExtras {
 
     const val CHECK_UPDATES_ON_START = "CHECK_UPDATES_ON_START"
 
+    //no longer written; kept so a value stored by older versions stays out of backup files
     const val DONATION_LINK = "DONATION_LINK"
-
-    const val SHIKICINEMA_URL = "SHIKICINEMA_URL"
 
     //where kodik currently serves stream links from, see KodikParser
     const val KODIK_LINKS_PATH = "KODIK_LINKS_PATH"

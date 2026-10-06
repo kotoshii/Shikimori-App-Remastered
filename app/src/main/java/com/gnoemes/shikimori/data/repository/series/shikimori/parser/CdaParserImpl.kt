@@ -13,7 +13,7 @@ import javax.inject.Inject
 class CdaParserImpl @Inject constructor() : CdaParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     /**
      * The player page keeps its configuration in a `player_data` attribute. `file` used to hold a

@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.details
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -25,7 +24,6 @@ import com.gnoemes.shikimori.presentation.view.common.adapter.InfoAdapter
 import com.gnoemes.shikimori.presentation.view.common.adapter.TagAdapter
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.LinkDialogFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.StatisticDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.*
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
@@ -38,7 +36,7 @@ import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
 abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
-        BaseDetailsView, ListDialogFragment.DialogCallback, ListDialogFragment.DialogIdCallback, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
+        BaseDetailsView, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -135,9 +133,8 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
             }
             findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        marginStart = 0
-                    }; leftMargin = 0
+                    marginStart = 0
+                    leftMargin = 0
                 }
             }
         }
@@ -163,10 +160,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                 searchView.isIconified = true
             }
         }
-    }
-
-    override fun dialogItemCallback(tag: String?, url: String) {
-        getPresenter().onOpenWeb(url)
     }
 
     override fun onUpdateRate(rate: UserRate) {

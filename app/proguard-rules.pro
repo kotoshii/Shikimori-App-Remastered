@@ -19,15 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--optimizationpasses 5
 -dontskipnonpubliclibraryclassmembers
--allowaccessmodification
 -dontpreverify
 
 -dontwarn okio.**
 -dontwarn retrofit2.**
--dontwarn com.pushtorefresh.storio2.**
--dontwarn com.squareup.picasso.**
 -dontwarn okhttp3.**
 -dontwarn kotlinx.atomicfu.**
 -dontnote android.net.http.**
@@ -36,16 +32,9 @@
 -dontwarn io.lindstrom.m3u8.**
 
 -keep class org.jsoup.**
--keep class android.support.v4.app.** { *; }
--keep interface android.support.v4.app.** { *; }
--keep class android.support.v7.app.** { *; }
--keep interface android.support.v7.app.** { *; }
 
 -keepclassmembers enum * { *; }
 
--keep public class android.support.v7.widget.** { *; }
--keep public class android.support.v7.internal.widget.** { *; }
--keep public class android.support.v7.internal.view.menu.** { *; }
 -keep class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 
 -keep public class * implements com.bumptech.glide.module.GlideModule
@@ -62,9 +51,9 @@
 -dontwarn org.slf4j.**
 -keep public class * extends androidx.preference.PreferenceFragmentCompat
 
-# HostingFilterFragment is a plain Fragment, so the rule above does not cover it, and the only
-# thing naming it is preferences_anime.xml. R8 dropped it from the release build and opening
-# the screen crashed the app. Anything else reached by app:fragment needs a line here too.
+# HostingFilterFragment is a plain Fragment, so the rule above does not cover it, and the only thing
+# naming it is preferences_anime.xml. ProGuard dropped it from the release build and opening the
+# screen crashed the app. Anything else reached by app:fragment needs a line here too.
 -keep public class com.gnoemes.shikimori.presentation.view.settings.fragments.HostingFilterFragment { <init>(); }
 
 # ServiceLoader support

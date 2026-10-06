@@ -8,8 +8,6 @@ interface DateTimeConverter {
 
     fun convertAnimeSeasonToString(dateTime: DateTime?): String
 
-    fun convertCommentDateTimeToString(dateTime: DateTime): String
-
     fun convertToFullHumanDateString(dateTime: DateTime?): String?
 
     fun convertHistoryDateToString(actionDate: DateTime): String

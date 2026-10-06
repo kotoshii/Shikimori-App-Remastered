@@ -61,7 +61,7 @@ class KodikParserImpl @Inject constructor(
     }
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     /**
      * Everything the link call wants. An empty map means the page was not what was expected, and

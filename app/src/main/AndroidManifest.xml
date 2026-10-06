@@ -81,27 +81,9 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="49adb365d3d365dabad78f3110d69bd84e717eea" />
-
         <receiver android:name="com.gnoemes.shikimori.utils.widgets.MockMediaButtonReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-        </receiver>
-
-        <service
-            android:name=".domain.app.NotificationsService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <receiver android:name="com.gnoemes.shikimori.data.local.services.impl.DownloadCompleteReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
             </intent-filter>
         </receiver>
 
@@ -112,11 +94,6 @@
         <service
             android:name="com.gnoemes.shikimori.data.local.services.impl.AppUpdateService"
             android:exported="false" />
-
-        <service
-            android:name="com.gnoemes.shikimori.data.local.services.impl.VideoMuxService"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -129,10 +106,6 @@
                 android:resource="@xml/provider_paths"
                 tools:replace="android:resource" />
         </provider>
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
 
     </application>
 

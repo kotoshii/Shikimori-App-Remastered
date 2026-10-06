@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.di.app.module;
 import com.gnoemes.shikimori.data.repository.common.AnimeResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.CharacterResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.FranchiseResponseConverter;
-import com.gnoemes.shikimori.data.repository.common.GenreResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.ImageResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.LinkResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.LinkedContentResponseConverter;
@@ -13,7 +12,6 @@ import com.gnoemes.shikimori.data.repository.common.RolesResponseConverter;
 import com.gnoemes.shikimori.data.repository.common.impl.AnimeResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.CharacterResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.FranchiseResponseConverterImpl;
-import com.gnoemes.shikimori.data.repository.common.impl.GenreResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.ImageResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.LinkResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.LinkedContentResponseConverterImpl;
@@ -51,10 +49,6 @@ public interface ConverterModule {
     @Binds
     @Reusable
     FranchiseResponseConverter bindFranchiseResponseConverter(FranchiseResponseConverterImpl converter);
-
-    @Binds
-    @Reusable
-    GenreResponseConverter bindGenreResponseConverter(GenreResponseConverterImpl converter);
 
     @Binds
     @Reusable

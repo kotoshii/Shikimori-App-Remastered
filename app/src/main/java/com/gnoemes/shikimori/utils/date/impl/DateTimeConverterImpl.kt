@@ -44,16 +44,6 @@ class DateTimeConverterImpl @Inject constructor(
         return "$season ${dateTime.year}"
     }
 
-    override fun convertCommentDateTimeToString(dateTime: DateTime): String {
-        val dateFormatter = DateTimeFormat.forPattern("dd MMMM yyyy")
-
-        return when {
-            dateUtils.isToday(dateTime) -> resourceProvider.todayMessage
-            dateUtils.isYesterday(dateTime) -> resourceProvider.yesterdayMessage
-            else -> dateFormatter.print(dateTime)
-        }
-    }
-
     override fun convertToFullHumanDateString(dateTime: DateTime?): String? {
         if (dateTime == null) {
             return null

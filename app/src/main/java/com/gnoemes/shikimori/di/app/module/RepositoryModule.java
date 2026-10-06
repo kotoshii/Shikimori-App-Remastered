@@ -1,29 +1,21 @@
 package com.gnoemes.shikimori.di.app.module;
 
 import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource;
-import com.gnoemes.shikimori.data.local.db.ChapterDbSource;
 import com.gnoemes.shikimori.data.local.db.EpisodeDbSource;
-import com.gnoemes.shikimori.data.local.db.MangaRateSyncDbSource;
 import com.gnoemes.shikimori.data.local.db.impl.AnimeRateSyncDbSourceImpl;
-import com.gnoemes.shikimori.data.local.db.impl.ChapterDbSourceImpl;
 import com.gnoemes.shikimori.data.local.db.impl.EpisodeDbSourceImpl;
-import com.gnoemes.shikimori.data.local.db.impl.MangaRateSyncDbSourceImpl;
 import com.gnoemes.shikimori.data.local.services.DownloadSource;
 import com.gnoemes.shikimori.data.local.services.impl.DownloadManagerSourceImpl;
-import com.gnoemes.shikimori.data.repository.app.AnalyticRepository;
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository;
 import com.gnoemes.shikimori.data.repository.app.TaskRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenSource;
 import com.gnoemes.shikimori.data.repository.app.impl.AuthorizationRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.app.impl.FirebaseAnalyticRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TaskRepostioryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenSourceImpl;
 import com.gnoemes.shikimori.data.repository.download.DownloadRepository;
 import com.gnoemes.shikimori.data.repository.download.DownloadRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.rates.RateChangesRepository;
-import com.gnoemes.shikimori.data.repository.rates.RateChangesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.rates.RatesRepository;
 import com.gnoemes.shikimori.data.repository.rates.RatesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.series.shikimori.EpisodeChangesRepository;
@@ -78,14 +70,6 @@ public interface RepositoryModule {
 
     @Binds
     @Singleton
-    AnalyticRepository bindAnalyticRepository(FirebaseAnalyticRepositoryImpl repository);
-
-    @Binds
-    @Singleton
-    RateChangesRepository bindRateChangesRepository(RateChangesRepositoryImpl repository);
-
-    @Binds
-    @Singleton
     TaskRepository bindTaskRepository(TaskRepostioryImpl repostiory);
 
     @Binds
@@ -98,15 +82,7 @@ public interface RepositoryModule {
 
     @Binds
     @Singleton
-    ChapterDbSource bindChapterDbSource(ChapterDbSourceImpl source);
-
-    @Binds
-    @Singleton
     AnimeRateSyncDbSource bindAnimeRateSyncDbSource(AnimeRateSyncDbSourceImpl source);
-
-    @Binds
-    @Reusable
-    MangaRateSyncDbSource bindMangaRateSyncDbSource(MangaRateSyncDbSourceImpl source);
 
     @Binds
     @Singleton

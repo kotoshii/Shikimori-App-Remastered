@@ -5,7 +5,6 @@ import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.common.domain.Screens
@@ -77,7 +76,6 @@ class SeriesPresenter @Inject constructor(
         }
 
         loadWithEpisode()
-        analyzeType(type)
     }
 
     override fun onViewReattached() {
@@ -205,7 +203,6 @@ class SeriesPresenter @Inject constructor(
 
     fun onSearchClicked() {
         viewState.showSearchView()
-        logEvent(AnalyticEvent.ANIME_TRANSLATIONS_SEARCH_OPENED)
     }
 
     fun onSearchClose() = viewState.onSearchClosed()
@@ -252,7 +249,6 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun showAuthorDialog(author: String) {
-        logEvent(AnalyticEvent.ANIME_TRANSLATIONS_AUTHORS)
         viewState.showAuthorDialog(author)
     }
 
@@ -318,7 +314,6 @@ class SeriesPresenter @Inject constructor(
         if (type == newType) return
         this.type = newType
         loadWithEpisode()
-        analyzeType(newType)
     }
 
     fun onSourceChanged(alternative: Boolean) {
@@ -337,7 +332,6 @@ class SeriesPresenter @Inject constructor(
 
     fun onDiscussionClicked() {
         if (episode != null) {
-            logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DISCUSSION)
             interactor.getTopic(navigationData.animeId, episode!!)
                     .subscribe(this::onTopicClicked, this::onDiscussionNotExist)
                     .addToDisposables()
@@ -450,7 +444,6 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
-        logEvent(AnalyticEvent.ANIME_TRANSLATIONS_DOWNLOAD)
         val data = DownloadVideoData(
                 navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
                 Utils.getRequestHeadersForHosting(video),
@@ -469,13 +462,6 @@ class SeriesPresenter @Inject constructor(
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)
                 .addToDisposables()
-    }
-
-    private fun analyzeType(type: TranslationType) = when (type) {
-        TranslationType.VOICE_RU -> logEvent(AnalyticEvent.ANIME_TRANSLATIONS_TYPE_VOICE_RU)
-        TranslationType.SUB_RU -> logEvent(AnalyticEvent.ANIME_TRANSLATIONS_TYPE_SUB_RU)
-        TranslationType.RAW -> logEvent(AnalyticEvent.ANIME_TRANSLATIONS_TYPE_ORIGINAL)
-        else -> Unit
     }
 
     private fun onDiscussionNotExist(throwable: Throwable?) {

@@ -8,8 +8,6 @@ class EmbeddedPlayerResourceProviderImpl @Inject constructor(
         private val context: Context
 ) : EmbeddedPlayerResourceProvider {
 
-    override val hostingErrorMessage: String
-        get() = context.getString(R.string.player_hosting_error)
     override val hostingChallengeMessage: String
         get() = context.getString(R.string.series_hosting_challenge)
     override val playerErrorMessage: String

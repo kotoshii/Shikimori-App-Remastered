@@ -17,7 +17,6 @@ import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
 import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
-import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryNavigationData
 import com.gnoemes.shikimori.presentation.view.anime.AnimeFragment
@@ -36,7 +35,6 @@ import com.gnoemes.shikimori.presentation.view.rates.RateFragment
 import com.gnoemes.shikimori.presentation.view.screenshots.ScreenshotsActivity
 import com.gnoemes.shikimori.presentation.view.search.SearchFragment
 import com.gnoemes.shikimori.presentation.view.series.SeriesFragment
-import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment
 import com.gnoemes.shikimori.presentation.view.settings.SettingsActivity
 import com.gnoemes.shikimori.presentation.view.shikimorimain.ShikimoriMainFragment
 import com.gnoemes.shikimori.presentation.view.similar.SimilarFragment
@@ -62,7 +60,6 @@ object RouteHolder {
             Screens.TOPIC_DETAILS -> TopicFragment.newInstance(data as Long)
             Screens.USER_DETAILS -> UserFragment.newInstance(data as Long)
             Screens.TOPICS -> TopicListFragment.newInstance(data as ForumType)
-            Screens.EPISODES -> EpisodesFragment.newInstance(data as EpisodesNavigationData)
             Screens.SERIES -> SeriesFragment.newInstance(data as SeriesNavigationData)
             Screens.USER_FRIENDS -> FriendsFragment.newInstance(data as Long)
             Screens.USER_CLUBS -> UserClubsFragment.newInstance(data as Long)

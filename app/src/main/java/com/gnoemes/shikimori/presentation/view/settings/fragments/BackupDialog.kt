@@ -13,7 +13,6 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.fileChooser
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
@@ -116,7 +115,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_LONG).show()
             } catch (e: IOException) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
                 Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
             }
         }
@@ -189,7 +187,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Crashlytics.logException(e)
                 Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
             }
         }
@@ -226,7 +223,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             e.printStackTrace()
-            Crashlytics.logException(e)
             Toast.makeText(context, R.string.backup_read_error, Toast.LENGTH_LONG).show()
         }
     }
@@ -236,7 +232,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             context?.shareFile(createBackupPrivate().absolutePath)
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
-            Crashlytics.logException(e)
             Toast.makeText(context, R.string.backup_write_error, Toast.LENGTH_LONG).show()
         }
     }
@@ -336,7 +331,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 SettingsExtras.IS_BEST_EXTERNAL_QUALITY to true,
                 SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION to "",
                 SettingsExtras.RATE_SWIPE_TO_RIGHT_ACTION to "",
-                SettingsExtras.IS_NOTIFICATIONS_ENABLED to true,
                 SettingsExtras.PLAYER_IS_GESTURES_ENABLED to true,
                 SettingsExtras.PLAYER_IS_VOLUME_BRIGHTNESS_GESTURES_ENABLED to true,
                 SettingsExtras.PLAYER_IS_VOLUME_AND_BRIGHTNESS_INVERTED to true,

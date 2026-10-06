@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.search
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -108,9 +106,6 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         searchView?.run {
 
             setOnQueryTextListener(searchViewQueryListener)
-            setOnSearchClickListener {
-                getPresenter().logEvent(AnalyticEvent.SEARCH_SEARCH_OPENED)
-            }
             setOnCloseListener {
                 return@setOnCloseListener true
             }
@@ -120,9 +115,8 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             }
             findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        marginStart = 0
-                    }; leftMargin = 0
+                    marginStart = 0
+                    leftMargin = 0
                 }
             }
         }

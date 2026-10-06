@@ -10,8 +10,4 @@ enum class Status(val status: String) {
     @SerializedName("released")
     RELEASED("released"),
     NONE("none");
-
-    fun equalsStatus(otherStatus: String): Boolean {
-        return status == otherStatus
-    }
 }

@@ -28,8 +28,7 @@
             android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/test_preview2" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </com.google.android.material.card.MaterialCardView>
 

@@ -4,7 +4,6 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMuxer
-import android.os.Build
 import java.io.File
 import java.nio.ByteBuffer
 
@@ -26,17 +25,12 @@ object VideoMuxer {
      */
     private val NO_PROGRESS: (Int) -> Boolean = { true }
 
-    val isSupported: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-
     /**
      * Returns true only when [outputPath] holds a complete file, so the caller can decide whether
      * it is safe to delete the parts.
      */
     fun mux(videoPath: String, audioPath: String, outputPath: String,
             onProgress: (Int) -> Boolean = NO_PROGRESS): Boolean {
-        if (!isSupported) return false
-
         var video: MediaExtractor? = null
         var audio: MediaExtractor? = null
         var muxer: MediaMuxer? = null
@@ -88,8 +82,6 @@ object VideoMuxer {
      * than lose the download.
      */
     fun remux(inputPath: String, outputPath: String, onProgress: (Int) -> Boolean = NO_PROGRESS): Boolean {
-        if (!isSupported) return false
-
         var extractor: MediaExtractor? = null
         var muxer: MediaMuxer? = null
         var complete = false

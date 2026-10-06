@@ -1,9 +1,6 @@
 package com.gnoemes.shikimori.utils
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
-import android.os.Build
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -27,17 +24,11 @@ fun View.visible() {
     visibility = View.VISIBLE
 }
 
-fun View.invisible() {
-    visibility = View.INVISIBLE
-}
-
 fun View.gone() {
     visibility = View.GONE
 }
 
 fun View.isVisible(): Boolean = visibility == View.VISIBLE
-
-fun View.isGone(): Boolean = visibility == View.GONE
 
 inline fun View.visibleIf(block: () -> Boolean) {
     if (block()) visible() else gone()
@@ -55,18 +46,6 @@ inline fun Toolbar.onMenuClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL
     setOnMenuItemClickListener(object : DebouncedOnMenuClickListener(mills) {
         override fun onDebouncedClick(v: MenuItem?): Boolean = l.invoke(v)
     })
-}
-
-fun TextView.tintCompoundDrawables(color: Int, pos: Int = 4) {
-    val drawables = compoundDrawables
-
-    if (pos < drawables.size) {
-        drawables[pos]?.tint(color)
-    } else {
-        drawables.forEach {
-            it?.tint(color)
-        }
-    }
 }
 
 fun SwipeRefreshLayout.showRefresh() {
@@ -103,19 +82,13 @@ fun Snackbar.floatingStyle(context: Context, @DimenRes margins: Int = R.dimen.sn
     params.setMargins(margin, margin, margin, margin)
     this.view.findViewById<Button>(R.id.snackbar_action)?.run {
         isAllCaps = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            letterSpacing = 0.03f
-        }
+        letterSpacing = 0.03f
     }
     this.view.findViewById<TextView>(R.id.snackbar_text)?.setTextColor(context.color(R.color.player_controls))
     this.view.layoutParams = params
     this.view.background = context.drawable(background)
     return this
 }
-
-fun View.drawable(@DrawableRes drawableResId: Int): Drawable? = context.drawable(drawableResId)
-
-fun View.colorStateList(@ColorRes colorRes: Int): ColorStateList = context.colorStateList(colorRes)
 
 fun View.dp(dp: Int): Int = context.dp(dp)
 

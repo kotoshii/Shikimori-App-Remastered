@@ -13,7 +13,6 @@ import com.gnoemes.shikimori.presentation.presenter.anime.AnimePresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentViewHolder
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.onClick
@@ -51,7 +50,6 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
             onMenuClick {
                 when (it?.itemId) {
                     R.id.item_rate -> getPresenter().onAction(DetailsAction.RateStatusDialog)
-//                    R.id.item_add_video -> getPresenter().onAction(DetailsAction.AddVideo)
                     R.id.item_web -> getPresenter().onAction(DetailsAction.OpenInBrowser)
                     R.id.item_share -> getPresenter().onAction(DetailsAction.Share)
                 }
@@ -72,10 +70,6 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
         }
     }
 
-    override fun dialogItemIdCallback(tag: String?, id: Long) {
-        getPresenter().onAnimeClicked(id)
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS
     ///////////////////////////////////////////////////////////////////////////
@@ -92,13 +86,5 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
     override fun showRateDialog(title: String, userRate: UserRate?) {
         val dialog = EditRateFragment.newInstance(rate = userRate, title = title)
         dialog.show(childFragmentManager, "RateTag")
-    }
-
-    override fun showChronology(it: List<Pair<String, String>>) {
-        val dialog = ListDialogFragment.newInstance(true)
-        dialog.apply {
-            setTitle(R.string.common_chronology)
-            setItems(it)
-        }.show(childFragmentManager, "ChronologyTag")
     }
 }

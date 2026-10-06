@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.data.repository.manga.converter
 
-import com.gnoemes.shikimori.data.repository.common.GenreResponseConverter
 import com.gnoemes.shikimori.data.repository.common.ImageResponseConverter
 import com.gnoemes.shikimori.data.repository.common.RateResponseConverter
 import com.gnoemes.shikimori.entity.manga.data.MangaDetailsResponse
@@ -13,7 +12,6 @@ import javax.inject.Inject
 
 class MangaDetailsResponseConverterImpl @Inject constructor(
         private val imageConverter: ImageResponseConverter,
-        private val genreConverter: GenreResponseConverter,
         private val rateConverter: RateResponseConverter
 ) : MangaDetailsResponseConverter {
 

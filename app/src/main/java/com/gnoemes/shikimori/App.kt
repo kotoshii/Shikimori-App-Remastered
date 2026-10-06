@@ -2,39 +2,24 @@ package com.gnoemes.shikimori
 
 import android.app.Activity
 import android.app.Application
-import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.multidex.MultiDex
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
-import io.fabric.sdk.android.Fabric
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 import net.danlew.android.joda.JodaTimeAndroid
 import java.io.IOException
 import javax.inject.Inject
 
-class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcastReceiverInjector {
+class App : Application(), HasActivityInjector {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
 
-    @Inject
-    lateinit var serviceDispatchingAndroidInjector: DispatchingAndroidInjector<Service>
-
-    @Inject
-    lateinit var broadcastReceiverDispatchingAndroidInjector: DispatchingAndroidInjector<BroadcastReceiver>
-
     override fun onCreate() {
         super.onCreate()
         RxJavaPlugins.setErrorHandler(::logUndeliverable)
-        Fabric.with(this, Crashlytics())
         JodaTimeAndroid.init(this)
-        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         DaggerAppComponent.builder().create(this).inject(this)
     }
 
@@ -66,16 +51,9 @@ class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcast
         }
     }
 
-    override fun attachBaseContext(base: Context?) {
-        super.attachBaseContext(base)
-        MultiDex.install(this)
-    }
-
     companion object {
         private const val TAG_RX = "RxUndeliverable"
     }
 
     override fun activityInjector(): AndroidInjector<Activity> = dispatchingAndroidInjector
-    override fun serviceInjector(): AndroidInjector<Service> = serviceDispatchingAndroidInjector
-    override fun broadcastReceiverInjector(): AndroidInjector<BroadcastReceiver> = broadcastReceiverDispatchingAndroidInjector
 }

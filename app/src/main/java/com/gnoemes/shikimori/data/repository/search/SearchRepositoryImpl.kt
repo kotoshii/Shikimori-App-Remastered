@@ -1,19 +1,14 @@
 package com.gnoemes.shikimori.data.repository.search
 
 import com.gnoemes.shikimori.data.network.AnimeApi
-import com.gnoemes.shikimori.data.network.GraphqlSearchApi
 import com.gnoemes.shikimori.data.network.MangaApi
 import com.gnoemes.shikimori.data.network.RanobeApi
 import com.gnoemes.shikimori.data.network.RolesApi
 import com.gnoemes.shikimori.data.repository.common.AnimeResponseConverter
 import com.gnoemes.shikimori.data.repository.common.CharacterResponseConverter
-import com.gnoemes.shikimori.data.repository.common.GraphqlContentConverter
 import com.gnoemes.shikimori.data.repository.common.MangaResponseConverter
 import com.gnoemes.shikimori.data.repository.common.PersonResponseConverter
-import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
-import com.gnoemes.shikimori.entity.common.data.graphql.GraphqlRequest
 import com.gnoemes.shikimori.entity.anime.domain.Anime
-import com.gnoemes.shikimori.entity.common.data.graphql.SearchQueryResponse
 import com.gnoemes.shikimori.entity.common.domain.LinkedContent
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -28,8 +23,6 @@ class SearchRepositoryImpl @Inject constructor(
         private val mangaApi: MangaApi,
         private val ranobeApi: RanobeApi,
         private val rolesApi: RolesApi,
-        private val graphqlSearchApi: GraphqlSearchApi,
-        private val graphqlConverter: GraphqlContentConverter,
         private val animeResponseConverter: AnimeResponseConverter,
         private val mangaResponseConverter: MangaResponseConverter,
         private val characterResponseConverter: CharacterResponseConverter,
@@ -65,18 +58,6 @@ class SearchRepositoryImpl @Inject constructor(
         val genre = queryMap[SearchConstants.GENRE] ?: return queryMap
         return queryMap - SearchConstants.GENRE + (SearchConstants.GENRE_V2 to genre)
     }
-
-    /**
-     * The graphql catalog search, unused since the catalog went back to rest. Kept, with
-     * [graphqlSearchApi] and [graphqlConverter], until the dead code cleanup.
-     */
-    private fun searchGraphql(
-            type: GenreEntryType,
-            queryMap: Map<String, String>,
-            isRanobe: Boolean
-    ): Single<SearchQueryResponse> = Single
-            .fromCallable { GraphqlSearchQuery.build(type, queryMap, isRanobe) }
-            .flatMap { query -> graphqlSearchApi.search(GraphqlRequest(query)) }
 
     override fun getCharacterList(queryMap: Map<String, String>): Single<List<Character>> =
             rolesApi.getCharacterList(queryMap)

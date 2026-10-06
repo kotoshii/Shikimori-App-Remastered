@@ -46,8 +46,7 @@
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="@dimen/image_details_width"
-            android:layout_height="@dimen/image_details_height"
-            tools:src="@drawable/test_preview2" />
+            android:layout_height="@dimen/image_details_height" />
 
     </com.google.android.material.card.MaterialCardView>
 

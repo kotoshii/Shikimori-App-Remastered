@@ -201,9 +201,8 @@ class VideoDownloadService : Service() {
                 return discard(video, audio)
             }
 
-            val muxed = VideoMuxer.isSupported &&
-                    VideoMuxer.mux(video.absolutePath, audio.absolutePath, output.absolutePath,
-                            muxProgress(title, R.string.download_notification_merging))
+            val muxed = VideoMuxer.mux(video.absolutePath, audio.absolutePath, output.absolutePath,
+                    muxProgress(title, R.string.download_notification_merging))
             //a cancel during muxing leaves both parts and a partial output; none of it is wanted
             if (cancelled) return discard(video, audio, output)
 
@@ -213,7 +212,7 @@ class VideoDownloadService : Service() {
                 return Result(output)
             }
 
-            //Both parts stay when muxing is unavailable (it needs api 18, minSdk is 16) or failed.
+            //Both parts stay when muxing failed.
             //The video alone has no sound, so this is reported as a partial result - saying
             //"finished" and then playing a silent file would be a lie.
             return video.takeIf { it.exists() }?.let { Result(it, merged = false) }
@@ -228,10 +227,9 @@ class VideoDownloadService : Service() {
         }
         if (!isStream) return Result(target)
 
-        //mp4 is what a user expects; keep the .ts if the device cannot remux
-        val remuxed = VideoMuxer.isSupported &&
-                VideoMuxer.remux(target.absolutePath, output.absolutePath,
-                        muxProgress(title, R.string.download_notification_converting))
+        //mp4 is what a user expects; keep the .ts if remuxing fails
+        val remuxed = VideoMuxer.remux(target.absolutePath, output.absolutePath,
+                muxProgress(title, R.string.download_notification_converting))
         //a cancel during remuxing leaves the .ts and a partial mp4
         if (cancelled) return discard(target, output)
 

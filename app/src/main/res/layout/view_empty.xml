@@ -27,22 +27,4 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView"
         tools:text="@string/search_nothing" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="8dp"
-        android:background="?attr/colorPrimary"
-        android:padding="@dimen/margin_normal"
-        android:textColor="?attr/colorOnSecondary"
-        android:visibility="gone"
-        app:backgroundTint="?attr/colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/descriptionTextView"
-        tools:text="Текст"
-        tools:visibility="visible" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

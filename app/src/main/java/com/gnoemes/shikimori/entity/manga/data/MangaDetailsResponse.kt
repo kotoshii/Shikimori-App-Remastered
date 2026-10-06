@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.entity.manga.data
 
-import com.gnoemes.shikimori.entity.common.data.GenreResponse
 import com.gnoemes.shikimori.entity.common.data.ImageResponse
 import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.manga.domain.MangaType
@@ -29,7 +28,6 @@ data class MangaDetailsResponse(
         @field:SerializedName("franchise") val franchise: String?,
         @field:SerializedName("favoured") val favoured: Boolean,
         @field:SerializedName("topic_id") val topicId: Long?,
-        @field:SerializedName("genres") val genres: List<GenreResponse>,
         @field:SerializedName("user_rate") val userRate: UserRateResponse?,
         @field:SerializedName("rates_scores_stats") val rateScoresStats: List<StatisticResponse>,
         @field:SerializedName("rates_statuses_stats") val rateStatusesStats: List<StatisticResponse>

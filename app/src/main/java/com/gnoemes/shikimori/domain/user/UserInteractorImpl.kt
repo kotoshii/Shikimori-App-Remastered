@@ -14,10 +14,6 @@ class UserInteractorImpl @Inject constructor(
 
     override fun getMyUserId(): Single<Long> = repository.getMyUserId().applyErrorHandlerAndSchedulers()
 
-    override fun getMyUserBrief(): Single<UserBrief> = repository.getMyUserBrief().applyErrorHandlerAndSchedulers()
-
-    override fun getUserMessages(type: MessageType): Single<List<Message>> = repository.getUserMessages(type).applyErrorHandlerAndSchedulers()
-
     override fun getDetails(id: Long): Single<UserDetails> =
             repository.getDetails(id)
                     .flatMap { detals ->
@@ -44,8 +40,4 @@ class UserInteractorImpl @Inject constructor(
     override fun removeFriend(id: Long): Completable = repository.removeFriend(id).applyErrorHandlerAndSchedulers()
 
     override fun getUserStatus(): UserStatus = repository.getUserStatus()
-
-    override fun setUserStatus(status: UserStatus) = repository.setUserStatus(status)
-
-    override fun clearUser() = repository.clearUser()
 }

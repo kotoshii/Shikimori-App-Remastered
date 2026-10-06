@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.calendar
 
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -91,9 +90,8 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             }
             findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        marginStart = 0
-                    }; leftMargin = 0
+                    marginStart = 0
+                    leftMargin = 0
                 }
             }
             findViewById<ImageView>(R.id.search_close_btn)?.apply {

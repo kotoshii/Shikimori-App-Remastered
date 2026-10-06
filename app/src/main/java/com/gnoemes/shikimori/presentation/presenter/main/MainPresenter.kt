@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.main
 
+import android.util.Log
 import com.arellomobile.mvp.InjectViewState
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
 import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.main.BottomScreens
@@ -38,14 +38,14 @@ class MainPresenter @Inject constructor(
     private fun refreshGenres() {
         val d = genreVocabulary.refresh()
                 .subscribeOn(Schedulers.io())
-                .subscribe({}, { Crashlytics.logException(it) })
+                .subscribe({}, { Log.w(TAG, "genre list refresh failed", it) })
         disposable.add(d)
     }
 
     private fun startEpisodesSync() {
         val d =
                 interactor.startSync()
-                        .subscribe({}, { Crashlytics.logException(it) })
+                        .subscribe({}, { Log.w(TAG, "episode sync failed", it) })
         disposable.add(d)
     }
 
@@ -76,5 +76,9 @@ class MainPresenter @Inject constructor(
         super.onDestroy()
 
         disposable.clear()
+    }
+
+    companion object {
+        private const val TAG = "MainPresenter"
     }
 }

@@ -43,10 +43,6 @@ fun <E> MutableList<E>.clearAndAddAll(items: Collection<E>) {
     addAll(items)
 }
 
-inline fun <E> MutableList<E>.exist(crossinline block: (E) -> Boolean): Boolean {
-    return find { block.invoke(it) } != null
-}
-
 fun String.toBold(): SpannableStringBuilder {
     val builder = SpannableStringBuilder()
             .append(this)
@@ -118,16 +114,7 @@ fun Int.toBoolean(): Boolean? = if (this > 1) null else this == 1
 
 fun Int.unknownIfZero(): String = if (this == 0) "xxx" else toString()
 
-fun Context.inflateLayout(layoutResId: Int): View =
-        inflateView(this, layoutResId, null, false)
-
-fun Context.inflateLayout(layoutResId: Int, parent: ViewGroup): View =
-        inflateLayout(layoutResId, parent, true)
-
 fun Context.dimen(@DimenRes dimen: Int) = this.resources.getDimension(dimen)
-
-fun Context.inflateLayout(layoutResId: Int, parent: ViewGroup, attachToRoot: Boolean): View =
-        inflateView(this, layoutResId, parent, attachToRoot)
 
 fun Context.drawable(@DrawableRes drawableResId: Int): Drawable? {
     return AppCompatResources.getDrawable(this, drawableResId)
@@ -140,12 +127,6 @@ fun Context.colorStateList(@ColorRes colorRes: Int): ColorStateList {
 fun Context.drawable(@DrawableRes drawableResId: Int, @ColorRes tintColor: Int = 0): Drawable? {
     val drawable = drawable(drawableResId)
     if (tintColor != 0) drawable?.tint(color(tintColor))
-    return drawable
-}
-
-fun Context.themeDrawable(@DrawableRes drawableResId: Int, @AttrRes attrResId: Int): Drawable? {
-    val drawable = ContextCompat.getDrawable(this, drawableResId)
-    drawable?.tint(this.colorAttr(attrResId))
     return drawable
 }
 

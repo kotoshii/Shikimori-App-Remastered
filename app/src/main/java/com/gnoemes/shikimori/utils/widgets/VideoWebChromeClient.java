@@ -47,11 +47,6 @@ public class VideoWebChromeClient extends WebChromeClient {
         isVideoFullscreen = false;
     }
 
-    public boolean onBackPressed() {
-        onHideCustomView();
-        return isVideoFullscreen;
-    }
-
     @Override
     public void onCloseWindow(WebView window) {
         window.destroy();

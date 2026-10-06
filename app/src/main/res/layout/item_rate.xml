@@ -34,8 +34,7 @@
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="@dimen/image_rate_width"
-                android:layout_height="@dimen/image_rate_height"
-                tools:src="@drawable/test_preview2" />
+                android:layout_height="@dimen/image_rate_height" />
 
             <TextView
                 android:id="@+id/ratingView"

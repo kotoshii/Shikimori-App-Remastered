@@ -7,6 +7,4 @@ import io.reactivex.Single
 interface CommentRepository {
 
     fun getList(id : Long, type : CommentableType, page : Int, limit : Int, desc : Int) : Single<List<Comment>>
-
-    fun getSingle(id : Long) : Single<Comment>
 }

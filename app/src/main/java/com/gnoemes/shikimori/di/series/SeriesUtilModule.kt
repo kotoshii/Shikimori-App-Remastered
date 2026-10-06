@@ -31,10 +31,6 @@ interface SeriesUtilModule {
 
     @Binds
     @Reusable
-    fun bindVideoResponseConverter(converter: VideoResponseConverterImpl): VideoResponseConverter
-
-    @Binds
-    @Reusable
     fun bindVkParser(parser: VkParserImpl): VkParser
 
     @Binds
@@ -88,9 +84,5 @@ interface SeriesUtilModule {
     @Binds
     @Reusable
     fun bindMatreshkaParser(parser: MatreshkaParserImpl): MatreshkaParser
-
-    @Binds
-    @Reusable
-    fun bindParsingConverter(converter: DocumentParsingConverterImpl): DocumentParsingConverter
 
 }

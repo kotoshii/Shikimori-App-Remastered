@@ -6,7 +6,6 @@ import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.chronology.ChronologyInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
@@ -100,7 +99,6 @@ class ChronologyPresenter @Inject constructor(
         ratesInteractor.changeRateStatus(id, newStatus)
                 .subscribe(this::onRefresh, this::processErrors)
                 .addToDisposables()
-        logEvent(AnalyticEvent.RATE_DROP_MENU)
     }
 
     private fun createRate(item: ChronologyViewModel, newStatus: RateStatus) {

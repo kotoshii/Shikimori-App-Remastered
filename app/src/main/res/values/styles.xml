@@ -39,20 +39,6 @@
         <item name="android:tint">?attr/colorOnPrimary</item>
     </style>
 
-    <style name="RateChooserTextAppearance">
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">?colorOnSurface</item>
-        <item name="android:gravity">start</item>
-    </style>
-
-    <style name="RateChooserTextAppearance.Normal" parent="RateChooserTextAppearance">
-        <item name="android:textSize">14sp</item>
-    </style>
-
-    <style name="RateChooserTextAppearance.Small" parent="RateChooserTextAppearance">
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="TextHeadlineStyle">
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
@@ -92,12 +78,6 @@
     <style name="RateProgressCountStyle">
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
-    </style>
-
-    <style name="RateProgressLabelStyle">
-        <item name="android:fontFamily">sans-serif</item>
-        <item name="android:textColor">?attr/colorOnPrimarySecondary</item>
-        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="CircleShapeAppearance" parent="ShapeAppearance.MaterialComponents">
@@ -233,20 +213,6 @@
         <item name="cornerSize">16sp</item>
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerFamily">rounded</item>
-    </style>
-
-    <style name="RightRoundShapeStyle" parent="ShapeAppearance.MaterialComponents">
-        <item name="cornerSize">4dp</item>
-        <item name="cornerSizeTopLeft">0dp</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-        <item name="cornerFamily">rounded</item>
-    </style>
-
-    <style name="LeftRoundShapeStyle" parent="ShapeAppearance.MaterialComponents">
-        <item name="cornerSize">4dp</item>
-        <item name="cornerSizeTopRight">0dp</item>
-        <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerFamily">rounded</item>
     </style>
 

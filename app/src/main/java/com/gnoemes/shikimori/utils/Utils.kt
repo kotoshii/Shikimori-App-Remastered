@@ -38,16 +38,20 @@ object Utils {
      * SMOTRET_ANIME is here because Anime365Parser resolves it client side. It only produces tracks
      * for a user with an anime365 token *and* a paid subscription; everyone else gets an empty
      * track list and falls back to the web player, which appends the same token.
+     *
+     * SOVET_ROMANTICA is left out on purpose: as of 2026-10-02 sovetromantica.com and 24 of 25
+     * sampled embeds redirected elsewhere, and its video hosts were gone from DNS. Its rows still
+     * show and open in the web player; SovetRomanticaParser is kept, so adding it back is one line.
      */
     fun isHostingSupports(hosting: VideoHosting): Boolean {
         return when (hosting) {
-            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.SOVET_ROMANTICA, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.NUUM, is VideoHosting.MAILRU, is VideoHosting.CDA, is VideoHosting.MATRESHKA -> true
+            is VideoHosting.SIBNET, is VideoHosting.VK, is VideoHosting.SMOTRET_ANIME, is VideoHosting.KODIK, is VideoHosting.OK, is VideoHosting.MYVI, is VideoHosting.ALLVIDEO, is VideoHosting.ANIMEJOY, is VideoHosting.DZEN, is VideoHosting.NUUM, is VideoHosting.MAILRU, is VideoHosting.CDA, is VideoHosting.MATRESHKA -> true
             else -> false
         }
     }
 
     fun getRequestHeadersForHosting(video: Video?): Map<String, String> = when (video?.hosting) {
-        is VideoHosting.SOVET_ROMANTICA, is VideoHosting.UNKNOWN -> mapOf(Pair("Referrer", video.player))
+        is VideoHosting.SOVET_ROMANTICA -> mapOf(Pair("Referrer", video.player))
         is VideoHosting.SIBNET -> mapOf(Pair("Referer", video.player))
         is VideoHosting.MAILRU -> mapOf(Pair("Cookie", CookieManager.getInstance().getCookie(".my.mail.ru")))
         is VideoHosting.NUUM -> mapOf(Pair("Referer", "https://nuum.ru/"))

@@ -18,8 +18,7 @@ class UserRepositoryImpl @Inject constructor(
         private val detailsConverter: UserDetailsResponseConverter,
         private val historyConverter: UserHistoryConverter,
         private val favoriteConverter: FavoriteListResponseConverter,
-        private val clubConverter: ClubResponseConverter,
-        private val messageConverter: MessageResponseConverter
+        private val clubConverter: ClubResponseConverter
 ) : UserRepository {
 
     override fun getMyUserId(): Single<Long> =
@@ -40,11 +39,6 @@ class UserRepositoryImpl @Inject constructor(
                                 .doOnSuccess { userSource.setUser(it) }
                                 .doOnSuccess { userSource.setUserId(it.id) }
                     }
-
-    override fun getUserMessages(type: MessageType): Single<List<Message>> =
-            getMyUserBrief()
-                    .flatMap { api.getUserMessages(it.id, type) }
-                    .map(messageConverter)
 
     override fun getDetails(id: Long): Single<UserDetails> =
             api.getUserProfile(id)
@@ -79,6 +73,4 @@ class UserRepositoryImpl @Inject constructor(
     override fun getUserStatus(): UserStatus = userSource.getUserStatus()
 
     override fun setUserStatus(status: UserStatus) = userSource.setUserStatus(status)
-
-    override fun clearUser() = userSource.clearUser()
 }

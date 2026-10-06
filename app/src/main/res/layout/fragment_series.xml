@@ -11,8 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="420dp"
         android:fitsSystemWindows="true"
-        android:scaleType="centerCrop"
-        tools:srcCompat="@drawable/test_preview2" />
+        android:scaleType="centerCrop" />
 
     <FrameLayout
         android:id="@+id/backgroundBlur"

@@ -1,5 +1,5 @@
 ext.versions = [
-        minSdk            : 16,
+        minSdk            : 21,
         compileSdk        : 28,
         buildTools        : '28.0.3',
 
@@ -22,10 +22,8 @@ ext.versions = [
         retrofit          : '2.4.0',
         okHttp            : '3.10.0',
         gson              : '2.8.5',
-        urlConnection     : '3.9.0',
 
         cicerone          : '3.0.0',
-        storIO            : '3.0.0',
         jodaDateTime      : '2.9.9.3',
         moxy              : '1.5.5',
         materialDialogs   : '2.8.1',
@@ -42,22 +40,13 @@ ext.versions = [
         exoplayer         : '2.9.6',
 
         kefirBB           : '1.5',
-        firebase          : '16.0.6',
 
-        fabric            : '1.27.1',
-        crashlytics       : '2.9.9@aar',
         advancedVersioning: '1.6.0',
 
         ratingBar         : '1.4.2',
         jsoup             : '1.10.2',
 
-        firebaseMessaging : '19.0.1',
-        firebaseFirestore : '20.1.0',
         firebaseStorage   : '19.1.0',
-
-        multidex          : '2.0.1',
-        slidr             : '2.1.0',
-        subscaleImage     : '3.10.0',
 
         m3u8Parser        : '0.27'
 ]

@@ -28,7 +28,7 @@ object ApkVerifier {
      * True only when [apk] is the same app, signed with the same certificate, as the one running.
      *
      * `GET_SIGNATURES` is deprecated in favour of `GET_SIGNING_CERTIFICATES` on api 28, but it
-     * still works at `targetSdk 28` and is the only form that covers `minSdk 16` in one path.
+     * still works at `targetSdk 28` and is the only form that covers `minSdk 21` in one path.
      */
     @Suppress("DEPRECATION")
     fun matchesInstalledApp(context: Context, apk: File): Boolean = try {

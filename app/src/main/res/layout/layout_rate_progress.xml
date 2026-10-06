@@ -28,29 +28,25 @@
                 android:id="@+id/firstSection"
                 android:layout_width="0dp"
                 android:layout_height="8dp"
-                android:layout_weight="1"
-                tools:background="@color/manga_rate_progress_reading" />
+                android:layout_weight="1" />
 
             <View
                 android:id="@+id/secondSection"
                 android:layout_width="0dp"
                 android:layout_height="8dp"
-                android:layout_weight="1"
-                tools:background="@color/manga_rate_progress_reading" />
+                android:layout_weight="1" />
 
             <View
                 android:id="@+id/thirdSection"
                 android:layout_width="0dp"
                 android:layout_height="8dp"
-                android:layout_weight="1"
-                tools:background="@color/manga_rate_progress_readed" />
+                android:layout_weight="1" />
 
             <View
                 android:id="@+id/fourthSection"
                 android:layout_width="0dp"
                 android:layout_height="8dp"
-                android:layout_weight="1"
-                tools:background="@color/rate_progress_dropped" />
+                android:layout_weight="1" />
 
         </LinearLayout>
 

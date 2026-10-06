@@ -10,10 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
-import com.crashlytics.android.Crashlytics
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
@@ -23,13 +21,11 @@ import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
-import com.gnoemes.shikimori.presentation.view.base.fragment.BottomNavigationProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.TabContainer
 import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import io.reactivex.schedulers.Schedulers
@@ -39,11 +35,13 @@ import ru.terrakok.cicerone.commands.Command
 import ru.terrakok.cicerone.commands.Replace
 import javax.inject.Inject
 
-class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider, BottomNavigationProvider {
+class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider {
 
     companion object {
         /** Set by the "Изменения" action of the update notification. */
         const val EXTRA_SHOW_CHANGELOG = "EXTRA_SHOW_CHANGELOG"
+
+        private const val TAG = "MainActivity"
     }
 
     @InjectPresenter
@@ -71,7 +69,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         initBottomNav()
         initContainer()
         if (savedInstanceState == null) {
-            syncValues()
             checkForUpdate()
         }
 
@@ -88,7 +85,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     private fun initBottomNav() {
         bottomNav.setOnNavigationItemSelectedListener { item ->
             val tab = tabs.find { it.id == item.itemId }!!
-            analyzeNavigation(tab.screenKey)
             presenter.onTabItemSelected(tab.screenKey)
             true
         }
@@ -115,19 +111,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         ta.commitNow()
     }
 
-    private fun syncValues() {
-        val db = FirebaseFirestore.getInstance()
-
-        db.collection("app")
-                .get()
-                .addOnSuccessListener {
-                    val donationLink = it.documents.firstOrNull()?.data?.get("donationLink") as? String
-
-                    getDefaultSharedPreferences().putString(SettingsExtras.DONATION_LINK, donationLink)
-                    getDefaultSharedPreferences().putString(SettingsExtras.SHIKICINEMA_URL, Constants.SHIKICINEMA_URL)
-                }.addOnFailureListener { Crashlytics.logException(it) }
-    }
-
     /**
      * The old check compared the version name against `lastVersion` in the upstream firestore,
      * which this fork does not control, so it always reported an update. This asks our own
@@ -140,7 +123,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
         githubApi.getLatestRelease()
                 .subscribeOn(Schedulers.io())
-                .subscribe({ onReleaseChecked(it) }, { Crashlytics.logException(it) })
+                .subscribe({ onReleaseChecked(it) }, { Log.w(TAG, "update check failed", it) })
     }
 
     /**
@@ -204,26 +187,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val fragment: Fragment? = fm.findFragmentByTag(screenKey)
         fragment.ifNotNull {
             (it as RouterProvider).localRouter.backTo(null)
-        }
-    }
-
-    private fun analyzeNavigation(screenKey: String) {
-        presenter.apply {
-            when (screenKey) {
-                BottomScreens.RATES -> logEvent(AnalyticEvent.NAVIGATION_BOTTOM_RATES)
-                BottomScreens.CALENDAR -> logEvent(AnalyticEvent.NAVIGATION_BOTTOM_CALENDAR)
-                BottomScreens.SEARCH -> logEvent(AnalyticEvent.NAVIGATION_BOTTOM_SEARCH)
-                BottomScreens.MAIN -> logEvent(AnalyticEvent.NAVIGATION_BOTTOM_MAIN)
-                BottomScreens.MORE -> logEvent(AnalyticEvent.NAVIGATION_BOTTOM_MORE)
-            }
-        }
-    }
-
-    override fun changeTab(screen: String) {
-        val tab = tabs.find { it.screenKey == screen }
-        if (tab != null) {
-            clearBackStack(tab.screenKey)
-            bottomNav.selectedItemId = tab.id
         }
     }
 

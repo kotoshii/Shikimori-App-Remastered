@@ -29,7 +29,7 @@ class Anime365ParserImpl @Inject constructor() : Anime365Parser {
     }
 
     override fun video(video: TranslationVideo, tracks: List<Track>, subtitles: String?): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, subtitles, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, subtitles)
 
     /**
      * Built from the embed link's own host, because anime365 serves the same content on four

@@ -7,7 +7,7 @@ import java.util.Locale
 /**
  * A genre as shikimori's v2 taxonomy describes it - the graphql `Genre` type.
  *
- * Replaces the hardcoded [Genre] enum for everything the user sees. v2 splits one flat list into
+ * Replaced the old hardcoded genre list for everything the user sees. v2 splits one flat list into
  * three [Kind]s, and unlike the rest api it is populated for titles added from 2025 onward, where
  * `/api/animes/{id}` returns an empty `genres` array. See docs/_internal/GENRES_V2_SPIKE.md.
  *

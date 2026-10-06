@@ -15,7 +15,7 @@ import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
 import org.joda.time.Duration
 import org.joda.time.LocalTime
 
-var Context.getCurrentTheme: Int
+val Context.getCurrentTheme: Int
     get() {
         val themeIndex = getThemeSharedPreferences().getInt(ThemeExtras.THEME_KEY, Theme.DEFAULT.index)
         return when (Theme.values().find { it.index == themeIndex } ?: Theme.DEFAULT) {
@@ -24,9 +24,8 @@ var Context.getCurrentTheme: Int
             Theme.AMOLED -> R.style.ShikimoriAppTheme_Amoled
         }
     }
-    set(value) = getThemeSharedPreferences().putInt(ThemeExtras.THEME_KEY, value)
 
-var Context.getCurrentNightTheme: Int
+val Context.getCurrentNightTheme: Int
     get() {
         val themeIndex  = getThemeSharedPreferences().getInt(ThemeExtras.NIGHT_THEME_KEY, Constants.NO_ID.toInt())
         return when(Theme.values().find { it.index == themeIndex } ?: return Constants.NO_ID.toInt()) {
@@ -35,9 +34,8 @@ var Context.getCurrentNightTheme: Int
             Theme.AMOLED -> R.style.ShikimoriAppTheme_Amoled
         }
     }
-    set(value) = getThemeSharedPreferences().putInt(ThemeExtras.NIGHT_THEME_KEY, value)
 
-var Context.getCurrentAscentTheme: Int
+val Context.getCurrentAscentTheme: Int
     get() {
         val themeIndex = getThemeSharedPreferences().getInt(ThemeExtras.ASCENT_KEY, AscentTheme.ORANGE.index)
         return when (AscentTheme.values().find { it.index == themeIndex } ?: AscentTheme.ORANGE) {
@@ -50,15 +48,12 @@ var Context.getCurrentAscentTheme: Int
             AscentTheme.PURPLE -> R.style.AscentStyle_Purple
         }
     }
-    set(value) = getThemeSharedPreferences().putInt(ThemeExtras.ASCENT_KEY, value)
 
-var Context.getNightThemeStartTime: LocalTime
+val Context.getNightThemeStartTime: LocalTime
     get() = LocalTime(getThemeSharedPreferences().getInt(ThemeExtras.NIGHT_THEME_START_KEY, LocalTime(20, 0, 0, 0).millisOfDay).toLong())
-    set(value) = getThemeSharedPreferences().putInt(ThemeExtras.NIGHT_THEME_START_KEY, value.millisOfDay)
 
-var Context.getNightThemeEndTime: LocalTime
+val Context.getNightThemeEndTime: LocalTime
     get() = LocalTime(getThemeSharedPreferences().getInt(ThemeExtras.NIGHT_THEME_END_KEY, LocalTime(8, 0, 0, 0).millisOfDay).toLong())
-    set(value) = getThemeSharedPreferences().putInt(ThemeExtras.NIGHT_THEME_END_KEY, value.millisOfDay)
 
 val Context.isNightTime: Boolean
     get() {

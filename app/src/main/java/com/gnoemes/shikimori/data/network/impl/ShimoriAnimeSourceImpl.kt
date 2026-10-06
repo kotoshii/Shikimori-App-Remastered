@@ -33,10 +33,7 @@ class ShimoriAnimeSourceImpl @Inject constructor(
                         EpisodeResponse(
                                 it.toLong(),
                                 it,
-                                id,
-                                emptyList(),
-                                "",
-                                emptyList()
+                                id
                         )
                     }
                 }
@@ -85,10 +82,7 @@ class ShimoriAnimeSourceImpl @Inject constructor(
                         EpisodeResponse(
                                 it.toLong(),
                                 it,
-                                id,
-                                emptyList(),
-                                "",
-                                emptyList()
+                                id
                         )
                     }
                 }

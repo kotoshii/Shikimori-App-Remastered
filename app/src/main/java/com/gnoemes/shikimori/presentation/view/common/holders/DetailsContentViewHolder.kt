@@ -46,13 +46,11 @@ class DetailsContentViewHolder(
         val stringRes = when (type) {
             DetailsContentType.CHARACTERS -> R.string.common_characters
             DetailsContentType.RELATED -> R.string.common_related
-            DetailsContentType.SIMILAR -> R.string.common_similar
             DetailsContentType.VIDEO -> R.string.common_video
             DetailsContentType.MANGAS -> R.string.common_manga
             DetailsContentType.ANIMES -> R.string.common_anime
             DetailsContentType.SEYUS -> R.string.common_seyu
             DetailsContentType.WORKS -> R.string.person_best_works
-            DetailsContentType.ROLES -> R.string.person_best_roles
             DetailsContentType.SCREENSHOTS -> R.string.details_screenshots
         }
 

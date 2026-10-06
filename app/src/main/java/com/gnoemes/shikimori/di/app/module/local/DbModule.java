@@ -5,12 +5,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
 
-import com.gnoemes.shikimori.entity.chapters.ChapterDao;
-import com.gnoemes.shikimori.entity.chapters.ChapterDaoSQLiteTypeMapping;
 import com.gnoemes.shikimori.entity.rates.data.AnimeRateSyncDao;
 import com.gnoemes.shikimori.entity.rates.data.AnimeRateSyncDaoSQLiteTypeMapping;
-import com.gnoemes.shikimori.entity.rates.data.MangaRateSyncDao;
-import com.gnoemes.shikimori.entity.rates.data.MangaRateSyncDaoSQLiteTypeMapping;
 import com.gnoemes.shikimori.entity.rates.data.PinnedRateDao;
 import com.gnoemes.shikimori.entity.rates.data.PinnedRateDaoSQLiteTypeMapping;
 import com.gnoemes.shikimori.entity.series.data.EpisodeDao;
@@ -36,9 +32,7 @@ public interface DbModule {
                 .sqliteOpenHelper(sqLiteOpenHelper)
                 .addTypeMapping(AnimeRateSyncDao.class, new AnimeRateSyncDaoSQLiteTypeMapping())
                 .addTypeMapping(EpisodeDao.class, new EpisodeDaoSQLiteTypeMapping())
-                .addTypeMapping(MangaRateSyncDao.class, new MangaRateSyncDaoSQLiteTypeMapping())
                 .addTypeMapping(TranslationSettingDao.class, new TranslationSettingDaoSQLiteTypeMapping())
-                .addTypeMapping(ChapterDao.class, new ChapterDaoSQLiteTypeMapping())
                 .addTypeMapping(PinnedRateDao.class, new PinnedRateDaoSQLiteTypeMapping())
                 .build();
     }

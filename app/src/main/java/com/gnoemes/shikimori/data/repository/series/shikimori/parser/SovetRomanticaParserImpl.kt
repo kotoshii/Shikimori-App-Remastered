@@ -12,7 +12,7 @@ import javax.inject.Inject
 class SovetRomanticaParserImpl @Inject constructor() : SovetRomanticaParser {
 
     override fun video(video: TranslationVideo, tracks: List<Track>): Video =
-            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null, null)
+            Video(video.animeId, video.episodeIndex.toLong(), video.webPlayerUrl!!, video.videoHosting, tracks, null)
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun tracks(m3uContent: String?, masterPlaylistUrl: String?): List<Track> {

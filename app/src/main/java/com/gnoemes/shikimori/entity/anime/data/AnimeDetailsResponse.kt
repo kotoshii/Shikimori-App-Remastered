@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.entity.anime.data
 
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
-import com.gnoemes.shikimori.entity.common.data.GenreResponse
 import com.gnoemes.shikimori.entity.common.data.ImageResponse
 import com.gnoemes.shikimori.entity.common.domain.AgeRating
 import com.gnoemes.shikimori.entity.common.domain.Status
@@ -34,7 +33,6 @@ data class AnimeDetailsResponse(
         @field:SerializedName("franchise") val franchise: String?,
         @field:SerializedName("favoured") val favoured: Boolean,
         @field:SerializedName("topic_id") val topicId: Long?,
-        @field:SerializedName("genres") val genres: List<GenreResponse>,
         @field:SerializedName("user_rate") val userRate: UserRateResponse?,
         @field:SerializedName("videos") val videoResponses: List<AnimeVideoResponse>?,
         @field:SerializedName("studios") val studioResponses: List<StudioResponse>?,

@@ -2,7 +2,6 @@ import org.moallemi.gradle.internal.VersionCodeType
 
 apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
@@ -12,7 +11,6 @@ android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
-    kapt { generateStubs = true }
     androidExtensions { experimental = true }
 
     advancedVersioning {
@@ -35,7 +33,7 @@ android {
     def appVersionName = advancedVersioning.versionName
     def appVersionCode = advancedVersioning.versionCode
 
-    println "config code: ${appVersionName}, name: ${appVersionCode}"
+    println "config name: ${appVersionName}, code: ${appVersionCode}"
 
     defaultConfig {
         applicationId "com.gnoemes.shikimori"
@@ -43,7 +41,6 @@ android {
         targetSdkVersion versions.compileSdk
         versionName appVersionName
         versionCode appVersionCode
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
@@ -64,8 +61,6 @@ android {
         it.buildConfigField 'String', 'ShikimoriClientId', ShikimoriClientId
         it.buildConfigField 'String', 'ShikimoriClientSecret', ShikimoriClientSecret
         it.buildConfigField 'String', 'ShikimoriBaseUrl', ShikimoriBaseUrl
-        it.buildConfigField 'String', 'VideoBaseUrl', VideoBaseUrl
-        it.buildConfigField 'String', 'VkRandomToken', VkRandomToken
         it.buildConfigField 'String', 'KodikToken', KodikToken
     }
 
@@ -80,11 +75,9 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:" + versions.kotlin
 
     implementation 'androidx.appcompat:appcompat:' + versions.androidx
-    implementation 'androidx.preference:preference:' + versions.androidx
     implementation 'androidx.constraintlayout:constraintlayout:' + versions.constraint
     implementation 'androidx.fragment:fragment:' + versions.androidxFragment
     implementation 'androidx.preference:preference:' + versions.androidxPrefs
@@ -106,7 +99,6 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:" + versions.retrofit
     implementation "com.squareup.okhttp3:okhttp:" + versions.okHttp
     implementation "com.squareup.okhttp3:logging-interceptor:" + versions.okHttp
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:' + versions.urlConnection
 
     implementation "com.arello-mobile:moxy:" + versions.moxy
     kapt "com.arello-mobile:moxy-compiler:" + versions.moxy
@@ -136,27 +128,16 @@ dependencies {
 
     implementation 'org.kefirsf:kefirbb:' + versions.kefirBB
 
-    implementation 'com.google.firebase:firebase-core:' + versions.firebase
-    implementation 'com.google.firebase:firebase-messaging:' + versions.firebaseMessaging
-    implementation 'com.google.firebase:firebase-firestore:' + versions.firebaseFirestore
     implementation 'com.google.firebase:firebase-storage:' + versions.firebaseStorage
-
-    implementation('com.crashlytics.sdk.android:crashlytics:' + versions.crashlytics) {
-        transitive = true
-    }
 
     implementation 'com.github.ome450901:SimpleRatingBar:' + versions.ratingBar
     implementation 'org.jsoup:jsoup:' + versions.jsoup
 
-    implementation 'androidx.multidex:multidex:' + versions.multidex
-
     implementation project(":storio-common")
     implementation project(":storio-sqlite")
     implementation project(':storio-sqlite-annotations')
-    implementation project(':storio-content-resolver')
     kapt project(':storio-common-annotations-processor')
     kapt project(':storio-sqlite-annotations-processor')
-    kapt project(':storio-content-resolver-annotations-processor')
 
     implementation 'io.lindstrom:m3u8-parser:' + versions.m3u8Parser
 }

@@ -9,10 +9,6 @@ import io.reactivex.Single
 interface UserInteractor {
     fun getMyUserId(): Single<Long>
 
-    fun getMyUserBrief(): Single<UserBrief>
-
-    fun getUserMessages(type: MessageType): Single<List<Message>>
-
     fun getDetails(id: Long): Single<UserDetails>
 
     fun getFriends(id: Long): Single<List<UserBrief>>
@@ -32,8 +28,4 @@ interface UserInteractor {
     fun removeFriend(id: Long): Completable
 
     fun getUserStatus(): UserStatus
-
-    fun setUserStatus(status: UserStatus)
-
-    fun clearUser()
 }

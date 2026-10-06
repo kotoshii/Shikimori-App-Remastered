@@ -7,11 +7,6 @@
         android:title="@string/rate_status"
         app:showAsAction="never" />
 
-<!--    <item-->
-<!--        android:id="@+id/item_add_video"-->
-<!--        android:title="@string/series_add_video"-->
-<!--        app:showAsAction="never" />-->
-
     <item
         android:id="@+id/item_web"
         android:title="@string/common_open_in_browser"

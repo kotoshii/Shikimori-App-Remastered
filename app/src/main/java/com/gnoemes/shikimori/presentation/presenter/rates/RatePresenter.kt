@@ -5,11 +5,9 @@ import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
 import com.gnoemes.shikimori.domain.rates.PinnedRateInteractor
-import com.gnoemes.shikimori.domain.rates.RateChangesInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.AnalyticEvent
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Task
 import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
@@ -51,7 +49,6 @@ class RatePresenter @Inject constructor(
         private val ratesInteractor: RatesInteractor,
         private val seriesInteractor: SeriesInteractor,
         private val sortResourceProvider: SortResourceProvider,
-        private val changesInteractor: RateChangesInteractor,
         private val taskInteractor: CancelableTaskInteractor,
         private val pinInteractor: PinnedRateInteractor,
         private val resourceProvider: CommonResourceProvider,
@@ -306,7 +303,6 @@ class RatePresenter @Inject constructor(
     private fun onEditRate(rate: RateViewModel) {
         val userRate = getUserRate(rate.rawRate)
         viewState.showRateDialog(rate.name, userRate)
-        logEvent(AnalyticEvent.RATE_DIALOG)
     }
 
     private fun getUserRate(rate: Rate?) = UserRate(
@@ -360,7 +356,6 @@ class RatePresenter @Inject constructor(
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
         val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, episodesAired!!, progress)
         router.navigateTo(Screens.SERIES, navigationData)
-        analyticInteractor.logEvent(AnalyticEvent.NAVIGATION_ANIME_TRANSLATIONS_FROM_RATES)
     }
 
     fun onChangeRateStatus(id: Long, newStatus: RateStatus) {
@@ -374,7 +369,6 @@ class RatePresenter @Inject constructor(
             val task = Task {
                 ratesInteractor.changeRateStatus(id, newStatus)
                         .subscribeAndRefresh(id)
-                logEvent(AnalyticEvent.RATE_DROP_MENU)
             }
             taskInteractor.newTask(task)
                     .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getChangeRateStatusMessage(item.type, newStatus), item.id) }
@@ -402,8 +396,7 @@ class RatePresenter @Inject constructor(
                     .subscribeAndRefresh(rate.id!!)
 
     private fun Completable.subscribeAndRefresh(id: Long) {
-        this.andThen(changesInteractor.sendRateChanges(id))
-                .doOnComplete { loadUserOrCategories() }
+        this.doOnComplete { loadUserOrCategories() }
                 .subscribe(this@RatePresenter::onRefresh, this@RatePresenter::processErrors)
                 .addToDisposables()
     }
@@ -425,8 +418,6 @@ class RatePresenter @Inject constructor(
             is RateSort.DateUpdated -> sortAndShow { it.dateUpdatedSort() }
             is RateSort.Episodes -> sortAndShow { it.episodesSort() }
             is RateSort.Progress -> sortAndShow { it.episodesWatchedSort() }
-            is RateSort.Type -> sortAndShow { it.typeSort() }
-            is RateSort.Status -> sortAndShow { it.statusSort() }
             is RateSort.Score -> sortAndShow { it.scoreSort() }
             is RateSort.Name -> sortAndShow { it.nameSort() }
         }
@@ -531,18 +522,6 @@ class RatePresenter @Inject constructor(
     private fun MutableList<Any>.scoreSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem { it.score }
 
-    private fun MutableList<Any>.typeSort(): MutableList<Any> =
-            this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) it.anime?.type?.ordinal!!
-                else it.manga?.type?.ordinal!!
-            }
-
-    private fun MutableList<Any>.statusSort(): MutableList<Any> =
-            this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) it.anime?.status?.ordinal
-                else it.manga?.status?.ordinal!!
-            }
-
     private fun MutableList<Any>.nameSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem {
                 if (it.type == Type.ANIME) if (isRussianNaming) it.anime?.nameRu else it.anime?.name
@@ -557,7 +536,6 @@ class RatePresenter @Inject constructor(
 
     private fun openAuth(type: AuthType) {
         router.navigateTo(Screens.AUTHORIZATION, type)
-        logEvent(AnalyticEvent.NAVIGATION_AUTHORIZATION)
     }
 }
 

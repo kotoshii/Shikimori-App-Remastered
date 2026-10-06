@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
     Genre section for the filter sheet.
 
-    ⚠️ A FlexboxLayout, not a RecyclerView with a FlexboxLayoutManager like
+    ⚠️ A FlexboxLayout, not a RecyclerView with a FlexboxLayoutManager like the removed
     item_filter_genre_section. A nested RecyclerView measuring wrap_content inside the sheet's own
     scrolling list only lays out part of its children once there are enough of them: the themes
     section (53 chips) lost its tail entirely - everything after "Супер сила", CGDCT included - and

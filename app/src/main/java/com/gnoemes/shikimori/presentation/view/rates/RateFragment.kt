@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.rates
 
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -129,9 +128,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
             findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
                 layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                        marginStart = 0
-                    }; leftMargin = 0
+                    marginStart = 0
+                    leftMargin = 0
                 }
             }
             findViewById<ImageView>(R.id.search_close_btn)?.apply {
@@ -246,19 +244,15 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         val view = TextView(context!!)
         view.text = "$count"
         view.gravity = Gravity.CENTER_VERTICAL
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            view.setTextColor(context!!.colorStateList(getRateTextColor(ordinal)))
-        }
+        view.setTextColor(context!!.colorStateList(getRateTextColor(ordinal)))
         view.isSelected = isSelected
         return view
     }
 
     private fun updateNavColors(rateIndex: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            navView.apply {
-                setItemBackgroundResource(getRateBackground(rateIndex))
-                itemTextColor = context.colorStateList(getRateTextColor(rateIndex))
-            }
+        navView.apply {
+            setItemBackgroundResource(getRateBackground(rateIndex))
+            itemTextColor = context.colorStateList(getRateTextColor(rateIndex))
         }
     }
 

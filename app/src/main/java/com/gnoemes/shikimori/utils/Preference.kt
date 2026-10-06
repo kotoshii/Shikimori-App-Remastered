@@ -12,10 +12,6 @@ fun Context.getDefaultSharedPreferences(): SharedPreferences {
     return PreferenceManager.getDefaultSharedPreferences(this)
 }
 
-fun SharedPreferences.clear() {
-    apply(getEditor().clear())
-}
-
 fun SharedPreferences.putBoolean(key: String, value: Boolean) {
     apply(getEditor().putBoolean(key, value))
 }

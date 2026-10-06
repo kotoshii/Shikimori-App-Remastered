@@ -86,9 +86,6 @@
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
 
-        <item name="bottomSheetBackground">@drawable/bg_bottom_sheet_window_default</item>
-        <item name="editRateBackground">@drawable/bg_rate_dialog_window_default</item>
-
         <item name="colorStatusBar">@color/default_colorStatusBar</item>
         <item name="colorNavigationBar">@color/default_colorStatusBar</item>
         <item name="lightStatusBar">true</item>
@@ -134,9 +131,6 @@
         <item name="colorRateWatched">@color/rate_watched_transparent</item>
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
-
-        <item name="bottomSheetBackground">@drawable/bg_bottom_sheet_window_dark</item>
-        <item name="editRateBackground">@drawable/bg_rate_dialog_window_dark</item>
 
         <item name="colorStatusBar">@color/dark_colorStatusBar</item>
         <item name="colorNavigationBar">@color/dark_colorStatusBar</item>
@@ -185,9 +179,6 @@
         <item name="colorRateWatched">@color/rate_watched_transparent</item>
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
-
-        <item name="bottomSheetBackground">@drawable/bg_bottom_sheet_window_amoled</item>
-        <item name="editRateBackground">@drawable/bg_rate_dialog_window_amoled</item>
 
         <item name="colorStatusBar">@color/amoled_colorStatusBar</item>
         <item name="colorNavigationBar">@color/amoled_colorPrimary</item>

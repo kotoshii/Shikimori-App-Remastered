@@ -11,8 +11,6 @@ object Constants {
 
     const val DEFAULT_LIMIT = 12
 
-    const val BIG_LIMIT = 30
-
     const val LONG_TIMEOUT = 30
 
     const val NO_ID = -1L
@@ -41,13 +39,7 @@ object Constants {
 
     const val FOUR_PDA_THEME_URL = "https://4pda.to/forum/index.php?showtopic=903970"
 
-    const val APP_CLUB_URL = "https://shikimori.io/clubs/1609"
-
     const val SHIKICINEMA_URL = "https://smarthard.net/"
-
-//    const val ROAD_MAP_URL = "https://trello.com/b/TeSnqIHY/shikimori-app-public"
-
-    const val DEFAULT_DONATION_LINK = "https://money.yandex.ru/to/410016011857536"
 
     const val MAX_PINNED_RATES = 3
 
