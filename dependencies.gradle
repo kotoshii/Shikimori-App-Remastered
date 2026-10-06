@@ -24,7 +24,6 @@ ext.versions = [
         gson              : '2.8.5',
 
         cicerone          : '3.0.0',
-        storIO            : '3.0.0',
         jodaDateTime      : '2.9.9.3',
         moxy              : '1.5.5',
         materialDialogs   : '2.8.1',
@@ -48,9 +47,6 @@ ext.versions = [
         jsoup             : '1.10.2',
 
         firebaseStorage   : '19.1.0',
-
-        slidr             : '2.1.0',
-        subscaleImage     : '3.10.0',
 
         m3u8Parser        : '0.27'
 ]

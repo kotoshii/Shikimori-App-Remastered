@@ -11,7 +11,6 @@ android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
-    kapt { generateStubs = true }
     androidExtensions { experimental = true }
 
     advancedVersioning {
@@ -34,7 +33,7 @@ android {
     def appVersionName = advancedVersioning.versionName
     def appVersionCode = advancedVersioning.versionCode
 
-    println "config code: ${appVersionName}, name: ${appVersionCode}"
+    println "config name: ${appVersionName}, code: ${appVersionCode}"
 
     defaultConfig {
         applicationId "com.gnoemes.shikimori"
@@ -42,7 +41,6 @@ android {
         targetSdkVersion versions.compileSdk
         versionName appVersionName
         versionCode appVersionCode
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
     }
@@ -77,11 +75,9 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:" + versions.kotlin
 
     implementation 'androidx.appcompat:appcompat:' + versions.androidx
-    implementation 'androidx.preference:preference:' + versions.androidx
     implementation 'androidx.constraintlayout:constraintlayout:' + versions.constraint
     implementation 'androidx.fragment:fragment:' + versions.androidxFragment
     implementation 'androidx.preference:preference:' + versions.androidxPrefs
