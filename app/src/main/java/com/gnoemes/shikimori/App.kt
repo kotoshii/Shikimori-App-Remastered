@@ -2,8 +2,6 @@ package com.gnoemes.shikimori
 
 import android.app.Activity
 import android.app.Application
-import android.app.Service
-import android.content.BroadcastReceiver
 import android.util.Log
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
@@ -13,16 +11,10 @@ import net.danlew.android.joda.JodaTimeAndroid
 import java.io.IOException
 import javax.inject.Inject
 
-class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcastReceiverInjector {
+class App : Application(), HasActivityInjector {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
-
-    @Inject
-    lateinit var serviceDispatchingAndroidInjector: DispatchingAndroidInjector<Service>
-
-    @Inject
-    lateinit var broadcastReceiverDispatchingAndroidInjector: DispatchingAndroidInjector<BroadcastReceiver>
 
     override fun onCreate() {
         super.onCreate()
@@ -64,6 +56,4 @@ class App : Application(), HasActivityInjector, HasServiceInjector, HasBroadcast
     }
 
     override fun activityInjector(): AndroidInjector<Activity> = dispatchingAndroidInjector
-    override fun serviceInjector(): AndroidInjector<Service> = serviceDispatchingAndroidInjector
-    override fun broadcastReceiverInjector(): AndroidInjector<BroadcastReceiver> = broadcastReceiverDispatchingAndroidInjector
 }
