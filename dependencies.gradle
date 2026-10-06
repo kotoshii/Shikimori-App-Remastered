@@ -46,7 +46,5 @@ ext.versions = [
         ratingBar         : '1.4.2',
         jsoup             : '1.10.2',
 
-        firebaseStorage   : '19.1.0',
-
         m3u8Parser        : '0.27'
 ]

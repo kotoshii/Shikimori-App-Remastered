@@ -428,19 +428,14 @@
     <string name="backup_saved">Сохранено</string>
     <string name="backup_write_error">Не удалось создать файл</string>
     <string name="backup_read_error">Не удалось открыть файл</string>
-    <string name="backup_on_cloud">На облако</string>
     <string name="backup_on_device">На устройство</string>
     <string name="backup_share">Поделиться</string>
-    <string name="backup_from_cloud">С облака</string>
     <string name="backup_from_device">С устройства</string>
     <string name="backup_download">Восстановление</string>
     <string name="backup_empty_file">Настройки приложения не найдены</string>
     <string name="backup_read_success">Настройки успешно восстановлены</string>
     <string name="backup_found_title">Восстановление</string>
     <string name="backup_found_message">Найден файл настроек приложения</string>
-    <string name="backup_cloud_upload_error">Не удалось отправить файл на облако</string>
-    <string name="backup_cloud_upload_success">Настройки успешно отправлены</string>
-    <string name="backup_cloud_download_error">Не удалось загрузить настройки</string>
 
     <string name="month_jan_short">янв</string>
     <string name="month_feb_short">фев</string>
