@@ -18,14 +18,6 @@ public interface DateTimeUtils {
 
     boolean isYesterday(DateTime time);
 
-    boolean isSameWeek(DateTime time);
-
-    boolean isSameWeek(DateTime firstDate, DateTime secondDate);
-
-    boolean isSameMonth(DateTime time);
-
-    boolean isSameMonth(DateTime firstDate, DateTime secondDate);
-
     boolean isSameYear(DateTime time);
 
     boolean isSameYear(DateTime firstDate, DateTime secondDate);

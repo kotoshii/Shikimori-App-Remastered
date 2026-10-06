@@ -1,8 +1,6 @@
 package com.gnoemes.shikimori.utils
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -24,10 +22,6 @@ import com.google.android.material.snackbar.Snackbar
 
 fun View.visible() {
     visibility = View.VISIBLE
-}
-
-fun View.invisible() {
-    visibility = View.INVISIBLE
 }
 
 fun View.gone() {
@@ -54,18 +48,6 @@ inline fun Toolbar.onMenuClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL
     setOnMenuItemClickListener(object : DebouncedOnMenuClickListener(mills) {
         override fun onDebouncedClick(v: MenuItem?): Boolean = l.invoke(v)
     })
-}
-
-fun TextView.tintCompoundDrawables(color: Int, pos: Int = 4) {
-    val drawables = compoundDrawables
-
-    if (pos < drawables.size) {
-        drawables[pos]?.tint(color)
-    } else {
-        drawables.forEach {
-            it?.tint(color)
-        }
-    }
 }
 
 fun SwipeRefreshLayout.showRefresh() {
@@ -109,10 +91,6 @@ fun Snackbar.floatingStyle(context: Context, @DimenRes margins: Int = R.dimen.sn
     this.view.background = context.drawable(background)
     return this
 }
-
-fun View.drawable(@DrawableRes drawableResId: Int): Drawable? = context.drawable(drawableResId)
-
-fun View.colorStateList(@ColorRes colorRes: Int): ColorStateList = context.colorStateList(colorRes)
 
 fun View.dp(dp: Int): Int = context.dp(dp)
 

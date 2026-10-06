@@ -5,7 +5,6 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.*
-import com.gnoemes.shikimori.utils.exist
 import javax.inject.Inject
 
 class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConverter {
