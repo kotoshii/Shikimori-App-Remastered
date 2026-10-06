@@ -30,8 +30,6 @@ fun View.gone() {
 
 fun View.isVisible(): Boolean = visibility == View.VISIBLE
 
-fun View.isGone(): Boolean = visibility == View.GONE
-
 inline fun View.visibleIf(block: () -> Boolean) {
     if (block()) visible() else gone()
 }

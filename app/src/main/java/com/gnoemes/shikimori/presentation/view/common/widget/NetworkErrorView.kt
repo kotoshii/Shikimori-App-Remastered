@@ -6,7 +6,6 @@ import android.view.View
 import androidx.annotation.StringRes
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.base.widget.BaseView
-import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.visible
 import kotlinx.android.synthetic.main.view_network_error.view.*
 
@@ -44,17 +43,5 @@ class NetworkErrorView @JvmOverloads constructor(context: Context,
 
     fun showButton() {
         btnView.visible()
-    }
-
-    fun hideButton() {
-        btnView.gone()
-    }
-
-    fun setButtonText(@StringRes textRes: Int) {
-        btnView.setText(textRes)
-    }
-
-    fun setButtonText(text: String) {
-        btnView.text = text
     }
 }

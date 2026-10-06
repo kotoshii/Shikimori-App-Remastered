@@ -13,8 +13,6 @@ sealed class RateSort(val order: Int) : Serializable {
     object DateUpdated : RateSort(6)
 
     object Id : RateSort(-1)
-    object Type : RateSort(-1)
-    object Status : RateSort(-1)
 
     companion object {
         fun values(): List<RateSort> = listOf(Name, Progress, DateAired, DateCreated, DateUpdated, Score, Episodes)

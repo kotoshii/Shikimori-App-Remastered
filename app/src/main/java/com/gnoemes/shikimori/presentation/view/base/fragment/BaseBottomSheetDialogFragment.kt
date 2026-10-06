@@ -75,10 +75,6 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
         BottomSheetBehavior.from(bottomSheet).state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    protected open fun collapseDialog() {
-        BottomSheetBehavior.from(bottomSheet).state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
     override fun onDestroyView() {
         viewHandler.removeCallbacksAndMessages(null)
         super.onDestroyView()

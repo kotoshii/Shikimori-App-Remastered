@@ -418,8 +418,6 @@ class RatePresenter @Inject constructor(
             is RateSort.DateUpdated -> sortAndShow { it.dateUpdatedSort() }
             is RateSort.Episodes -> sortAndShow { it.episodesSort() }
             is RateSort.Progress -> sortAndShow { it.episodesWatchedSort() }
-            is RateSort.Type -> sortAndShow { it.typeSort() }
-            is RateSort.Status -> sortAndShow { it.statusSort() }
             is RateSort.Score -> sortAndShow { it.scoreSort() }
             is RateSort.Name -> sortAndShow { it.nameSort() }
         }
@@ -523,18 +521,6 @@ class RatePresenter @Inject constructor(
 
     private fun MutableList<Any>.scoreSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem { it.score }
-
-    private fun MutableList<Any>.typeSort(): MutableList<Any> =
-            this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) it.anime?.type?.ordinal!!
-                else it.manga?.type?.ordinal!!
-            }
-
-    private fun MutableList<Any>.statusSort(): MutableList<Any> =
-            this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) it.anime?.status?.ordinal
-                else it.manga?.status?.ordinal!!
-            }
 
     private fun MutableList<Any>.nameSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem {
