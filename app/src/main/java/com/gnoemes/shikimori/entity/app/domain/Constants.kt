@@ -11,8 +11,6 @@ object Constants {
 
     const val DEFAULT_LIMIT = 12
 
-    const val BIG_LIMIT = 30
-
     const val LONG_TIMEOUT = 30
 
     const val NO_ID = -1L
