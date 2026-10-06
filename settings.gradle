@@ -7,9 +7,6 @@ include ':app'
 [
         'storio-common',
         'storio-common-annotations-processor',
-        'storio-content-resolver',
-        'storio-content-resolver-annotations',
-        'storio-content-resolver-annotations-processor',
         'storio-sqlite',
         'storio-sqlite-annotations',
         'storio-sqlite-annotations-processor'

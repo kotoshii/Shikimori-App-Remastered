@@ -141,10 +141,8 @@ dependencies {
     implementation project(":storio-common")
     implementation project(":storio-sqlite")
     implementation project(':storio-sqlite-annotations')
-    implementation project(':storio-content-resolver')
     kapt project(':storio-common-annotations-processor')
     kapt project(':storio-sqlite-annotations-processor')
-    kapt project(':storio-content-resolver-annotations-processor')
 
     implementation 'io.lindstrom:m3u8-parser:' + versions.m3u8Parser
 }
