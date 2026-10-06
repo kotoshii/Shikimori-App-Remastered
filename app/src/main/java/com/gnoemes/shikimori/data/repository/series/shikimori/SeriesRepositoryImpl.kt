@@ -52,11 +52,6 @@ class SeriesRepositoryImpl @Inject constructor(
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
             (if (alternative) source.getEpisodesShikicinema(id) else source.getEpisodes(id, name))
                     .map { episodes -> episodes.filter { it.index > 0 }.sortedBy { it.index } }
-                    .map { episodes ->
-                        if (settingsSource.hideAnime365 && tokenSource.getToken() == null)
-                            episodes.filterNot { episode -> episode.hostings.any { it is VideoHosting.SMOTRET_ANIME } }
-                        else episodes
-                    }
                     .flatMap {
                         Observable.fromIterable(it)
                                 .flatMapSingle { episode ->

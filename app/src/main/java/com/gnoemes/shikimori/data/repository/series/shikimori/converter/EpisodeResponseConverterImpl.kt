@@ -11,9 +11,6 @@ class EpisodeResponseConverterImpl @Inject constructor(): EpisodeResponseConvert
                 it.id,
                 it.index,
                 it.animeId,
-                it.translations,
-                it.hostings,
-                it.rawHosting,
                 isWatched
         )
     }
