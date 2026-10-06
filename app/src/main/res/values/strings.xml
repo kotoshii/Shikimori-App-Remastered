@@ -309,12 +309,10 @@
     <string name="filters_latest">Недавно вышедшие</string>
     <string name="filters_hint">Долгое нажатие на элемент исключает его.</string>
     <string name="filters_genres">Жанры</string>
-    <string name="filter_genres_main">Главные</string>
     <!-- genres v2 splits one flat list into three kinds; these title the filter sheet sections -->
     <string name="filter_genres_demographic">Аудитория</string>
     <string name="filter_genres_genres">Жанры</string>
     <string name="filter_genres_themes">Темы</string>
-    <string name="filter_genres_other">Список</string>
     <string name="filter_custom">Кастомный фильтр</string>
     <string name="filter_custom_seasons">Кастомный фильтр сезонов</string>
     <string name="filter_custom_input_hint">Нажмите сюда, чтобы начать ввод</string>

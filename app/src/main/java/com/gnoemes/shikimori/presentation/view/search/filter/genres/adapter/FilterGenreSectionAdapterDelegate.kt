@@ -18,11 +18,11 @@ import kotlinx.android.synthetic.main.item_filter_genre_flex_section.view.*
  * A titled block of genre chips - demographic, genres or themes.
  *
  * ⚠️ The chips are inflated straight into a `FlexboxLayout` rather than bound by a nested
- * RecyclerView, which is what `item_filter_genre_section` and its delegate do. That arrangement
- * measures `wrap_content` against only some of its children inside the sheet's own scrolling list,
- * and the themes section is large enough to hit it: everything after "Супер сила" was never laid
- * out, CGDCT with it, and the section drew a phantom gap where a chip belonged. Nothing here needs
- * recycling - a section is a fixed list of at most ~55 chips, built once.
+ * RecyclerView, which is what the removed `item_filter_genre_section` and its delegate did. That
+ * arrangement measures `wrap_content` against only some of its children inside the sheet's own
+ * scrolling list, and the themes section is large enough to hit it: everything after "Супер сила"
+ * was never laid out, CGDCT with it, and the section drew a phantom gap where a chip belonged.
+ * Nothing here needs recycling - a section is a fixed list of at most ~55 chips, built once.
  */
 class FilterGenreSectionAdapterDelegate(
         private val invertCallback: (FilterType, FilterViewModel) -> Unit,
