@@ -38,7 +38,6 @@ class SeriesRepositoryImpl @Inject constructor(
         private val sibnetParser: SibnetParser,
         private val okParser: OkParser,
         private val mailRuParser: MailRuParser,
-        private val myviParser: MyviParser,
         private val allVideoParser: AllVideoParser,
         private val animeJoyParser: AnimeJoyParser,
         private val dzenParser: DzenParser,
@@ -82,7 +81,6 @@ class SeriesRepositoryImpl @Inject constructor(
                 is VideoHosting.SIBNET -> getSibnetFiles(payload)
                 is VideoHosting.OK -> getOkFiles(payload)
                 is VideoHosting.MAILRU -> getMailRuFiles(payload)
-                is VideoHosting.MYVI -> getMyviFiles(payload)
                 is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
                 is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
                 is VideoHosting.DZEN -> getDzenVideoFiles(payload)
@@ -153,12 +151,6 @@ class SeriesRepositoryImpl @Inject constructor(
                 .map { mailRuParser.saveCookies(it) }
                 .map { mailRuParser.tracks(it.body()) }
                 .map { mailRuParser.video(video, it) }
-
-    private fun getMyviFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(myviParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { myviParser.tracks(it.string()) }
-                    .map { myviParser.video(video, it) }
 
     private fun getAllVideoFiles(video: TranslationVideo): Single<Video> =
             if (video.webPlayerUrl == null) Single.just(allVideoParser.video(video, emptyList()))
