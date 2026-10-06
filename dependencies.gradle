@@ -22,7 +22,6 @@ ext.versions = [
         retrofit          : '2.4.0',
         okHttp            : '3.10.0',
         gson              : '2.8.5',
-        urlConnection     : '3.9.0',
 
         cicerone          : '3.0.0',
         storIO            : '3.0.0',

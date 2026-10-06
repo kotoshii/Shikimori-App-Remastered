@@ -103,7 +103,6 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:" + versions.retrofit
     implementation "com.squareup.okhttp3:okhttp:" + versions.okHttp
     implementation "com.squareup.okhttp3:logging-interceptor:" + versions.okHttp
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:' + versions.urlConnection
 
     implementation "com.arello-mobile:moxy:" + versions.moxy
     kapt "com.arello-mobile:moxy-compiler:" + versions.moxy
