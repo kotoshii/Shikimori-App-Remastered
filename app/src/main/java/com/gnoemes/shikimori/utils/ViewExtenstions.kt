@@ -56,8 +56,6 @@ fun SwipeRefreshLayout.hideRefresh() {
     isRefreshing = false
 }
 
-fun ImageView.tintWithRes(@ColorRes colorRes: Int) = tint(context.color(colorRes))
-
 fun ImageView.tint(@ColorInt colorInt: Int) = setColorFilter(colorInt)
 
 fun ImageView.hasImage() = drawable != null
