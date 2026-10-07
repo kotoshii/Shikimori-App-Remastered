@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
  * Joins a video only file and its separate audio file into one mp4.
  *
  * Some hostings stopped serving a muxed file per quality and hand out the picture and the sound as
- * two downloads instead, see `CdaParserImpl`. Nothing is re-encoded here, the samples are copied
+ * two downloads instead, see `CdaParser`. Nothing is re-encoded here, the samples are copied
  * across as they are, so this is only as slow as reading and writing the two files.
  */
 object VideoMuxer {

@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.presentation.presenter.series.translations.converte
 import dagger.Binds
 import dagger.Module
 import dagger.Reusable
+import dagger.multibindings.IntoSet
 
 @Module
 interface SeriesUtilModule {
@@ -29,52 +30,50 @@ interface SeriesUtilModule {
     @Reusable
     fun bindTranslationViewModelConverter(converter: TranslationsViewModelConverterImpl): TranslationsViewModelConverter
 
+    //one line per hosting the app can play, see HostingParser. SovetRomanticaParser is left out on
+    //purpose, see its own comment.
     @Binds
-    @Reusable
-    fun bindVkParser(parser: VkParserImpl): VkParser
+    @IntoSet
+    fun bindVkParser(parser: VkParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindSovetRomanticaParser(parser: SovetRomanticaParserImpl): SovetRomanticaParser
+    @IntoSet
+    fun bindSibnetParser(parser: SibnetParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindSibnetParser(parser: SibnetParserImpl): SibnetParser
+    @IntoSet
+    fun bindOkParser(parser: OkParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindOkParser(parser: OkParserImpl): OkParser
+    @IntoSet
+    fun bindMailRuParser(parser: MailRuParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindMailRuParser(parser: MailRuParserImpl): MailRuParser
+    @IntoSet
+    fun bindAllVideoParser(parser: AllVideoParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindAllVideoParser(parser: AllVideoParserImpl): AllVideoParser
+    @IntoSet
+    fun bindAnimeJoyParser(parser: AnimeJoyParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindAnimeJoyParser(parser: AnimeJoyParserImpl): AnimeJoyParser
+    @IntoSet
+    fun bindDzenParser(parser: DzenParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindDzenParser(parser: DzenParserImpl): DzenParser
+    @IntoSet
+    fun bindCdaParser(parser: CdaParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindCdaParser(parser: CdaParserImpl): CdaParser
+    @IntoSet
+    fun bindKodikParser(parser: KodikParser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindKodikParser(parser: KodikParserImpl): KodikParser
+    @IntoSet
+    fun bindAnime365Parser(parser: Anime365Parser): HostingParser
 
     @Binds
-    @Reusable
-    fun bindAnime365Parser(parser: Anime365ParserImpl): Anime365Parser
-
-    @Binds
-    @Reusable
-    fun bindMatreshkaParser(parser: MatreshkaParserImpl): MatreshkaParser
+    @IntoSet
+    fun bindMatreshkaParser(parser: MatreshkaParser): HostingParser
 
 }

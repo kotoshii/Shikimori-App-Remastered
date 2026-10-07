@@ -2,16 +2,17 @@ package com.gnoemes.shikimori.presentation.presenter.series.translations.convert
 
 import android.content.Context
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
-import com.gnoemes.shikimori.utils.Utils
 import java.net.URLEncoder
 import javax.inject.Inject
 
 class TranslationsViewModelConverterImpl @Inject constructor(
-        private val context: Context
+        private val context: Context,
+        private val parsers: HostingParsers
 ) : TranslationsViewModelConverter {
 
     private val unknownAuthor by lazy { context.getString(R.string.translation_unknown_author) }
@@ -41,7 +42,7 @@ class TranslationsViewModelConverterImpl @Inject constructor(
 
         val hasBd = it.value.find { it.quality == TranslationQuality.BD || it.quality == TranslationQuality.DVD } != null
         val isSameAuthor = author == setting?.lastAuthor
-        val canBeDownloaded = it.value.find { Utils.isHostingSupports(it.hosting) } != null
+        val canBeDownloaded = it.value.find { parsers.isSupported(it.hosting) } != null
 
 
         if (isSameAuthor) {

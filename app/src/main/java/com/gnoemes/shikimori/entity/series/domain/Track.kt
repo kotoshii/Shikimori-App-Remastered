@@ -7,6 +7,6 @@ import kotlinx.android.parcel.Parcelize
 data class Track(
         val quality : String,
         val url : String,
-        //set when the hosting serves sound as its own file, see CdaParserImpl
+        //set when the hosting serves sound as its own file, see CdaParser
         val audioUrl : String? = null
 ) : Parcelable

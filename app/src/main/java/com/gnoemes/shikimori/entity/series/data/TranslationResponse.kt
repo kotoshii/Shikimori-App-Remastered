@@ -4,7 +4,6 @@ import com.gnoemes.shikimori.entity.series.data.shikicinema.ShikicinemaTranslati
 import com.gnoemes.shikimori.entity.series.domain.TranslationQuality
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
-import com.gnoemes.shikimori.utils.Utils
 import com.google.gson.annotations.SerializedName
 
 data class TranslationResponse(
@@ -34,7 +33,7 @@ data class TranslationResponse(
     )
 
     val hosting: VideoHosting
-        get() = Utils.hostingFromString(_hosting)
+        get() = VideoHosting.fromName(_hosting)
 
     val type: TranslationType
         get() = _type ?: TranslationType.VOICE_RU

@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.series
 
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
@@ -16,7 +17,6 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.common.provider.ShareResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.translations.converter.TranslationsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
-import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Completable
@@ -32,7 +32,8 @@ class SeriesPresenter @Inject constructor(
         private val converter: TranslationsViewModelConverter,
         private val commonResourceProvider: CommonResourceProvider,
         private val shareResourceProvider: ShareResourceProvider,
-        private val tokenSource: Anime365TokenSource
+        private val tokenSource: Anime365TokenSource,
+        private val parsers: HostingParsers
 ) : BaseNetworkPresenter<SeriesView>() {
 
     lateinit var navigationData: SeriesNavigationData
@@ -259,7 +260,7 @@ class SeriesPresenter @Inject constructor(
      * `hideAnime365`, which is the user's choice rather than ours.
      */
     private fun showDownloadDialog(videos: List<TranslationVideo>) {
-        val filteredItems = videos.filter { Utils.isHostingSupports(it.videoHosting) }
+        val filteredItems = videos.filter { parsers.isSupported(it.videoHosting) }
 
         if (filteredItems.isEmpty()) return
 
@@ -356,7 +357,7 @@ class SeriesPresenter @Inject constructor(
 
     fun onHostingClicked(video: TranslationVideo) {
         this.selectedVideo = video
-        if (!Utils.isHostingSupports(video.videoHosting)) openVideo(video, PlayerType.WEB)
+        if (!parsers.isSupported(video.videoHosting)) openVideo(video, PlayerType.WEB)
         else if (!settingsSource.isAskForPlayer) openVideo(video, settingsSource.playerType)
         else viewState.showPlayerDialog()
     }
@@ -446,7 +447,7 @@ class SeriesPresenter @Inject constructor(
     private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
         val data = DownloadVideoData(
                 navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
-                Utils.getRequestHeadersForHosting(video),
+                parsers.headers(video),
                 author = video?.author.orEmpty(),
                 //the chosen track carries the quality; "unknown" is what parsers use when they
                 //cannot tell, and the ui hides it the same way
@@ -455,8 +456,7 @@ class SeriesPresenter @Inject constructor(
                         ?.let { "${it}p" }
                         .orEmpty(),
                 kind = video?.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
-                //synonymType, not type: it is uniformly domain-shaped across hostings, while type
-                //mixes short labels ("vk", "dzen") with full domains ("kodikplayer.com", "ebd.cda.pl")
+                //domain-shaped for every hosting ("vk.com", "cda.pl")
                 hosting = video?.hosting?.synonymType.orEmpty()
         )
         downloadInteractor.downloadVideo(data)

@@ -5,26 +5,20 @@ import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.network.AnimeSource
 import com.gnoemes.shikimori.data.network.TopicApi
-import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.data.repository.series.shikimori.converter.*
-import com.gnoemes.shikimori.data.repository.series.shikimori.parser.*
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
-import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.utils.HostingFilter
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
-import okhttp3.ResponseBody
-import retrofit2.HttpException
-import retrofit2.Response
 import javax.inject.Inject
 
 private const val UNKNOWN_HOSTING = "unknown"
 
 class SeriesRepositoryImpl @Inject constructor(
-        private val api: VideoApi,
         private val topicApi: TopicApi,
         private val source: AnimeSource,
         private val tokenSource: Anime365TokenSource,
@@ -33,18 +27,7 @@ class SeriesRepositoryImpl @Inject constructor(
         private val translationConverter: TranslationResponseConverter,
         private val episodeSource: EpisodeDbSource,
         private val syncSource: AnimeRateSyncDbSource,
-        private val vkParser: VkParser,
-        private val sovetRomanticaParser: SovetRomanticaParser,
-        private val sibnetParser: SibnetParser,
-        private val okParser: OkParser,
-        private val mailRuParser: MailRuParser,
-        private val allVideoParser: AllVideoParser,
-        private val animeJoyParser: AnimeJoyParser,
-        private val dzenParser: DzenParser,
-        private val cdaParser: CdaParser,
-        private val kodikParser: KodikParser,
-        private val anime365Parser: Anime365Parser,
-        private val matreshkaParser: MatreshkaParser
+        private val parsers: HostingParsers
 ) : SeriesRepository {
 
     override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
@@ -75,209 +58,10 @@ class SeriesRepositoryImpl @Inject constructor(
                     .map(::filterHiddenHostings)
 
     override fun getVideo(payload: TranslationVideo): Single<Video> =
-            when (payload.videoHosting) {
-                is VideoHosting.VK -> getVkFiles(payload)
-                is VideoHosting.SOVET_ROMANTICA -> getSovetRomanticaFiles(payload)
-                is VideoHosting.SIBNET -> getSibnetFiles(payload)
-                is VideoHosting.OK -> getOkFiles(payload)
-                is VideoHosting.MAILRU -> getMailRuFiles(payload)
-                is VideoHosting.ALLVIDEO -> getAllVideoFiles(payload)
-                is VideoHosting.ANIMEJOY -> getAnimeJoyFiles(payload)
-                is VideoHosting.DZEN -> getDzenVideoFiles(payload)
-                is VideoHosting.CDA -> getCdaFiles(payload)
-                is VideoHosting.KODIK -> getKodikFiles(payload)
-                is VideoHosting.SMOTRET_ANIME -> getAnime365Files(payload)
-                is VideoHosting.MATRESHKA -> getMatreshkaFiles(payload)
-                //a hosting with no parser cannot be resolved to tracks. SeriesPresenter sends those
-                //to the web player before ever calling this, so it is only a safety net - and it is
-                //what the old backend did for them anyway, handing the player url straight back.
-                else -> Single.just(Video(payload.animeId, payload.episodeIndex.toLong(),
-                        payload.webPlayerUrl.orEmpty(), payload.videoHosting, emptyList(), null))
-            }
+            parsers.getVideo(payload)
                     //the parsers only know about tracks, so the translation's own details are
                     //attached here rather than in each of them
                     .map { it.copy(author = payload.author, translationType = payload.type) }
-
-    private fun getVkFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(vkParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { vkParser.tracks(it.string()) }
-                    .map { vkParser.video(video, it) }
-
-    private fun getSovetRomanticaFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(sovetRomanticaParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { sovetRomanticaParser.getMasterPlaylistUrl(it.string()) }
-                    .flatMap {
-                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
-                    }
-                    .map { sovetRomanticaParser.tracks(it.first.string(), it.second) }
-                    .map { sovetRomanticaParser.video(video, it) }
-
-    private fun getSibnetFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(sibnetParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { sibnetParser.tracks(it.string()) }
-                    .map { sibnetParser.video(video, it) }
-
-    private fun getOkFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(okParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { it.string() }
-                    .flatMap(::getOkTracks)
-                    .map { okParser.video(video, it) }
-
-    /**
-     * ok.ru publishes a single progressive rendition and keeps the whole quality ladder in its
-     * master playlist, so the playlist is what the quality menu is built from. The progressive file
-     * is the fallback - for a page that offers no playlist, for android below N where the m3u8
-     * parser cannot run, and for a playlist that will not load or yields nothing.
-     */
-    private fun getOkTracks(html: String): Single<List<Track>> {
-        val playlistUrl = okParser.getMasterPlaylistUrl(html)
-                ?: return Single.just(okParser.tracks(html))
-
-        return api.getTextResponse(playlistUrl)
-                .map { okParser.tracks(it.string(), playlistUrl) }
-                .map { tracks -> if (tracks.isEmpty()) okParser.tracks(html) else tracks }
-                .onErrorReturn { okParser.tracks(html) }
-    }
-
-    private fun getMailRuFiles(video: TranslationVideo): Single<Video> =
-        if (video.webPlayerUrl == null) Single.just(mailRuParser.video(video, emptyList()))
-        else api.getPlayerHtml(video.webPlayerUrl)
-                .map { mailRuParser.parseVideoMetaUrl(it.string()) }
-                .flatMap { api.getMailRuVideoMeta(it) }
-                .map { mailRuParser.saveCookies(it) }
-                .map { mailRuParser.tracks(it.body()) }
-                .map { mailRuParser.video(video, it) }
-
-    private fun getAllVideoFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(allVideoParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { allVideoParser.tracks(it.string()) }
-                    .map { allVideoParser.video(video, it) }
-
-    private fun getAnimeJoyFiles(video: TranslationVideo): Single<Video> =
-            Single.just(animeJoyParser.video(video, animeJoyParser.tracks(video.webPlayerUrl)))
-
-    private fun getDzenVideoFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(dzenParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { dzenParser.tracks(it.string()) }
-                    .map { dzenParser.video(video, it) }
-
-    private fun getMatreshkaFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(matreshkaParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { matreshkaParser.tracks(it.string()) }
-                    .map { matreshkaParser.video(video, it) }
-
-    /**
-     * Anime365 resolves through a single authenticated call, so no backend is involved. Without a
-     * token, or without a paid subscription, the api answers with an error object and this produces
-     * a Video with no tracks - the web player stays available and is where such a user belongs.
-     */
-    private fun getAnime365Files(video: TranslationVideo): Single<Video> {
-        val playerUrl = video.webPlayerUrl
-                ?: return Single.just(anime365Parser.video(video, emptyList(), null))
-
-        val apiUrl = anime365Parser.apiUrl(playerUrl, tokenSource.getToken())
-                ?: return Single.just(anime365Parser.video(video, emptyList(), null))
-
-        return api.getAnime365Video(apiUrl)
-                .map { anime365Parser.video(video, anime365Parser.tracks(it), anime365Parser.subtitles(it, playerUrl)) }
-    }
-
-    private fun getKodikFiles(video: TranslationVideo): Single<Video> {
-        val playerUrl = video.webPlayerUrl
-                ?: return Single.just(kodikParser.video(video, emptyList()))
-
-        return api.getPlayerHtml(playerUrl)
-                .flatMap { getKodikLinks(it.string(), playerUrl) }
-                .map { kodikParser.tracks(it) }
-                .map { kodikParser.video(video, it) }
-    }
-
-    /**
-     * Kodik keeps the path it serves links from base64'd inside its player script, so that it can
-     * be moved. The known one is tried first and the script is only read when the answer says the
-     * path is wrong, because reading it means downloading the player bundle (47 KB gzipped) that
-     * would otherwise be paid for on every playback.
-     */
-    private fun getKodikLinks(html: String, playerUrl: String): Single<KodikLinksResponse> {
-        val params = kodikParser.linkRequestParams(html)
-        val url = kodikParser.linksUrl(playerUrl)
-
-        if (params.isEmpty() || url == null) {
-            return Single.error(IllegalStateException("kodik player page holds no request params"))
-        }
-
-        return api.getKodikLinks(url, params)
-                .flatMap { response ->
-                    when {
-                        hasLinks(response) -> Single.just(response.body()!!)
-                        looksLikeMovedEndpoint(response) -> retryFromPlayerScript(html, playerUrl, url, params, response)
-                        else -> Single.error<KodikLinksResponse>(kodikLinksError(url, response))
-                    }
-                }
-    }
-
-    private fun hasLinks(response: Response<KodikLinksResponse>): Boolean =
-            response.isSuccessful && response.body()?.links?.isNotEmpty() == true
-
-    /**
-     * A path that is simply gone answers **404**. A path that was retired but left routed answers
-     * **200 with an empty body** - which is exactly what the previous endpoint, `/tru`, still does.
-     * Both mean the same thing, so both send us to the player script to find where it went.
-     *
-     * Everything else - a timeout, a dropped connection, a 5xx - is deliberately *not* treated this
-     * way. Re-reading the script would not help, and the real error stays intact.
-     */
-    private fun looksLikeMovedEndpoint(response: Response<KodikLinksResponse>): Boolean =
-            response.code() == 404 || response.isSuccessful
-
-    private fun retryFromPlayerScript(
-            html: String,
-            playerUrl: String,
-            triedUrl: String,
-            params: Map<String, String>,
-            failed: Response<KodikLinksResponse>
-    ): Single<KodikLinksResponse> {
-        val scriptUrl = kodikParser.playerScriptUrl(html, playerUrl)
-                ?: return Single.error(kodikLinksError(triedUrl, failed))
-
-        return api.getTextResponse(scriptUrl)
-                .flatMap { script ->
-                    val movedUrl = kodikParser.rememberLinksUrl(script.string(), playerUrl)
-
-                    //the script naming the path we just tried means the endpoint was never the
-                    //problem - a 404 also comes back when the posted params are not accepted
-                    if (movedUrl == null || movedUrl == triedUrl) {
-                        Single.error<Response<KodikLinksResponse>>(kodikLinksError(triedUrl, failed))
-                    } else {
-                        api.getKodikLinks(movedUrl, params)
-                    }
-                }
-                .flatMap { retried ->
-                    if (hasLinks(retried)) Single.just(retried.body()!!)
-                    else Single.error<KodikLinksResponse>(kodikLinksError(triedUrl, retried))
-                }
-    }
-
-    private fun kodikLinksError(url: String, response: Response<KodikLinksResponse>): Throwable =
-            if (response.isSuccessful) IllegalStateException("kodik returned no links from $url")
-            else HttpException(response)
-
-    private fun getCdaFiles(video: TranslationVideo): Single<Video> =
-            if (video.webPlayerUrl == null) Single.just(cdaParser.video(video, emptyList()))
-            else api.getPlayerHtml(video.webPlayerUrl)
-                    .map { cdaParser.getManifestUrl(it.string()) }
-                    .flatMap {
-                        Single.zip(api.getTextResponse(it), Single.just(it), BiFunction { response: ResponseBody, url: String -> Pair(response, url) })
-                    }
-                    .map { cdaParser.tracks(it.first.string(), it.second) }
-                    .map { cdaParser.video(video, it) }
 
     /**
      * Remembers every hosting the user is shown, so the filter screen has real names to offer -

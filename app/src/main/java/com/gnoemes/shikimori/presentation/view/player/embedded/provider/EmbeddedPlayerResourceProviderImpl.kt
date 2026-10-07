@@ -12,6 +12,8 @@ class EmbeddedPlayerResourceProviderImpl @Inject constructor(
         get() = context.getString(R.string.series_hosting_challenge)
     override val playerErrorMessage: String
         get() = context.getString(R.string.player_error)
+    override val videoNotFoundMessage: String
+        get() = context.getString(R.string.series_tracks_empty)
     override val translationNotFound: String
         get() = context.getString(R.string.translation_not_found)
 }

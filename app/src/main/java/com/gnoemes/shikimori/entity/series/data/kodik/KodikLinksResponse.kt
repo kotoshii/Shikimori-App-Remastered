@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName
  * and is read as a map rather than as fixed fields so a quality kodik adds later is picked up on
  * its own.
  *
- * Every `src` is rotated and base64'd, see `KodikParserImpl.decodeLink`.
+ * Every `src` is rotated and base64'd, see `KodikParser.decodeLink`.
  */
 data class KodikLinksResponse(
         @SerializedName("domain") val domain: String?,

@@ -11,7 +11,7 @@ data class OkPlayerData(
             /**
              * ⚠️ Either a json *string* holding the metadata, which is how ok.ru used to write it and
              * why the parser decodes it in two steps, or the metadata object nested directly, which
-             * is what it writes now. Kept as a raw element so both survive - see `OkParserImpl`.
+             * is what it writes now. Kept as a raw element so both survive - see `OkParser`.
              */
             @SerializedName("metadata") val metadata: JsonElement?
     )

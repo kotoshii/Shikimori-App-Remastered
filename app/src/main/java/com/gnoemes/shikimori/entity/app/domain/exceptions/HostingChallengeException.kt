@@ -7,7 +7,7 @@ package com.gnoemes.shikimori.entity.app.domain.exceptions
  * an md5 proof of work over a salt built by obfuscated javascript that is regenerated per request.
  * The app can only say what happened and let the user pass the check in a browser.
  *
- * @see com.gnoemes.shikimori.data.repository.series.shikimori.parser.VkParserImpl
+ * @see com.gnoemes.shikimori.data.repository.series.shikimori.parser.VkParser
  */
 class HostingChallengeException : BaseException(TAG) {
 

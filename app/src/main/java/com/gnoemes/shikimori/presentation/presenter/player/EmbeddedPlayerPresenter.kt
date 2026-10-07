@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.presenter.player
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
@@ -12,7 +13,6 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerView
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
-import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
@@ -21,7 +21,8 @@ import javax.inject.Inject
 class EmbeddedPlayerPresenter @Inject constructor(
         private val interactor: SeriesInteractor,
         private val settingsSource: SettingsSource,
-        private val resourceProvider: EmbeddedPlayerResourceProvider
+        private val resourceProvider: EmbeddedPlayerResourceProvider,
+        private val parsers: HostingParsers
 ) : BaseNetworkPresenter<EmbeddedPlayerView>() {
 
     lateinit var navigationData: EmbeddedPlayerNavigationData
@@ -52,11 +53,10 @@ class EmbeddedPlayerPresenter @Inject constructor(
             .getTranslations(type, animeId, episodeId, navigationData.nameEng, navigationData.isAlternative, false)
             .appendLoadingLogic(viewState)
 
+    //only videos with tracks get here, see loadEpisodeVideo
     private fun updateVideo(video: Video, needReset: Boolean = true) {
         videos.add(video)
-
-        if (video.tracks.isNotEmpty()) setTrack(video, needReset)
-        else viewState.showMessage(resourceProvider.playerErrorMessage, true)
+        setTrack(video, needReset)
     }
 
     private fun setTrack(video: Video, needReset: Boolean) {
@@ -64,7 +64,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
         track?.let {
             viewState.apply {
                 setEpisodeSubtitle(currentEpisode)
-                playVideo(it, video.subAss, needReset, Utils.getRequestHeadersForHosting(video))
+                playVideo(it, video.subAss, needReset, parsers.headers(video))
                 val resolutions = video.tracks.asSequence().filter { it.quality != "unknown" }.map { it.quality }.toList()
                 setResolutions(resolutions)
                 selectTrack(currentTrack)
@@ -131,8 +131,11 @@ class EmbeddedPlayerPresenter @Inject constructor(
         episodeDisposable = interactor.getVideo(newPayload)
                 .appendLoadingLogic(viewState)
                 .subscribe({
-                    payload = newPayload
-                    showEpisode(episode, it)
+                    if (it.tracks.isEmpty()) onNothingToPlay()
+                    else {
+                        payload = newPayload
+                        showEpisode(episode, it)
+                    }
                 }, { processVideoErrors(episode, it) })
                 .also { it.addToDisposables() }
     }
@@ -142,6 +145,14 @@ class EmbeddedPlayerPresenter @Inject constructor(
         currentEpisode = episode
         updateVideo(video)
         updateControls()
+    }
+
+    //the same words the series screen uses when a hosting has nothing to play. Checked before
+    //showEpisode, so a switch to such an episode keeps the one that is playing, as a failed load does;
+    //only when nothing has played yet is there nothing to stay for
+    private fun onNothingToPlay() {
+        pendingEpisode = null
+        viewState.showMessage(resourceProvider.videoNotFoundMessage, videos.isEmpty())
     }
 
     //for the first video and for a switch alike. This screen's navigator is a no-op, so

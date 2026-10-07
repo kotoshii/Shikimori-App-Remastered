@@ -12,7 +12,7 @@ data class Video(
         val tracks: List<Track>,
         val subAss : String?,
         //only used to name a download. Parsers do not set these - SeriesRepositoryImpl.getVideo
-        //fills them in from the translation, so every hosting gets them without 13 edits.
+        //fills them in from the translation, so every hosting gets them without an edit of its own.
         val author : String = "",
         val translationType : TranslationType? = null
 ) : Parcelable
