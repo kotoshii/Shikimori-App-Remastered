@@ -13,7 +13,5 @@ class KefirBBCodesTextProcessorImpl @Inject constructor(
     private val processor: TextProcessor  by lazy { BBProcessorFactory.getInstance().create(resource) }
     private val resource by lazy { context.resources.openRawResource(R.raw.shikimori_bb_codes) }
 
-    override fun process(source: CharSequence): CharSequence = processor.process(source)
-
     override fun process(source: String): String = processor.process(source)
 }
