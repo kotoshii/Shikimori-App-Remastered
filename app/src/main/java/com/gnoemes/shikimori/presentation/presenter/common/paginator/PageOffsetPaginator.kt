@@ -16,7 +16,6 @@ class PageOffsetPaginator<T>(
     private val currentData = mutableListOf<T>()
     private var disposable: Disposable? = null
 
-    override fun restart() = currentState.restart()
     override fun refresh() = currentState.refresh()
     override fun loadNewPage() = currentState.loadNewPage()
     override fun release() = currentState.release()
@@ -51,10 +50,6 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_PROGRESS : State<T> {
 
-        override fun restart() {
-            loadPage(defaultPage)
-        }
-
         override fun newData(data: List<T>) {
             if (data.isNotEmpty()) {
                 currentState = DATA()
@@ -84,13 +79,6 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_ERROR : State<T> {
 
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showEmptyError(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
-
         override fun refresh() {
             currentState = EMPTY_PROGRESS()
             viewController.showEmptyError(false)
@@ -106,13 +94,6 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_DATA : State<T> {
 
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showEmptyView(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
-
         override fun refresh() {
             currentState = EMPTY_PROGRESS()
             viewController.showEmptyView(false)
@@ -127,13 +108,6 @@ class PageOffsetPaginator<T>(
     }
 
     private inner class DATA : State<T> {
-
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showData(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
 
         override fun refresh() {
             currentState = REFRESH()
@@ -155,14 +129,6 @@ class PageOffsetPaginator<T>(
     }
 
     private inner class REFRESH : State<T> {
-
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showData(false)
-            viewController.showRefreshProgress(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
 
         override fun newData(data: List<T>) {
             if (data.isNotEmpty()) {
@@ -194,14 +160,6 @@ class PageOffsetPaginator<T>(
     }
 
     private inner class PAGE_PROGRESS : State<T> {
-
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showData(false)
-            viewController.showPageProgress(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
 
         override fun newData(data: List<T>) {
             if (data.isNotEmpty()) {
@@ -236,13 +194,6 @@ class PageOffsetPaginator<T>(
     }
 
     private inner class ALL_DATA : State<T> {
-
-        override fun restart() {
-            currentState = EMPTY_PROGRESS()
-            viewController.showData(false)
-            viewController.showEmptyProgress(true)
-            loadPage(defaultPage)
-        }
 
         override fun refresh() {
             currentState = REFRESH()
