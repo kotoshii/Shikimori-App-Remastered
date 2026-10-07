@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.di.base.modules.BaseActivityModule
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BackButtonListener
-import com.gnoemes.shikimori.utils.inputMethodManager
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -66,10 +65,6 @@ abstract class BaseActivity<Presenter : BasePresenter<View>, View : BaseView> : 
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
-
-    override fun hideSoftInput() {
-        inputMethodManager()?.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-    }
 
     override fun onShowLoading() = Unit
 

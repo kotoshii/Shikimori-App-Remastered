@@ -90,7 +90,7 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
         return super.onOptionsItemSelected(item)
     }
 
-    override fun hideSoftInput() {
+    fun hideSoftInput() {
         activity?.inputMethodManager()?.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
     }
 

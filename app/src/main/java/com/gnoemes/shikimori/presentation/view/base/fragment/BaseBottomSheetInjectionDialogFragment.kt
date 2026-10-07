@@ -23,7 +23,7 @@ abstract class BaseBottomSheetInjectionDialogFragment<Presenter : BasePresenter<
         dismiss()
     }
 
-    override fun hideSoftInput() = Unit
+    fun hideSoftInput() = Unit
     override fun setTitle(title: String) = Unit
     override fun setTitle(stringRes: Int) = Unit
 }

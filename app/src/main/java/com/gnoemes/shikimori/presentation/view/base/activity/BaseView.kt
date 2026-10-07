@@ -6,11 +6,6 @@ import com.arellomobile.mvp.MvpView
 interface BaseView : MvpView {
 
     /**
-     * Hide keyboard
-     */
-    fun hideSoftInput()
-
-    /**
      * Show loading Dialog
      */
     fun onShowLoading() = Unit
