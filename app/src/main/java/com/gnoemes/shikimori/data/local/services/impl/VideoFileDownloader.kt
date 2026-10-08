@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
  * same way (a per-app vpn, for instance).
  *
  * Segments are appended to one file exactly as they arrive. MPEG-TS concatenates losslessly, so the
- * result is playable as-is; `VideoDownloadService` then remuxes it to mp4 when it can.
+ * result is playable as-is; `DownloadService` then remuxes it to mp4 when it can.
  */
 class VideoFileDownloader {
 

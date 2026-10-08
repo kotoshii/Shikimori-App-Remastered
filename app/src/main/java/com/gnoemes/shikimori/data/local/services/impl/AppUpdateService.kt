@@ -105,7 +105,7 @@ class AppUpdateService : Service() {
             return PendingIntent.getActivity(context, 2, intent, pendingIntentFlags())
         }
 
-        /** Matches `VideoDownloadService`: immutable is only required from Android 12, but is free here. */
+        /** Matches `DownloadService`: immutable is only required from Android 12, but is free here. */
         private fun pendingIntentFlags(): Int =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE

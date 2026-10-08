@@ -6,12 +6,15 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.utils.VideoMuxer
 import com.gnoemes.shikimori.utils.notificationManager
@@ -20,16 +23,17 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Downloads an episode in the app's own process.
+ * Downloads an episode, or a single file such as a screenshot, in the app's own process.
  *
  * Replaces Android's `DownloadManager`, which could only copy one url to one file. That broke two
  * things at once: an m3u8 was saved as the playlist rather than the video, and the transfer happened
  * in `com.android.providers.downloads`, a separate process that is not necessarily on the same
  * network the app is (a per-app vpn will leave it stranded, reported as "waiting for connection").
  *
- * Runs one download at a time and stops itself when the queue drains.
+ * Runs one download at a time and stops itself when the queue drains. Every finished file is added
+ * to Android's media index, so gallery and video apps list it.
  */
-class VideoDownloadService : Service() {
+class DownloadService : Service() {
 
     companion object {
         private const val TAG = "VideoDownload"
@@ -38,6 +42,7 @@ class VideoDownloadService : Service() {
         private const val FOREGROUND_ID = 4210
 
         private const val EXTRA_DATA = "download_data"
+        private const val EXTRA_FILE = "download_file"
         private const val EXTRA_FOLDER = "download_folder"
         private const val EXTRA_CANCEL = "download_cancel"
 
@@ -60,11 +65,17 @@ class VideoDownloadService : Service() {
          */
         private const val MAX_NAME_BYTES = 240
 
-        fun enqueue(context: Context, data: DownloadVideoData, folder: String) {
-            val intent = Intent(context, VideoDownloadService::class.java)
-                    .putExtra(EXTRA_DATA, data)
-                    .putExtra(EXTRA_FOLDER, folder)
+        fun enqueue(context: Context, data: DownloadVideoData, folder: String) =
+                start(context, Intent(context, DownloadService::class.java)
+                        .putExtra(EXTRA_DATA, data)
+                        .putExtra(EXTRA_FOLDER, folder))
 
+        fun enqueue(context: Context, data: DownloadFileData, folder: String) =
+                start(context, Intent(context, DownloadService::class.java)
+                        .putExtra(EXTRA_FILE, data)
+                        .putExtra(EXTRA_FOLDER, folder))
+
+        private fun start(context: Context, intent: Intent) {
             //a foreground service must be started as one from Android 8, or it is killed on start
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent)
             else context.startService(intent)
@@ -93,10 +104,13 @@ class VideoDownloadService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val data = intent?.getParcelableExtra<DownloadVideoData>(EXTRA_DATA)
+        val file = intent?.getParcelableExtra<DownloadFileData>(EXTRA_FILE)
         val folder = intent?.getStringExtra(EXTRA_FOLDER)
         val isCancel = intent?.getBooleanExtra(EXTRA_CANCEL, false) == true
+        //null when the intent carries no download at all
+        val jobTitle = data?.let(::title) ?: file?.title
 
-        if (!isCancel && data != null && folder != null) {
+        if (!isCancel && jobTitle != null && folder != null) {
             //a new download undoes a previous cancel, on both the flag and the executor
             cancelled = false
             if (executor.isShutdown) executor = Executors.newSingleThreadExecutor()
@@ -109,7 +123,7 @@ class VideoDownloadService : Service() {
         //nothing to do, so this happens before the extras are trusted. The title stays on whatever
         //is actually downloading - a second tap must not relabel it with the one it just queued.
         startForeground(FOREGROUND_ID,
-                notification(currentTitle ?: data?.let(::title).orEmpty(), 0, ongoing = true))
+                notification(currentTitle ?: jobTitle.orEmpty(), 0, ongoing = true))
 
         if (isCancel) {
             Log.d(TAG, "cancelled by the user")
@@ -123,7 +137,7 @@ class VideoDownloadService : Service() {
             return START_NOT_STICKY
         }
 
-        if (data == null || folder == null) {
+        if (jobTitle == null || folder == null) {
             if (pending.get() == 0) {
                 stopForeground(true)
                 stopSelf()
@@ -131,7 +145,13 @@ class VideoDownloadService : Service() {
             return START_NOT_STICKY
         }
 
-        executor.execute { runDownload(data, folder) }
+        executor.execute {
+            //an episode's title names it fully, but every screenshot of an anime has the same one
+            runJob(jobTitle, file?.url ?: jobTitle) {
+                if (data != null) downloadEpisode(data, jobTitle, folder)
+                else file?.let { saveFile(it, folder) }
+            }
+        }
 
         return START_NOT_STICKY
     }
@@ -142,22 +162,16 @@ class VideoDownloadService : Service() {
         super.onDestroy()
     }
 
-    private fun runDownload(data: DownloadVideoData, folder: String) {
-        val title = title(data)
-        val directory = File(File(folder), "anime/" + truncateToBytes(safeName(data.animeName), MAX_NAME_BYTES))
-        val downloader = VideoFileDownloader()
-        val link = data.link
-
+    /**
+     * Runs one queued download and reports how it went. [download] returns null on failure; [key]
+     * tells this download's finished notification apart from the others.
+     */
+    private fun runJob(title: String, key: String, download: () -> Result?) {
         currentTitle = title
-
-        Log.d(TAG, "start: link=$link audio=${data.audioLink} dir=${directory.absolutePath}")
-        Log.d(TAG, "dir exists=${directory.exists()} canWrite=${directory.canWrite()} " +
-                "parentExists=${directory.parentFile?.exists()} folderSetting=$folder")
 
         var result: Result? = null
         try {
-            if (link == null) Log.e(TAG, "no link in DownloadVideoData - nothing to download")
-            else result = download(downloader, data, link, title, directory)
+            result = download()
         } catch (e: Throwable) {
             //never let the worker thread die silently - the notification alone says too little
             Log.e(TAG, "download threw", e)
@@ -165,13 +179,47 @@ class VideoDownloadService : Service() {
             Log.d(TAG, "finished success=${result != null} merged=${result?.merged} " +
                     "file=${result?.file?.absolutePath}")
             //a cancel is not a failure, and the user already got its own notification
-            if (!cancelled) notifyFinished(title, result)
+            if (!cancelled) {
+                result?.let { scan(it.file) }
+                notifyFinished(title, key, result)
+            }
             currentTitle = null
             if (pending.decrementAndGet() == 0) {
                 stopForeground(true)
                 stopSelf()
             }
         }
+    }
+
+    private fun downloadEpisode(data: DownloadVideoData, title: String, folder: String): Result? {
+        val directory = File(File(folder), "anime/" + truncateToBytes(safeName(data.animeName), MAX_NAME_BYTES))
+        val link = data.link
+
+        Log.d(TAG, "start: link=$link audio=${data.audioLink} dir=${directory.absolutePath}")
+        Log.d(TAG, "dir exists=${directory.exists()} canWrite=${directory.canWrite()} " +
+                "parentExists=${directory.parentFile?.exists()} folderSetting=$folder")
+
+        if (link == null) {
+            Log.e(TAG, "no link in DownloadVideoData - nothing to download")
+            return null
+        }
+        return download(VideoFileDownloader(), data, link, title, directory)
+    }
+
+    /**
+     * Saved under its own name, so saving the same screenshot twice replaces the file instead of
+     * adding a copy.
+     */
+    private fun saveFile(data: DownloadFileData, folder: String): Result? {
+        val directory = data.folders.fold(File(folder)) { parent, name ->
+            File(parent, truncateToBytes(safeName(name), MAX_NAME_BYTES))
+        }
+        val target = File(directory, safeName(data.name))
+
+        Log.d(TAG, "start: file=${data.url} -> ${target.absolutePath}")
+
+        val saved = VideoFileDownloader().download(data.url, emptyMap(), target, progress(data.title, 0, 100))
+        return if (saved) Result(target) else null
     }
 
     /**
@@ -366,7 +414,7 @@ class VideoDownloadService : Service() {
 
     /** Stops the running download and drops anything still queued behind it. */
     private fun cancelIntent(): PendingIntent {
-        val intent = Intent(this, VideoDownloadService::class.java).putExtra(EXTRA_CANCEL, true)
+        val intent = Intent(this, DownloadService::class.java).putExtra(EXTRA_CANCEL, true)
 
         return PendingIntent.getService(this, 0, intent, pendingIntentFlags())
     }
@@ -388,7 +436,7 @@ class VideoDownloadService : Service() {
                     .setAutoCancel(true)
                     .build()
 
-    private fun notifyFinished(title: String, result: Result?) {
+    private fun notifyFinished(title: String, key: String, result: Result?) {
         val text = when {
             result == null -> getString(R.string.download_notification_failed)
             !result.merged -> getString(R.string.download_notification_no_audio)
@@ -403,8 +451,9 @@ class VideoDownloadService : Service() {
 
         if (result != null) openIntent(result.file)?.let(builder::setContentIntent)
 
-        //a separate id, so the result survives the foreground notification going away
-        notificationManager().notify(FOREGROUND_ID + 1 + title.hashCode().and(0xFFF), builder.build())
+        //a separate id, so the result survives the foreground notification going away; one per
+        //download, so finished ones stack and saving the same one again replaces only its own
+        notificationManager().notify(FOREGROUND_ID + 1 + key.hashCode().and(0xFFF), builder.build())
     }
 
     /**
@@ -419,8 +468,7 @@ class VideoDownloadService : Service() {
     private fun openIntent(file: File): PendingIntent? = try {
         val uri = FileProvider.getUriForFile(this, "$packageName.provider", file)
         val intent = Intent(Intent.ACTION_VIEW)
-                //a .ts is what is left when the device could not remux, and it still plays
-                .setDataAndType(uri, if (file.extension.equals("ts", true)) "video/mp2t" else "video/mp4")
+                .setDataAndType(uri, mimeType(file))
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
 
         PendingIntent.getActivity(this, file.hashCode(), intent, pendingIntentFlags())
@@ -428,6 +476,22 @@ class VideoDownloadService : Service() {
         //an unshareable path must not cost the user their "download finished" notification
         Log.e(TAG, "cannot build an open intent for ${file.absolutePath}", e)
         null
+    }
+
+    /** By extension, so a screenshot opens in an image viewer and an episode in a player. */
+    private fun mimeType(file: File): String =
+            //a .ts is what is left when the device could not remux, and it still plays; Android's
+            //own table does not know the extension on every version
+            if (file.extension.equals("ts", true)) "video/mp2t"
+            else MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.toLowerCase()) ?: "*/*"
+
+    /**
+     * Adds a finished file to Android's media index, so gallery and video apps list it straight
+     * away rather than after the next full rescan. The scanner tells the type from the extension.
+     * The application context, because this service may stop before the scan is done.
+     */
+    private fun scan(file: File) {
+        MediaScannerConnection.scanFile(applicationContext, arrayOf(file.absolutePath), null, null)
     }
 
     private fun createChannel() {

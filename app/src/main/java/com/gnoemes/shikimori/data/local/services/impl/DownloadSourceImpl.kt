@@ -8,7 +8,7 @@ import io.reactivex.Completable
 import javax.inject.Inject
 
 /**
- * Hands a download to [VideoDownloadService].
+ * Hands a download to [DownloadService].
  *
  * This used to enqueue against Android's `DownloadManager`, which could only copy one url to one
  * file. That saved the *playlist* for every hls hosting - Kodik included, which is the primary
@@ -26,7 +26,7 @@ class DownloadSourceImpl @Inject constructor(
             val folder = settingsSource.downloadFolder
             if (folder.isBlank()) throw NoSuchElementException()
 
-            VideoDownloadService.enqueue(context, data, folder)
+            DownloadService.enqueue(context, data, folder)
         }
     }
 }

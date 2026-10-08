@@ -176,7 +176,11 @@ open class AnimePresenter @Inject constructor(
     }
 
     override fun onScreenshotsClicked(pos: Int) {
-        val data = ScreenshotsNavigationData(pos, screenshots)
+        if (!::currentAnime.isInitialized) return
+
+        //the name the series screen gets too, so an anime's episodes and screenshots are saved
+        //under the same folder name
+        val data = ScreenshotsNavigationData(pos, screenshots, currentAnime.nameRu.nullIfEmpty() ?: currentAnime.name)
         router.navigateTo(Screens.SCREENSHOTS, data)
     }
 

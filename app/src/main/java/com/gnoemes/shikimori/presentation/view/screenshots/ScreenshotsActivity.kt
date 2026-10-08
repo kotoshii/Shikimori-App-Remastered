@@ -1,21 +1,26 @@
 package com.gnoemes.shikimori.presentation.view.screenshots
 
-import android.app.DownloadManager
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import androidx.viewpager.widget.ViewPager
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.files.folderChooser
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.local.services.impl.DownloadService
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
+import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
+import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.screenshots.adapter.ScreenshotPagerAdapter
 import com.gnoemes.shikimori.utils.*
+import com.kotlinpermissions.KotlinPermissions
 import kotlinx.android.synthetic.main.activity_screenshots.*
 
 
@@ -25,6 +30,9 @@ class ScreenshotsActivity : MvpActivity() {
         private const val CURRENT_PAGE = "CURRENT_PAGE"
         private const val UI_VISIBLE = "UI_VISIBLE"
         private const val SCREENSHOTS_DATA_KEY = "SCREENSHOTS_DATA_KEY"
+
+        //next to the episodes' "anime" folder, with a folder per anime inside as well
+        private const val SCREENSHOTS_FOLDER = "screenshots"
         fun newIntent(context: Context?, data: ScreenshotsNavigationData): Intent {
             val intent = Intent(context, ScreenshotsActivity::class.java)
             intent.putExtra(SCREENSHOTS_DATA_KEY, data)
@@ -36,6 +44,7 @@ class ScreenshotsActivity : MvpActivity() {
     private var itemCount = 0
     private val formatString by lazy { getString(R.string.common_count_format) }
     private var uiVisible = true
+    private var animeName = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.ShikimoriAppTheme_Screenshots)
@@ -63,6 +72,7 @@ class ScreenshotsActivity : MvpActivity() {
             val data: ScreenshotsNavigationData = intent.getParcelableExtra(SCREENSHOTS_DATA_KEY)
             adapter = ScreenshotPagerAdapter(data.items, this::toggleUI, this::onSwipe, this::onDismiss)
             itemCount = data.items.size
+            animeName = data.animeName
             val pos = savedInstanceState?.getInt(CURRENT_PAGE, data.selected) ?: data.selected
             viewpager.adapter = this@ScreenshotsActivity.adapter
             viewpager.setCurrentItem(pos, false)
@@ -98,20 +108,46 @@ class ScreenshotsActivity : MvpActivity() {
     }
 
     private fun download(url: String?) {
-        val file = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        val name = url?.let { it.substring(it.lastIndexOf("/") + 1) }
-        val path = Uri.withAppendedPath(Uri.fromFile(file), name)
+        if (url == null) return
 
-        val manager = downloadManager()
-        val request = DownloadManager.Request(url?.toUri())
-                .setTitle(name)
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .apply {
-                    allowScanningByMediaScanner()
-                    setDestinationUri(path)
-                }
+        KotlinPermissions.with(this)
+                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .onAccepted { save(url) }
+                .ask()
+    }
 
-        manager?.enqueue(request)
+    /**
+     * Through the app's own downloader into the user's download folder, with the same prompts as an
+     * episode. Android's `DownloadManager` used to put these in the app's private folder, which
+     * gallery apps do not show and which is deleted with the app.
+     */
+    private fun save(url: String) {
+        val folder = getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "").orEmpty()
+        if (folder.isEmpty()) {
+            showFolderChooserDialog(url)
+            return
+        }
+
+        val data = DownloadFileData(url,
+                listOf(SCREENSHOTS_FOLDER, animeName),
+                //the url ends in a "?<timestamp>" query, which is not part of the name
+                Uri.parse(url).lastPathSegment ?: url.substringAfterLast('/'),
+                getString(R.string.download_screenshot_title, animeName))
+        DownloadService.enqueue(this, data, folder)
+    }
+
+    private fun showFolderChooserDialog(url: String) {
+        MaterialDialog(this).show {
+            folderChooser(
+                    allowFolderCreation = true,
+                    emptyTextRes = R.string.download_folder_empty,
+                    folderCreationLabel = R.string.download_new_folder)
+            { _, file ->
+                this@ScreenshotsActivity.getDefaultSharedPreferences()
+                        .putString(SettingsExtras.DOWNLOAD_FOLDER, file.absolutePath)
+            }
+            positiveButton { save(url) }
+        }
     }
 
     private fun toggleUI() {

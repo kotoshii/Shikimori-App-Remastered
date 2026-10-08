@@ -88,7 +88,7 @@
         </receiver>
 
         <service
-            android:name="com.gnoemes.shikimori.data.local.services.impl.VideoDownloadService"
+            android:name="com.gnoemes.shikimori.data.local.services.impl.DownloadService"
             android:exported="false" />
 
         <service

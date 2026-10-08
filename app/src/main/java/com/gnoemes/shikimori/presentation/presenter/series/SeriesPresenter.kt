@@ -432,7 +432,7 @@ class SeriesPresenter @Inject constructor(
     fun onTrackForDownloadSelected(url: String, video: Video) {
         //Kodik urls used to be truncated at ".mp4" here to turn the hls manifest into a direct file,
         //because DownloadManager could only fetch one url. That file stopped existing - the shortened
-        //url answers 500 - and VideoDownloadService walks the playlist itself now, so the url is
+        //url answers 500 - and DownloadService walks the playlist itself now, so the url is
         //passed through untouched.
         selectedDownloadUrl = url
         selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
