@@ -11,6 +11,8 @@ data class SeriesNavigationData(
         val name: String,
         val nameEng : String,
         val rateId: Long?,
+        //the list entry's count when the screen was opened; WatchProgressStore keeps it current
+        val watchedEpisodes : Int,
         val episodesAired : Int,
         val episode : Int?
 ) : Parcelable

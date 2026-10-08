@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.item_episode.view.*
 
 class EpisodeAdapterDelegate(
         private val callback: (EpisodeViewModel) -> Unit,
-        private val episodeChanged: (EpisodeViewModel, Boolean) -> Unit,
         private val longPressListener: (EpisodeViewModel) -> Unit
 ) : AbsListItemAdapterDelegate<EpisodeViewModel, Any, EpisodeAdapterDelegate.ViewHolder>() {
 
@@ -35,7 +34,6 @@ class EpisodeAdapterDelegate(
         init {
             itemView.episodeContainer.onClick { callback.invoke(item) }
             itemView.episodeContainer.setOnLongClickListener { longPressListener.invoke(item);false }
-            itemView.watchedView.onClick { episodeChanged.invoke(item, !item.isWatched) }
         }
 
         fun bind(item: EpisodeViewModel) {
@@ -43,9 +41,10 @@ class EpisodeAdapterDelegate(
             with(itemView) {
                 val episodeName = String.format(context.getString(R.string.episode_number), item.index)
                 episodeNameView.text = episodeName
-                watchedView.isSelected = item.isWatched
-                progressBar.visibleIf { item.state == EpisodeViewModel.State.Loading }
-                watchedView.visibleIf { !item.isGuest && item.state != EpisodeViewModel.State.Loading }
+                //only shows the episode is watched, as shikimori counts it; it does nothing on a tap.
+                //Its colours are fixed in the layout: a view that is not clickable takes its row's
+                //pressed state, and the style's pressed colours turned it dark on every tap
+                watchedView.visibleIf { !item.isGuest && item.isWatched }
                 currentEpisodeView.visibleIf { item.isOpened }
             }
         }

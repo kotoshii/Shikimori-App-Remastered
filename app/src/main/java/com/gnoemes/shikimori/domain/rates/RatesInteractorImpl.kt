@@ -50,13 +50,4 @@ class RatesInteractorImpl @Inject constructor(
             repository.increment(rateId)
                     .applyErrorHandlerAndSchedulers()
 
-    override fun increment(rate: UserRate): Completable =
-            repository.increment(rate)
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun decrement(rate: UserRate): Completable =
-            Single.fromCallable { rate }
-                    .map { if (it.targetType == Type.ANIME) it.copy(episodes = it.episodes?.minus(1)) else it.copy(chapters = it.chapters?.minus(1)) }
-                    .flatMapCompletable { repository.updateRate(it) }
-                    .applyErrorHandlerAndSchedulers()
 }

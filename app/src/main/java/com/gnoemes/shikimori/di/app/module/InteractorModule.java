@@ -6,8 +6,8 @@ import com.gnoemes.shikimori.domain.download.DownloadInteractor;
 import com.gnoemes.shikimori.domain.download.DownloadInteractorImpl;
 import com.gnoemes.shikimori.domain.rates.RatesInteractor;
 import com.gnoemes.shikimori.domain.rates.RatesInteractorImpl;
-import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor;
-import com.gnoemes.shikimori.domain.series.SeriesSyncInteractorImpl;
+import com.gnoemes.shikimori.domain.series.WatchProgressInteractor;
+import com.gnoemes.shikimori.domain.series.WatchProgressInteractorImpl;
 
 import javax.inject.Singleton;
 
@@ -30,8 +30,9 @@ public interface InteractorModule {
     @Singleton
     RatesInteractor bindRatesInteractor(RatesInteractorImpl interactor);
 
+    //a singleton for its guard against counting one episode twice
     @Binds
     @Singleton
-    SeriesSyncInteractor bindSeriesSyncInteractor(SeriesSyncInteractorImpl interactor);
+    WatchProgressInteractor bindWatchProgressInteractor(WatchProgressInteractorImpl interactor);
 
 }

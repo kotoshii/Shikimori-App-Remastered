@@ -23,7 +23,6 @@ object Constants {
 
     const val DEFAULT_DEBOUNCE_INTERVAL = 300L
 
-    const val BIG_DEBOUNCE_INTERVAL = 750L
 
     const val TASK_LONG_DELAY = 3500L
 

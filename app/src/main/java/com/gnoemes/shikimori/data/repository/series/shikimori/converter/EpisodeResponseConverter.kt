@@ -5,5 +5,5 @@ import com.gnoemes.shikimori.entity.series.domain.Episode
 
 interface  EpisodeResponseConverter {
 
-    fun convertResponse(it : EpisodeResponse, isWatched : Boolean) : Episode
+    fun convertResponse(it : EpisodeResponse) : Episode
 }

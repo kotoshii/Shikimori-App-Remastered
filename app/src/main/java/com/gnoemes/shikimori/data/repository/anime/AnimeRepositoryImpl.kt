@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.data.repository.anime
 
-import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
 import com.gnoemes.shikimori.data.network.AnimeApi
 import com.gnoemes.shikimori.data.repository.anime.converter.AnimeDetailsResponseConverter
 import com.gnoemes.shikimori.data.repository.common.AnimeResponseConverter
@@ -17,14 +16,12 @@ import com.gnoemes.shikimori.utils.appendHostIfNeed
 import com.gnoemes.shikimori.data.repository.common.TitleGenreSource
 import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
-import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 
 class AnimeRepositoryImpl @Inject constructor(
         private val api: AnimeApi,
-        private val syncDbSource: AnimeRateSyncDbSource,
         private val linkConverter: LinkResponseConverter,
         private val animeConverter: AnimeResponseConverter,
         private val franchiseConverter: FranchiseResponseConverter,
@@ -46,7 +43,7 @@ class AnimeRepositoryImpl @Inject constructor(
                     BiFunction { details: AnimeDetails, genres: List<GenreV2> ->
                         details.copy(genres = genres)
                     }
-            ).flatMap { syncRate(it).toSingleDefault(it) }
+            )
 
     override fun getRoles(id: Long): Single<Roles> =
             api.getRoles(id)
@@ -67,10 +64,5 @@ class AnimeRepositoryImpl @Inject constructor(
     override fun getScreenshots(id: Long): Single<List<Screenshot>> =
             api.getScreenshots(id)
                     .map { list -> list.map { Screenshot(it.original?.appendHostIfNeed(), it.preview?.appendHostIfNeed()) } }
-
-    private fun syncRate(details: AnimeDetails): Completable =
-            Single.fromCallable { details }
-                    .filter { details.userRate?.targetId != null && details.userRate.episodes != null }
-                    .flatMapCompletable { syncDbSource.saveRate(it.userRate!!) }
 
 }

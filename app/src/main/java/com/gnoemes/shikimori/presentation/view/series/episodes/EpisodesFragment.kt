@@ -46,7 +46,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         private const val CHECK_ALL_PREVIOUS_ACTION = "check_all_previous_"
     }
 
-    private val adapter by lazy { EpisodeAdapter(presenter::onEpisodeClicked, presenter::onEpisodeStatusChanged, presenter::onEpisodeLongClick) }
+    private val adapter by lazy { EpisodeAdapter(presenter::onEpisodeClicked, presenter::onEpisodeLongClick) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? = inflater.inflate(getDialogLayout(), container, false)
 
@@ -199,16 +199,11 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         onBackPressed()
     }
 
-    override fun onRateCreated(id: Long) {
-        (parentFragment as? EpisodesCallback)?.onRateCreated(id)
-    }
-
     override fun showSystemMessage(message: String) {
         Toast.makeText(context!!, message, Toast.LENGTH_SHORT).show()
     }
 
     interface EpisodesCallback {
-        fun onRateCreated(id: Long)
         fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean)
     }
 }

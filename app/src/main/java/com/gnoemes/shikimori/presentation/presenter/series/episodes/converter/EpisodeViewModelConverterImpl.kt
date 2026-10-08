@@ -19,15 +19,9 @@ class EpisodeViewModelConverterImpl @Inject constructor() : EpisodeViewModelConv
                 it.id,
                 it.index,
                 it.animeId,
-                convertState(it.isWatched),
                 it.isWatched,
                 it.index == currentEpisode,
                 userStatus == UserStatus.GUEST
         )
-    }
-
-    private fun convertState(watched: Boolean): EpisodeViewModel.State {
-        return if (watched) EpisodeViewModel.State.Checked
-        else EpisodeViewModel.State.NotChecked
     }
 }

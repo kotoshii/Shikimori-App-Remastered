@@ -1,7 +1,5 @@
 package com.gnoemes.shikimori.data.repository.rates
 
-import com.gnoemes.shikimori.data.local.db.AnimeRateSyncDbSource
-import com.gnoemes.shikimori.data.local.db.EpisodeDbSource
 import com.gnoemes.shikimori.data.network.UserApi
 import com.gnoemes.shikimori.data.repository.common.RateResponseConverter
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -15,9 +13,7 @@ import javax.inject.Inject
 
 class RatesRepositoryImpl @Inject constructor(
         private val api: UserApi,
-        private val converter: RateResponseConverter,
-        private val episodeDbSource: EpisodeDbSource,
-        private val animeSyncSource: AnimeRateSyncDbSource
+        private val converter: RateResponseConverter
 ) : RatesRepository {
 
     override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
@@ -37,93 +33,32 @@ class RatesRepositoryImpl @Inject constructor(
                     .map { list -> list.mapNotNull { converter.convertUserRateResponse(targetId, it) } }
 
     override fun createRate(id: Long, type: Type, rate: UserRate, userId: Long): Completable =
-            when (type) {
-                Type.ANIME -> Completable.fromSingle(createAnimeRate(id, rate, userId))
-                Type.MANGA, Type.RANOBE -> Completable.fromSingle(createMangaRate(id, rate, userId))
-                else -> Completable.error(IllegalStateException())
-            }
+            createRateWithResult(id, type, rate, userId).ignoreElement()
 
+    //sends what the user typed. Both used to send a count from a local table instead: for anime the
+    //ticked episodes, for manga a table nothing ever wrote, so every new entry started at 0
     override fun createRateWithResult(id: Long, type: Type, rate: UserRate, userId: Long): Single<UserRate> =
             when (type) {
-                Type.ANIME -> createAnimeRate(id, rate, userId)
-                Type.MANGA, Type.RANOBE -> createMangaRate(id, rate, userId)
+                Type.ANIME -> create(id, Type.ANIME, rate, userId)
+                //a ranobe is a manga to the api
+                Type.MANGA, Type.RANOBE -> create(id, Type.MANGA, rate, userId)
                 else -> Single.error(IllegalStateException())
             }
 
-    //Call only if my user. Only anime keeps a local copy of the rate; manga has none
-    override fun syncRate(rate: UserRate): Completable =
-            when (rate.targetType) {
-                Type.ANIME -> syncAnimeRate(rate)
-                Type.MANGA, Type.RANOBE -> Completable.complete()
-                else -> Completable.error(IllegalArgumentException())
-            }
+    private fun create(id: Long, type: Type, rate: UserRate, userId: Long): Single<UserRate> =
+            api.createRate(converter.convertCreateOrUpdateRequest(id, type, rate, userId))
+                    .map { converter.convertUserRateResponse(id, it) }
 
     override fun updateRate(rate: UserRate): Completable =
             api.updateRate(rate.id!!, converter.convertCreateOrUpdateRequest(rate))
-                    .map { converter.convertUserRateResponse(null, it) }
-                    .flatMapCompletable { syncRate(it) }
+                    .ignoreElement()
 
-    override fun deleteRate(id: Long): Completable =
-            getRate(id)
-                    .flatMapCompletable { deleteRate(it) }
-                    .andThen(api.deleteRate(id))
+    override fun deleteRate(id: Long): Completable = api.deleteRate(id)
 
     override fun increment(rateId: Long): Completable = api.increment(rateId)
-
-    override fun increment(rate: UserRate): Completable =
-            when (rate.targetType) {
-                Type.ANIME -> incrementAnimeRate(rate)
-                Type.MANGA, Type.RANOBE -> increment(rate.id!!)
-                else -> Completable.error(IllegalArgumentException())
-            }
-
-    private fun createAnimeRate(id: Long, rate: UserRate, userId: Long): Single<UserRate> =
-            episodeDbSource.getWatchedEpisodesCount(id)
-                    .map { converter.convertCreateOrUpdateRequest(id, Type.ANIME, rate.copy(episodes = it), userId) }
-                    .flatMap { api.createRate(it) }
-                    .map { converter.convertUserRateResponse(id, it) }
-                    .flatMap { syncRate(it).toSingleDefault(it) }
-
-    //sends the chapters the user typed. It used to send a count from a local table nothing ever
-    //wrote, so every new manga entry started at 0 whatever was typed
-    private fun createMangaRate(id: Long, rate: UserRate, userId: Long): Single<UserRate> =
-            api.createRate(converter.convertCreateOrUpdateRequest(id, Type.MANGA, rate, userId))
-                    .map { converter.convertUserRateResponse(id, it) }
 
     override fun getRate(id: Long): Single<UserRate> =
             api.getRate(id)
                     .map { converter.convertUserRateResponse(null, it) }
-                    .flatMap { syncRate(it).toSingleDefault(it) }
-
-    private fun syncAnimeRate(it: UserRate): Completable =
-            Single.just(it)
-                    .filter { it.targetId != null && it.episodes != null }
-                    .flatMapCompletable { animeSyncSource.saveRate(it) }
-
-    private fun deleteRate(rate: UserRate): Completable =
-            when (rate.targetType) {
-                Type.ANIME -> deleteAnimeRate(rate)
-                else -> Completable.complete()
-            }
-
-    private fun deleteAnimeRate(rate: UserRate): Completable =
-            Single.just(rate)
-                    .filter { it.targetId != null }
-                    .flatMapCompletable {
-                        episodeDbSource.clearEpisodes(rate.targetId!!)
-                                .andThen(animeSyncSource.clearRate(rate.targetId))
-                    }
-
-    private fun incrementAnimeRate(rate: UserRate): Completable =
-            Single.just(rate)
-                    .filter { it.targetId != null }
-                    .flatMapSingle { episodeDbSource.getWatchedEpisodesCount(it.targetId!!) }
-                    .flatMapCompletable { count ->
-                        //count already increased by 1 in series interactor in updateRate() method so need sync only ANIME_RATE TABLE
-                        animeSyncSource.getRate(rate.id!!)
-                                .onErrorResumeNext { getRate(rate.id) }
-                                .flatMapCompletable { animeSyncSource.saveRate(it.copy(episodes = count)) }
-                    }
-                    .andThen(increment(rate.id!!))
 
 }

@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.presentation.presenter.main
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
-import com.gnoemes.shikimori.domain.series.SeriesSyncInteractor
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
 import com.gnoemes.shikimori.presentation.view.main.MainView
@@ -15,7 +14,6 @@ import javax.inject.Inject
 @InjectViewState
 class MainPresenter @Inject constructor(
         private val _router: Router,
-        private val interactor: SeriesSyncInteractor,
         private val genreVocabulary: GenreVocabularySource
 ) : BaseNavigationPresenter<MainView>() {
 
@@ -26,7 +24,6 @@ class MainPresenter @Inject constructor(
 
     override fun initData() {
         onTabItemSelected(BottomScreens.RATES)
-        startEpisodesSync()
         refreshGenres()
     }
 
@@ -39,13 +36,6 @@ class MainPresenter @Inject constructor(
         val d = genreVocabulary.refresh()
                 .subscribeOn(Schedulers.io())
                 .subscribe({}, { Log.w(TAG, "genre list refresh failed", it) })
-        disposable.add(d)
-    }
-
-    private fun startEpisodesSync() {
-        val d =
-                interactor.startSync()
-                        .subscribe({}, { Log.w(TAG, "episode sync failed", it) })
         disposable.add(d)
     }
 

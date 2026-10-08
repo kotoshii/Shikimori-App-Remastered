@@ -6,12 +6,11 @@ import javax.inject.Inject
 
 class EpisodeResponseConverterImpl @Inject constructor(): EpisodeResponseConverter {
 
-    override fun convertResponse(it : EpisodeResponse, isWatched : Boolean) : Episode {
+    override fun convertResponse(it : EpisodeResponse) : Episode {
         return Episode(
                 it.id,
                 it.index,
-                it.animeId,
-                isWatched
+                it.animeId
         )
     }
 }

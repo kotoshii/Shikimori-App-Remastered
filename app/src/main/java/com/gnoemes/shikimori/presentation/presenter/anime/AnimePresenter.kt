@@ -160,6 +160,7 @@ open class AnimePresenter @Inject constructor(
                 currentAnime.nameRu.nullIfEmpty() ?: currentAnime.name,
                 currentAnime.name,
                 currentAnime.userRate?.id,
+                currentAnime.userRate?.episodes ?: 0,
                 if (currentAnime.status == Status.RELEASED) currentAnime.episodes else currentAnime.episodesAired,
                 null)
         router.navigateTo(Screens.SERIES, data)

@@ -2,10 +2,9 @@ package com.gnoemes.shikimori.presentation.presenter.player
 
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
-import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
-import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.domain.series.WatchProgressInteractor
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
@@ -20,7 +19,7 @@ import javax.inject.Inject
 @InjectViewState
 class EmbeddedPlayerPresenter @Inject constructor(
         private val interactor: SeriesInteractor,
-        private val settingsSource: SettingsSource,
+        private val progressInteractor: WatchProgressInteractor,
         private val resourceProvider: EmbeddedPlayerResourceProvider,
         private val parsers: HostingParsers
 ) : BaseNetworkPresenter<EmbeddedPlayerView>() {
@@ -79,12 +78,12 @@ class EmbeddedPlayerPresenter @Inject constructor(
         viewState.enablePrevButton(currentEpisode > 1)
     }
 
+    //«Автоматический подсчет», which decides for itself whether this episode counts. Only logged on
+    //failure - the episode is playing, and an error over it would help nobody
     private fun setEpisodeWatched() {
-        if (!settingsSource.isAutoIncrement) return
-        val rateId = navigationData.rateId ?: Constants.NO_ID
-        interactor
-                .sendEpisodeChanges(EpisodeChanges.Changes(rateId, animeId, currentEpisode, true))
-                .subscribe({}, this::processErrors)
+        val episode = currentEpisode
+        progressInteractor.episodePlayed(animeId, episode)
+                .subscribe({}, { Log.w(TAG, "could not count episode $episode", it) })
                 .addToDisposables()
     }
 

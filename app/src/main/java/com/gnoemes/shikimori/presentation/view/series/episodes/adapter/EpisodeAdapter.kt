@@ -7,14 +7,13 @@ import com.hannesdorfmann.adapterdelegates4.ListDelegationAdapter
 
 class EpisodeAdapter(
         callback: (EpisodeViewModel) -> Unit,
-        episodeChanged: (EpisodeViewModel, Boolean) -> Unit,
         longPressListener: (EpisodeViewModel) -> Unit
 ) : ListDelegationAdapter<MutableList<Any>>() {
 
     init {
         items = mutableListOf()
 
-        delegatesManager.addDelegate(EpisodeAdapterDelegate(callback, episodeChanged, longPressListener))
+        delegatesManager.addDelegate(EpisodeAdapterDelegate(callback, longPressListener))
         delegatesManager.addDelegate(EpisodePlaceholderAdapterDelegate())
         delegatesManager.addDelegate(SeriesPlaceholderAdapterDelegate())
     }

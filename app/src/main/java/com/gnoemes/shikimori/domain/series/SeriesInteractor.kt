@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.domain.series
 import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import io.reactivex.Completable
-import io.reactivex.Observable
 import io.reactivex.Single
 
 interface SeriesInteractor {
@@ -18,13 +17,5 @@ interface SeriesInteractor {
 
     fun getVideo(payload : TranslationVideo) : Single<Video>
 
-    fun getEpisodeChanges() : Observable<EpisodeChanges>
-
-    fun sendEpisodeChanges(changes: EpisodeChanges) : Completable
-
     fun getTopic(animeId: Long, episodeId: Int) : Single<Long>
-
-    fun getFirstNotWatchedEpisodeIndex(animeId: Long) : Single<Int>
-
-    fun getWatchedEpisodesCount(animeId: Long) : Single<Int>
 }

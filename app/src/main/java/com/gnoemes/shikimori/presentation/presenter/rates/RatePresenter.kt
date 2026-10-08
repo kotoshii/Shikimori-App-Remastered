@@ -39,7 +39,6 @@ import com.gnoemes.shikimori.utils.nullIfEmpty
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -320,41 +319,26 @@ class RatePresenter @Inject constructor(
     //TODO add manga
     private fun onWatchOnline(rateId: Long) {
         val rateItem = items.find { it is Rate && it.id == rateId } as? Rate
-        rateItem?.let { rate ->
-            val animeId = rate.anime?.id!!
-            Single.zip(
-                    seriesInteractor.getWatchedEpisodesCount(animeId),
-                    seriesInteractor.getFirstNotWatchedEpisodeIndex(animeId),
-                    BiFunction { watched: Int, index: Int -> Pair(watched, index) }
-            ).map { info ->
-                if (info.second <= rate.episodes!!)
-                    if (info.first < rate.episodes)
-                        if (rate.anime.episodesAired != 0 && (rate.episodes + 1 > rate.anime.episodesAired && rate.episodes + 1 > rate.anime.episodes)) rate.anime.episodes
-                        else rate.episodes + 1
-                    else info.second
-                else if (info.second > rate.anime.episodes && rate.anime.episodes != 0) rate.anime.episodes
-                else if (info.first > rate.episodes) rate.episodes + 1
-                else info.second
-            }
-                    .subscribe({ checkRateWatchProgress(true, rate, it) }, this::processErrors)
-                    .addToDisposables()
-        }
+        rateItem?.let(::checkRateWatchProgress)
     }
 
+    //the list can be older than the count - it may have changed on the site since - so the entry is
+    //read again. The series screen opens on the episode after the last watched one, and stops at
+    //the last one out
     //TODO add manga
-    private fun checkRateWatchProgress(anime: Boolean, rate: Rate, progress: Int) =
+    private fun checkRateWatchProgress(rate: Rate) =
             seriesInteractor.getTranslationSettings(rate.anime?.id!!)
-                    .flatMap { ratesInteractor.getRate(rate.id).ignoreElement().andThen(Single.just(it)) }
-                    .subscribe({ watchOnlineOrOpenList(rate, it, progress) }, this::processErrors)
+                    .flatMap { settings -> ratesInteractor.getRate(rate.id).map { Pair(settings, it.episodes ?: 0) } }
+                    .subscribe({ watchOnlineOrOpenList(rate, it.first, it.second) }, this::processErrors)
                     .addToDisposables()
 
     //TODO manga
-    private fun watchOnlineOrOpenList(rate: Rate, settings: TranslationSetting, progress: Int) {
+    private fun watchOnlineOrOpenList(rate: Rate, settings: TranslationSetting, watched: Int) {
         val name =
                 if (settingsSource.isRussianNaming) rate.anime?.nameRu.nullIfEmpty() ?: rate.anime?.name!!
                 else rate.anime?.name!!
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
-        val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, episodesAired!!, progress)
+        val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, watched, episodesAired!!, watched + 1)
         router.navigateTo(Screens.SERIES, navigationData)
     }
 

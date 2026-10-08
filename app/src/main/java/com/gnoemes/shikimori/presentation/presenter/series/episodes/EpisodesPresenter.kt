@@ -1,13 +1,9 @@
 package com.gnoemes.shikimori.presentation.presenter.series.episodes
 
 import com.arellomobile.mvp.InjectViewState
-import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
+import com.gnoemes.shikimori.domain.series.WatchProgressInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.common.domain.Type
-import com.gnoemes.shikimori.entity.rates.domain.RateStatus
-import com.gnoemes.shikimori.entity.series.domain.EpisodeChanges
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
@@ -22,14 +18,13 @@ import javax.inject.Inject
 @InjectViewState
 class EpisodesPresenter @Inject constructor(
         private val interactor: SeriesInteractor,
-        private val ratesInteractor: RatesInteractor,
+        private val progressInteractor: WatchProgressInteractor,
         private val userInteractor: UserInteractor,
         private val converter: EpisodeViewModelConverter,
         private val resourceProvider: CommonResourceProvider
 ) : BaseNetworkPresenter<EpisodesView>() {
 
     lateinit var navigationData: EpisodesNavigationData
-    private var rateId = Constants.NO_ID
     private var isAlternativeSource = false
 
     private val items = mutableListOf<EpisodeViewModel>()
@@ -38,9 +33,7 @@ class EpisodesPresenter @Inject constructor(
     override fun initData() {
         super.initData()
         isAlternativeSource = navigationData.isAlternative
-        rateId = navigationData.rateId ?: rateId
         loadData()
-        subscribeToChanges()
 
         viewState.showAlternativeLabel(navigationData.isAlternative)
     }
@@ -99,32 +92,6 @@ class EpisodesPresenter @Inject constructor(
         viewState.showEpisodeOptionsDialog(item.index)
     }
 
-    fun onEpisodeStatusChanged(item: EpisodeViewModel, newStatus: Boolean) {
-        if (userInteractor.getUserStatus() == UserStatus.GUEST) {
-            viewState.showSystemMessage(resourceProvider.needAuthRates)
-            return
-        }
-
-        createRateIfNotExist(rateId)
-                .doOnSuccess { viewState.onRateCreated(it) }
-                .flatMapCompletable { interactor.sendEpisodeChanges(EpisodeChanges.Changes(it, item.animeId, item.index, newStatus)) }
-                .doOnSubscribe { showEpisodeLoading(item, newStatus) }
-                .subscribe({}, this::processErrors)
-                .addToDisposables()
-    }
-
-    private fun showEpisodeLoading(item: EpisodeViewModel, newStatus: Boolean) {
-        items[items.indexOf(item)] = item.copy(isWatched = newStatus, state = EpisodeViewModel.State.Loading)
-        viewState.showData(items)
-    }
-
-    private fun createRateIfNotExist(rateId: Long): Single<Long> {
-        return when (rateId) {
-            Constants.NO_ID -> ratesInteractor.createRateWithResult(navigationData.animeId, Type.ANIME, RateStatus.WATCHING).map { it.id!! }.doOnSuccess { this@EpisodesPresenter.rateId = it }
-            else -> Single.just(rateId)
-        }
-    }
-
     fun onSearchClicked() {
         viewState.showSearchView()
     }
@@ -153,19 +120,19 @@ class EpisodesPresenter @Inject constructor(
         viewState.scrollToPosition(0)
     }
 
+    //sets the count to [index] - the same as typing it in the edit drawer, raised only
     fun onCheckAllPrevious(index: Int) {
-        items.take(index).forEach { onEpisodeStatusChanged(it, true) }
+        progressInteractor.markWatchedUpTo(navigationData.animeId, index)
+                .subscribe(this::showWatched, this::processErrors)
+                .addToDisposables()
     }
 
-    private fun subscribeToChanges() {
-        interactor.getEpisodeChanges()
-                .filter { it is EpisodeChanges.Success || it is EpisodeChanges.Error }
-                .flatMapSingle {
-                    if (it is EpisodeChanges.Error) Single.error(it.exception)
-                    else loadEpisodes()
-                }
-                .subscribe(this::setData, this::processErrors)
-                .addToDisposables()
+    private fun showWatched() {
+        val watched = progressInteractor.watchedEpisodes(navigationData.animeId)
+        items.clearAndAddAll(items.map { it.copy(isWatched = it.index <= watched) })
+
+        if (query.isNullOrBlank()) showData(items)
+        else showData(items.filter { it.index.toString().contains(query ?: "") })
     }
 
     fun <T> Single<T>.appendLoadingLogic(viewState: EpisodesView): Single<T> =

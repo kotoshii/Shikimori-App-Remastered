@@ -12,13 +12,11 @@ class DbOpenHelper @Inject constructor(
 
     companion object {
         const val DATABASE = "shikimori_database"
-        const val VERSION = 4
+        const val VERSION = 5
     }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.apply {
-            execSQL(AnimeRateSyncTable.CREATE_QUERY)
-            execSQL(EpisodeTable.CREATE_QUERY)
             execSQL(TranslationSettingTable.CREATE_QUERY)
             execSQL(PinnedRateTable.CREATE_QUERY)
         }
@@ -35,6 +33,12 @@ class DbOpenHelper @Inject constructor(
         if (old < 4) {
             db?.execSQL("DROP TABLE IF EXISTS chapters")
             db?.execSQL("DROP TABLE IF EXISTS manga_rate_sync")
+        }
+        //the anime tables: locally ticked episodes and a copy of each rate's count, replaced by
+        //shikimori's own count, see WatchProgressStore
+        if (old < 5) {
+            db?.execSQL("DROP TABLE IF EXISTS episodes")
+            db?.execSQL("DROP TABLE IF EXISTS anime_rate_sync")
         }
     }
 

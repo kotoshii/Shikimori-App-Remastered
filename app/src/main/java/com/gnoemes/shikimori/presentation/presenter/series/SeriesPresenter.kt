@@ -1,12 +1,13 @@
 package com.gnoemes.shikimori.presentation.presenter.series
 
+import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.repository.series.shikimori.parser.HostingParsers
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.download.DownloadInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
-import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.domain.series.WatchProgressInteractor
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
@@ -19,7 +20,6 @@ import com.gnoemes.shikimori.presentation.presenter.series.translations.converte
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -33,7 +33,8 @@ class SeriesPresenter @Inject constructor(
         private val commonResourceProvider: CommonResourceProvider,
         private val shareResourceProvider: ShareResourceProvider,
         private val tokenSource: Anime365TokenSource,
-        private val parsers: HostingParsers
+        private val parsers: HostingParsers,
+        private val progressInteractor: WatchProgressInteractor
 ) : BaseNetworkPresenter<SeriesView>() {
 
     lateinit var navigationData: SeriesNavigationData
@@ -44,7 +45,6 @@ class SeriesPresenter @Inject constructor(
     private var isAlternative: Boolean = settingsSource.altSourceByDefault
     private var setting: TranslationSetting? = null
     private var query: String? = null
-    private var rateId: Long = Constants.NO_ID
 
     private val items = mutableListOf<TranslationViewModel>()
     private lateinit var selectedVideo: TranslationVideo
@@ -60,7 +60,8 @@ class SeriesPresenter @Inject constructor(
         type = settingsSource.translationType
         episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
         episodeId = episode?.toLong()
-        rateId = navigationData.rateId ?: rateId
+        //the episode list and the player read the count from here, and add what they write to it
+        progressInteractor.remember(navigationData.animeId, navigationData.rateId, navigationData.watchedEpisodes)
 
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
@@ -307,7 +308,7 @@ class SeriesPresenter @Inject constructor(
     }
 
     fun showEpisodes() {
-        val data = EpisodesNavigationData(navigationData.animeId, navigationData.nameEng, episode!!, rateId, isAlternative)
+        val data = EpisodesNavigationData(navigationData.animeId, navigationData.nameEng, episode!!, isAlternative)
         viewState.showEpisodesDialog(data)
     }
 
@@ -325,10 +326,6 @@ class SeriesPresenter @Inject constructor(
         isAlternative = alternative
         episodeId = null
         loadWithEpisode()
-    }
-
-    fun onRateCreated(rateId: Long) {
-        this.rateId = rateId
     }
 
     fun onDiscussionClicked() {
@@ -373,7 +370,7 @@ class SeriesPresenter @Inject constructor(
             return
         }
 
-        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, navigationData.rateId, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
+        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
         else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
@@ -403,9 +400,15 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {
-        (if (settingsSource.isAutoIncrement && increment) interactor.sendEpisodeChanges(EpisodeChanges.Changes(rateId, payload.animeId, episode!!, true))
-        else Completable.complete())
-                .andThen(interactor.saveTranslationSettings(TranslationSetting(payload.animeId, payload.author, payload.type)))
+        //the built-in player counts the episode itself, once it starts playing. A failed count is
+        //only logged: it happens in the background and must not cover the screen with an error
+        if (increment) {
+            progressInteractor.episodePlayed(payload.animeId, episode!!)
+                    .subscribe({}, { Log.w(TAG, "could not count episode $episode", it) })
+                    .addToDisposables()
+        }
+
+        interactor.saveTranslationSettings(TranslationSetting(payload.animeId, payload.author, payload.type))
                 .subscribe({}, this::processErrors)
                 .addToDisposables()
     }
@@ -470,5 +473,9 @@ class SeriesPresenter @Inject constructor(
     }
 
     private fun processDownloadErrors(throwable: Throwable) {
+    }
+
+    companion object {
+        private const val TAG = "WatchProgress"
     }
 }

@@ -27,8 +27,6 @@ interface EpisodesView : BaseFragmentView {
     @StateStrategyType(SkipStrategy::class)
     fun onEpisodeSelected(episodeId : Long, episode : Int, isAlternative : Boolean)
 
-    @StateStrategyType(SkipStrategy::class)
-    fun onRateCreated(id : Long)
 
     fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean = false)
 

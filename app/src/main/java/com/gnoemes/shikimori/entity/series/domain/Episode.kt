@@ -4,5 +4,6 @@ data class Episode(
         val id: Long,
         val index: Int,
         val animeId: Long,
-        val isWatched: Boolean
+        //set from shikimori's watched count, see SeriesInteractorImpl.getEpisodes
+        val isWatched: Boolean = false
 )

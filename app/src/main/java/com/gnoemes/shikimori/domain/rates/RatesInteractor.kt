@@ -25,9 +25,5 @@ interface RatesInteractor {
 
     fun increment(rateId: Long): Completable
 
-    fun increment(rate: UserRate): Completable
-
-    fun decrement(rate: UserRate): Completable
-
     fun changeRateStatus(rateId: Long, newStatus: RateStatus): Completable
 }

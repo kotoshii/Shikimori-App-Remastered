@@ -240,7 +240,6 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
     override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 
-    override fun onRateCreated(id: Long) = getPresenter().onRateCreated(id)
     override fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean) =
             getPresenter().onEpisodeSelected(episodeId, episode, isAlternative)
 
