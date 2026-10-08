@@ -404,7 +404,9 @@ class DownloadService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.drawable.ic_notification_download)
+                //Android's own download icon, animated in the status bar - the one its downloader
+                //and the browsers show, so this looks like any other download on the phone
+                .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setProgress(100, percent, false)
                 .setOngoing(ongoing)
                 .setOnlyAlertOnce(true)
@@ -432,7 +434,7 @@ class DownloadService : Service() {
             NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(title)
                     .setContentText(text)
-                    .setSmallIcon(R.drawable.ic_notification_download)
+                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
                     .setAutoCancel(true)
                     .build()
 
@@ -446,7 +448,8 @@ class DownloadService : Service() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setSmallIcon(R.drawable.ic_notification_download)
+                //the system's downloader shows this one for a failed download too
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
                 .setAutoCancel(true)
 
         if (result != null) openIntent(result.file)?.let(builder::setContentIntent)

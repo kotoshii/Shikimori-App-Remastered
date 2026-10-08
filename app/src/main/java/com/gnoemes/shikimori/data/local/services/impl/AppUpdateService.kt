@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.main.MainActivity
 import com.gnoemes.shikimori.presentation.view.update.InstallActivity
@@ -56,7 +57,8 @@ class AppUpdateService : Service() {
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                     .setContentTitle(context.getString(R.string.update_available_title, version))
                     .setContentText(context.getString(R.string.update_available_text))
-                    .setSmallIcon(R.drawable.ic_notification_download)
+                    .setSmallIcon(R.drawable.ic_notification_logo)
+                    .setColor(ContextCompat.getColor(context, R.color.logo_red))
                     .setAutoCancel(true)
                     .setContentIntent(changelogIntent(context))
                     .addAction(R.drawable.ic_download,
@@ -242,7 +244,8 @@ class AppUpdateService : Service() {
             NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle(getString(R.string.update_available_title, version))
                     .setContentText(getString(R.string.update_downloading))
-                    .setSmallIcon(R.drawable.ic_notification_download)
+                    //the system's download icon, as episode downloads have
+                    .setSmallIcon(android.R.drawable.stat_sys_download)
                     .setProgress(100, percent, false)
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
@@ -252,7 +255,8 @@ class AppUpdateService : Service() {
     private fun notifyResult(title: String, version: String, apk: File?) {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
-                .setSmallIcon(R.drawable.ic_notification_download)
+                .setSmallIcon(R.drawable.ic_notification_logo)
+                .setColor(ContextCompat.getColor(this, R.color.logo_red))
                 .setAutoCancel(true)
 
         if (apk != null) {

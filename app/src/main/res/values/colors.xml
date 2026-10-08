@@ -92,6 +92,8 @@
     <color name="comment_offtopic">#f477ad</color>
 
     <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- the logo's red, from ic_launcher_foreground; the accent of the update notifications -->
+    <color name="logo_red">#d32325</color>
 
     <color name="player_controls">#deffffff</color>
     <color name="player_surface">#80000000</color>
