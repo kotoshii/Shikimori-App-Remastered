@@ -16,7 +16,7 @@ import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 import kotlin.random.Random
 
-class ShimoriAnimeSourceImpl @Inject constructor(
+class AnimeSourceImpl @Inject constructor(
         private val api: VideoApi,
         private val shikicinemaVideoApi: ShikicinemaVideoApi
 ) : AnimeSource {
@@ -25,7 +25,7 @@ class ShimoriAnimeSourceImpl @Inject constructor(
      * Kodik knows how many episodes it has - every search result carries the number for its own
      * translation, so the list is as long as the most complete translation.
      */
-    override fun getEpisodes(id: Long, name: String): Single<List<EpisodeResponse>> {
+    override fun getEpisodes(id: Long): Single<List<EpisodeResponse>> {
         return searchKodik(id)
                 .map { results -> results.map { it.episodes }.max() ?: 0 }
                 .map { episodes ->
@@ -43,7 +43,7 @@ class ShimoriAnimeSourceImpl @Inject constructor(
      * One kodik search result is one translation of the whole title, so an episode's translations
      * are the results that actually carry a link for that episode.
      */
-    override fun getTranslations(animeId: Long, name: String, episodeId: Long, type: TranslationType): Single<List<TranslationResponse>> {
+    override fun getTranslations(animeId: Long, episodeId: Long, type: TranslationType): Single<List<TranslationResponse>> {
         return searchKodik(animeId)
                 .map { results ->
                     results.asSequence()

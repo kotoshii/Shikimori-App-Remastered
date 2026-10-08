@@ -9,7 +9,6 @@ data class SeriesNavigationData(
         val animeId: Long,
         val image: Image,
         val name: String,
-        val nameEng : String,
         val rateId: Long?,
         //the list entry's count when the screen was opened; WatchProgressStore keeps it current
         val watchedEpisodes : Int,

@@ -16,8 +16,8 @@ class SeriesInteractorImpl @Inject constructor(
         private val watchProgress: WatchProgressStore
 ) : SeriesInteractor {
 
-    override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
-            repository.getEpisodes(id, name, alternative)
+    override fun getEpisodes(id: Long, alternative: Boolean): Single<List<Episode>> =
+            repository.getEpisodes(id, alternative)
                     //watched means not above shikimori's count - the app keeps no ticks of its own
                     .map { list ->
                         val watched = watchProgress.watchedEpisodes(id)
@@ -25,8 +25,8 @@ class SeriesInteractorImpl @Inject constructor(
                     }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getTranslations(type: TranslationType, animeId: Long, episodeId: Long, name : String, alternative: Boolean, loadLength: Boolean): Single<List<Translation>> =
-            repository.getTranslations(type, animeId, episodeId, name, alternative, loadLength)
+    override fun getTranslations(type: TranslationType, animeId: Long, episodeId: Long, alternative: Boolean, loadLength: Boolean): Single<List<Translation>> =
+            repository.getTranslations(type, animeId, episodeId, alternative, loadLength)
                     .applyErrorHandlerAndSchedulers()
 
     override fun getTranslationSettings(animeId: Long): Single<TranslationSetting> =

@@ -123,7 +123,7 @@ class MangaPresenter @Inject constructor(
 
     override fun onChronology() {
         super.onChronology()
-        val data = ChronologyNavigationData(id, type, currentManga.franchise)
+        val data = ChronologyNavigationData(id, type)
         router.navigateTo(Screens.CHRONOLOGY, data)
     }
 

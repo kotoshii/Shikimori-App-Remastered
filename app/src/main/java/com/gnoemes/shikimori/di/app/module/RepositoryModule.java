@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.di.app.module;
 
 import com.gnoemes.shikimori.data.local.services.DownloadSource;
-import com.gnoemes.shikimori.data.local.services.impl.DownloadManagerSourceImpl;
+import com.gnoemes.shikimori.data.local.services.impl.DownloadSourceImpl;
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository;
 import com.gnoemes.shikimori.data.repository.app.TaskRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenRepository;
@@ -50,7 +50,7 @@ public interface RepositoryModule {
 
     @Binds
     @Singleton
-    DownloadSource bindDownloadSource(DownloadManagerSourceImpl source);
+    DownloadSource bindDownloadSource(DownloadSourceImpl source);
 
     @Binds
     @Reusable

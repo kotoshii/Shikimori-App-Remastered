@@ -7,6 +7,5 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class ChronologyNavigationData(
         val id: Long,
-        val type: Type,
-        val franchise: String?
+        val type: Type
 ) : Parcelable

@@ -7,7 +7,6 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class EpisodesNavigationData(
         val animeId: Long,
-        val name : String,
         val currentEpisode: Int,
         val isAlternative: Boolean
 ) : Parcelable

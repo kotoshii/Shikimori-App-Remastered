@@ -338,7 +338,7 @@ class RatePresenter @Inject constructor(
                 if (settingsSource.isRussianNaming) rate.anime?.nameRu.nullIfEmpty() ?: rate.anime?.name!!
                 else rate.anime?.name!!
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
-        val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.anime.name, rate.id, watched, episodesAired!!, watched + 1)
+        val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.id, watched, episodesAired!!, watched + 1)
         router.navigateTo(Screens.SERIES, navigationData)
     }
 

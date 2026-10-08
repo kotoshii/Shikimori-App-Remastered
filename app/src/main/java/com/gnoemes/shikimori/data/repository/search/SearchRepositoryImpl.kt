@@ -72,8 +72,6 @@ class SearchRepositoryImpl @Inject constructor(
                 Type.ANIME -> getAnimeList(queryMap)
                 Type.MANGA -> getMangaList(queryMap)
                 Type.RANOBE -> getRanobeList(queryMap)
-                Type.CHARACTER -> getCharacterList(queryMap)
-                Type.PERSON -> getCharacterList(queryMap)
                 else -> Single.error(IllegalArgumentException("$type search is not supported"))
             })
                     .map { it }

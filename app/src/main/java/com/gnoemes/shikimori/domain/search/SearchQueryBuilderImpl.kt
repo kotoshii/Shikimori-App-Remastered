@@ -1,8 +1,8 @@
 package com.gnoemes.shikimori.domain.search
 
-import android.text.TextUtils
 import androidx.collection.ArrayMap
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
 import io.reactivex.Single
@@ -36,19 +36,15 @@ class SearchQueryBuilderImpl @Inject constructor(
         return Single.just(queryMap)
     }
 
-    override fun createQueryFromIds(ids: MutableCollection<Long>, searchQuery: String?, page: Int, limit: Int): Single<Map<String, String>> {
+    override fun createQueryFromIds(ids: MutableCollection<Long>): Single<Map<String, String>> {
         val queryMap = ArrayMap<String, String>()
-
-        if (!TextUtils.isEmpty(searchQuery)) {
-            queryMap[SearchConstants.SEARCH] = searchQuery
-        }
 
         if (ids.isNotEmpty()) {
             val query = convertQuery(ids.map { it.toString() })
 
             queryMap[SearchConstants.IDS] = query
-            queryMap[SearchConstants.PAGE] = page.toString()
-            queryMap[SearchConstants.LIMIT] = limit.toString()
+            queryMap[SearchConstants.PAGE] = "1"
+            queryMap[SearchConstants.LIMIT] = Constants.MAX_LIMIT.toString()
 
             queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
         }

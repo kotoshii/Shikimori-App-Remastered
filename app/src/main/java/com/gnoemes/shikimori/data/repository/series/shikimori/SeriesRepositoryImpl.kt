@@ -24,12 +24,12 @@ class SeriesRepositoryImpl @Inject constructor(
         private val parsers: HostingParsers
 ) : SeriesRepository {
 
-    override fun getEpisodes(id: Long, name: String, alternative: Boolean): Single<List<Episode>> =
-            (if (alternative) source.getEpisodesShikicinema(id) else source.getEpisodes(id, name))
+    override fun getEpisodes(id: Long, alternative: Boolean): Single<List<Episode>> =
+            (if (alternative) source.getEpisodesShikicinema(id) else source.getEpisodes(id))
                     .map { episodes -> episodes.filter { it.index > 0 }.sortedBy { it.index }.map(converter::convertResponse) }
 
-    override fun getTranslations(type: TranslationType, animeId: Long, episodeId: Long, name : String, alternative: Boolean, loadLength: Boolean): Single<List<Translation>> =
-            (if (alternative) source.getTranslationsShikicinema(animeId, episodeId, type, loadLength) else source.getTranslations(animeId, name, episodeId, type))
+    override fun getTranslations(type: TranslationType, animeId: Long, episodeId: Long, alternative: Boolean, loadLength: Boolean): Single<List<Translation>> =
+            (if (alternative) source.getTranslationsShikicinema(animeId, episodeId, type, loadLength) else source.getTranslations(animeId, episodeId, type))
                     .map(translationConverter)
                     .map { translations ->
                         if (settingsSource.hideAnime365 && tokenSource.getToken() == null)

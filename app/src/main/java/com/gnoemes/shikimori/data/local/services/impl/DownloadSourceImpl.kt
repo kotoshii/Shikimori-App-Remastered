@@ -15,7 +15,7 @@ import javax.inject.Inject
  * source - and ran the transfer in a separate system process that is not always on the same network
  * as the app. Doing it in-process fixes both.
  */
-class DownloadManagerSourceImpl @Inject constructor(
+class DownloadSourceImpl @Inject constructor(
         private val context: Context,
         private val settingsSource: SettingsSource
 ) : DownloadSource {

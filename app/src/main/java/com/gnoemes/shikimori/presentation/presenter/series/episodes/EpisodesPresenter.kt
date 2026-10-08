@@ -49,7 +49,7 @@ class EpisodesPresenter @Inject constructor(
                     .addToDisposables()
 
     private fun loadEpisodes(): Single<List<EpisodeViewModel>> =
-            interactor.getEpisodes(navigationData.animeId, navigationData.name, isAlternativeSource)
+            interactor.getEpisodes(navigationData.animeId, isAlternativeSource)
                     .map{ converter.convert(it, navigationData.currentEpisode, userInteractor.getUserStatus())}
 
     private fun setData(items: List<EpisodeViewModel>) {

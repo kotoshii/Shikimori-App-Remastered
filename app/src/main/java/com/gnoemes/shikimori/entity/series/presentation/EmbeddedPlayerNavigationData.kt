@@ -8,6 +8,5 @@ data class EmbeddedPlayerNavigationData(
         val animeName: String,
         val episodesSize : Int,
         val payload: TranslationVideo,
-        val nameEng: String,
         val isAlternative: Boolean
 ) : Parcelable

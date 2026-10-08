@@ -30,17 +30,17 @@ class ChronologyInteratorImpl @Inject constructor(
         private val searchQueryBuilder: SearchQueryBuilder
 ) : ChronologyInteractor {
 
-    override fun getAnimes(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
+    override fun getAnimes(id: Long, type: ChronologyType): Single<List<ChronologyItem>> =
             animeRepository.getFranchise(id)
                     .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.ANIME, type) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getMangas(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
+    override fun getMangas(id: Long, type: ChronologyType): Single<List<ChronologyItem>> =
             mangaRepository.getFranchise(id)
                     .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.MANGA, type) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getRanobes(id: Long, franchiseName: String?, type: ChronologyType): Single<List<ChronologyItem>> =
+    override fun getRanobes(id: Long, type: ChronologyType): Single<List<ChronologyItem>> =
             ranobeRepository.getFranchise(id)
                     .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.RANOBE, type) }
                     .applyErrorHandlerAndSchedulers()

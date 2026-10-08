@@ -49,7 +49,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
     }
 
     private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
-            .getTranslations(type, animeId, episodeId, navigationData.nameEng, navigationData.isAlternative, false)
+            .getTranslations(type, animeId, episodeId, navigationData.isAlternative, false)
             .appendLoadingLogic(viewState)
 
     //only videos with tracks get here, see loadEpisodeVideo

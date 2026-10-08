@@ -127,7 +127,7 @@ open class AnimePresenter @Inject constructor(
 
     override fun onChronology() {
         super.onChronology()
-        val data = ChronologyNavigationData(id, type, currentAnime.franchise)
+        val data = ChronologyNavigationData(id, type)
         router.navigateTo(Screens.CHRONOLOGY, data)
     }
 
@@ -158,7 +158,6 @@ open class AnimePresenter @Inject constructor(
         val data = SeriesNavigationData(id,
                 currentAnime.image,
                 currentAnime.nameRu.nullIfEmpty() ?: currentAnime.name,
-                currentAnime.name,
                 currentAnime.userRate?.id,
                 currentAnime.userRate?.episodes ?: 0,
                 if (currentAnime.status == Status.RELEASED) currentAnime.episodes else currentAnime.episodesAired,

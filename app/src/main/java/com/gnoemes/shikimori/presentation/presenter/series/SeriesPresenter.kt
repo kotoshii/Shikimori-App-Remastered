@@ -101,7 +101,7 @@ class SeriesPresenter @Inject constructor(
                     .subscribe(this::setData, this::processErrors)
                     .addToDisposables()
 
-    private fun loadEpisodes() = interactor.getEpisodes(navigationData.animeId, navigationData.nameEng, isAlternative)
+    private fun loadEpisodes() = interactor.getEpisodes(navigationData.animeId, isAlternative)
             .map { it.take(navigationData.episodesAired) }
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
@@ -109,7 +109,7 @@ class SeriesPresenter @Inject constructor(
             .addToDisposables()
 
     private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
-            .getTranslations(type, navigationData.animeId, episodeId, navigationData.nameEng, isAlternative, true)
+            .getTranslations(type, navigationData.animeId, episodeId, isAlternative, true)
             .doOnSubscribe { viewState.setTranslationType(type) }
             .map { converter.convertTranslations(it, setting) }
 
@@ -168,7 +168,7 @@ class SeriesPresenter @Inject constructor(
         } else viewState.showData(it)
     }
 
-    fun onNextEpisode() = interactor.getEpisodes(navigationData.animeId, navigationData.nameEng, isAlternative)
+    fun onNextEpisode() = interactor.getEpisodes(navigationData.animeId, isAlternative)
             .map { it.take(navigationData.episodesAired) }
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
@@ -308,7 +308,7 @@ class SeriesPresenter @Inject constructor(
     }
 
     fun showEpisodes() {
-        val data = EpisodesNavigationData(navigationData.animeId, navigationData.nameEng, episode!!, isAlternative)
+        val data = EpisodesNavigationData(navigationData.animeId, episode!!, isAlternative)
         viewState.showEpisodesDialog(data)
     }
 
@@ -370,7 +370,7 @@ class SeriesPresenter @Inject constructor(
             return
         }
 
-        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, navigationData.nameEng, isAlternative))
+        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, isAlternative))
         else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
