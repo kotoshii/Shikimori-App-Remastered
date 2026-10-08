@@ -33,7 +33,8 @@ class EpisodeAdapterDelegate(
 
         init {
             itemView.episodeContainer.onClick { callback.invoke(item) }
-            itemView.episodeContainer.setOnLongClickListener { longPressListener.invoke(item);false }
+            //handled, so releasing a long press does not open the episode as well
+            itemView.episodeContainer.setOnLongClickListener { longPressListener.invoke(item);true }
         }
 
         fun bind(item: EpisodeViewModel) {
