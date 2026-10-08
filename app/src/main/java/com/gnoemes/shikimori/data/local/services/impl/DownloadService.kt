@@ -17,6 +17,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
 import com.gnoemes.shikimori.utils.VideoMuxer
+import com.gnoemes.shikimori.utils.appFolder
 import com.gnoemes.shikimori.utils.notificationManager
 import java.io.File
 import java.util.concurrent.Executors
@@ -192,7 +193,7 @@ class DownloadService : Service() {
     }
 
     private fun downloadEpisode(data: DownloadVideoData, title: String, folder: String): Result? {
-        val directory = File(File(folder), "anime/" + truncateToBytes(safeName(data.animeName), MAX_NAME_BYTES))
+        val directory = File(appFolder(folder), "anime/" + truncateToBytes(safeName(data.animeName), MAX_NAME_BYTES))
         val link = data.link
 
         Log.d(TAG, "start: link=$link audio=${data.audioLink} dir=${directory.absolutePath}")
@@ -211,7 +212,7 @@ class DownloadService : Service() {
      * adding a copy.
      */
     private fun saveFile(data: DownloadFileData, folder: String): Result? {
-        val directory = data.folders.fold(File(folder)) { parent, name ->
+        val directory = data.folders.fold(appFolder(folder)) { parent, name ->
             File(parent, truncateToBytes(safeName(name), MAX_NAME_BYTES))
         }
         val target = File(directory, safeName(data.name))

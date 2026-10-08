@@ -19,7 +19,8 @@
 
     <string name="settings_content_download_folder_title">Папка загрузки</string>
     <string name="settings_content_download_folder_key" translatable="false">DOWNLOAD_FOLDER</string>
-    <string name="settings_content_download_folder_summary">Укажите путь для скачивания</string>
+    <string name="settings_content_download_folder_summary">Приложение создаст в выбранном месте папку ShikimoriApp и будет сохранять туда эпизоды и скриншоты</string>
+    <string name="settings_content_download_folder_hint">Эпизоды и скриншоты сохраняются в эту папку</string>
 
     <string name="settings_statuses">Списки</string>
     <string name="settings_statuses_auto_increment_title">Автоматический подсчет</string>

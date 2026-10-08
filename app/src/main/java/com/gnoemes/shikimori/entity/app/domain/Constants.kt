@@ -43,4 +43,8 @@ object Constants {
     const val MAX_PINNED_RATES = 3
 
     const val BACKUP_FILE_NAME= "shimori-backup.json"
+
+    //the folder the app creates inside the download folder chosen in settings; named in the
+    //setting's texts too
+    const val APP_FOLDER_NAME = "ShikimoriApp"
 }

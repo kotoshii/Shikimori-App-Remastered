@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
+import com.gnoemes.shikimori.utils.appFolder
 import com.gnoemes.shikimori.utils.preference
 import com.gnoemes.shikimori.utils.prefs
 import com.gnoemes.shikimori.utils.putString
@@ -82,8 +83,11 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
     private fun updateFolderSummary() {
         val folder = prefs().getString(SettingsExtras.DOWNLOAD_FOLDER, "")
+        //the setting holds the folder the user picked; files go into the app's folder inside it,
+        //so that is the path shown
         val summary =
-                if (!folder.isNullOrEmpty()) folder
+                if (!folder.isNullOrEmpty()) appFolder(folder).absolutePath + "\n" +
+                        context!!.getString(R.string.settings_content_download_folder_hint)
                 else context!!.getString(R.string.settings_content_download_folder_summary)
         preference(SettingsExtras.DOWNLOAD_FOLDER)?.summary = summary
     }

@@ -93,7 +93,9 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             try {
                 val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
                 val path = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, androidDownloadFolder)
-                file.copyTo(File(path, Constants.BACKUP_FILE_NAME), overwrite = true)
+                        ?: androidDownloadFolder
+                //into the app's folder, beside the downloads; copyTo creates the folder if needed
+                file.copyTo(File(appFolder(path), Constants.BACKUP_FILE_NAME), overwrite = true)
                 Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_LONG).show()
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -105,22 +107,20 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     private fun findBackupLocal() {
         checkStoragePermissions {
             try {
-                val filePart = "/${Constants.BACKUP_FILE_NAME}"
-                val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + filePart
-                val appFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "")?.let {
-                    if (it.isNotEmpty()) it + filePart
-                    else it
-                }
+                val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
+                val chosenFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "").orEmpty()
+                val folders = listOf(chosenFolder, androidDownloadFolder).filter { it.isNotEmpty() }
 
-                val downloadsFile = File(androidDownloadFolder)
-                val folderFile = File(appFolder)
+                //the app's folder first, where backups are saved now, then the folders themselves,
+                //where they were saved before it, so an older backup is still found
+                val found = (folders.map { appFolder(it) } + folders.map { File(it) })
+                        .map { File(it, Constants.BACKUP_FILE_NAME) }
+                        .firstOrNull { it.exists() }
 
                 val read: (File?) -> Unit = { readBackup(it) }
 
-                if (downloadsFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(downloadsFile) }) { showFolderChooserDialog(read) }
-                } else if (!appFolder.isNullOrBlank() && folderFile.exists()) {
-                    context?.fileFoundDialog({ read.invoke(folderFile) }) { showFolderChooserDialog(read) }
+                if (found != null) {
+                    context?.fileFoundDialog({ read.invoke(found) }) { showFolderChooserDialog(read) }
                 } else {
                     showFolderChooserDialog(read)
                 }
