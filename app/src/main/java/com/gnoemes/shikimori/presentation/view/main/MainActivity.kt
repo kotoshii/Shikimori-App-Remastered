@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
+import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
 import com.gnoemes.shikimori.data.network.GithubApi
 import com.gnoemes.shikimori.entity.app.data.GithubReleaseResponse
@@ -93,7 +94,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
             presenter.onTabItemReselected(tab.screenKey)
         }
 
-        navbarDivider.visibleIf { getCurrentTheme != R.style.ShikimoriAppTheme_Amoled }
+        navbarDivider.visibleIf { activeTheme != Theme.AMOLED }
     }
 
     private fun initContainer() {

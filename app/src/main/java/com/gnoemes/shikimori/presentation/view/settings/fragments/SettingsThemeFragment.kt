@@ -59,23 +59,12 @@ class SettingsThemeFragment : BaseSettingsFragment(), Toolbar.OnMenuItemClickLis
         activity?.onBackPressed()
     }
 
-    private fun getAscentTheme(ascentStyle: Int): Int = when (ascentStyle) {
-        R.style.AscentStyle_Red -> AscentTheme.RED.index
-        R.style.AscentStyle_Orange -> AscentTheme.ORANGE.index
-        R.style.AscentStyle_Yellow -> AscentTheme.YELLOW.index
-        R.style.AscentStyle_Green -> AscentTheme.GREEN.index
-        R.style.AscentStyle_Cyan -> AscentTheme.CYAN.index
-        R.style.AscentStyle_Blue -> AscentTheme.BLUE.index
-        R.style.AscentStyle_Purple -> AscentTheme.PURPLE.index
-        else -> AscentTheme.ORANGE.index
-    }
+    private fun getAscentTheme(ascentStyle: Int): Int =
+            (AscentTheme.values().find { it.style == ascentStyle } ?: AscentTheme.ORANGE).index
 
-    private fun getTheme(theme: Int): Int = when (theme) {
-        R.style.ShikimoriAppTheme_Default -> Theme.DEFAULT.index
-        R.style.ShikimoriAppTheme_Dark -> Theme.DARK.index
-        R.style.ShikimoriAppTheme_Amoled -> Theme.AMOLED.index
-        else -> -1
-    }
+    //-1 is "no night theme"
+    private fun getTheme(theme: Int): Int =
+            Theme.values().find { it.style == theme }?.index ?: -1
 
     override fun onDestroy() {
         super.onDestroy()

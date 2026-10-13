@@ -1,9 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.common.converter
 
 import android.content.Context
-import android.graphics.Color
 import android.text.SpannableStringBuilder
-import androidx.core.graphics.ColorUtils
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.anime.domain.*
@@ -20,7 +18,7 @@ import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.roles.domain.Work
 import com.gnoemes.shikimori.utils.colorSpan
-import com.gnoemes.shikimori.utils.getCurrentTheme
+import com.gnoemes.shikimori.utils.faintTextColor
 import com.gnoemes.shikimori.utils.nullIfEmpty
 import javax.inject.Inject
 
@@ -29,8 +27,8 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         private val settings: SettingsSource
 ) : DetailsContentViewModelConverter {
 
-    private val isDarkTheme by lazy { context.getCurrentTheme != R.style.ShikimoriAppTheme_Default }
-    private val dividerColor by lazy { val color = if (isDarkTheme) Color.WHITE else Color.BLACK; ColorUtils.setAlphaComponent(color, 97) }
+    private val dividerColor: Int
+        get() = context.faintTextColor
 
     override fun apply(t: List<Any>): DetailsContentItem {
         val items = convertItems(t)

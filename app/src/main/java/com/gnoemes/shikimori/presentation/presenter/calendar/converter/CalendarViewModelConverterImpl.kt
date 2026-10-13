@@ -1,9 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.calendar.converter
 
 import android.content.Context
-import android.graphics.Color
 import android.text.SpannableStringBuilder
-import androidx.core.graphics.ColorUtils
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
@@ -13,7 +11,7 @@ import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
-import com.gnoemes.shikimori.utils.getCurrentTheme
+import com.gnoemes.shikimori.utils.faintTextColor
 import com.gnoemes.shikimori.utils.nullIfEmpty
 import com.gnoemes.shikimori.utils.toHoursAndMinutesAndSeconds
 import org.joda.time.*
@@ -26,8 +24,8 @@ class CalendarViewModelConverterImpl @Inject constructor(
         private val settings: SettingsSource
 ) : CalendarViewModelConverter {
 
-    private val isDarkTheme by lazy { context.getCurrentTheme != R.style.ShikimoriAppTheme_Default }
-    private val dividerColor by lazy { val color = if (isDarkTheme) Color.WHITE else Color.BLACK; ColorUtils.setAlphaComponent(color, 97) }
+    private val dividerColor: Int
+        get() = context.faintTextColor
 
     override fun apply(t: List<CalendarItem>): List<CalendarViewModel> {
         val list = mutableListOf<CalendarViewModel>()
