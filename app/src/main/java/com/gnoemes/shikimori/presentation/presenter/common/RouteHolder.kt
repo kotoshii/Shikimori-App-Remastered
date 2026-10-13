@@ -8,12 +8,10 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.auth.AuthType
-import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.main.BottomScreens
-import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
 import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
@@ -54,7 +52,7 @@ object RouteHolder {
             BottomScreens.MAIN -> ShikimoriMainFragment.newInstance()
             BottomScreens.MORE -> UserFragment.newInstance()
             Screens.ANIME_DETAILS -> AnimeFragment.newInstance(data as Long)
-            Screens.MANGA_DETAILS -> MangaFragment.newInstance(data as MangaNavigationData)
+            Screens.MANGA_DETAILS -> MangaFragment.newInstance(data as CommonNavigationData)
             Screens.CHARACTER_DETAILS -> CharacterFragment.newInstance(data as Long)
             Screens.PERSON_DETAILS -> PersonFragment.newInstance(data as Long)
             Screens.TOPIC_DETAILS -> TopicFragment.newInstance(data as Long)
@@ -66,7 +64,7 @@ object RouteHolder {
             Screens.USER_HISTORY -> UserHistoryFragment.newInstance(data as UserHistoryNavigationData)
             Screens.USER_FAVORITES -> FavoritesFragment.newInstance(data as Long)
             Screens.SIMILAR -> SimilarFragment.newInstance(data as CommonNavigationData)
-            Screens.CHRONOLOGY -> ChronologyFragment.newInstance(data as ChronologyNavigationData)
+            Screens.CHRONOLOGY -> ChronologyFragment.newInstance(data as CommonNavigationData)
             else -> null
         }
     }

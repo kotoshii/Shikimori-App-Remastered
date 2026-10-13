@@ -13,7 +13,6 @@ import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
 import com.gnoemes.shikimori.utils.faintTextColor
-import com.gnoemes.shikimori.utils.toHoursAndMinutesAndSeconds
 import org.joda.time.*
 import javax.inject.Inject
 
@@ -42,10 +41,10 @@ class CalendarViewModelConverterImpl @Inject constructor(
                 ))
             }
 
-            var todayPastFlag = convertDuration(groupDate) == null
+            var todayPastFlag = isAired(groupDate)
 
             t.forEach { item ->
-                val isTodayPastItem = convertDuration(item.nextEpisodeDate) == null
+                val isTodayPastItem = isAired(item.nextEpisodeDate)
                 if (!dateTimeUtils.isSameDay(groupDate, item.nextEpisodeDate) || (todayPastFlag && !isTodayPastItem && animeList.isNotEmpty())) {
                     addItem(todayPastFlag)
                     animeList = mutableListOf()
@@ -65,7 +64,7 @@ class CalendarViewModelConverterImpl @Inject constructor(
     }
 
     private fun convertItem(item: CalendarItem): CalendarAnimeItem {
-        val isAlreadyAired = convertDuration(item.nextEpisodeDate) == null
+        val isAlreadyAired = isAired(item.nextEpisodeDate)
 
         val description = if (isAlreadyAired) String.format(context.getString(R.string.episode_number), item.nextEpisode).toUpperCase()
         else {
@@ -100,15 +99,9 @@ class CalendarViewModelConverterImpl @Inject constructor(
         )
     }
 
-    private fun convertDuration(nextEpisodeDate: DateTime?): String? {
-        if (nextEpisodeDate == null) return null
-
-        val now = dateTimeUtils.nowDateTime
-        return when (now.isBefore(nextEpisodeDate)) {
-            true -> Interval(now, nextEpisodeDate).toDuration().toHoursAndMinutesAndSeconds()
-            else -> null
-        }
-    }
+    //no date, or the date has passed
+    private fun isAired(nextEpisodeDate: DateTime?): Boolean =
+            nextEpisodeDate == null || !dateTimeUtils.nowDateTime.isBefore(nextEpisodeDate)
 
     private fun Int.addZeroIfNeed(): String {
         return if (this < 10) "0$this"

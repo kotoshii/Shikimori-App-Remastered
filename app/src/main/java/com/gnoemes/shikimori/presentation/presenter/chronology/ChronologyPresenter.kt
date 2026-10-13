@@ -7,9 +7,9 @@ import com.gnoemes.shikimori.domain.chronology.ChronologyInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -32,7 +32,7 @@ class ChronologyPresenter @Inject constructor(
         private val resourceProvider: CommonResourceProvider
 ) : BaseNetworkPresenter<ChronologyView>() {
 
-    lateinit var data: ChronologyNavigationData
+    lateinit var data: CommonNavigationData
 
     private val items = mutableListOf<ChronologyViewModel>()
 

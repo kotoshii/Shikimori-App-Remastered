@@ -11,8 +11,8 @@ import com.gnoemes.shikimori.entity.anime.domain.AnimeDetails
 import com.gnoemes.shikimori.entity.anime.domain.Screenshot
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -128,7 +128,7 @@ open class AnimePresenter @Inject constructor(
 
     override fun onChronology() {
         super.onChronology()
-        val data = ChronologyNavigationData(id, type)
+        val data = CommonNavigationData(id, type)
         router.navigateTo(Screens.CHRONOLOGY, data)
     }
 

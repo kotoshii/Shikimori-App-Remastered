@@ -9,8 +9,8 @@ import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.related.RelatedInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
 import com.gnoemes.shikimori.entity.roles.domain.Person
@@ -123,7 +123,7 @@ class MangaPresenter @Inject constructor(
 
     override fun onChronology() {
         super.onChronology()
-        val data = ChronologyNavigationData(id, type)
+        val data = CommonNavigationData(id, type)
         router.navigateTo(Screens.CHRONOLOGY, data)
     }
 

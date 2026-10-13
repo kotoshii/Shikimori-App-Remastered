@@ -16,57 +16,31 @@ class SearchQueryBuilderImpl @Inject constructor(
         private const val DIVIDER = ","
     }
 
-    override fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int?, limit: Int?): Single<Map<String, String>> {
-        val queryMap = ArrayMap<String, String>()
+    override fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int?, limit: Int?): Single<Map<String, String>> =
+            Single.fromCallable<Map<String, String>> {
+                val queryMap = ArrayMap<String, String>()
+                //no filters: the catalog's default list, by rank
+                if (filters.isNullOrEmpty()) queryMap[SearchConstants.ORDER] = SearchConstants.ORDER_BY.RANKED.toString()
+                else filters.forEach { entry -> queryMap[entry.key] = convertFilters(entry.value) }
+                queryMap.putPageAndCensored(page, limit)
+                queryMap
+            }
 
-        if (filters.isNullOrEmpty()) return Single.fromCallable { getDefaultRequest(page, limit) }
+    override fun createQueryFromIds(ids: MutableCollection<Long>): Single<Map<String, String>> =
+            Single.fromCallable<Map<String, String>> {
+                val queryMap = ArrayMap<String, String>()
+                if (ids.isNotEmpty()) {
+                    queryMap[SearchConstants.IDS] = convertQuery(ids.map { it.toString() })
+                    queryMap.putPageAndCensored(1, Constants.MAX_LIMIT)
+                }
+                queryMap
+            }
 
-        filters.forEach { entry -> queryMap[entry.key] = convertFilters(entry.value) }
-
-        if (page != null) {
-            queryMap[SearchConstants.PAGE] = page.toString()
-        }
-
-        if (limit != null) {
-            queryMap[SearchConstants.LIMIT] = limit.toString()
-        }
-
-        queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
-
-        return Single.just(queryMap)
-    }
-
-    override fun createQueryFromIds(ids: MutableCollection<Long>): Single<Map<String, String>> {
-        val queryMap = ArrayMap<String, String>()
-
-        if (ids.isNotEmpty()) {
-            val query = convertQuery(ids.map { it.toString() })
-
-            queryMap[SearchConstants.IDS] = query
-            queryMap[SearchConstants.PAGE] = "1"
-            queryMap[SearchConstants.LIMIT] = Constants.MAX_LIMIT.toString()
-
-            queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
-        }
-
-        return Single.just(queryMap)
-    }
-
-    private fun getDefaultRequest(page: Int?, limit: Int?): MutableMap<String, String> {
-        val queryMap = ArrayMap<String, String>()
-
-        if (page != null) {
-            queryMap[SearchConstants.PAGE] = page.toString()
-        }
-
-        if (limit != null) {
-            queryMap[SearchConstants.LIMIT] = limit.toString()
-        }
-
-        queryMap[SearchConstants.ORDER] = SearchConstants.ORDER_BY.RANKED.toString()
-
-        queryMap[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
-        return queryMap
+    /** The page, the page size and the 18+ choice, which every catalog request carries. */
+    private fun MutableMap<String, String>.putPageAndCensored(page: Int?, limit: Int?) {
+        if (page != null) this[SearchConstants.PAGE] = page.toString()
+        if (limit != null) this[SearchConstants.LIMIT] = limit.toString()
+        this[SearchConstants.CENSORED] = (!settingsSource.allowR18Content).toString()
     }
 
     private fun convertFilters(values: MutableList<FilterItem>): String {

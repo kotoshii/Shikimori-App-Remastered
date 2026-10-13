@@ -6,10 +6,10 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
-import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.presentation.presenter.manga.MangaPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
@@ -32,13 +32,13 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
     fun providePresenter(): MangaPresenter =
             presenterProvider.get().apply {
                 localRouter = (parentFragment as RouterProvider).localRouter
-                val data = arguments?.getParcelable<MangaNavigationData>(AppExtras.ARGUMENT_MANGA_DATA)!!
+                val data = arguments?.getParcelable<CommonNavigationData>(AppExtras.ARGUMENT_MANGA_DATA)!!
                 id = data.id
                 isRanobe = data.type == Type.RANOBE
             }
 
     companion object {
-        fun newInstance(data: MangaNavigationData) = MangaFragment().withArgs { putParcelable(AppExtras.ARGUMENT_MANGA_DATA, data) }
+        fun newInstance(data: CommonNavigationData) = MangaFragment().withArgs { putParcelable(AppExtras.ARGUMENT_MANGA_DATA, data) }
     }
 
     private val charactersAdapter by lazy { ContentAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onAction) }
