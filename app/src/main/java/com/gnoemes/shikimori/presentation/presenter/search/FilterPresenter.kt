@@ -19,7 +19,7 @@ import javax.inject.Inject
 open class FilterPresenter @Inject constructor(
         private val interactor: FilterInteractor,
         private val converter: FilterViewModelConverter
-) : BaseFilterPresenter<FilterView>() {
+) : BaseFilterPresenter<FilterView>(interactor) {
 
     private val items = mutableListOf<Any>()
 
@@ -41,11 +41,7 @@ open class FilterPresenter @Inject constructor(
     }
 
     override fun loadData() {
-        (when (type) {
-            Type.MANGA -> interactor.getMangaFilters()
-            Type.RANOBE -> interactor.getRanobeFilters()
-            else -> interactor.getAnimeFilters()
-        })
+        loadCategories()
                 .map { converter.convert(it, appliedFilters) }
                 .subscribe(this::setData, this::processErrors)
                 .addToDisposables()

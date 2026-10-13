@@ -11,16 +11,12 @@ import javax.inject.Inject
 
 @InjectViewState
 class FilterGenresPresenter @Inject constructor(
-        private val interactor: FilterInteractor,
+        interactor: FilterInteractor,
         private val converter: FilterViewModelConverter
-) : BaseFilterPresenter<FilterGenresView>() {
+) : BaseFilterPresenter<FilterGenresView>(interactor) {
 
     override fun loadData() =
-            (when (type) {
-                Type.MANGA -> interactor.getMangaFilters()
-                Type.RANOBE -> interactor.getRanobeFilters()
-                else -> interactor.getAnimeFilters()
-            })
+            loadCategories()
                     .map { list -> list.first { it.filterType == FilterType.GENRE } }
                     .map { converter.convertGenres(it, appliedFilters) }
                     .subscribe(this::setData, this::processErrors)

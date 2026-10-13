@@ -15,8 +15,8 @@ import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
-import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetInjectionDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
+import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
@@ -25,29 +25,19 @@ import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_filter.*
 import kotlinx.android.synthetic.main.layout_filter_bottom.*
 
-class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
+class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
 
     @InjectPresenter
     lateinit var filterPresenter: FilterPresenter
 
     @ProvidePresenter
-    fun providePresenter(): FilterPresenter = presenterProvider.get().apply {
-        type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
-        //copy of filters
-        appliedFilters = HashMap(arguments?.getSerializable(FILTERS_KEY) as HashMap<String, MutableList<FilterItem>>)
-    }
+    fun providePresenter(): FilterPresenter = presenterProvider.get().withArguments()
 
     companion object {
-        private const val FILTERS_KEY = "FILTERS_KEY"
-        private const val TYPE_KEY = "TYPE_KEY"
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = FilterFragment()
-                .withArgs {
-                    putSerializable(TYPE_KEY, type)
-                    putSerializable(FILTERS_KEY, filters)
-                }
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterFragment(), type, filters)
     }
 
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
@@ -148,10 +138,5 @@ class FilterFragment : BaseBottomSheetInjectionDialogFragment<FilterPresenter, F
 
     override fun setSortFilterText(text: String) {
         sortBtn.text = text
-    }
-
-    override fun onFiltersAccepted(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
-        (targetFragment as? FilterCallback)?.onFiltersSelected(tag, appliedFilters)
-        onBackPressed()
     }
 }

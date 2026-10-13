@@ -1,7 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.search.filter.seasons
 
-import android.content.Context
-import android.graphics.Point
 import android.os.Bundle
 import android.text.Html
 import android.view.LayoutInflater
@@ -16,8 +14,7 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.presenter.search.FilterSeasonsPresenter
-import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetInjectionDialogFragment
-import com.gnoemes.shikimori.presentation.view.search.filter.FilterCallback
+import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterChipAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.adapter.FilterSeasonsAdapter
 import com.gnoemes.shikimori.utils.*
@@ -28,35 +25,22 @@ import kotlinx.android.synthetic.main.fragment_filter_seasons.*
 import kotlinx.android.synthetic.main.layout_filter_nested_toolbar.*
 import kotlinx.android.synthetic.main.layout_filter_seasons_custom.*
 
-class FilterSeasonsFragment : BaseBottomSheetInjectionDialogFragment<FilterSeasonsPresenter, FilterSeasonsView>(), FilterSeasonsView {
+class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, FilterSeasonsView>(), FilterSeasonsView {
 
     @InjectPresenter
     lateinit var filterPresenter: FilterSeasonsPresenter
 
     @ProvidePresenter
-    fun providePresenter(): FilterSeasonsPresenter = presenterProvider.get().apply {
-        type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
-        //copy of filters
-        appliedFilters = HashMap(arguments?.getSerializable(FILTERS_KEY) as HashMap<String, MutableList<FilterItem>>)
-    }
+    fun providePresenter(): FilterSeasonsPresenter = presenterProvider.get().withArguments()
 
     companion object {
-        private const val FILTERS_KEY = "FILTERS_KEY"
-        private const val TYPE_KEY = "TYPE_KEY"
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = FilterSeasonsFragment()
-                .withArgs {
-                    putSerializable(TYPE_KEY, type)
-                    putSerializable(FILTERS_KEY, filters)
-                }
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterSeasonsFragment(), type, filters)
     }
 
     private val simpleAdapter by lazy { FilterChipAdapter(FilterType.SEASON, presenter::onFilterInverted, presenter::onFilterSelected) }
     private val customAdapter by lazy { FilterSeasonsAdapter(presenter::onNewCustomFilter, presenter::onRemoveCustomFilter) }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        peekHeight = Point().let { activity?.windowManager?.defaultDisplay?.getSize(it);it }.x - context.dimenAttr(android.R.attr.actionBarSize)
-    }
+    override val isTall: Boolean = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(getDialogLayout(), container, false)
@@ -116,10 +100,6 @@ class FilterSeasonsFragment : BaseBottomSheetInjectionDialogFragment<FilterSeaso
 
     override fun setResetEnabled(show: Boolean) = clearBtn.visibleIf { show }
 
-    override fun onFiltersAccepted(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
-        (targetFragment as? FilterCallback)?.onFiltersSelected(tag, appliedFilters)
-        onBackPressed()
-    }
 
     override fun onBackPressed() {
         dismiss()
