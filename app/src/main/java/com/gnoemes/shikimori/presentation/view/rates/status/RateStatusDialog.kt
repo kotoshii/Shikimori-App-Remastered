@@ -13,6 +13,8 @@ import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
+import com.gnoemes.shikimori.utils.iconRes
+import com.gnoemes.shikimori.utils.nameRes
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.dialog_menu.*
 
@@ -55,9 +57,8 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
 
         val currentStatus = RateStatus.values().getOrNull(index)
 
-        val items = context!!.resources.getStringArray(if (isAnime) R.array.anime_rate_stasuses else R.array.manga_rate_stasuses)
-                .zip(RateStatus.values())
-                .map { Rate(it.second.ordinal, it.second, it.first, currentStatus == it.second, getIcon(it.second), getTintColor(it.second), getSelector(it.second)) }
+        val items = RateStatus.values()
+                .map { Rate(it.ordinal, it, getString(it.nameRes(isAnime)), currentStatus == it, it.iconRes, getTintColor(it), getSelector(it)) }
 
         navView.apply {
 
@@ -84,17 +85,6 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
                 setGroupCheckable(0, true, true)
                 if (checkedId != -1) setCheckedItem(checkedId)
             }
-        }
-    }
-
-    private fun getIcon(status: RateStatus): Int {
-        return when (status) {
-            RateStatus.WATCHING -> R.drawable.ic_play_rate
-            RateStatus.PLANNED -> R.drawable.ic_planned
-            RateStatus.REWATCHING -> R.drawable.ic_replay
-            RateStatus.COMPLETED -> R.drawable.ic_check
-            RateStatus.ON_HOLD -> R.drawable.ic_pause_rate
-            RateStatus.DROPPED -> R.drawable.ic_close
         }
     }
 

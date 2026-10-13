@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
+import com.gnoemes.shikimori.utils.nameRes
 import org.joda.time.DateTime
 import javax.inject.Inject
 
@@ -103,9 +104,8 @@ class FilterSourceImpl @Inject constructor(
 
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =
-            getList(if (anime) R.array.anime_rate_stasuses else R.array.manga_rate_stasuses)
-                    .zip(RateStatus.values().map { it.status.toLowerCase() }.toMutableList())
-                    .map { (name, value) -> convert(FilterType.RATE.value, value, name) }
+            RateStatus.values()
+                    .map { convert(FilterType.RATE.value, it.status.toLowerCase(), context.getString(it.nameRes(anime))) }
                     .toMutableList()
 
     private fun getStatuses(): MutableList<FilterItem> =
