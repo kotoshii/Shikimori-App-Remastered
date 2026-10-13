@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
  * Segments are appended to one file exactly as they arrive. MPEG-TS concatenates losslessly, so the
  * result is playable as-is; `DownloadService` then remuxes it to mp4 when it can.
  */
-class VideoFileDownloader {
+class VideoFileDownloader(baseClient: OkHttpClient) {
 
     companion object {
         private const val TAG = "VideoDownload"
@@ -38,7 +38,8 @@ class VideoFileDownloader {
         fun onProgress(percent: Int): Boolean
     }
 
-    private val client = OkHttpClient.Builder()
+    //from the app's shared client (App.httpClient), with a longer timeout for big files
+    private val client = baseClient.newBuilder()
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()

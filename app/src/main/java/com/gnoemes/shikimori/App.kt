@@ -3,11 +3,13 @@ package com.gnoemes.shikimori
 import android.app.Activity
 import android.app.Application
 import android.util.Log
+import com.gnoemes.shikimori.di.app.annotations.BaseHttpClient
 import com.gnoemes.shikimori.di.app.component.DaggerAppComponent
 import dagger.android.*
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 import net.danlew.android.joda.JodaTimeAndroid
+import okhttp3.OkHttpClient
 import java.io.IOException
 import javax.inject.Inject
 
@@ -15,6 +17,14 @@ class App : Application(), HasActivityInjector {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
+
+    /**
+     * The shared OkHttp client, for what Dagger does not build: the image loader and the file
+     * downloads make their own from it with `newBuilder()`, so they share its connections.
+     */
+    @Inject
+    @field:BaseHttpClient
+    lateinit var httpClient: OkHttpClient
 
     override fun onCreate() {
         super.onCreate()

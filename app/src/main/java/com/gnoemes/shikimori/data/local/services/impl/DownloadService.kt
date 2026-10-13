@@ -13,6 +13,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
+import com.gnoemes.shikimori.App
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
@@ -204,7 +205,7 @@ class DownloadService : Service() {
             Log.e(TAG, "no link in DownloadVideoData - nothing to download")
             return null
         }
-        return download(VideoFileDownloader(), data, link, title, directory)
+        return download(VideoFileDownloader((application as App).httpClient), data, link, title, directory)
     }
 
     /**
@@ -219,7 +220,7 @@ class DownloadService : Service() {
 
         Log.d(TAG, "start: file=${data.url} -> ${target.absolutePath}")
 
-        val saved = VideoFileDownloader().download(data.url, emptyMap(), target, progress(data.title, 0, 100))
+        val saved = VideoFileDownloader((application as App).httpClient).download(data.url, emptyMap(), target, progress(data.title, 0, 100))
         return if (saved) Result(target) else null
     }
 
