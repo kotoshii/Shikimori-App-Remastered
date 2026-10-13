@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
@@ -13,17 +12,13 @@ import androidx.core.content.FileProvider
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.fileChooser
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.local.preference.SettingsBackup
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
-import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
-import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.*
-import com.gnoemes.shikimori.utils.network.MapDeserializerDoubleAsIntFix
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import com.kotlinpermissions.KotlinPermissions
+import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.dialog_backup.*
 import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
 import kotlinx.android.synthetic.main.layout_backup_save.view.*
@@ -31,10 +26,15 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import javax.inject.Inject
 
 class BackupDialog : BaseBottomSheetDialogFragment() {
 
+    @Inject
+    lateinit var settingsBackup: SettingsBackup
+
     override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
         super.onAttach(context)
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
     }
@@ -64,21 +64,13 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     ///////////////////////////////////////////////////////////////////////////
 
     private fun createBackupPrivate(): File {
-        val prefs = context!!.getDefaultSharedPreferences().all
-                .plus(context!!.getThemeSharedPreferences().all)
-
-        val ignore = ignoreFields
-        val items = mutableMapOf<String, Any?>()
-        prefs.forEach { entry ->
-            if (!ignore.contains(entry.key)) items[entry.key] = entry.value
-        }
         val file = File(context!!.filesDir, Constants.BACKUP_FILE_NAME)
 
         try {
             if (!file.exists()) file.createNewFile()
             val writer = FileWriter(file.absoluteFile)
             BufferedWriter(writer).run {
-                write(Gson().toJson(items))
+                write(settingsBackup.toJson())
                 close()
             }
         } catch (e: IOException) {
@@ -138,25 +130,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         }
 
         try {
-            val typeToken = object : TypeToken<Map<String, Any?>>() {}.type
-
-            val gson = GsonBuilder()
-                    .registerTypeAdapter(typeToken, MapDeserializerDoubleAsIntFix())
-                    .create()
-
-            val json = String(file.readBytes())
-            val prefs = context?.getDefaultSharedPreferences()
-            val themePrefs = context?.getThemeSharedPreferences()
-
-            var result = 0
-
-            (gson.fromJson(json, typeToken) as? Map<String, Any?>)?.forEach { entry ->
-                val field = allFields[entry.key]
-                if (field != null) {
-                    (if (themeFields.contains(entry.key)) themePrefs else prefs)?.putSetting(entry.key, getData(field, entry.value))
-                    result++
-                }
-            }
+            val result = settingsBackup.restore(String(file.readBytes()))
 
             val text = if (result == 0) R.string.backup_empty_file else R.string.backup_read_success
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
@@ -200,25 +174,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         }
     }
 
-    private fun getData(field: Any, value: Any?): Any? =
-            when {
-                field is Int && value is Long -> value.toInt()
-                field is Long -> value as? Long
-                field is Boolean -> value as? Boolean
-                field is String -> value as? String
-                else -> value
-            }
-
-    private fun SharedPreferences.putSetting(key: String, data: Any?) {
-        when (data) {
-            is Long -> putLong(key, data)
-            is String -> putString(key, data)
-            is Int -> putInt(key, data)
-            is Boolean -> putBoolean(key, data)
-            is Float -> putFloat(key, data)
-        }
-    }
-
     private fun Context.shareFile(path: String?) {
         val share = Intent(Intent.ACTION_SEND)
         share.type = "text/plain"
@@ -235,64 +190,5 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
         shareChooser.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
 
         startActivity(shareChooser)
-    }
-
-    //TODO reflection?
-    private val allFields: Map<String, Any> by lazy {
-        mapOf(
-                ThemeExtras.THEME_KEY to 0,
-                ThemeExtras.ASCENT_KEY to 0,
-                ThemeExtras.NIGHT_THEME_END_KEY to 0,
-                ThemeExtras.NIGHT_THEME_START_KEY to 0,
-                ThemeExtras.NIGHT_THEME_KEY to 0,
-                SettingsExtras.IS_ROMADZI_NAMING to true,
-                SettingsExtras.ALLOW_R18_CONTENT to false,
-                SettingsExtras.ALT_SOURCE_BY_DEFAULT to false,
-                SettingsExtras.DOWNLOAD_FOLDER to "",
-                SettingsExtras.IS_AUTO_INCREMENT to true,
-                SettingsExtras.IS_AUTO_STATUS to true,
-                SettingsExtras.TRANSLATION_TYPE to "",
-                SettingsExtras.PLAYER_TYPE to "",
-                SettingsExtras.IS_REMEMBER_PLAYER to true,
-                SettingsExtras.IS_USE_LOCAL_TRANSLATION_SETTINGS to true,
-                SettingsExtras.IS_BEST_EXTERNAL_QUALITY to true,
-                SettingsExtras.RATE_SWIPE_TO_LEFT_ACTION to "",
-                SettingsExtras.RATE_SWIPE_TO_RIGHT_ACTION to "",
-                SettingsExtras.PLAYER_IS_GESTURES_ENABLED to true,
-                SettingsExtras.PLAYER_IS_VOLUME_BRIGHTNESS_GESTURES_ENABLED to true,
-                SettingsExtras.PLAYER_IS_VOLUME_AND_BRIGHTNESS_INVERTED to true,
-                SettingsExtras.PLAYER_IS_FORWARD_REWIND_SLIDE to true,
-                SettingsExtras.PLAYER_IS_OPEN_LANDSCAPE to true,
-                SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET to 0L,
-                SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG to 0L,
-                SettingsExtras.PLAYER_IS_ZOOM_PROPORTIONAL to true,
-                SettingsExtras.PLAYER_IS_AUTO_PIP to true,
-                SettingsExtras.CHRONOLOGY_TYPE to 0,
-                SettingsExtras.SORT_KEY_PART + "_${Type.ANIME.name}" to 0,
-                SettingsExtras.SORT_KEY_PART + "_${Type.MANGA.name}" to 0,
-                SettingsExtras.ORDER_KEY_PART + "_${Type.ANIME.name}" to true,
-                SettingsExtras.ORDER_KEY_PART + "_${Type.MANGA.name}" to true
-        )
-    }
-
-    private val ignoreFields: Array<String> by lazy {
-        arrayOf(
-                SettingsExtras.USER_BRIEF,
-                SettingsExtras.USER_STATUS,
-                SettingsExtras.USER_ID,
-                SettingsExtras.BACKUP_SETTINGS,
-                SettingsExtras.DONATION_LINK,
-                SettingsExtras.NEW_VERSION_AVAILABLE
-        )
-    }
-
-    private val themeFields: Array<String> by lazy {
-        arrayOf(
-                ThemeExtras.THEME_KEY,
-                ThemeExtras.ASCENT_KEY,
-                ThemeExtras.NIGHT_THEME_END_KEY,
-                ThemeExtras.NIGHT_THEME_START_KEY,
-                ThemeExtras.NIGHT_THEME_KEY
-        )
     }
 }

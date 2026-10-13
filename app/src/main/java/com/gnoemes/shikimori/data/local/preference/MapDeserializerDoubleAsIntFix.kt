@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.utils.network
+package com.gnoemes.shikimori.data.local.preference
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
