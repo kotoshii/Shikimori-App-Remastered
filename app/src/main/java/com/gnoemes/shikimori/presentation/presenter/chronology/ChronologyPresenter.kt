@@ -56,8 +56,7 @@ class ChronologyPresenter @Inject constructor(
     private fun loadData() {
         (when (data.type) {
             Type.ANIME -> interactor.getAnimes(data.id, chronologyType)
-            Type.MANGA -> interactor.getMangas(data.id, chronologyType)
-            Type.RANOBE -> interactor.getRanobes(data.id, chronologyType)
+            Type.MANGA, Type.RANOBE -> interactor.getMangas(data.id, data.type, chronologyType)
             else -> throw IllegalArgumentException("${data.type} is not supporting")
         }).appendLoadingLogic(viewState)
                 .map { converter.apply(it, userId == null) }

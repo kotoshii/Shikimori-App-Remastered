@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.domain.chronology
 
 import com.gnoemes.shikimori.data.repository.anime.AnimeRepository
 import com.gnoemes.shikimori.data.repository.manga.MangaRepository
-import com.gnoemes.shikimori.data.repository.ranobe.RanobeRepository
 import com.gnoemes.shikimori.data.repository.rates.RatesRepository
 import com.gnoemes.shikimori.data.repository.search.SearchRepository
 import com.gnoemes.shikimori.data.repository.user.UserRepository
@@ -23,7 +22,6 @@ import javax.inject.Inject
 class ChronologyInteratorImpl @Inject constructor(
         private val animeRepository: AnimeRepository,
         private val mangaRepository: MangaRepository,
-        private val ranobeRepository: RanobeRepository,
         private val rateRepository: RatesRepository,
         private val searchRepository: SearchRepository,
         private val userRepository: UserRepository,
@@ -35,14 +33,9 @@ class ChronologyInteratorImpl @Inject constructor(
                     .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.ANIME, type) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getMangas(id: Long, type: ChronologyType): Single<List<ChronologyItem>> =
-            mangaRepository.getFranchise(id)
-                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.MANGA, type) }
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun getRanobes(id: Long, type: ChronologyType): Single<List<ChronologyItem>> =
-            ranobeRepository.getFranchise(id)
-                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, Type.RANOBE, type) }
+    override fun getMangas(id: Long, type: Type, chronologyType: ChronologyType): Single<List<ChronologyItem>> =
+            mangaRepository.getFranchise(id, type)
+                    .flatMap { searchFranchiseItemsAndMergeWithRates(id, it, type, chronologyType) }
                     .applyErrorHandlerAndSchedulers()
 
     private fun searchFranchiseItemsAndMergeWithRates(id: Long, franchise: Franchise, type: Type, chronologyType: ChronologyType): Single<List<ChronologyItem>> {

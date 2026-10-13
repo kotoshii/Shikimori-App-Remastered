@@ -5,17 +5,16 @@ import com.gnoemes.shikimori.data.repository.common.FranchiseResponseConverter
 import com.gnoemes.shikimori.data.repository.common.LinkResponseConverter
 import com.gnoemes.shikimori.data.repository.common.MangaResponseConverter
 import com.gnoemes.shikimori.data.repository.common.RolesResponseConverter
+import com.gnoemes.shikimori.data.repository.common.TitleGenreSource
 import com.gnoemes.shikimori.data.repository.manga.converter.MangaDetailsResponseConverter
+import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
 import com.gnoemes.shikimori.entity.common.domain.Franchise
 import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.domain.Roles
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
-import com.gnoemes.shikimori.data.repository.common.TitleGenreSource
-import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
-import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import io.reactivex.Single
-import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 
 class MangaRepositoryImpl @Inject constructor(
@@ -28,34 +27,25 @@ class MangaRepositoryImpl @Inject constructor(
         private val genreSource: TitleGenreSource
 ) : MangaRepository {
 
-    /**
-     * Genres come from graphql rather than from this rest response: only graphql carries the v2
-     * taxonomy at all, and the rest response's own `genres` array is empty for titles added from
-     * 2025 onward. The lookup never fails, so a details screen still loads when it comes back
-     * empty - see docs/_internal/GENRES_V2_SPIKE.md.
-     */
-    override fun getDetails(id: Long): Single<MangaDetails> =
-            Single.zip(
-                    api.getDetails(id).map(detailsConverter),
-                    genreSource.genres(GenreEntryType.MANGA, id),
-                    BiFunction { details: MangaDetails, genres: List<GenreV2> ->
-                        details.copy(genres = genres)
-                    }
-            )
+    //a ranobe's genres are manga genres to graphql too
+    override fun getDetails(id: Long, type: Type): Single<MangaDetails> =
+            genreSource.withGenres(api.getDetails(MangaApi.kind(type), id).map(detailsConverter), GenreEntryType.MANGA, id) { details, genres ->
+                details.copy(genres = genres)
+            }
 
-    override fun getRoles(id: Long): Single<Roles> =
-            api.getRoles(id)
+    override fun getRoles(id: Long, type: Type): Single<Roles> =
+            api.getRoles(MangaApi.kind(type), id)
                     .map(rolesConverter)
 
-    override fun getLinks(id: Long): Single<List<Link>> =
-            api.getLinks(id)
+    override fun getLinks(id: Long, type: Type): Single<List<Link>> =
+            api.getLinks(MangaApi.kind(type), id)
                     .map(linkConverter)
 
-    override fun getSimilar(id: Long): Single<List<Manga>> =
-            api.getSimilar(id)
+    override fun getSimilar(id: Long, type: Type): Single<List<Manga>> =
+            api.getSimilar(MangaApi.kind(type), id)
                     .map(mangaConverter)
 
-    override fun getFranchise(id: Long): Single<Franchise> =
-            api.getFranchise(id)
+    override fun getFranchise(id: Long, type: Type): Single<Franchise> =
+            api.getFranchise(MangaApi.kind(type), id)
                     .map(franchiseConverter)
 }

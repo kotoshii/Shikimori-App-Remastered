@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.domain.similar
 
 import com.gnoemes.shikimori.data.repository.anime.AnimeRepository
 import com.gnoemes.shikimori.data.repository.manga.MangaRepository
-import com.gnoemes.shikimori.data.repository.ranobe.RanobeRepository
 import com.gnoemes.shikimori.data.repository.rates.RatesRepository
 import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.anime.domain.Anime
@@ -18,7 +17,6 @@ import javax.inject.Inject
 class SimilarInteractorImpl @Inject constructor(
         private val animeRepository: AnimeRepository,
         private val mangaRepository: MangaRepository,
-        private val ranobeRepository: RanobeRepository,
         private val rateRepository: RatesRepository,
         private val userRepository: UserRepository
 ) : SimilarInteractor {
@@ -31,16 +29,8 @@ class SimilarInteractorImpl @Inject constructor(
                     }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getMangas(mangaId: Long): Single<List<MangaWithStatus>> =
-            mangaRepository.getSimilar(mangaId)
-                    .flatMap { list ->
-                        if (userRepository.getUserStatus() == UserStatus.AUTHORIZED) mergeWithMangaUserRates(list)
-                        else Single.just(list.map { MangaWithStatus(it) })
-                    }
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun getRanobes(ranobeId: Long): Single<List<MangaWithStatus>> =
-            ranobeRepository.getSimilar(ranobeId)
+    override fun getMangas(mangaId: Long, type: Type): Single<List<MangaWithStatus>> =
+            mangaRepository.getSimilar(mangaId, type)
                     .flatMap { list ->
                         if (userRepository.getUserStatus() == UserStatus.AUTHORIZED) mergeWithMangaUserRates(list)
                         else Single.just(list.map { MangaWithStatus(it) })

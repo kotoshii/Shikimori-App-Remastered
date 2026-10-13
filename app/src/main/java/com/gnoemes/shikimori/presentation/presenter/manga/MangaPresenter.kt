@@ -4,7 +4,6 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.manga.MangaInteractor
-import com.gnoemes.shikimori.domain.ranobe.RanobeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.related.RelatedInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
@@ -30,7 +29,6 @@ import javax.inject.Inject
 @InjectViewState
 class MangaPresenter @Inject constructor(
         private val mangaInteractor: MangaInteractor,
-        private val ranobeInteractor: RanobeInteractor,
         private val relatedInteractor: RelatedInteractor,
         private val detailsConverter: MangaDetailsViewModelConverter,
         private val settingsSource: SettingsSource,
@@ -40,12 +38,10 @@ class MangaPresenter @Inject constructor(
         contentConverter: DetailsContentViewModelConverter
 ) : BaseDetailsPresenter<MangaView>(ratesInteractor, userInteractor, resourceProvider, contentConverter) {
 
-    var isRanobe: Boolean = false
+    //MANGA or RANOBE, set by the screen from its navigation data
+    override var type: Type = Type.MANGA
 
     private lateinit var currentManga: MangaDetails
-
-    override val type: Type
-        get() = if (isRanobe) Type.RANOBE else Type.MANGA
 
     override fun loadContent(showLoading: Boolean): Single<DetailsHeadItem> =
             loadDetails()
@@ -58,27 +54,23 @@ class MangaPresenter @Inject constructor(
                     .doOnSuccess { loadDescription() }
 
     override fun loadDetails(): Single<DetailsHeadItem> =
-            (if (isRanobe) ranobeInteractor.getDetails(id)
-            else mangaInteractor.getDetails(id))
+            mangaInteractor.getDetails(id, type)
                     .doOnSuccess { currentManga = it; rateId = it.userRate?.id ?: Constants.NO_ID }
                     .map { detailsConverter.convertHead(it, userId == Constants.NO_ID) }
 
     override val characterFactory: (id: Long) -> Single<Roles>
         get() = {
-            (if (isRanobe) ranobeInteractor.getRoles(it)
-            else mangaInteractor.getRoles(it))
+            mangaInteractor.getRoles(it, type)
         }
 
     override val relatedFactory: (id: Long) -> Single<List<Related>>
         get() = {
-            (if (isRanobe) relatedInteractor.getRanobe(it)
-            else relatedInteractor.getManga(it))
+            relatedInteractor.getManga(it, type)
         }
 
     override val linkFactory: (id: Long) -> Single<List<Link>>
         get() = {
-            (if (isRanobe) ranobeInteractor.getLinks(it)
-            else mangaInteractor.getLinks(it))
+            mangaInteractor.getLinks(it, type)
         }
 
     private fun loadInfo() {

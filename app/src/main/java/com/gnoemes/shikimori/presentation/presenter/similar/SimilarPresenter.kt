@@ -47,8 +47,7 @@ class SimilarPresenter @Inject constructor(
     private fun loadData() {
         (when (navigationData.type) {
             Type.ANIME -> interactor.getAnimes(navigationData.id).map { converter.apply(it, userId == null) }
-            Type.MANGA -> interactor.getMangas(navigationData.id).map { converter.apply(it, userId == null) }
-            Type.RANOBE -> interactor.getRanobes(navigationData.id).map { converter.apply(it, userId == null) }
+            Type.MANGA, Type.RANOBE -> interactor.getMangas(navigationData.id, navigationData.type).map { converter.apply(it, userId == null) }
             else -> throw IllegalArgumentException("${navigationData.type} is not supporting")
         }).appendLoadingLogic(viewState)
                 .subscribe(this::setData, this::processErrors)

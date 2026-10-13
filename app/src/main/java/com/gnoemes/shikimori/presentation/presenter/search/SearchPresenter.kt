@@ -70,8 +70,7 @@ class SearchPresenter @Inject constructor(
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<SearchItem>> {
         return when (type) {
             Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(filters, page).map(converter) }
-            Type.MANGA -> { page: Int -> interactor.loadMangaListWithFilters(filters, page).map(converter) }
-            else -> { page: Int -> interactor.loadRanobeListWithFilters(filters, page).map(converter) }
+            else -> { page: Int -> interactor.loadMangaListWithFilters(filters, type, page).map(converter) }
         }
     }
 

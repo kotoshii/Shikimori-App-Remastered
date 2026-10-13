@@ -7,7 +7,6 @@ import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
-import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
@@ -34,7 +33,7 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
                 localRouter = (parentFragment as RouterProvider).localRouter
                 val data = arguments?.getParcelable<CommonNavigationData>(AppExtras.ARGUMENT_MANGA_DATA)!!
                 id = data.id
-                isRanobe = data.type == Type.RANOBE
+                type = data.type
             }
 
     companion object {
