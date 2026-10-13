@@ -15,8 +15,8 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
+import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
 import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
@@ -32,6 +32,9 @@ class WebPlayerActivity : BaseThemedActivity() {
 
     @Inject
     lateinit var settingsSource: PlayerSettingsSource
+
+    @Inject
+    lateinit var anime365TokenSource: Anime365TokenSource
 
     companion object {
         //anime365 serves on four domains at once and keeps moving between them - .com -> .net
@@ -79,8 +82,7 @@ class WebPlayerActivity : BaseThemedActivity() {
         if (intent != null) {
             val url = intent.getStringExtra(AppExtras.ARGUMENT_URL)
             if (!url.isNullOrBlank()) {
-                val prefs = getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-                val token = prefs.getString(SettingsExtras.ANIME_365_TOKEN, null)
+                val token = anime365TokenSource.getToken()
 
                 val useIFrame = Utils.checkNeedIFrame(url)
 

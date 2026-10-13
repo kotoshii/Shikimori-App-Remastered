@@ -1,14 +1,13 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
 import android.Manifest
-import android.content.Context
 import android.os.Bundle
 import android.os.Environment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.folderChooser
 import com.afollestad.materialdialogs.list.listItems
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
 import com.gnoemes.shikimori.utils.appFolder
@@ -17,9 +16,13 @@ import com.gnoemes.shikimori.utils.prefs
 import com.gnoemes.shikimori.utils.putString
 import com.kotlinpermissions.KotlinPermissions
 import java.io.File
+import javax.inject.Inject
 
 
 class SettingsGeneralFragment : BaseSettingsFragment() {
+
+    @Inject
+    lateinit var userSource: UserSource
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         super.onCreatePreferences(savedInstanceState, rootKey)
@@ -41,7 +44,7 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
 
         //without an account the switch does nothing - SettingsSource.allowR18Content reports false
         //while signed out no matter what is stored - so offering it would be a lie
-        preference(R.string.settings_content_allow_r18_key)?.isVisible = isAuthorized()
+        preference(R.string.settings_content_allow_r18_key)?.isVisible = userSource.isSignedIn()
 
         preference(SettingsExtras.BACKUP_SETTINGS)?.apply {
             setOnPreferenceClickListener {
@@ -51,13 +54,6 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
                 true
             }
         }
-    }
-
-    private fun isAuthorized(): Boolean {
-        val id = context?.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-                ?.getLong(SettingsExtras.USER_ID, Constants.NO_ID)
-
-        return id != null && id != Constants.NO_ID
     }
 
     private fun getRateActionSummary(action: String): String {

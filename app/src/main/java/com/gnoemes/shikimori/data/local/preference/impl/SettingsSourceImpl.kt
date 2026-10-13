@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.di.app.annotations.SettingsQualifier
-import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
@@ -41,7 +40,7 @@ class SettingsSourceImpl @Inject constructor(
      * out invalidates the poster cache on its own.
      */
     override val allowR18Content: Boolean
-        get() = userSource.getUserId() != Constants.NO_ID && prefs.getBoolean(SettingsExtras.ALLOW_R18_CONTENT, false)
+        get() = userSource.isSignedIn() && prefs.getBoolean(SettingsExtras.ALLOW_R18_CONTENT, false)
 
     override val altSourceByDefault: Boolean
         get() = prefs.getBoolean(SettingsExtras.ALT_SOURCE_BY_DEFAULT, false)

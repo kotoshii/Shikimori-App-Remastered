@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -12,13 +11,18 @@ import com.afollestad.materialdialogs.actions.setActionButtonEnabled
 import com.afollestad.materialdialogs.input.InputCallback
 import com.afollestad.materialdialogs.input.input
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.presentation.view.auth.AuthActivity
 import com.gnoemes.shikimori.utils.*
+import javax.inject.Inject
 
 class SettingsAnimeFragment : BaseSettingsFragment() {
+
+    @Inject
+    lateinit var anime365TokenSource: Anime365TokenSource
 
     private val notSelected by lazy { context!!.getString(R.string.filter_not_selected) }
 
@@ -67,8 +71,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
         }
 
         (preference(R.string.settings_anime_365_key) as? SwitchPreference)?.apply {
-            val userPrefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            val token = userPrefs.getString(SettingsExtras.ANIME_365_TOKEN, null)
+            val token = anime365TokenSource.getToken()
 
             prefs().putBoolean(key, !token.isNullOrBlank())
             if (!isChecked) intent = AuthActivity.anime365Auth(context)
@@ -78,7 +81,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
                 intent = null
 
                 if (!newValue) {
-                    userPrefs.remove(SettingsExtras.ANIME_365_TOKEN)
+                    anime365TokenSource.clearToken()
                     return@setOnPreferenceChangeListener true
                 } else {
                     preference.intent = AuthActivity.anime365Auth(context)
@@ -93,8 +96,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
         super.onStart()
 
         (preference(R.string.settings_anime_365_key) as? SwitchPreference)?.apply {
-            val userPrefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            val token = userPrefs.getString(SettingsExtras.ANIME_365_TOKEN, null)
+            val token = anime365TokenSource.getToken()
 
             prefs().putBoolean(key, !token.isNullOrBlank())
             isChecked = !token.isNullOrBlank()

@@ -34,8 +34,8 @@ import kotlinx.android.synthetic.main.fragment_hosting_filter.*
  * same way the preference screens are - `SettingsActivity.onPreferenceStartFragment` instantiates
  * whatever class `app:fragment` names, so the toolbar title and back stack come for free.
  *
- * Preferences are read directly here, as `SettingsAnimeFragment` does for the Anime365 token, rather
- * than through injected `SettingsSource`. Same store, same keys.
+ * Preferences are read directly here rather than through `SettingsSource`: the pages that extend
+ * `BaseSettingsFragment` are injected, this plain `Fragment` is not. Same store, same keys.
  */
 class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
