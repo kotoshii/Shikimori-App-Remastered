@@ -16,6 +16,12 @@ interface RatesRepository {
 
     fun getUserRates(id: Long, targetId: Long? = null, target: Type? = null, statuses: String? = null, page: Int = 1, limit: Int = Constants.MAX_LIMIT): Single<List<UserRate>>
 
+    /**
+     * The signed-in user's rates of one kind, by title id - empty for a guest. [statuses] narrows
+     * them on the server. Used to put the user's statuses on lists of titles.
+     */
+    fun getMyRates(type: Type, statuses: List<RateStatus>? = null): Single<Map<Long, UserRate>>
+
     fun deleteRate(id: Long): Completable
 
     fun createRate(id: Long, type: Type, rate: UserRate, userId: Long): Completable

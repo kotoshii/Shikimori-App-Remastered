@@ -2,20 +2,22 @@ package com.gnoemes.shikimori.data.repository.rates
 
 import com.gnoemes.shikimori.data.network.UserApi
 import com.gnoemes.shikimori.data.repository.common.RateResponseConverter
+import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.data.RateResponse
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
+import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.dropExtraPageItem
-import com.gnoemes.shikimori.utils.firstUpperCase
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
 
 class RatesRepositoryImpl @Inject constructor(
         private val api: UserApi,
-        private val converter: RateResponseConverter
+        private val converter: RateResponseConverter,
+        private val userRepository: UserRepository
 ) : RatesRepository {
 
     override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
@@ -31,8 +33,19 @@ class RatesRepositoryImpl @Inject constructor(
                     .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
 
     override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int): Single<List<UserRate>> =
-            api.getUserRates(id, targetId, target?.name?.toLowerCase()?.firstUpperCase(), statuses, page, limit)
+            api.getUserRates(id, targetId, target?.let { targetType(it) }, statuses, page, limit)
                     .map { list -> list.mapNotNull { converter.convertUserRateResponse(targetId, it) } }
+
+    override fun getMyRates(type: Type, statuses: List<RateStatus>?): Single<Map<Long, UserRate>> =
+            Single.defer {
+                if (userRepository.getUserStatus() != UserStatus.AUTHORIZED) Single.just(emptyMap())
+                else userRepository.getMyUserId()
+                        .flatMap { getUserRates(it, target = type, statuses = statuses?.joinToString(",") { status -> status.status }) }
+                        .map { rates -> rates.filter { it.targetId != null }.associateBy { it.targetId!! } }
+            }
+
+    //the api knows only Anime and Manga: a ranobe is a manga to it, and "Ranobe" gets nothing back
+    private fun targetType(type: Type): String = if (type == Type.ANIME) "Anime" else "Manga"
 
     override fun createRate(id: Long, type: Type, rate: UserRate, userId: Long): Completable =
             createRateWithResult(id, type, rate, userId).ignoreElement()
