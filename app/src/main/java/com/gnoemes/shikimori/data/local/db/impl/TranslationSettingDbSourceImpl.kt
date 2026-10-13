@@ -15,19 +15,13 @@ class TranslationSettingDbSourceImpl @Inject constructor(
         private val storIOSQLite: StorIOSQLite
 ) : TranslationSettingDbSource {
 
-    override fun saveSetting(setting: TranslationSetting): Completable {
-        val dao = TranslationSettingDao(setting.animeId, setting.lastAuthor, setting.lastType?.type)
-        try {
+    //written when subscribed, on the caller's scheduler - not on the thread that builds the chain
+    override fun saveSetting(setting: TranslationSetting): Completable =
             storIOSQLite
                     .put()
-                    .`object`(dao)
+                    .`object`(TranslationSettingDao(setting.animeId, setting.lastAuthor, setting.lastType?.type))
                     .prepare()
-                    .executeAsBlocking()
-        } catch (e: Exception) {
-            return Completable.error(e)
-        }
-        return Completable.complete()
-    }
+                    .asRxCompletable()
 
     override fun getSetting(animeId: Long): Single<TranslationSetting> =
             storIOSQLite
