@@ -30,7 +30,7 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
 
     override fun convertInfo(t: UserDetails): UserInfoViewModel =
             UserInfoViewModel(
-                    t.commonInfo,
+                    t.commonInfo.joinToString(" / "),
                     t.isFriend,
                     t.isIgnored,
                     t.isMe

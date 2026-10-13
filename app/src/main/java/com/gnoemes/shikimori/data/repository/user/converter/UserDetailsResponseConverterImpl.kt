@@ -22,24 +22,12 @@ class UserDetailsResponseConverterImpl @Inject constructor() : UserDetailsRespon
             it.location,
             it.isBanned,
             it.about,
-            convertCommonInfo(it.commonInfo),
+            it.commonInfo,
             it.isShowComments,
             it.isFriend,
             it.isIgnored,
             convertStats(it.stats)
     )
-
-    private fun convertCommonInfo(commonInfo: List<String>): String {
-        val DELIMITER = " / "
-        val builder = StringBuilder()
-        commonInfo.forEach { builder.append(it).append(DELIMITER) }
-
-        builder.replace(builder.lastIndexOf(DELIMITER), builder.length - 1, "")
-        return builder.toString()
-                .replace("<.[spn].+?>", "")
-                .replace("(class.\".+?\" )", "")
-
-    }
 
     private fun convertStats(stats: UserStatsResponse): UserStats {
         val animes = stats.status.anime.map { convertStatus(it) }

@@ -17,7 +17,8 @@ data class UserDetails(
         val location: String?,
         val isBanned: Boolean,
         val about: String?,
-        val commonInfo: String,
+        //the api's short facts, some as html: «муж.», «на сайте с <span …>2010 г.</span>»
+        val commonInfo: List<String>,
         val isShowComments: Boolean,
         val isFriend: Boolean,
         val isIgnored: Boolean,
