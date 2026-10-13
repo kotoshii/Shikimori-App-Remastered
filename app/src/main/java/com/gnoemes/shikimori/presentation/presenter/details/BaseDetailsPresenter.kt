@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.details
 
+import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -20,16 +22,23 @@ import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsCont
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsView
 import com.gnoemes.shikimori.utils.appendLightLoadingLogic
+import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.utils.applySingleSchedulers
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.firstUpperCase
 import io.reactivex.Completable
 import io.reactivex.Single
 
-abstract class BaseDetailsPresenter<View : BaseDetailsView>(
+/**
+ * The anime and the manga page. Everything that reads the title's details waits until they have
+ * loaded ([details] is null before that), so a menu tapped early does nothing instead of crashing.
+ */
+abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         protected val ratesInteractor: RatesInteractor,
         protected val userInteractor: UserInteractor,
         protected val resourceProvider: CommonResourceProvider,
-        protected val contentConverter: DetailsContentViewModelConverter
+        protected val contentConverter: DetailsContentViewModelConverter,
+        private val settingsSource: SettingsSource
 ) : BaseNetworkPresenter<View>() {
 
     var id: Long = Constants.NO_ID
@@ -37,8 +46,31 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
     protected var rateId: Long = Constants.NO_ID
     protected var userId: Long = Constants.NO_ID
 
+    /** The title's details, once loaded. */
+    protected var details: D? = null
+
     protected val characters = mutableListOf<Character>()
     protected val creators = mutableListOf<Pair<Person, List<String>>>()
+
+    abstract val type: Type
+
+    protected abstract val detailsConverter: TitleDetailsViewModelConverter<D>
+
+    protected abstract fun fetchDetails(): Single<D>
+
+    abstract val characterFactory: (id: Long) -> Single<Roles>
+
+    abstract val relatedFactory: (id: Long) -> Single<List<Related>>
+
+    abstract val linkFactory: (id: Long) -> Single<List<Link>>
+
+    /** The title's name, by the naming setting; empty before the details have loaded. */
+    protected val title: String
+        get() = details?.let { settingsSource.titleName(it.name, it.nameRu) }.orEmpty()
+
+    private inline fun withDetails(action: (D) -> Unit) {
+        details?.let(action)
+    }
 
     override fun initData() {
         loadUser()
@@ -51,17 +83,25 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                 .addToDisposables()
     }
 
-    abstract fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem>
+    private fun loadDetails(): Single<DetailsHeadItem> =
+            fetchDetails()
+                    .doOnSuccess { details = it; rateId = it.userRate?.id ?: Constants.NO_ID }
+                    .map { detailsConverter.convertHead(it, userId == Constants.NO_ID) }
 
-    abstract fun loadDetails(): Single<DetailsHeadItem>
+    private fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem> =
+            loadDetails()
+                    .flatMap {
+                        if (showLoading) Single.just(it).appendLoadingLogic(viewState)
+                        else Single.just(it)
+                    }
+                    .doOnSuccess { withDetails { onDetailsLoaded(it) } }
 
-    abstract val type: Type
-
-    abstract val characterFactory: (id: Long) -> Single<Roles>
-
-    abstract val relatedFactory: (id: Long) -> Single<List<Related>>
-
-    abstract val linkFactory: (id: Long) -> Single<List<Link>>
+    /** The page's sections, once the details are in; the anime page adds its videos and screenshots. */
+    protected open fun onDetailsLoaded(details: D) {
+        viewState.setInfoItem(detailsConverter.convertInfo(details, creators))
+        viewState.setActionItem(detailsConverter.getActions(details.status))
+        viewState.setDescriptionItem(detailsConverter.convertDescriptionItem(details.description))
+    }
 
     protected open fun loadData() =
             loadContent()
@@ -101,8 +141,10 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                     .subscribe({}, this::processUserErrors)
                     .addToDisposables()
 
-    protected open fun setCreators(creators: List<Pair<Person, List<String>>>) {
+    //the creators are rows of the info block, so it is drawn again with them
+    private fun setCreators(creators: List<Pair<Person, List<String>>>) {
         this.creators.clearAndAddAll(creators)
+        withDetails { viewState.setInfoItem(detailsConverter.convertInfo(it, this.creators)) }
     }
 
     protected open fun createRate(rate: UserRate?, newStatus: RateStatus? = null) {
@@ -162,27 +204,30 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
         router.navigateTo(screen, url)
     }
 
-    protected open fun onShareClicked() {
-
+    private fun onShareClicked() = withDetails {
+        router.navigateTo(Screens.SHARE, it.url)
     }
 
-    protected open fun onStatisticClicked() {
-
+    private fun onStatisticClicked() = withDetails { details ->
+        Single.fromCallable { Pair(detailsConverter.convertScores(details.rateScoresStats), detailsConverter.convertStatuses(details.rateStatusesStats)) }
+                .applySingleSchedulers()
+                .subscribe({ viewState.showStatistic(title, it.first, it.second) }, this::processErrors)
+                .addToDisposables()
     }
 
-    protected open fun onSimilarClicked() {
-
+    private fun onSimilarClicked() {
+        router.navigateTo(Screens.SIMILAR, CommonNavigationData(id, type))
     }
 
-    protected open fun onChronology() {
-
+    private fun onChronology() {
+        router.navigateTo(Screens.CHRONOLOGY, CommonNavigationData(id, type))
     }
 
-    protected open fun onLinks() {
+    private fun onLinks() {
         loadLinks()
     }
 
-    protected open fun onStudioClicked(id: Long) {
+    private fun onStudioClicked(id: Long) {
         router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id), Type.ANIME))
     }
 
@@ -202,26 +247,33 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
         }
     }
 
-    protected open fun onGenreClicked(genre: GenreV2) {
+    private fun onGenreClicked(genre: GenreV2) {
         router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(genre), type))
     }
 
-    protected open fun onOpenDiscussion() {
+    private fun onOpenDiscussion() = withDetails { details ->
+        details.topicId?.let { onTopicClicked(it) }
+                ?: router.showSystemMessage(resourceProvider.topicNotFound)
     }
 
+    private fun onOpenInBrowser() = withDetails {
+        onOpenWeb(it.url)
+    }
+
+    private fun onEditRate() = withDetails {
+        viewState.showRateDialog(title, it.userRate, type == Type.ANIME)
+    }
+
+    private fun onStatusDialog() = withDetails {
+        viewState.showStatusDialog(id, title, it.userRate?.status, type == Type.ANIME)
+    }
+
+    /** Only the anime page has screenshots. */
     protected open fun onScreenshotsClicked(pos: Int) {
     }
 
-    protected open fun onOpenInBrowser() {
-    }
-
+    /** Only the anime page can be watched. */
     protected open fun onWatchOnline() {
-    }
-
-    protected open fun onEditRate() {
-    }
-
-    protected open fun onStatusDialog() {
     }
 
     protected open fun processUserErrors(throwable: Throwable) {
@@ -234,6 +286,4 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView>(
                 .subscribe({ }, this@BaseDetailsPresenter::processErrors)
                 .addToDisposables()
     }
-
-
 }

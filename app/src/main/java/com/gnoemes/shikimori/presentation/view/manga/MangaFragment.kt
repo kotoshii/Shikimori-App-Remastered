@@ -7,20 +7,15 @@ import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
-import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
-import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.presentation.presenter.manga.MangaPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
-import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentViewHolder
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.gone
-import com.gnoemes.shikimori.utils.onMenuClick
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 
 class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaView {
 
@@ -49,18 +44,6 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
         videoLayout.gone()
         screenshotsLayout.gone()
 
-        with(toolbar) {
-            inflateMenu(R.menu.menu_manga)
-            onMenuClick {
-                when (it?.itemId) {
-                    R.id.item_rate -> getPresenter().onAction(DetailsAction.RateStatusDialog)
-                    R.id.item_web -> getPresenter().onAction(DetailsAction.OpenInBrowser)
-                    R.id.item_share -> getPresenter().onAction(DetailsAction.Share)
-                }
-                true
-            }
-        }
-
         contentHolders.apply {
             put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
             put(DetailsContentType.RELATED, DetailsContentViewHolder(relatedLayout, relatedAdapter))
@@ -78,13 +61,6 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
     override val titleRes: Int
         get() = R.string.common_manga
 
-    ///////////////////////////////////////////////////////////////////////////
-    // MVP
-    ///////////////////////////////////////////////////////////////////////////
-
-    override fun showRateDialog(title: String, userRate: UserRate?) {
-        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = false, title = title)
-        dialog.show(childFragmentManager, "RateTag")
-    }
-
+    override val menuRes: Int
+        get() = R.menu.menu_manga
 }

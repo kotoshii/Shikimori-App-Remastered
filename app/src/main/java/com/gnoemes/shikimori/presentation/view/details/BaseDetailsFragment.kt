@@ -35,7 +35,7 @@ import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
-abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
+abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
         BaseDetailsView, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
 
     @Inject
@@ -92,6 +92,15 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
+            inflateMenu(menuRes)
+            onMenuClick {
+                when (it?.itemId) {
+                    R.id.item_rate -> getPresenter().onAction(DetailsAction.RateStatusDialog)
+                    R.id.item_web -> getPresenter().onAction(DetailsAction.OpenInBrowser)
+                    R.id.item_share -> getPresenter().onAction(DetailsAction.Share)
+                }
+                true
+            }
         }
 
         val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
@@ -182,9 +191,17 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
 
     abstract val titleRes: Int
 
+    /** The toolbar menu: status, open in the browser, share. */
+    abstract val menuRes: Int
+
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
+
+    override fun showRateDialog(title: String, userRate: UserRate?, isAnime: Boolean) {
+        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = isAnime, title = title)
+        dialog.show(childFragmentManager, "RateTag")
+    }
 
     override fun setHeadItem(item: DetailsHeadItem) {
         detailsName = item.name

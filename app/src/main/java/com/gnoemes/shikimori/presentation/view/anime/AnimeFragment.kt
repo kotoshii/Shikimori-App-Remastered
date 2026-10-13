@@ -8,18 +8,14 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
-import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.presentation.presenter.anime.AnimePresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
-import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentViewHolder
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.onClick
-import com.gnoemes.shikimori.utils.onMenuClick
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 
 class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeView {
 
@@ -45,18 +41,6 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
-            inflateMenu(R.menu.menu_anime)
-            onMenuClick {
-                when (it?.itemId) {
-                    R.id.item_rate -> getPresenter().onAction(DetailsAction.RateStatusDialog)
-                    R.id.item_web -> getPresenter().onAction(DetailsAction.OpenInBrowser)
-                    R.id.item_share -> getPresenter().onAction(DetailsAction.Share)
-                }
-                true
-            }
-        }
-
         contentHolders.apply {
             put(DetailsContentType.VIDEO, DetailsContentViewHolder(videoLayout, videoAdapter))
             put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
@@ -79,12 +63,6 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
     override val titleRes: Int
         get() = R.string.common_anime
 
-    ///////////////////////////////////////////////////////////////////////////
-    // MVP
-    ///////////////////////////////////////////////////////////////////////////
-
-    override fun showRateDialog(title: String, userRate: UserRate?) {
-        val dialog = EditRateFragment.newInstance(rate = userRate, title = title)
-        dialog.show(childFragmentManager, "RateTag")
-    }
+    override val menuRes: Int
+        get() = R.menu.menu_anime
 }
