@@ -1,9 +1,11 @@
 package com.gnoemes.shikimori.utils.network
 
 import com.gnoemes.shikimori.data.repository.common.PosterSource
+import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.common.data.graphql.PosterEntityType
 import com.gnoemes.shikimori.entity.common.data.graphql.PosterKey
 import com.gnoemes.shikimori.entity.common.data.graphql.PosterResponse
+import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -257,12 +259,8 @@ class MissingPosterInterceptor(
         private val URL_PATTERN = Regex("/(animes|mangas|ranobe|characters|people)/")
         private val PATH_PATTERN = Regex("^/api/(?:v\\d+/)?(animes|mangas|ranobe|characters|people)")
 
-        private val ANIME_KINDS = setOf(
-                "tv", "movie", "ova", "ona", "special", "music",
-                "tv_13", "tv_24", "tv_48", "tv_special", "pv", "cm"
-        )
-        private val MANGA_KINDS = setOf(
-                "manga", "manhwa", "manhua", "one_shot", "doujin", "novel", "light_novel"
-        )
+        //the api's kinds, from the app's own types; NONE and UNKNOWN are fallbacks, not kinds
+        private val ANIME_KINDS = AnimeType.values().filter { it != AnimeType.NONE }.map { it.type }.toSet()
+        private val MANGA_KINDS = MangaType.values().filter { it != MangaType.UNKNOWN }.map { it.type }.toSet()
     }
 }

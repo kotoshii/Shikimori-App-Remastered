@@ -66,12 +66,7 @@ class GenreVocabularySourceImpl @Inject constructor(
     }
 
     private fun convert(fetched: List<GenreResponseV2>?): List<GenreV2> = fetched.orEmpty()
-            .mapNotNull { genre ->
-                val id = genre.id?.toLongOrNull() ?: return@mapNotNull null
-                val russian = genre.russian?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-
-                GenreV2(id, genre.name.orEmpty(), russian, GenreV2.Kind.of(genre.kind))
-            }
+            .mapNotNull { GenreV2.of(it.id, it.name, it.russian, it.kind) }
 
     /** The bundled snapshot, read once when the store is empty. */
     private fun seed(type: GenreEntryType): List<GenreV2> = try {
