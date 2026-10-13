@@ -43,6 +43,12 @@ fun <E> MutableList<E>.clearAndAddAll(items: Collection<E>) {
     addAll(items)
 }
 
+/**
+ * Shikimori's paged lists (rates, comments, topics, history) send `limit + 1` items when a next page
+ * exists; the extra one is the first item of the next page, so keeping it shows it twice.
+ */
+fun <T> List<T>.dropExtraPageItem(limit: Int): List<T> = take(limit)
+
 fun String.toBold(): SpannableStringBuilder {
     val builder = SpannableStringBuilder()
             .append(this)

@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.data.repository.topic.converter.TopicResponseConver
 import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.topic.domain.Topic
+import com.gnoemes.shikimori.utils.dropExtraPageItem
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -17,9 +18,8 @@ class TopicRepositoryImpl @Inject constructor(
 
     override fun getList(page: Int, limit: Int, type: ForumType): Single<List<Topic>> =
             api.getList(page, limit, type.type)
+                    .map { it.dropExtraPageItem(limit) }
                     .map(converter)
-                    //server returns N+1 elements, if next page exists
-                    .map { if (it.isNotEmpty()) it.take(limit) else it }
 
     override fun getDetails(id: Long): Single<Topic> = api.getDetails(id).map { converter.convertResponse(it) }
 

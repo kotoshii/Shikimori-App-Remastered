@@ -3,9 +3,11 @@ package com.gnoemes.shikimori.data.repository.rates
 import com.gnoemes.shikimori.data.network.UserApi
 import com.gnoemes.shikimori.data.repository.common.RateResponseConverter
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.rates.data.RateResponse
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
+import com.gnoemes.shikimori.utils.dropExtraPageItem
 import com.gnoemes.shikimori.utils.firstUpperCase
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -17,16 +19,16 @@ class RatesRepositoryImpl @Inject constructor(
 ) : RatesRepository {
 
     override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            api.getUserAnimeRates(id, page, limit, rateStatus.status)
-                    .map(converter)
-                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
-                    .doOnSuccess { if (it.isNotEmpty() && page > 1) it.toMutableList().removeAt(0) }
+            rates(api.getUserAnimeRates(id, page, limit, rateStatus.status), limit)
 
     override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
-            api.getUserMangaRates(id, page, limit, rateStatus.status)
+            rates(api.getUserMangaRates(id, page, limit, rateStatus.status), limit)
+
+    private fun rates(request: Single<List<RateResponse>>, limit: Int): Single<List<Rate>> =
+            request
+                    .map { it.dropExtraPageItem(limit) }
                     .map(converter)
                     .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
-                    .doOnSuccess { if (it.isNotEmpty() && page > 1) it.toMutableList().removeAt(0) }
 
     override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int): Single<List<UserRate>> =
             api.getUserRates(id, targetId, target?.name?.toLowerCase()?.firstUpperCase(), statuses, page, limit)

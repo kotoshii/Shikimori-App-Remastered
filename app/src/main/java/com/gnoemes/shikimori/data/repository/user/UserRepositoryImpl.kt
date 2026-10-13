@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.data.repository.user.converter.*
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
+import com.gnoemes.shikimori.utils.dropExtraPageItem
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -58,9 +59,8 @@ class UserRepositoryImpl @Inject constructor(
 
     override fun getHistory(id: Long, page: Int, limit: Int): Single<List<UserHistory>> =
             api.getUserHistory(id, page, limit)
+                    .map { it.dropExtraPageItem(limit) }
                     .map(historyConverter)
-                    //server returns N+1 elements, if next page exists
-                    .map { if (it.isNotEmpty()) it.take(limit) else it }
 
     override fun ignore(id: Long): Completable = api.ignoreUser(id)
 
