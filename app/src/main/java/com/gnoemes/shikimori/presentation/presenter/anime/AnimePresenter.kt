@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.anime
 
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.anime.AnimeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.related.RelatedInteractor
@@ -157,7 +158,7 @@ open class AnimePresenter @Inject constructor(
 
         val data = SeriesNavigationData(id,
                 currentAnime.image,
-                currentAnime.nameRu.nullIfEmpty() ?: currentAnime.name,
+                title,
                 currentAnime.userRate?.id,
                 currentAnime.userRate?.episodes ?: 0,
                 if (currentAnime.status == Status.RELEASED) currentAnime.episodes else currentAnime.episodesAired,
@@ -180,7 +181,7 @@ open class AnimePresenter @Inject constructor(
 
         //the name the series screen gets too, so an anime's episodes and screenshots are saved
         //under the same folder name
-        val data = ScreenshotsNavigationData(pos, screenshots, currentAnime.nameRu.nullIfEmpty() ?: currentAnime.name)
+        val data = ScreenshotsNavigationData(pos, screenshots, title)
         router.navigateTo(Screens.SCREENSHOTS, data)
     }
 
@@ -196,6 +197,5 @@ open class AnimePresenter @Inject constructor(
     }
 
     private val title: String
-        get() = if (settingsSource.isRussianNaming) currentAnime.nameRu.nullIfEmpty()
-                ?: currentAnime.name else currentAnime.name
+        get() = settingsSource.titleName(currentAnime.name, currentAnime.nameRu)
 }

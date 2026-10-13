@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.SpannableStringBuilder
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.calendar.domain.CalendarItem
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarAnimeItem
@@ -12,7 +13,6 @@ import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
 import com.gnoemes.shikimori.utils.faintTextColor
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import com.gnoemes.shikimori.utils.toHoursAndMinutesAndSeconds
 import org.joda.time.*
 import javax.inject.Inject
@@ -92,8 +92,7 @@ class CalendarViewModelConverterImpl @Inject constructor(
 
         return CalendarAnimeItem(
                 item.anime.id,
-                if (!settings.isRussianNaming) item.anime.name else item.anime.nameRu.nullIfEmpty()
-                        ?: item.anime.name,
+                settings.titleName(item.anime.name, item.anime.nameRu),
                 item.anime.image,
                 item.anime.type != AnimeType.MOVIE && item.nextEpisode == item.anime.episodes,
                 description,

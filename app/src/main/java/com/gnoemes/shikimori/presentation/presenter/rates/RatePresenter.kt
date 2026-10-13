@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.presenter.rates
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
 import com.gnoemes.shikimori.domain.rates.PinnedRateInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
@@ -35,7 +36,6 @@ import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateCountCon
 import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.view.rates.RateView
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -334,9 +334,7 @@ class RatePresenter @Inject constructor(
 
     //TODO manga
     private fun watchOnlineOrOpenList(rate: Rate, settings: TranslationSetting, watched: Int) {
-        val name =
-                if (settingsSource.isRussianNaming) rate.anime?.nameRu.nullIfEmpty() ?: rate.anime?.name!!
-                else rate.anime?.name!!
+        val name = settingsSource.titleName(rate.anime?.name!!, rate.anime.nameRu)
         val episodesAired = if (rate.anime?.status == Status.RELEASED) rate.anime.episodes else rate.anime?.episodesAired
         val navigationData = SeriesNavigationData(settings.animeId, rate.anime?.image!!, name, rate.id, watched, episodesAired!!, watched + 1)
         router.navigateTo(Screens.SERIES, navigationData)
@@ -508,12 +506,9 @@ class RatePresenter @Inject constructor(
 
     private fun MutableList<Any>.nameSort(): MutableList<Any> =
             this.sortRateBySelectorAndAddItem {
-                if (it.type == Type.ANIME) if (isRussianNaming) it.anime?.nameRu else it.anime?.name
-                else if (isRussianNaming) it.manga?.nameRu else it.manga?.name
+                if (it.type == Type.ANIME) it.anime?.let { anime -> settingsSource.titleName(anime.name, anime.nameRu) }
+                else it.manga?.let { manga -> settingsSource.titleName(manga.name, manga.nameRu) }
             }
-
-    private val isRussianNaming: Boolean
-        get() = settingsSource.isRussianNaming
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)
     fun onSignUp() = openAuth(AuthType.SIGN_UP)

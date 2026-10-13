@@ -3,6 +3,8 @@ package com.gnoemes.shikimori.presentation.presenter.anime.converter
 import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.secondTitleName
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.anime.domain.AnimeDetails
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.common.domain.AgeRating
@@ -13,10 +15,10 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.user.domain.Statistic
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.joda.time.Interval
@@ -26,12 +28,13 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         private val context: Context,
         private val settings: SettingsSource,
         private val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor
+        private val textProcessor: BBCodesTextProcessor,
+        private val titleText: TitleTextConverter
 ) : AnimeDetailsViewModelConverter {
 
     override fun convertHead(it: AnimeDetails, isGuest: Boolean): DetailsHeadItem {
 
-        val name = if (!settings.isRussianNaming) it.name else it.nameRu.nullIfEmpty() ?: it.name
+        val name = settings.titleName(it.name, it.nameRu)
 
 
         return DetailsHeadItem(
@@ -45,7 +48,7 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
     }
 
     override fun convertInfo(it: AnimeDetails, creators: List<Pair<Person, List<String>>>): DetailsInfoItem {
-        val nameSecond = if (!settings.isRussianNaming) it.nameRu.nullIfEmpty() ?: it.name else it.name
+        val nameSecond = settings.secondTitleName(it.name, it.nameRu)
 
         val tags = mutableListOf<DetailsTagItem>()
 
@@ -160,7 +163,7 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
                 .filter { it.second.contains("Director") || it.second.contains("Original Creator") }
                 .sortedByDescending { it.second.contains("Director") }
                 .forEach {
-                    val description = it.first.nameRu.nullIfEmpty() ?: it.first.name
+                    val description = settings.titleName(it.first.name, it.first.nameRu)
                     val category = it.second.firstOrNull { role -> role == "Director" || role == "Original Creator" }?.let { convertRole(it) }
                     if (category != null) {
                         info.add(InfoClickableItem(it.first.id, it.first.linkedType, description, it.first.image, category))
@@ -227,17 +230,8 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         }
     }
 
-    private fun getLocalizedType(type: AnimeType): String {
-        return when (type) {
-            AnimeType.TV -> context.getString(R.string.type_tv_short_translatable)
-            AnimeType.OVA -> context.getString(R.string.type_ova)
-            AnimeType.ONA -> context.getString(R.string.type_ona)
-            AnimeType.MUSIC -> context.getString(R.string.type_music_translatable)
-            AnimeType.MOVIE -> context.getString(R.string.type_movie_translatable)
-            AnimeType.SPECIAL -> context.getString(R.string.type_special_translatable)
-            else -> context.getString(R.string.type_tv_short_translatable)
-        }
-    }
+    private fun getLocalizedType(type: AnimeType): String =
+            titleText.typeLabel(type) ?: context.getString(R.string.type_tv_short_translatable)
 
     private fun convertRating(ageRating: AgeRating): String? {
         val names = context.resources.getStringArray(R.array.age_ratings_values)

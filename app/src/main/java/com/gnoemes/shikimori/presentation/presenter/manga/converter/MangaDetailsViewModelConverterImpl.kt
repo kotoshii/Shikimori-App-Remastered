@@ -3,6 +3,8 @@ package com.gnoemes.shikimori.presentation.presenter.manga.converter
 import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.secondTitleName
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
@@ -12,21 +14,22 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.user.domain.Statistic
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import javax.inject.Inject
 
 class MangaDetailsViewModelConverterImpl @Inject constructor(
         private val context: Context,
         private val settings: SettingsSource,
         private val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor
+        private val textProcessor: BBCodesTextProcessor,
+        private val titleText: TitleTextConverter
 ) : MangaDetailsViewModelConverter {
 
     override fun convertHead(it: MangaDetails, isGuest: Boolean): DetailsHeadItem {
-        val name = if (!settings.isRussianNaming) it.name else it.nameRu.nullIfEmpty() ?: it.name
+        val name = settings.titleName(it.name, it.nameRu)
 
         return DetailsHeadItem(
                 Type.MANGA,
@@ -39,7 +42,7 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
     }
 
     override fun convertInfo(it: MangaDetails, creators: List<Pair<Person, List<String>>>): DetailsInfoItem {
-        val nameSecond = if (!settings.isRussianNaming) it.nameRu.nullIfEmpty() ?: it.name else it.name
+        val nameSecond = settings.secondTitleName(it.name, it.nameRu)
 
         val tags = mutableListOf<DetailsTagItem>()
 
@@ -103,7 +106,7 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
                 .filter { it.second.contains("Art") || it.second.contains("Story") || it.second.contains("Story & Art") }
                 .sortedByDescending { it.second.contains("Story") }
                 .forEach {
-                    val description = it.first.nameRu.nullIfEmpty() ?: it.first.name
+                    val description = settings.titleName(it.first.name, it.first.nameRu)
                     val category = it.second.firstOrNull { role -> role == "Art" || role == "Story" || role == "Story & Art" }?.let { convertRole(it) }
                     if (category != null) {
                         info.add(InfoClickableItem(it.first.id, it.first.linkedType, description, it.first.image, category))
@@ -167,18 +170,7 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
         }
     }
 
-    private fun getLocalizedType(type: MangaType): String {
-        return when (type) {
-            MangaType.MANGA -> context.getString(R.string.type_manga_translatable)
-            MangaType.DOUJIN -> context.getString(R.string.type_doujin_translatable)
-            MangaType.MANHUA -> context.getString(R.string.type_manhua_translatable)
-            MangaType.MANHWA -> context.getString(R.string.type_manhwa_translatable)
-            MangaType.NOVEL -> context.getString(R.string.type_novel_translatable)
-            MangaType.LIGHT_NOVEL -> context.getString(R.string.type_novel_translatable)
-            MangaType.ONE_SHOT -> context.getString(R.string.type_one_shot_translatable)
-            MangaType.UNKNOWN -> ""
-        }
-    }
+    private fun getLocalizedType(type: MangaType): String = titleText.typeLabel(type) ?: ""
 
     override fun convertDescriptionItem(description: String?): DetailsDescriptionItem {
         val processedText = description?.let { textProcessor.process(it) }

@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.manga
 
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.manga.MangaInteractor
 import com.gnoemes.shikimori.domain.ranobe.RanobeInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
@@ -22,7 +23,6 @@ import com.gnoemes.shikimori.presentation.presenter.manga.converter.MangaDetails
 import com.gnoemes.shikimori.presentation.view.manga.MangaView
 import com.gnoemes.shikimori.utils.appendLoadingLogic
 import com.gnoemes.shikimori.utils.applySingleSchedulers
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import javax.inject.Inject
@@ -149,6 +149,5 @@ class MangaPresenter @Inject constructor(
     }
 
     private val title: String
-        get() = if (settingsSource.isRussianNaming) currentManga.nameRu.nullIfEmpty()
-                ?: currentManga.name else currentManga.name
+        get() = settingsSource.titleName(currentManga.name, currentManga.nameRu)
 }
