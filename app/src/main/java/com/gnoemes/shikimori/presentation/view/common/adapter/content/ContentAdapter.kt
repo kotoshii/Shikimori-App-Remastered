@@ -41,15 +41,12 @@ class ContentAdapter(
         oldItem is ContentItem && oldItem.raw is Manga && newItem is ContentItem && newItem.raw is Manga -> oldItem.raw.id == newItem.raw.id
         oldItem is ContentItem && oldItem.raw is Character && newItem is ContentItem && newItem.raw is Character -> oldItem.raw.id == newItem.raw.id
         oldItem is ContentItem && oldItem.raw is Person && newItem is ContentItem && newItem.raw is Person -> oldItem.raw.id == newItem.raw.id
-        oldItem is ContentItem && oldItem.raw is Related && newItem is ContentItem && newItem.raw is Related -> {
-            if (oldItem.raw.anime != null && newItem.raw.anime != null) oldItem.raw.anime.id == newItem.raw.anime.id
-            else oldItem.raw.manga!!.id == newItem.raw.manga!!.id
-        }
+        //an anime and a manga can be compared here; matching both ids keeps them apart without a !!
+        oldItem is ContentItem && oldItem.raw is Related && newItem is ContentItem && newItem.raw is Related ->
+            oldItem.raw.anime?.id == newItem.raw.anime?.id && oldItem.raw.manga?.id == newItem.raw.manga?.id
         oldItem is FrameItem && oldItem.raw is AnimeVideo && newItem is FrameItem && newItem.raw is AnimeVideo -> oldItem.raw.id == newItem.raw.id
-        oldItem is ContentItem && oldItem.raw is Work && newItem is ContentItem && newItem.raw is Work -> {
-            if (oldItem.raw.anime != null && newItem.raw.anime != null) oldItem.raw.anime.id == newItem.raw.anime.id
-            else oldItem.raw.manga!!.id == newItem.raw.manga!!.id
-        }
+        oldItem is ContentItem && oldItem.raw is Work && newItem is ContentItem && newItem.raw is Work ->
+            oldItem.raw.anime?.id == newItem.raw.anime?.id && oldItem.raw.manga?.id == newItem.raw.manga?.id
         else -> false
     }
 
