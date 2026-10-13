@@ -54,47 +54,45 @@ class DateTimeConverterImpl @Inject constructor(
     }
 
     override fun convertHistoryDateToString(actionDate: DateTime): String {
-        return when {
-            dateUtils.isToday(actionDate) -> resourceProvider.todayMessage
-            dateUtils.isYesterday(actionDate) -> resourceProvider.yesterdayMessage
-            Months.monthsBetween(dateUtils.nowDateTime, actionDate).months == 0 -> {
-                val diff = Math.abs(dateUtils.nowDateTime.toLocalDate().weekOfWeekyear - actionDate.toLocalDate().weekOfWeekyear)
-                resourceProvider.getWeeksAgoString(diff).firstUpperCase()!!
-            }
-            dateUtils.isSameYear(actionDate) || Years.yearsBetween(dateUtils.nowDateTime, actionDate).years == 0 -> {
-                val diff = Math.abs(Months.monthsBetween(dateUtils.nowDateTime, actionDate).months)
-                resourceProvider.getMonthsAgoString(diff, false).firstUpperCase()!!
-            }
-            else -> {
-                val diff = Math.abs(Years.yearsBetween(dateUtils.nowDateTime, actionDate).years)
-                resourceProvider.getYearsAgoString(diff).firstUpperCase()!!
-            }
+        if (dateUtils.isToday(actionDate)) return resourceProvider.todayMessage
+        if (dateUtils.isYesterday(actionDate)) return resourceProvider.yesterdayMessage
+
+        val gap = Gap(dateUtils.nowDateTime, actionDate)
+        val text = when {
+            gap.months == 0 -> resourceProvider.getWeeksAgoString(gap.calendarWeeks)
+            dateUtils.isSameYear(actionDate) || gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months, false)
+            else -> resourceProvider.getYearsAgoString(gap.years)
         }
+        return text.firstUpperCase()!!
     }
 
     override fun convertDateAgoToString(actionDate: DateTime): String {
-        when {
-            dateUtils.isSameDay(actionDate) -> {
-                val hours = Math.abs(Hours.hoursBetween(dateUtils.nowDateTime, actionDate).hours)
-                if (hours == 0) {
-                    val minutes = Math.abs(Minutes.minutesBetween(dateUtils.nowDateTime, actionDate).minutes)
-                    return resourceProvider.getMinutesAgoString(minutes)
-                }
-                return resourceProvider.getHoursAgoString(hours)
-            }
-            Months.monthsBetween(dateUtils.nowDateTime, actionDate).months == 0 -> {
-                val diff = Math.abs(Days.daysBetween(dateUtils.nowDateTime, actionDate).days)
-                return resourceProvider.getDaysAgoString(diff)
-            }
-            Years.yearsBetween(dateUtils.nowDateTime, actionDate).years == 0 -> {
-                val diff = Math.abs(Months.monthsBetween(dateUtils.nowDateTime, actionDate).months)
-                return resourceProvider.getMonthsAgoString(diff, true)
-            }
-            else -> {
-                val diff = Math.abs(Years.yearsBetween(dateUtils.nowDateTime, actionDate).years)
-                return resourceProvider.getYearsAgoString(diff)
-            }
+        val gap = Gap(dateUtils.nowDateTime, actionDate)
+        return when {
+            dateUtils.isSameDay(actionDate) ->
+                if (gap.hours == 0) resourceProvider.getMinutesAgoString(gap.minutes)
+                else resourceProvider.getHoursAgoString(gap.hours)
+            gap.months == 0 -> resourceProvider.getDaysAgoString(gap.days)
+            gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months, true)
+            else -> resourceProvider.getYearsAgoString(gap.years)
         }
+    }
+
+    /** How far [date] is from [now], in each unit, without the sign. */
+    private class Gap(now: DateTime, date: DateTime) {
+        val minutes = Math.abs(Minutes.minutesBetween(now, date).minutes)
+        val hours = Math.abs(Hours.hoursBetween(now, date).hours)
+        val days = Math.abs(Days.daysBetween(now, date).days)
+        val months = Math.abs(Months.monthsBetween(now, date).months)
+        val years = Math.abs(Years.yearsBetween(now, date).years)
+
+        /**
+         * Calendar weeks, Monday to Sunday: 0 is this week, 1 the week before. Counted from the
+         * weeks' Mondays, so the turn of the year does not break it - week-of-year numbers did.
+         */
+        val calendarWeeks = Math.abs(Weeks.weeksBetween(date.weekStart(), now.weekStart()).weeks)
+
+        private fun DateTime.weekStart(): LocalDate = toLocalDate().withDayOfWeek(DateTimeConstants.MONDAY)
     }
 
     override fun convertShortMonth(dateTime: DateTime): String = resourceProvider.getMonthString(dateTime.monthOfYear)
