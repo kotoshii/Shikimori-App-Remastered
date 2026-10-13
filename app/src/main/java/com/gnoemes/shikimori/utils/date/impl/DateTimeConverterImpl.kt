@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.utils.date.impl
 
+import com.gnoemes.shikimori.entity.common.domain.SearchConstants
+import com.gnoemes.shikimori.entity.common.domain.SeasonYear
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeResourceProvider
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
@@ -25,23 +27,17 @@ class DateTimeConverterImpl @Inject constructor(
         }
     }
 
-    override fun convertAnimeSeasonToString(dateTime: DateTime?): String {
-        val season: String = when (dateTime?.monthOfYear) {
-            1 -> resourceProvider.winterString
-            2 -> resourceProvider.winterString
-            3 -> resourceProvider.springString
-            4 -> resourceProvider.springString
-            5 -> resourceProvider.springString
-            6 -> resourceProvider.summerString
-            7 -> resourceProvider.summerString
-            8 -> resourceProvider.summerString
-            9 -> resourceProvider.fallString
-            10 -> resourceProvider.fallString
-            11 -> resourceProvider.fallString
-            12 -> resourceProvider.winterString
-            else -> return "xxx"
+    override fun convertAnimeSeasonToString(dateTime: DateTime?): String =
+            dateTime?.let { convertSeasonToString(SeasonYear.of(it)) } ?: "xxx"
+
+    override fun convertSeasonToString(season: SeasonYear): String {
+        val name = when (season.season) {
+            SearchConstants.SEASONS.WINTER -> resourceProvider.winterString
+            SearchConstants.SEASONS.SPRING -> resourceProvider.springString
+            SearchConstants.SEASONS.SUMMER -> resourceProvider.summerString
+            SearchConstants.SEASONS.FALL -> resourceProvider.fallString
         }
-        return "$season ${dateTime.year}"
+        return "$name ${season.year}"
     }
 
     override fun convertToFullHumanDateString(dateTime: DateTime?): String? {

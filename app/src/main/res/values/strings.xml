@@ -265,7 +265,8 @@
 
     <string name="filter_not_selected">Не выбрано</string>
     <string name="filter_select">Выбрать</string>
-    <string name="filter_older">Более старые</string>
+    <string name="filter_older">До 1980</string>
+    <string name="filter_decade">%1$s-е</string>
     <string name="filter_drop">Сбросить</string>
     <string name="filters">Фильтры</string>
     <string name="filters_latest">Недавно вышедшие</string>

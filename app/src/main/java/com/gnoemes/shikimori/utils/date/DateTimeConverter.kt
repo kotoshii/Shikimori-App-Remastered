@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.utils.date
 
+import com.gnoemes.shikimori.entity.common.domain.SeasonYear
 import org.joda.time.DateTime
 
 interface DateTimeConverter {
@@ -7,6 +8,9 @@ interface DateTimeConverter {
     fun convertCalendarDateToString(dateTime: DateTime?): String
 
     fun convertAnimeSeasonToString(dateTime: DateTime?): String
+
+    /** «Зима 2027». */
+    fun convertSeasonToString(season: SeasonYear): String
 
     fun convertToFullHumanDateString(dateTime: DateTime?): String?
 
