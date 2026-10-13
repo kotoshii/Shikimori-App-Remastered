@@ -54,11 +54,8 @@ class ChronologyPresenter @Inject constructor(
                     .addToDisposables()
 
     private fun loadData() {
-        (when (data.type) {
-            Type.ANIME -> interactor.getAnimes(data.id, chronologyType)
-            Type.MANGA, Type.RANOBE -> interactor.getMangas(data.id, data.type, chronologyType)
-            else -> throw IllegalArgumentException("${data.type} is not supporting")
-        }).appendLoadingLogic(viewState)
+        interactor.getItems(data.id, data.type, chronologyType)
+                .appendLoadingLogic(viewState)
                 .map { converter.apply(it, userId == null) }
                 .subscribe(this::setData, this::processErrors)
                 .addToDisposables()
