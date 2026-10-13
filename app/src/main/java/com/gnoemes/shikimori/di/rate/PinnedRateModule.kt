@@ -8,8 +8,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.Reusable
 
+//was SyncModule, after upstream's series sync service, removed in 2019
 @Module(includes = [AnimeProgressModule::class])
-interface SyncModule {
+interface PinnedRateModule {
 
     @Binds
     @Reusable
