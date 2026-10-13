@@ -127,16 +127,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(context.dp(16), 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
+            applyAppStyle(startPaddingDp = 16, closeButton = false)
         }
 
         with(charactersLayout) {

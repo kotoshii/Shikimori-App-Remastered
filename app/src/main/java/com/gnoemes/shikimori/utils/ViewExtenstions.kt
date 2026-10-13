@@ -6,11 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DimenRes
 import androidx.annotation.DrawableRes
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.iterator
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -71,6 +73,29 @@ fun Toolbar.hideMenu() {
 
 fun Toolbar.showMenu() {
     this.menu?.iterator()?.forEach { menuItem -> menuItem.isVisible = true }
+}
+
+/**
+ * The app's look for a search field in a toolbar: no gap before the text, the hint in the faint
+ * text colour and, with [closeButton], a padded close button in the toolbar's text colour.
+ */
+fun SearchView.applyAppStyle(startPaddingDp: Int = 0, closeButton: Boolean = true) {
+    findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
+        setPadding(context.dp(startPaddingDp), 0, context.dp(8), 0)
+        setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
+    }
+    findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
+        layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
+            marginStart = 0
+            leftMargin = 0
+        }
+    }
+    if (closeButton) {
+        findViewById<ImageView>(R.id.search_close_btn)?.apply {
+            setPadding(context.dp(12), 0, context.dp(12), 0)
+            tint(context.colorAttr(R.attr.colorOnPrimary))
+        }
+    }
 }
 
 
