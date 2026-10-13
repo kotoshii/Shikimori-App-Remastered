@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.Fade
@@ -183,10 +182,6 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     override fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean) {
         (parentFragment as? EpisodesCallback)?.onEpisodeSelected(episodeId, episode, isAlternative)
         onBackPressed()
-    }
-
-    override fun showSystemMessage(message: String) {
-        Toast.makeText(context!!, message, Toast.LENGTH_SHORT).show()
     }
 
     interface EpisodesCallback {

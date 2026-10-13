@@ -27,8 +27,8 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
 //        val errorUtils = ErrorUtils()
 //        errorUtils.processErrors(throwable, router, viewState)
         when ((throwable as? BaseException)?.tag) {
-            NetworkException.TAG -> viewState.apply { showNetworkView(); showContent(false); router.showSystemMessage(throwable.localizedMessage) }
-            ServiceCodeException.TAG -> viewState.apply { showNetworkView(); showContent(false); router.showSystemMessage("HTTP error ${(throwable as ServiceCodeException).serviceCode}") }
+            NetworkException.TAG -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage(throwable.localizedMessage.orEmpty()) }
+            ServiceCodeException.TAG -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage("HTTP error ${(throwable as ServiceCodeException).serviceCode}") }
             else -> Log.e("Error", throwable.toString())
         }
     }

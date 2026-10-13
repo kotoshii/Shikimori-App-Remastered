@@ -10,10 +10,13 @@ import ru.terrakok.cicerone.Router
 
 abstract class BaseNavigationPresenter<View : BaseView> : BasePresenter<View>() {
 
+    //set by the screen, from its tab's RouterProvider. A screen without one must not navigate: this
+    //used to fall back to a new Router() that went nowhere, so such a call failed silently; now it
+    //throws at once. Errors are shown by the screen itself (BaseNetworkView.showErrorMessage)
     lateinit var localRouter: Router
 
     override val router: Router
-        get() = if (::localRouter.isInitialized) localRouter else Router()
+        get() = localRouter
 
     override fun onBackPressed() = router.exit()
 

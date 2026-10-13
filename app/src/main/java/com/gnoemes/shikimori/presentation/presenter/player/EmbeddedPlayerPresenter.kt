@@ -154,10 +154,10 @@ class EmbeddedPlayerPresenter @Inject constructor(
         viewState.showMessage(resourceProvider.videoNotFoundMessage, videos.isEmpty())
     }
 
-    //for the first video and for a switch alike. This screen's navigator is a no-op, so
-    //BaseNetworkPresenter.processErrors would show nothing: say the video could not be loaded and stay,
-    //so whatever is playing keeps playing and prev/next still work. An anti-bot check is not the video
-    //being gone, and the player cannot get past it, so that one says what happened and leaves
+    //for the first video and for a switch alike. Not BaseNetworkPresenter.processErrors, which would
+    //only name the network error: say the video could not be loaded and stay, so whatever is playing
+    //keeps playing and prev/next still work. An anti-bot check is not the video being gone, and the
+    //player cannot get past it, so that one says what happened and leaves
     private fun processVideoErrors(episode: Int, throwable: Throwable) {
         pendingEpisode = null
         Log.w(TAG, "loading episode $episode failed", throwable)

@@ -85,7 +85,7 @@ class EpisodesPresenter @Inject constructor(
 
     fun onEpisodeLongClick(item: EpisodeViewModel) {
         if (userInteractor.getUserStatus() == UserStatus.GUEST) {
-            viewState.showSystemMessage(resourceProvider.needAuthRates)
+            viewState.showErrorMessage(resourceProvider.needAuthRates)
             return
         }
 

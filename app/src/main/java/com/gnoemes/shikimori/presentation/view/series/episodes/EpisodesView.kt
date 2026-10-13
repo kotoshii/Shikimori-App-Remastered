@@ -30,7 +30,4 @@ interface EpisodesView : BaseFragmentView {
 
     fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean = false)
 
-    @StateStrategyType(SkipStrategy::class)
-    fun showSystemMessage(message: String)
-
 }
