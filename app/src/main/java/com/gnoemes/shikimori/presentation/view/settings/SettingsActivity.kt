@@ -10,8 +10,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras.NEW_VERSION_AVAILABLE
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.settings.fragments.SettingsFragment
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
@@ -29,6 +29,9 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
 
     @Inject
     lateinit var fragmentInjector: DispatchingAndroidInjector<Fragment>
+
+    @Inject
+    lateinit var appUpdateSource: AppUpdateSource
 
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
 
@@ -59,7 +62,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
             scrollFlags = 0
         }
 
-        if (getDefaultSharedPreferences().getBoolean(NEW_VERSION_AVAILABLE, false)) onNewVersionAvailable()
+        if (appUpdateSource.isUpdateAvailable()) onNewVersionAvailable()
 
         replaceFragment(SettingsFragment())
     }
@@ -114,7 +117,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
      * that has nothing stored - a check that has not run since the preferences were cleared.
      */
     private fun showChangelog() {
-        val dialog = ChangelogDialog.fromPreferences(this)
+        val dialog = appUpdateSource.getAvailableUpdate()?.let { ChangelogDialog.newInstance(it) }
 
         if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
         else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))

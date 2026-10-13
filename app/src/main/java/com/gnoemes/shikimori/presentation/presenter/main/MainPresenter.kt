@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.main
 
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
+import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
@@ -14,7 +15,8 @@ import javax.inject.Inject
 @InjectViewState
 class MainPresenter @Inject constructor(
         private val _router: Router,
-        private val genreVocabulary: GenreVocabularySource
+        private val genreVocabulary: GenreVocabularySource,
+        private val appUpdateSource: AppUpdateSource
 ) : BaseNavigationPresenter<MainView>() {
 
     private var disposable: CompositeDisposable = CompositeDisposable()
@@ -25,6 +27,15 @@ class MainPresenter @Inject constructor(
     override fun initData() {
         onTabItemSelected(BottomScreens.RATES)
         refreshGenres()
+        checkForUpdate()
+    }
+
+    /** Once per start; a newer release shows up as a notification and the settings badge. */
+    private fun checkForUpdate() {
+        val d = appUpdateSource.check()
+                .subscribeOn(Schedulers.io())
+                .subscribe({}, { Log.w(TAG, "update check failed", it) })
+        disposable.add(d)
     }
 
     /**
