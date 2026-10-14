@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
-import android.Manifest
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -17,7 +16,6 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.*
-import com.kotlinpermissions.KotlinPermissions
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.dialog_backup.*
 import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
@@ -81,7 +79,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun writeFileToPublic(file: File) {
-        checkStoragePermissions {
+        activity!!.askStoragePermission {
             try {
                 val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
                 val path = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, androidDownloadFolder)
@@ -97,7 +95,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun findBackupLocal() {
-        checkStoragePermissions {
+        activity!!.askStoragePermission {
             try {
                 val androidDownloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath
                 val chosenFolder = context!!.getDefaultSharedPreferences().getString(SettingsExtras.DOWNLOAD_FOLDER, "").orEmpty()
@@ -156,13 +154,6 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
             positiveButton(res = R.string.common_apply) { onAccepted.invoke() }
             negativeButton(res = R.string.filter_select) { onCancel.invoke() }
         }
-    }
-
-    private fun checkStoragePermissions(onAccepted: () -> Unit) {
-        KotlinPermissions.with(activity!!)
-                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .onAccepted { onAccepted.invoke() }
-                .ask()
     }
 
     private fun showFolderChooserDialog(onFileChosen: (File) -> Unit) {
