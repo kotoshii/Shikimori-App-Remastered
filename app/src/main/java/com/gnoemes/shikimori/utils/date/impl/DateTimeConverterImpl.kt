@@ -49,19 +49,6 @@ class DateTimeConverterImpl @Inject constructor(
         return dateFormatter.print(dateTime)
     }
 
-    override fun convertHistoryDateToString(actionDate: DateTime): String {
-        if (dateUtils.isToday(actionDate)) return resourceProvider.todayMessage
-        if (dateUtils.isYesterday(actionDate)) return resourceProvider.yesterdayMessage
-
-        val gap = Gap(dateUtils.nowDateTime, actionDate)
-        val text = when {
-            gap.months == 0 -> resourceProvider.getWeeksAgoString(gap.calendarWeeks)
-            dateUtils.isSameYear(actionDate) || gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months, false)
-            else -> resourceProvider.getYearsAgoString(gap.years)
-        }
-        return text.firstUpperCase()!!
-    }
-
     override fun convertDateAgoToString(actionDate: DateTime): String {
         val gap = Gap(dateUtils.nowDateTime, actionDate)
         return when {
@@ -81,14 +68,6 @@ class DateTimeConverterImpl @Inject constructor(
         val days = Math.abs(Days.daysBetween(now, date).days)
         val months = Math.abs(Months.monthsBetween(now, date).months)
         val years = Math.abs(Years.yearsBetween(now, date).years)
-
-        /**
-         * Calendar weeks, Monday to Sunday: 0 is this week, 1 the week before. Counted from the
-         * weeks' Mondays, so the turn of the year does not break it - week-of-year numbers did.
-         */
-        val calendarWeeks = Math.abs(Weeks.weeksBetween(date.weekStart(), now.weekStart()).weeks)
-
-        private fun DateTime.weekStart(): LocalDate = toLocalDate().withDayOfWeek(DateTimeConstants.MONDAY)
     }
 
     override fun convertShortMonth(dateTime: DateTime): String = resourceProvider.getMonthString(dateTime.monthOfYear)

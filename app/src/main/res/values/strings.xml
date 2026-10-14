@@ -175,6 +175,19 @@
     <string name="history_hour_ago">час назад</string>
     <string name="history_its_now">только что</string>
     <string name="history_minute_ago">минуту назад</string>
+    <!-- the history's headers, the site's (datetime.intervals); today, yesterday and half a year are above -->
+    <string name="history_during_week">В течение недели</string>
+    <string name="history_week_ago">Неделя назад</string>
+    <string name="history_two_weeks_ago">Две недели назад</string>
+    <string name="history_three_weeks_ago">Три недели назад</string>
+    <string name="history_month_ago">Месяц назад</string>
+    <string name="history_two_months_ago">Два месяца назад</string>
+    <string name="history_three_months_ago">Три месяца назад</string>
+    <string name="history_four_months_ago">Четыре месяца назад</string>
+    <string name="history_five_months_ago">Пять месяцев назад</string>
+    <string name="history_year_ago">Год назад</string>
+    <string name="history_two_years_ago">Два года назад</string>
+    <string name="history_long_ago">Совсем давно</string>
 
     <string name="calendar_date_format" translatable="false">%s, %s</string>
     <string name="calendar_search_hint">Онгоинги и анонсы</string>

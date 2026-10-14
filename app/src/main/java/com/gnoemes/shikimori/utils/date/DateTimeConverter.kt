@@ -14,8 +14,6 @@ interface DateTimeConverter {
 
     fun convertToFullHumanDateString(dateTime: DateTime?): String?
 
-    fun convertHistoryDateToString(actionDate: DateTime): String
-
     fun convertDateAgoToString(actionDate: DateTime): String
 
     fun convertShortMonth(dateTime: DateTime) : String
