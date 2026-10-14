@@ -6,9 +6,12 @@ import com.gnoemes.shikimori.entity.anime.data.AnimeResponse
 import com.gnoemes.shikimori.entity.club.data.ClubResponse
 import com.gnoemes.shikimori.entity.common.data.LinkedContentResponse
 import com.gnoemes.shikimori.entity.common.domain.LinkedContent
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.data.MangaResponse
 import com.gnoemes.shikimori.entity.roles.data.CharacterResponse
 import com.gnoemes.shikimori.entity.roles.data.PersonResponse
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import javax.inject.Inject
 
 class LinkedContentResponseConverterImpl @Inject constructor(
@@ -16,7 +19,8 @@ class LinkedContentResponseConverterImpl @Inject constructor(
         private val mangaConverter: MangaResponseConverter,
         private val charactersConverter: CharacterResponseConverter,
         private val personConverter: PersonResponseConverter,
-        private val clubConverter: ClubResponseConverter
+        private val clubConverter: ClubResponseConverter,
+        private val gson: Gson
 ) : LinkedContentResponseConverter {
 
     override fun convertResponse(it: LinkedContentResponse?): LinkedContent? =
@@ -28,4 +32,18 @@ class LinkedContentResponseConverterImpl @Inject constructor(
                 is ClubResponse -> clubConverter.convertResponse(it)
                 else -> null
             }
+
+    override fun convertResponse(linked: JsonElement?, type: Type): LinkedContent? {
+        if (linked == null || linked.isJsonNull) return null
+
+        val responseClass = when (type) {
+            Type.ANIME -> AnimeResponse::class.java
+            Type.MANGA, Type.RANOBE -> MangaResponse::class.java
+            Type.CHARACTER -> CharacterResponse::class.java
+            Type.PERSON -> PersonResponse::class.java
+            Type.CLUB -> ClubResponse::class.java
+            else -> return null
+        }
+        return convertResponse(gson.fromJson(linked, responseClass))
+    }
 }
