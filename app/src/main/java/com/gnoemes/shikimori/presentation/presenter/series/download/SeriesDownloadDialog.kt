@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.addBackButton
@@ -46,7 +45,7 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
 
         //these sources hand out picture and sound separately, the file only appears once both
         //downloads finish and are joined, so say so before a quality is picked
-        val needsMerge = items.any { item -> item.video.tracks.find { it.url == item.url }?.audioUrl != null }
+        val needsMerge = items.any { it.track.audioUrl != null }
         mergeNotice.visibility = if (needsMerge) View.VISIBLE else View.GONE
         if (needsMerge) mergeNotice.setText(R.string.download_will_be_merged)
 
@@ -64,7 +63,7 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
     override fun getDialogLayout(): Int = R.layout.dialog_series_download
 
     interface SeriesDownloadCallback {
-        fun onDownload(url: String, video: Video)
+        fun onDownload(item: SeriesDownloadItem)
 
         //the whole item, not just its url: the shared text names the author, kind, quality and
         //hosting, the same things the downloaded file is named after

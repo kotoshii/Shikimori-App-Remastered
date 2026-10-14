@@ -315,7 +315,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         super.finish()
     }
 
-    override fun selectTrack(currentTrack: Int) = controller.selectTrack(currentTrack)
+    override fun selectTrack(position: Int) = controller.selectTrack(position)
     override fun enableNextButton(enable: Boolean) = controller.enableNextButton(enable)
     override fun enablePrevButton(enable: Boolean) = controller.enablePrevButton(enable)
     override fun onShowLoading() = progressBar.visible()
@@ -450,8 +450,8 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             prev.isEnabled = enable
         }
 
-        fun selectTrack(currentTrack: Int) {
-            resolutionSpinnerView.setSelection(currentTrack, false)
+        fun selectTrack(position: Int) {
+            resolutionSpinnerView.setSelection(position, false)
         }
 
         fun changePlaySpeed(currentSpeed: Int) {

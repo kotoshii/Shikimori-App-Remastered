@@ -31,7 +31,7 @@ class AllVideoParser @Inject constructor(
                     val match = Regex("\\[(\\d+)p\\](.+)").find(it)
 
                     if (match == null) {
-                        Track("unknown", it)
+                        Track(Track.UNKNOWN_QUALITY, it)
                     } else {
                         val (quality, url) = match.destructured
                         Track(quality, url)

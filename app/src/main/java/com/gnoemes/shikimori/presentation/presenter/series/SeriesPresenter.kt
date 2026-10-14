@@ -48,9 +48,7 @@ class SeriesPresenter @Inject constructor(
 
     private val items = mutableListOf<TranslationViewModel>()
     private lateinit var selectedVideo: TranslationVideo
-    private var selectedDownloadUrl: String? = null
-    private var selectedDownloadAudioUrl: String? = null
-    private var selectedDownloadVideo: Video? = null
+    private var selectedDownload: SeriesDownloadItem? = null
     private var selectedPlayer: PlayerType? = null
 
     private var isWatchSession = false
@@ -222,17 +220,11 @@ class SeriesPresenter @Inject constructor(
         //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
         //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
         //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
-        val videoUrl = item.url
+        val videoUrl = item.track.url
 
         //the same four things the downloaded file is named after, so a shared link and a saved file
-        //describe the episode alike. Blanks drop out rather than leaving separators behind - an
-        //unknown author, "не выбрано" for the kind, or a parser that could not tell the quality
-        val details = listOf(
-                item.video.author,
-                item.video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
-                item.quality.orEmpty(),
-                item.hosting
-        ).filter { it.isNotBlank() }
+        //describe the episode alike. Blanks drop out rather than leaving separators behind
+        val details = listOf(item.author, item.kind, item.quality, item.hosting).filter { it.isNotBlank() }
 
         val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
@@ -417,38 +409,30 @@ class SeriesPresenter @Inject constructor(
         else processErrors(throwable)
     }
 
-    fun onTrackForDownloadSelected(url: String, video: Video) {
+    fun onTrackForDownloadSelected(item: SeriesDownloadItem) {
         //Kodik urls used to be truncated at ".mp4" here to turn the hls manifest into a direct file,
         //because DownloadManager could only fetch one url. That file stopped existing - the shortened
         //url answers 500 - and DownloadService walks the playlist itself now, so the url is
         //passed through untouched.
-        selectedDownloadUrl = url
-        selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
-        selectedDownloadVideo = video
+        selectedDownload = item
         viewState.checkPermissions()
     }
 
     fun onStoragePermissionsAccepted() {
         val downloadPath = settingsSource.downloadFolder
 
-        if (downloadPath.isNotEmpty()) downloadVideo(selectedDownloadUrl, selectedDownloadAudioUrl, selectedDownloadVideo)
+        if (downloadPath.isNotEmpty()) selectedDownload?.let(this::downloadVideo)
         else viewState.showFolderChooserDialog()
     }
 
-    private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
+    private fun downloadVideo(item: SeriesDownloadItem) {
         val data = DownloadVideoData(
-                navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
-                parsers.headers(video),
-                author = video?.author.orEmpty(),
-                //the chosen track carries the quality; "unknown" is what parsers use when they
-                //cannot tell, and the ui hides it the same way
-                quality = video?.tracks?.find { it.url == url }?.quality
-                        ?.takeIf { it.isNotBlank() && it != "unknown" }
-                        ?.let { "${it}p" }
-                        .orEmpty(),
-                kind = video?.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
-                //domain-shaped for every hosting ("vk.com", "cda.pl")
-                hosting = video?.hosting?.synonymType.orEmpty()
+                navigationData.animeId, navigationData.name, episode!!, item.track.url, item.track.audioUrl,
+                parsers.headers(item.video),
+                author = item.author,
+                quality = item.quality,
+                kind = item.kind,
+                hosting = item.hosting
         )
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)

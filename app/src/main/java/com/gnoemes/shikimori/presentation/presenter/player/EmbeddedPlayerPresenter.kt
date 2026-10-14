@@ -64,9 +64,11 @@ class EmbeddedPlayerPresenter @Inject constructor(
             viewState.apply {
                 setEpisodeSubtitle(currentEpisode)
                 playVideo(it, video.subAss, needReset, parsers.headers(video))
-                val resolutions = video.tracks.asSequence().filter { it.quality != "unknown" }.map { it.quality }.toList()
+                val resolutions = video.tracks.filter { track -> track.isQualityKnown }.map { track -> track.quality }
                 setResolutions(resolutions)
-                selectTrack(currentTrack)
+                //the menu lists the known qualities only, so its position is not the track's
+                val position = resolutions.indexOf(it.quality)
+                if (position >= 0) selectTrack(position)
             }
             currentTrack = 0
             setEpisodeWatched()

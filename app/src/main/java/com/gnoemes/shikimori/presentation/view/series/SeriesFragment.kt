@@ -25,7 +25,6 @@ import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
-import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
@@ -222,7 +221,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
     }
 
-    override fun onDownload(url: String, video: Video) = getPresenter().onTrackForDownloadSelected(url, video)
+    override fun onDownload(item: SeriesDownloadItem) = getPresenter().onTrackForDownloadSelected(item)
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
     override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 

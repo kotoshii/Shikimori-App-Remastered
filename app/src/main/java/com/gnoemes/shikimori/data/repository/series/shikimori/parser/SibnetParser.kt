@@ -35,6 +35,6 @@ class SibnetParser @Inject constructor(
                 ?.let { if (it.firstOrNull() == '/') it else "/$it" }
                 ?.let { "https://video.sibnet.ru$it" }
 
-        return if (playlistUrl != null) listOf(Track("unknown", playlistUrl)) else emptyList()
+        return if (playlistUrl != null) listOf(Track(Track.UNKNOWN_QUALITY, playlistUrl)) else emptyList()
     }
 }

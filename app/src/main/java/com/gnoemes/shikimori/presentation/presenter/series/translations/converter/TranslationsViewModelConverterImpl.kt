@@ -83,10 +83,14 @@ class TranslationsViewModelConverterImpl @Inject constructor(
     }
 
     override fun convertTrack(video: Video, track: Track): SeriesDownloadItem = SeriesDownloadItem(
-            video.hosting.synonymType,
-            track.quality.let { if (it.isBlank() || it == "unknown")  null else "${it}p"},
-            track.url,
-            video
+            track,
+            video,
+            video.author,
+            //"не выбрано" is no kind at all
+            video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+            track.displayQuality.orEmpty(),
+            //domain-shaped for every hosting ("vk.com", "cda.pl")
+            video.hosting.synonymType
     )
 
     private fun convertVideo(t: Translation): TranslationVideo {
