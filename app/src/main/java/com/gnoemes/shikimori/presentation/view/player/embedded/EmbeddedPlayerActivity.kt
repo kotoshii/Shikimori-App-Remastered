@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.text.SpannableStringBuilder
-import android.util.Log
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -247,7 +246,6 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     }
 
     override fun playVideo(it: Track, subtitles: String?, needReset: Boolean, headers: Map<String, String>) {
-        Log.i("PLAYER", "loading: ${it.url}")
         //some hostings sign their links for a specific user agent, so it has to win over the default
         val userAgent = headers["User-Agent"] ?: DEFAULT_USER_AGENT
         val factory = DefaultHttpDataSourceFactory(userAgent, DefaultBandwidthMeter(), Constants.LONG_TIMEOUT * 1000, Constants.LONG_TIMEOUT * 1000, true)

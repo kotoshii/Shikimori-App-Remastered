@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.player.embedded
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -130,7 +129,6 @@ class PlayerGestureHandler(
             isSlide = true
 
             callback.onSeekSwipe(slideOffset)
-            Log.i("DEVE", " $slideOffset")
             scrollFirstTapX = e1.x.toInt()
 
             true
