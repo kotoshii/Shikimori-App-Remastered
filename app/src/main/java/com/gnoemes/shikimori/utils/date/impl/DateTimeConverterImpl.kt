@@ -56,7 +56,7 @@ class DateTimeConverterImpl @Inject constructor(
                 if (gap.hours == 0) resourceProvider.getMinutesAgoString(gap.minutes)
                 else resourceProvider.getHoursAgoString(gap.hours)
             gap.months == 0 -> resourceProvider.getDaysAgoString(gap.days)
-            gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months, true)
+            gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months)
             else -> resourceProvider.getYearsAgoString(gap.years)
         }
     }
