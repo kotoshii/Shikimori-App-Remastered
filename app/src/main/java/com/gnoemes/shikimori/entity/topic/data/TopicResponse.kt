@@ -14,7 +14,8 @@ import org.joda.time.DateTime
  */
 data class TopicResponse(
         @field:SerializedName("id") val id: Long,
-        @field:SerializedName("topic_title") val title: String,
+        //null for a tierlist's topic (seen 2026-10-14)
+        @field:SerializedName("topic_title") val title: String?,
         @field:SerializedName("body") val description: String?,
         @field:SerializedName("html_body") val descriptionHtml: String?,
         @field:SerializedName("html_footer") val footer: String?,

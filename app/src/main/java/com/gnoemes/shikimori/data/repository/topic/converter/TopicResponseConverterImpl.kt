@@ -24,7 +24,7 @@ class TopicResponseConverterImpl @Inject constructor(
 
         return Topic(
                 it.id,
-                it.title,
+                it.title.orEmpty(),
                 it.description,
                 it.descriptionHtml,
                 it.footer,
