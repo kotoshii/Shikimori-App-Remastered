@@ -50,27 +50,17 @@ class MainPresenter @Inject constructor(
         disposable.add(d)
     }
 
+    //the list and the catalog let their first screen act first (scroll up, open the search); every
+    //tab goes back to its first screen otherwise
     fun onTabItemReselected(screenKey: String) {
-        when (screenKey) {
-            BottomScreens.RATES -> viewState.rateActionOrClearBackStack()
-            BottomScreens.CALENDAR -> viewState.clearCalendarBackStack()
-            BottomScreens.SEARCH -> viewState.searchActionOrClearSearchBackStack()
-            BottomScreens.MAIN -> viewState.clearMainBackStack()
-            BottomScreens.MORE -> viewState.clearMoreBackStack()
-        }
+        if (screenKey == BottomScreens.RATES || screenKey == BottomScreens.SEARCH) viewState.tabRootActionOrClearBackStack(screenKey)
+        else viewState.clearBackStack(screenKey)
     }
 
+    //«Ещё» opens on its first screen each time
     fun onTabItemSelected(screenKey: String) {
-        when (screenKey) {
-            BottomScreens.RATES -> router.replaceScreen(BottomScreens.RATES)
-            BottomScreens.CALENDAR -> router.replaceScreen(BottomScreens.CALENDAR)
-            BottomScreens.SEARCH -> router.replaceScreen(BottomScreens.SEARCH)
-            BottomScreens.MAIN -> router.replaceScreen(BottomScreens.MAIN)
-            BottomScreens.MORE -> {
-                viewState.clearMoreBackStack()
-                router.replaceScreen(BottomScreens.MORE)
-            }
-        }
+        if (screenKey == BottomScreens.MORE) viewState.clearBackStack(screenKey)
+        router.replaceScreen(screenKey)
     }
 
     override fun onDestroy() {

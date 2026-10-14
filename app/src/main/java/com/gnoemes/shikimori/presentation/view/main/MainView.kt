@@ -8,19 +8,12 @@ import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 @StateStrategyType(AddToEndStrategy::class)
 interface MainView : BaseView {
 
+    /** Back to the first screen of the tab [screenKey]. */
     @StateStrategyType(SkipStrategy::class)
-    fun clearMoreBackStack()
+    fun clearBackStack(screenKey: String)
 
+    /** The first screen's own action when it is showing and has one, else [clearBackStack]. */
     @StateStrategyType(SkipStrategy::class)
-    fun clearMainBackStack()
-
-    @StateStrategyType(SkipStrategy::class)
-    fun searchActionOrClearSearchBackStack()
-
-    @StateStrategyType(SkipStrategy::class)
-    fun clearCalendarBackStack()
-
-    @StateStrategyType(SkipStrategy::class)
-    fun rateActionOrClearBackStack()
+    fun tabRootActionOrClearBackStack(screenKey: String)
 
 }

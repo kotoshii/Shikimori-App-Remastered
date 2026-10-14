@@ -117,21 +117,15 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
-    private fun invokeTabRootActionOrClearBackStack(screenKey: String) {
-        val fm = fragmentManager
-        val fragment: Fragment? = fm.findFragmentByTag(screenKey)
-        fragment.ifNotNull {
-            if (it is TabContainer && it.invokeTabRootAction())
-            else (it as RouterProvider).localRouter.backTo(null)
-        }
+    override fun tabRootActionOrClearBackStack(screenKey: String) {
+        val fragment = fragmentManager.findFragmentByTag(screenKey) ?: return
+        if (fragment is TabContainer && fragment.invokeTabRootAction()) return
+        clearBackStack(screenKey)
     }
 
-    private fun clearBackStack(screenKey: String) {
-        val fm = fragmentManager
-        val fragment: Fragment? = fm.findFragmentByTag(screenKey)
-        fragment.ifNotNull {
-            (it as RouterProvider).localRouter.backTo(null)
-        }
+    override fun clearBackStack(screenKey: String) {
+        val fragment = fragmentManager.findFragmentByTag(screenKey) ?: return
+        (fragment as RouterProvider).localRouter.backTo(null)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -208,16 +202,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setTitle(title: String) = Unit
-
-    override fun clearMoreBackStack() = clearBackStack(BottomScreens.MORE)
-
-    override fun clearMainBackStack() = clearBackStack(BottomScreens.MAIN)
-
-    override fun searchActionOrClearSearchBackStack() = invokeTabRootActionOrClearBackStack(BottomScreens.SEARCH)
-
-    override fun clearCalendarBackStack() = clearBackStack(BottomScreens.CALENDAR)
-
-    override fun rateActionOrClearBackStack() = invokeTabRootActionOrClearBackStack(BottomScreens.RATES)
 
 
     data class Tab(
