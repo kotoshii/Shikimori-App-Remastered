@@ -65,22 +65,7 @@ class RateResponseConverterImpl @Inject constructor(
     }
 
     override fun convertCreateOrUpdateRequest(targetId: Long, type: Type, rate: UserRate, userId: Long): UserRateCreateOrUpdateRequest =
-            UserRateCreateOrUpdateRequest(UserRateResponse(
-                    rate.id,
-                    userId,
-                    targetId,
-                    type,
-                    rate.score,
-                    rate.status,
-                    rate.rewatches,
-                    rate.episodes,
-                    rate.volumes,
-                    rate.chapters,
-                    rate.text,
-                    rate.textHtml,
-                    rate.dateCreated,
-                    rate.dateUpdated
-            ))
+            convertCreateOrUpdateRequest(rate.copy(userId = userId, targetId = targetId, targetType = type))
 
     override fun convertCreateOrUpdateRequest(rate: UserRate): UserRateCreateOrUpdateRequest =
             UserRateCreateOrUpdateRequest(UserRateResponse(

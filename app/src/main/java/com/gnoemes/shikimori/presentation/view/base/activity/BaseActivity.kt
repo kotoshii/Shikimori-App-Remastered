@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.base.activity
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -19,7 +20,7 @@ import javax.inject.Named
 import javax.inject.Provider
 
 abstract class BaseActivity<Presenter : BasePresenter<View>, View : BaseView> : BaseThemedActivity(),
-        HasSupportFragmentInjector, BaseView {
+        HasSupportFragmentInjector, BaseNetworkView {
 
     @Inject
     lateinit var presenterProvider: Provider<Presenter>
@@ -69,6 +70,10 @@ abstract class BaseActivity<Presenter : BasePresenter<View>, View : BaseView> : 
     override fun onShowLoading() = Unit
 
     override fun onHideLoading() = Unit
+
+    override fun showErrorMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
 
     override fun onBackPressed() {
         val fragment = fragmentManager.findFragmentById(R.id.activity_container)

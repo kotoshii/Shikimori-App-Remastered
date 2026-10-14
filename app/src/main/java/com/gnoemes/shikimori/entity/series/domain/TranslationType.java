@@ -15,15 +15,17 @@ public enum TranslationType {
     ALL("all", "не выбрано");
 
     private final String type;
-    private final String localizedType;
+    //Shikicinema's word for the kind, which isEqualType accepts too. Not a label: the screens show
+    //the strings in res, see TranslationTypeExtensions.kt
+    private final String shikicinemaKind;
 
-    TranslationType(String type, String localizedType) {
+    TranslationType(String type, String shikicinemaKind) {
         this.type = type;
-        this.localizedType = localizedType;
+        this.shikicinemaKind = shikicinemaKind;
     }
 
     public boolean isEqualType(@Nullable String otherType) {
-        return type.equals(otherType) || localizedType.equals(otherType);
+        return type.equals(otherType) || shikicinemaKind.equals(otherType);
     }
 
     @Nullable
@@ -31,7 +33,7 @@ public enum TranslationType {
         return type;
     }
 
-    public String getLocalizedType() {
-        return localizedType;
+    public String getShikicinemaKind() {
+        return shikicinemaKind;
     }
 }

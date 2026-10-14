@@ -41,7 +41,6 @@
     <string name="common_type">Тип</string>
     <string name="common_status">Статус</string>
     <string name="common_season">Сезон</string>
-    <string name="common_year">Год</string>
     <string name="common_duration">Продолжительность эпизода</string>
     <string name="common_yesterday">Вчера</string>
     <string name="common_error_message">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.\n Потяните, что бы обновить</string>
@@ -166,15 +165,26 @@
 
     <string name="search_nothing">Ничего не найдено.\n Попробуйте поискать что-нибудь другое</string>
 
-    <string name="common_this_week">На этой неделе</string>
     <string name="day_ago">день назад</string>
-    <string name="week_ago">неделю назад</string>
     <string name="month_ago">месяц назад</string>
     <string name="year_ago">год назад</string>
     <string name="history_half_year_ago">Более полугода назад</string>
     <string name="history_hour_ago">час назад</string>
     <string name="history_its_now">только что</string>
     <string name="history_minute_ago">минуту назад</string>
+    <!-- the history's headers, the site's (datetime.intervals); today, yesterday and half a year are above -->
+    <string name="history_during_week">В течение недели</string>
+    <string name="history_week_ago">Неделя назад</string>
+    <string name="history_two_weeks_ago">Две недели назад</string>
+    <string name="history_three_weeks_ago">Три недели назад</string>
+    <string name="history_month_ago">Месяц назад</string>
+    <string name="history_two_months_ago">Два месяца назад</string>
+    <string name="history_three_months_ago">Три месяца назад</string>
+    <string name="history_four_months_ago">Четыре месяца назад</string>
+    <string name="history_five_months_ago">Пять месяцев назад</string>
+    <string name="history_year_ago">Год назад</string>
+    <string name="history_two_years_ago">Два года назад</string>
+    <string name="history_long_ago">Совсем давно</string>
 
     <string name="calendar_date_format" translatable="false">%s, %s</string>
     <string name="calendar_search_hint">Онгоинги и анонсы</string>
@@ -265,7 +275,8 @@
 
     <string name="filter_not_selected">Не выбрано</string>
     <string name="filter_select">Выбрать</string>
-    <string name="filter_older">Более старые</string>
+    <string name="filter_older">До 1980</string>
+    <string name="filter_decade">%1$s-е</string>
     <string name="filter_drop">Сбросить</string>
     <string name="filters">Фильтры</string>
     <string name="filters_latest">Недавно вышедшие</string>
@@ -451,24 +462,6 @@
     <string name="month_nov_short">ноя</string>
     <string name="month_dec_short">дек</string>
 
-    <string-array name="anime_rate_stasuses">
-        <item>@string/rate_watching</item>
-        <item>@string/rate_planned</item>
-        <item>@string/rate_rewatch</item>
-        <item>@string/rate_completed</item>
-        <item>@string/rate_on_hold</item>
-        <item>@string/rate_dropped</item>
-    </string-array>
-
-    <string-array name="manga_rate_stasuses">
-        <item>@string/rate_reading</item>
-        <item>@string/rate_planned</item>
-        <item>@string/rate_rereading</item>
-        <item>@string/rate_readed</item>
-        <item>@string/rate_on_hold</item>
-        <item>@string/rate_dropped</item>
-    </string-array>
-
     <string-array name="search_types">
         <item>@string/common_anime</item>
         <item>@string/common_manga</item>
@@ -584,13 +577,6 @@
         <item>16+</item>
         <item>17+</item>
         <item>18+</item>
-    </string-array>
-
-    <string-array name="seasons">
-        <item>@string/season_autumn</item>
-        <item>@string/season_winter</item>
-        <item>@string/season_spring</item>
-        <item>@string/season_summer</item>
     </string-array>
 
     <string-array name="players">

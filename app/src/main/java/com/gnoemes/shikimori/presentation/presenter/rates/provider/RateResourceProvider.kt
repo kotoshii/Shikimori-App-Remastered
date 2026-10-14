@@ -5,9 +5,7 @@ import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 
 interface RateResourceProvider {
 
-    val animeRatesWithCount: List<String>
-
-    val mangaRatesWithCount: List<String>
+    fun getRateStatusName(status: RateStatus, isAnime: Boolean): String
 
     fun getChangeRateStatusMessage(type : Type, status : RateStatus) : String
 

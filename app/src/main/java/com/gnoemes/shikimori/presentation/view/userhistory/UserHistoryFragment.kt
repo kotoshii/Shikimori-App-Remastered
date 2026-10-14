@@ -19,7 +19,6 @@ import com.gnoemes.shikimori.presentation.view.userhistory.adapter.UserHistoryAd
 import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dimen
-import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.layout_default_list.*
@@ -27,9 +26,6 @@ import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class UserHistoryFragment : BasePaginationFragment<UserHistoryViewModel, UserHistoryPresenter, UserHistoryView>(), UserHistoryView {
-
-    @Inject
-    lateinit var imageLoader: ImageLoader
 
     @InjectPresenter
     lateinit var historyPresenter: UserHistoryPresenter
@@ -53,7 +49,7 @@ class UserHistoryFragment : BasePaginationFragment<UserHistoryViewModel, UserHis
         private const val USER_NAME = "USER_NAME"
     }
 
-    private val historyAdapter by lazy { UserHistoryAdapter(imageLoader, getPresenter()::onContentClicked) }
+    private val historyAdapter by lazy { UserHistoryAdapter(getPresenter()::onContentClicked) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -1,11 +1,16 @@
 package com.gnoemes.shikimori.entity.app.domain
 
-object Constants {
-    const val AUTH_URL = "https://shikimori.io/oauth/authorize?" +
-            "client_id=f6f9ff07c7fdca024c5d3395f6dc8d9e802bda458a213d5c382d5d6e69bc77b0&" +
-            "redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code"
+import com.gnoemes.shikimori.BuildConfig
+import java.net.URLEncoder
 
+object Constants {
     const val REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
+
+    //the sign-in page, from the same build values AuthApi exchanges the code with
+    val AUTH_URL = BuildConfig.ShikimoriBaseUrl + "oauth/authorize" +
+            "?client_id=" + BuildConfig.ShikimoriClientId +
+            "&redirect_uri=" + URLEncoder.encode(REDIRECT_URI, "UTF-8") +
+            "&response_type=code"
 
     const val DEFAULT_TIMEOUT = 15
 

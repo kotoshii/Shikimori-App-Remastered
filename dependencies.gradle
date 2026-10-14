@@ -28,7 +28,6 @@ ext.versions = [
         materialDialogs   : '2.8.1',
         glide             : '4.10.0',
         spinKit           : '1.1.0',
-        reSpinner         : '1.0.5',
         adapterDelegate   : '4.0.0',
         flexbox           : '1.1.0',
         drawerBehavior    : '0.0.5',

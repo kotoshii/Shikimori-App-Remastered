@@ -16,7 +16,6 @@ import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
-import com.gnoemes.shikimori.presentation.presenter.common.provider.RatingResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.details.BaseDetailsPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.common.adapter.ActionAdapter
@@ -35,14 +34,11 @@ import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
-abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
+abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
         BaseDetailsView, EditRateFragment.RateDialogCallback, RateStatusDialog.RateStatusCallback, LinkDialogFragment.LinkCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
-
-    @Inject
-    lateinit var resourceProvider: RatingResourceProvider
 
     private var detailsName: String? = null
 
@@ -92,6 +88,15 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
         toolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
+            inflateMenu(menuRes)
+            onMenuClick {
+                when (it?.itemId) {
+                    R.id.item_rate -> getPresenter().onAction(DetailsAction.RateStatusDialog)
+                    R.id.item_web -> getPresenter().onAction(DetailsAction.OpenInBrowser)
+                    R.id.item_share -> getPresenter().onAction(DetailsAction.Share)
+                }
+                true
+            }
         }
 
         val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
@@ -127,16 +132,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(context.dp(16), 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
+            applyAppStyle(startPaddingDp = 16, closeButton = false)
         }
 
         with(charactersLayout) {
@@ -191,9 +187,17 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View>, View 
 
     abstract val titleRes: Int
 
+    /** The toolbar menu: status, open in the browser, share. */
+    abstract val menuRes: Int
+
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
+
+    override fun showRateDialog(title: String, userRate: UserRate?, isAnime: Boolean) {
+        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = isAnime, title = title)
+        dialog.show(childFragmentManager, "RateTag")
+    }
 
     override fun setHeadItem(item: DetailsHeadItem) {
         detailsName = item.name

@@ -1,11 +1,10 @@
 package com.gnoemes.shikimori.presentation.presenter.calendar.converter
 
 import android.content.Context
-import android.graphics.Color
 import android.text.SpannableStringBuilder
-import androidx.core.graphics.ColorUtils
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
 import com.gnoemes.shikimori.entity.calendar.domain.CalendarItem
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarAnimeItem
@@ -13,9 +12,7 @@ import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
-import com.gnoemes.shikimori.utils.getCurrentTheme
-import com.gnoemes.shikimori.utils.nullIfEmpty
-import com.gnoemes.shikimori.utils.toHoursAndMinutesAndSeconds
+import com.gnoemes.shikimori.utils.faintTextColor
 import org.joda.time.*
 import javax.inject.Inject
 
@@ -26,8 +23,8 @@ class CalendarViewModelConverterImpl @Inject constructor(
         private val settings: SettingsSource
 ) : CalendarViewModelConverter {
 
-    private val isDarkTheme by lazy { context.getCurrentTheme != R.style.ShikimoriAppTheme_Default }
-    private val dividerColor by lazy { val color = if (isDarkTheme) Color.WHITE else Color.BLACK; ColorUtils.setAlphaComponent(color, 97) }
+    private val dividerColor: Int
+        get() = context.faintTextColor
 
     override fun apply(t: List<CalendarItem>): List<CalendarViewModel> {
         val list = mutableListOf<CalendarViewModel>()
@@ -44,10 +41,10 @@ class CalendarViewModelConverterImpl @Inject constructor(
                 ))
             }
 
-            var todayPastFlag = convertDuration(groupDate) == null
+            var todayPastFlag = isAired(groupDate)
 
             t.forEach { item ->
-                val isTodayPastItem = convertDuration(item.nextEpisodeDate) == null
+                val isTodayPastItem = isAired(item.nextEpisodeDate)
                 if (!dateTimeUtils.isSameDay(groupDate, item.nextEpisodeDate) || (todayPastFlag && !isTodayPastItem && animeList.isNotEmpty())) {
                     addItem(todayPastFlag)
                     animeList = mutableListOf()
@@ -67,7 +64,7 @@ class CalendarViewModelConverterImpl @Inject constructor(
     }
 
     private fun convertItem(item: CalendarItem): CalendarAnimeItem {
-        val isAlreadyAired = convertDuration(item.nextEpisodeDate) == null
+        val isAlreadyAired = isAired(item.nextEpisodeDate)
 
         val description = if (isAlreadyAired) String.format(context.getString(R.string.episode_number), item.nextEpisode).toUpperCase()
         else {
@@ -94,8 +91,7 @@ class CalendarViewModelConverterImpl @Inject constructor(
 
         return CalendarAnimeItem(
                 item.anime.id,
-                if (!settings.isRussianNaming) item.anime.name else item.anime.nameRu.nullIfEmpty()
-                        ?: item.anime.name,
+                settings.titleName(item.anime.name, item.anime.nameRu),
                 item.anime.image,
                 item.anime.type != AnimeType.MOVIE && item.nextEpisode == item.anime.episodes,
                 description,
@@ -103,15 +99,9 @@ class CalendarViewModelConverterImpl @Inject constructor(
         )
     }
 
-    private fun convertDuration(nextEpisodeDate: DateTime?): String? {
-        if (nextEpisodeDate == null) return null
-
-        val now = dateTimeUtils.nowDateTime
-        return when (now.isBefore(nextEpisodeDate)) {
-            true -> Interval(now, nextEpisodeDate).toDuration().toHoursAndMinutesAndSeconds()
-            else -> null
-        }
-    }
+    //no date, or the date has passed
+    private fun isAired(nextEpisodeDate: DateTime?): Boolean =
+            nextEpisodeDate == null || !dateTimeUtils.nowDateTime.isBefore(nextEpisodeDate)
 
     private fun Int.addZeroIfNeed(): String {
         return if (this < 10) "0$this"

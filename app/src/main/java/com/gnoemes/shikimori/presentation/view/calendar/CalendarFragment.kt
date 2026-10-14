@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -84,20 +83,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(0, 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
-                setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.colorAttr(R.attr.colorOnPrimary))
-            }
+            applyAppStyle()
         }
 
         refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }

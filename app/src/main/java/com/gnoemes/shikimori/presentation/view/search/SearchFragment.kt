@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
@@ -20,13 +19,13 @@ import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapte
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
+import com.gnoemes.shikimori.presentation.view.common.widget.ReSpinner
 import com.gnoemes.shikimori.presentation.view.search.adapter.SearchAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterCallback
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterFragment
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.GridItemDecorator
-import com.santalu.widget.ReSpinner
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
@@ -109,16 +108,7 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             setOnCloseListener {
                 return@setOnCloseListener true
             }
-            findViewById<androidx.appcompat.widget.SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(0, 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
+            applyAppStyle(closeButton = false)
         }
 
 

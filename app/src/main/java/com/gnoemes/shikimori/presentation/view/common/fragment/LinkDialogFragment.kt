@@ -1,9 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Link
@@ -25,8 +23,7 @@ class LinkDialogFragment : BaseBottomSheetDialogFragment() {
 
     private val adapter by lazy { LinkAdapter(this::onClick) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(getDialogLayout(), container, false)
+    override val useWrapperLayout = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

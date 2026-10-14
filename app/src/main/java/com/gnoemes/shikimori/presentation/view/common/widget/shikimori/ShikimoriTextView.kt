@@ -20,7 +20,7 @@ class ShikimoriTextView @JvmOverloads constructor(
 
     init {
         setTextIsSelectable(true)
-        movementMethod = ShikimoriLinkMovementMethod.getInstance(object : LinkClickListener {
+        movementMethod = ShikimoriLinkMovementMethod(object : LinkClickListener {
             override fun onLinkClicked(type: Type, id: Long) {
                 linkCallback?.invoke(type, id)
             }

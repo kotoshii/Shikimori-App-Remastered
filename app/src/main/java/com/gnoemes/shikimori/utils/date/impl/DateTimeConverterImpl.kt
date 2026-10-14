@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.utils.date.impl
 
+import com.gnoemes.shikimori.entity.common.domain.SearchConstants
+import com.gnoemes.shikimori.entity.common.domain.SeasonYear
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeResourceProvider
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
@@ -25,23 +27,17 @@ class DateTimeConverterImpl @Inject constructor(
         }
     }
 
-    override fun convertAnimeSeasonToString(dateTime: DateTime?): String {
-        val season: String = when (dateTime?.monthOfYear) {
-            1 -> resourceProvider.winterString
-            2 -> resourceProvider.winterString
-            3 -> resourceProvider.springString
-            4 -> resourceProvider.springString
-            5 -> resourceProvider.springString
-            6 -> resourceProvider.summerString
-            7 -> resourceProvider.summerString
-            8 -> resourceProvider.summerString
-            9 -> resourceProvider.fallString
-            10 -> resourceProvider.fallString
-            11 -> resourceProvider.fallString
-            12 -> resourceProvider.winterString
-            else -> return "xxx"
+    override fun convertAnimeSeasonToString(dateTime: DateTime?): String =
+            dateTime?.let { convertSeasonToString(SeasonYear.of(it)) } ?: "xxx"
+
+    override fun convertSeasonToString(season: SeasonYear): String {
+        val name = when (season.season) {
+            SearchConstants.SEASONS.WINTER -> resourceProvider.winterString
+            SearchConstants.SEASONS.SPRING -> resourceProvider.springString
+            SearchConstants.SEASONS.SUMMER -> resourceProvider.summerString
+            SearchConstants.SEASONS.FALL -> resourceProvider.fallString
         }
-        return "$season ${dateTime.year}"
+        return "$name ${season.year}"
     }
 
     override fun convertToFullHumanDateString(dateTime: DateTime?): String? {
@@ -53,48 +49,25 @@ class DateTimeConverterImpl @Inject constructor(
         return dateFormatter.print(dateTime)
     }
 
-    override fun convertHistoryDateToString(actionDate: DateTime): String {
+    override fun convertDateAgoToString(actionDate: DateTime): String {
+        val gap = Gap(dateUtils.nowDateTime, actionDate)
         return when {
-            dateUtils.isToday(actionDate) -> resourceProvider.todayMessage
-            dateUtils.isYesterday(actionDate) -> resourceProvider.yesterdayMessage
-            Months.monthsBetween(dateUtils.nowDateTime, actionDate).months == 0 -> {
-                val diff = Math.abs(dateUtils.nowDateTime.toLocalDate().weekOfWeekyear - actionDate.toLocalDate().weekOfWeekyear)
-                resourceProvider.getWeeksAgoString(diff).firstUpperCase()!!
-            }
-            dateUtils.isSameYear(actionDate) || Years.yearsBetween(dateUtils.nowDateTime, actionDate).years == 0 -> {
-                val diff = Math.abs(Months.monthsBetween(dateUtils.nowDateTime, actionDate).months)
-                resourceProvider.getMonthsAgoString(diff, false).firstUpperCase()!!
-            }
-            else -> {
-                val diff = Math.abs(Years.yearsBetween(dateUtils.nowDateTime, actionDate).years)
-                resourceProvider.getYearsAgoString(diff).firstUpperCase()!!
-            }
+            dateUtils.isSameDay(actionDate) ->
+                if (gap.hours == 0) resourceProvider.getMinutesAgoString(gap.minutes)
+                else resourceProvider.getHoursAgoString(gap.hours)
+            gap.months == 0 -> resourceProvider.getDaysAgoString(gap.days)
+            gap.years == 0 -> resourceProvider.getMonthsAgoString(gap.months)
+            else -> resourceProvider.getYearsAgoString(gap.years)
         }
     }
 
-    override fun convertDateAgoToString(actionDate: DateTime): String {
-        when {
-            dateUtils.isSameDay(actionDate) -> {
-                val hours = Math.abs(Hours.hoursBetween(dateUtils.nowDateTime, actionDate).hours)
-                if (hours == 0) {
-                    val minutes = Math.abs(Minutes.minutesBetween(dateUtils.nowDateTime, actionDate).minutes)
-                    return resourceProvider.getMinutesAgoString(minutes)
-                }
-                return resourceProvider.getHoursAgoString(hours)
-            }
-            Months.monthsBetween(dateUtils.nowDateTime, actionDate).months == 0 -> {
-                val diff = Math.abs(Days.daysBetween(dateUtils.nowDateTime, actionDate).days)
-                return resourceProvider.getDaysAgoString(diff)
-            }
-            Years.yearsBetween(dateUtils.nowDateTime, actionDate).years == 0 -> {
-                val diff = Math.abs(Months.monthsBetween(dateUtils.nowDateTime, actionDate).months)
-                return resourceProvider.getMonthsAgoString(diff, true)
-            }
-            else -> {
-                val diff = Math.abs(Years.yearsBetween(dateUtils.nowDateTime, actionDate).years)
-                return resourceProvider.getYearsAgoString(diff)
-            }
-        }
+    /** How far [date] is from [now], in each unit, without the sign. */
+    private class Gap(now: DateTime, date: DateTime) {
+        val minutes = Math.abs(Minutes.minutesBetween(now, date).minutes)
+        val hours = Math.abs(Hours.hoursBetween(now, date).hours)
+        val days = Math.abs(Days.daysBetween(now, date).days)
+        val months = Math.abs(Months.monthsBetween(now, date).months)
+        val years = Math.abs(Years.yearsBetween(now, date).years)
     }
 
     override fun convertShortMonth(dateTime: DateTime): String = resourceProvider.getMonthString(dateTime.monthOfYear)

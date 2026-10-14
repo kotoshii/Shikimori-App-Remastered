@@ -1,9 +1,9 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
+import androidx.annotation.StringRes
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
 import com.afollestad.materialdialogs.MaterialDialog
@@ -12,13 +12,18 @@ import com.afollestad.materialdialogs.actions.setActionButtonEnabled
 import com.afollestad.materialdialogs.input.InputCallback
 import com.afollestad.materialdialogs.input.input
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.presentation.view.auth.AuthActivity
 import com.gnoemes.shikimori.utils.*
+import javax.inject.Inject
 
 class SettingsAnimeFragment : BaseSettingsFragment() {
+
+    @Inject
+    lateinit var anime365TokenSource: Anime365TokenSource
 
     private val notSelected by lazy { context!!.getString(R.string.filter_not_selected) }
 
@@ -32,18 +37,12 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
 
         preference(R.string.settings_anime_translation_type_key)?.apply {
             summary = prefs().getString(SettingsExtras.TRANSLATION_TYPE, notSelected)
-                    ?.let { type -> TranslationType.values().find { it.isEqualType(type) }?.localizedType }
+                    ?.let { type -> TranslationType.values().find { it.isEqualType(type) }?.labelRes?.let { getString(it) } }
                     ?: notSelected
             onPreferenceClickListener = translationClickListener
         }
 
-        preference(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET)?.apply {
-            onPreferenceClickListener = smallOffsetClickListener
-        }
-
-        preference(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG)?.apply {
-            onPreferenceClickListener = bigOffsetClickListener
-        }
+        skips.forEach { skip -> preference(skip.key)?.onPreferenceClickListener = skipClickListener(skip) }
 
         preference(SettingsExtras.PLAYER_IS_FORWARD_REWIND_SLIDE)?.apply {
             onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
@@ -67,8 +66,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
         }
 
         (preference(R.string.settings_anime_365_key) as? SwitchPreference)?.apply {
-            val userPrefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            val token = userPrefs.getString(SettingsExtras.ANIME_365_TOKEN, null)
+            val token = anime365TokenSource.getToken()
 
             prefs().putBoolean(key, !token.isNullOrBlank())
             if (!isChecked) intent = AuthActivity.anime365Auth(context)
@@ -78,7 +76,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
                 intent = null
 
                 if (!newValue) {
-                    userPrefs.remove(SettingsExtras.ANIME_365_TOKEN)
+                    anime365TokenSource.clearToken()
                     return@setOnPreferenceChangeListener true
                 } else {
                     preference.intent = AuthActivity.anime365Auth(context)
@@ -93,34 +91,41 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
         super.onStart()
 
         (preference(R.string.settings_anime_365_key) as? SwitchPreference)?.apply {
-            val userPrefs = context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-            val token = userPrefs.getString(SettingsExtras.ANIME_365_TOKEN, null)
+            val token = anime365TokenSource.getToken()
 
             prefs().putBoolean(key, !token.isNullOrBlank())
             isChecked = !token.isNullOrBlank()
         }
     }
 
+    /** The double tap's skip and the long press's: the setting, its default, the seconds allowed, the texts. */
+    private class SkipSetting(
+            val key: String,
+            val default: Long,
+            val seconds: IntRange,
+            @StringRes val summaryFormat: Int,
+            @StringRes val validationError: Int
+    )
+
+    private val skips = listOf(
+            SkipSetting(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET, SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_DEFAULT, 5..30,
+                    R.string.settings_player_gestures_offset_small_summary_format, R.string.settings_player_gestures_offset_small_validation_error),
+            SkipSetting(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG_DEFAULT, 80..180,
+                    R.string.settings_player_gestures_offset_big_summary_format, R.string.settings_player_gestures_offset_big_validation_error)
+    )
+
     private fun updateForwardRewindSummary(isGesturesEnabled: Boolean, isSlideEnabled: Boolean) {
-        preference(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG)?.apply {
-            isEnabled = isGesturesEnabled && !isSlideEnabled
+        skips.forEach { skip ->
+            preference(skip.key)?.apply {
+                isEnabled = isGesturesEnabled && !isSlideEnabled
 
-            summary = when {
-                isEnabled -> (prefs().getLong(key, 90000) / 1000).let { String.format(context?.getString(R.string.settings_player_gestures_offset_big_summary_format)!!, it) }
-                !isGesturesEnabled -> context?.getString(R.string.settings_player_gestures_offset_off)
-                else -> context?.getString(R.string.settings_player_gestures_offset_small_big_summary_off)
+                summary = when {
+                    isEnabled -> (prefs().getLong(key, skip.default) / 1000).let { String.format(context?.getString(skip.summaryFormat)!!, it) }
+                    !isGesturesEnabled -> context?.getString(R.string.settings_player_gestures_offset_off)
+                    else -> context?.getString(R.string.settings_player_gestures_offset_small_big_summary_off)
+                }
             }
         }
-        preference(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET)?.apply {
-            isEnabled = isGesturesEnabled && !isSlideEnabled
-
-            summary = when {
-                isEnabled -> (prefs().getLong(key, 10000) / 1000).let { String.format(context?.getString(R.string.settings_player_gestures_offset_small_summary_format)!!, it) }
-                !isGesturesEnabled -> context?.getString(R.string.settings_player_gestures_offset_off)
-                else -> context?.getString(R.string.settings_player_gestures_offset_small_big_summary_off)
-            }
-        }
-
     }
 
     private val translationClickListener = Preference.OnPreferenceClickListener { preference ->
@@ -154,40 +159,17 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
         }
     }
 
-    private val smallOffsetClickListener = Preference.OnPreferenceClickListener { preference ->
-        val message = context!!.getString(R.string.settings_player_gestures_offset_small_validation_error)
-        val prefill = (prefs().getLong(preference.key, 10000) / 1000).toString()
+    private fun skipClickListener(skip: SkipSetting) = Preference.OnPreferenceClickListener { preference ->
+        val message = context!!.getString(skip.validationError)
+        val prefill = (prefs().getLong(preference.key, skip.default) / 1000).toString()
         showNumberEditTextDialog(message, prefill) { dialog: MaterialDialog, text: CharSequence? ->
             val value = text.toString().toIntOrNull()
-            val isValid = when (value) {
-                in 5..30 -> true
-                else -> false
-            }
+            val isValid = value != null && value in skip.seconds
 
             dialog.setActionButtonEnabled(WhichButton.POSITIVE, isValid)
             dialog.positiveButton {
                 if (isValid) {
-                    preference.summary = String.format(context?.getString(R.string.settings_player_gestures_offset_small_summary_format)!!, value)
-                    putSetting(preference.key, value!! * 1000L)
-                }
-            }
-        }
-    }
-
-    private val bigOffsetClickListener = Preference.OnPreferenceClickListener { preference ->
-        val message = context!!.getString(R.string.settings_player_gestures_offset_big_validation_error)
-        val prefill = (prefs().getLong(preference.key, 90000) / 1000).toString()
-        showNumberEditTextDialog(message, prefill) { dialog: MaterialDialog, text: CharSequence? ->
-            val value = text.toString().toIntOrNull()
-            val isValid = when (value) {
-                in 80..180 -> true
-                else -> false
-            }
-
-            dialog.setActionButtonEnabled(WhichButton.POSITIVE, isValid)
-            dialog.positiveButton {
-                if (isValid) {
-                    preference.summary = String.format(context?.getString(R.string.settings_player_gestures_offset_big_summary_format)!!, value)
+                    preference.summary = String.format(context?.getString(skip.summaryFormat)!!, value)
                     putSetting(preference.key, value!! * 1000L)
                 }
             }

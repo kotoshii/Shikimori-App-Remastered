@@ -6,109 +6,51 @@ import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.chronology.ChronologyInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
-import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
-import com.gnoemes.shikimori.entity.rates.domain.RateStatus
-import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
+import com.gnoemes.shikimori.presentation.presenter.base.BaseRateButtonListPresenter
 import com.gnoemes.shikimori.presentation.presenter.chronology.converter.ChronologyViewModelConverter
-import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
-import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import com.gnoemes.shikimori.presentation.view.chronology.ChronologyView
-import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single
 import javax.inject.Inject
 
 @InjectViewState
 class ChronologyPresenter @Inject constructor(
         private val interactor: ChronologyInteractor,
-        private val ratesInteractor: RatesInteractor,
-        private val userInteractor: UserInteractor,
         private val converter: ChronologyViewModelConverter,
         private val settings: SettingsSource,
-        private val resourceProvider: CommonResourceProvider
-) : BaseNetworkPresenter<ChronologyView>() {
+        ratesInteractor: RatesInteractor,
+        userInteractor: UserInteractor
+) : BaseRateButtonListPresenter<ChronologyView, ChronologyViewModel>(ratesInteractor, userInteractor) {
 
-    lateinit var data: ChronologyNavigationData
-
-    private val items = mutableListOf<ChronologyViewModel>()
+    lateinit var data: CommonNavigationData
 
     private var chronologyType = ChronologyType.LINKED_DIRECTLY
 
-    private var userId: Long? = null
-    private var selectedItem: ChronologyViewModel? = null
-
     override fun initData() {
         chronologyType = settings.chronologyType
-
-        loadData()
-        loadUser()
+        super.initData()
     }
 
-    private fun loadUser() =
-            userInteractor.getMyUserId()
-                    .subscribe({ userId = it }, this::processUserErrors)
-                    .addToDisposables()
+    override fun loadItems(): Single<List<ChronologyViewModel>> =
+            interactor.getItems(data.id, data.type, chronologyType)
+                    .map { converter.apply(it, userId == null) }
 
-    private fun loadData() {
-        (when (data.type) {
-            Type.ANIME -> interactor.getAnimes(data.id, chronologyType)
-            Type.MANGA -> interactor.getMangas(data.id, chronologyType)
-            Type.RANOBE -> interactor.getRanobes(data.id, chronologyType)
-            else -> throw IllegalArgumentException("${data.type} is not supporting")
-        }).appendLoadingLogic(viewState)
-                .map { converter.apply(it, userId == null) }
-                .subscribe(this::setData, this::processErrors)
-                .addToDisposables()
-    }
+    //the title itself on the first load; the top on a reload
+    override fun showItems(loaded: List<ChronologyViewModel>, isFirst: Boolean) {
+        val scrollPos = if (isFirst) loaded.indexOfFirst { item -> item.id == data.id } else 0
 
-    private fun setData(it: List<ChronologyViewModel>) {
-        val scrollPos = if (items.isEmpty()) it.indexOfFirst { item -> item.id == data.id } else 0
-
-        items.clearAndAddAll(it)
-        if (it.isEmpty()) {
+        if (loaded.isEmpty()) {
             viewState.showEmptyView()
             viewState.showContent(false)
         }
         else {
             viewState.showContent(true)
-            viewState.showData(it)
+            viewState.showData(loaded)
             viewState.scrollTo(scrollPos)
-        }
-    }
-
-    fun onShowStatusDialog(id: Long) {
-        val item = items.find { it.id == id }
-        if (item != null) {
-            selectedItem = item
-            viewState.showStatusDialog(item.rateId, item.title, item.status, item.type == Type.ANIME)
-        }
-    }
-
-    fun onChangeRateStatus(id: Long, newStatus: RateStatus) {
-        if (selectedItem != null) when (id) {
-            Constants.NO_ID -> createRate(selectedItem!!, newStatus)
-            else -> changeRate(id, newStatus)
-        }
-    }
-
-    private fun changeRate(id: Long, newStatus: RateStatus) {
-        ratesInteractor.changeRateStatus(id, newStatus)
-                .subscribe(this::onRefresh, this::processErrors)
-                .addToDisposables()
-    }
-
-    private fun createRate(item: ChronologyViewModel, newStatus: RateStatus) {
-        if (userId != Constants.NO_ID) {
-            ratesInteractor.createRateWithResult(item.id, item.type, newStatus)
-                    .ignoreElement()
-                    .subscribe(this::onRefresh, this::processErrors)
-                    .addToDisposables()
-        } else {
-            router.showSystemMessage(resourceProvider.needAuth)
         }
     }
 
@@ -130,14 +72,6 @@ class ChronologyPresenter @Inject constructor(
         router.navigateTo(Screens.SHARE, getUrl())
     }
 
-    private fun processUserErrors(it: Throwable) {
-        it.printStackTrace()
-    }
-
-    fun onRefresh() {
-        loadData()
-    }
-
     private fun getUrl(): String? {
         val path = (when (data.type) {
             Type.ANIME -> "animes"
@@ -147,12 +81,4 @@ class ChronologyPresenter @Inject constructor(
         }).plus("/${data.id}/franchise")
         return BuildConfig.ShikimoriBaseUrl + path
     }
-
-    private fun <T> Single<T>.appendLoadingLogic(viewState: BaseView): Single<T> =
-            this.doOnSubscribe { viewState.onShowLoading() }
-                    .doOnSubscribe { viewState.hideEmptyView() }
-                    .doOnSubscribe { viewState.hideNetworkView() }
-                    .doAfterTerminate { viewState.onHideLoading() }
-                    .doOnEvent { _, _ -> viewState.onHideLoading() }
-                    .doOnSuccess { viewState.showContent(true) }
 }

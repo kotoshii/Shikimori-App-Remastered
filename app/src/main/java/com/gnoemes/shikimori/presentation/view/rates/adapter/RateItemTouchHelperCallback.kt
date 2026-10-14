@@ -1,7 +1,9 @@
 package com.gnoemes.shikimori.presentation.view.rates.adapter
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.PaintDrawable
+import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
@@ -50,81 +52,40 @@ class RateItemTouchHelperCallback(
     override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean) {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
 
-        if (dX > 0) {
-            val backgroundColor = when (swipeToRightAction) {
-                RateSwipeAction.INCREMENT, RateSwipeAction.CHANGE -> recyclerView.context.colorAttr(R.attr.colorSecondaryTransparent)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.colorAttr(R.attr.colorRateOnHold)
-                RateSwipeAction.DROP -> recyclerView.context.colorAttr(R.attr.colorRateDropped)
-                else -> 0
-            }
+        val toRight = dX > 0
+        drawSwipe(c, recyclerView.context, viewHolder.itemView, if (toRight) swipeToRightAction else swipeToLeftAction,
+                dX.toInt(), toRight, isCurrentlyActive)
+    }
 
-            val background = PaintDrawable(backgroundColor)
-            val corners = recyclerView.context.dp(8).toFloat()
-            background.setCornerRadius(corners)
-            background.setBounds(viewHolder.itemView.left, viewHolder.itemView.top, viewHolder.itemView.left + dX.toInt() + corners.toInt(), viewHolder.itemView.bottom)
-            background.draw(c)
+    /** The coloured background behind a swiped entry, and the action's icon on the side it uncovers. */
+    private fun drawSwipe(c: Canvas, context: Context, item: View, action: RateSwipeAction, dX: Int, toRight: Boolean, isCurrentlyActive: Boolean) {
+        val look = SwipeLook.of(context, action)
 
-            val iconColor = when (swipeToRightAction) {
-                RateSwipeAction.INCREMENT, RateSwipeAction.CHANGE -> recyclerView.context.colorAttr(R.attr.colorSecondary)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.color(R.color.rate_on_hold_dark)
-                RateSwipeAction.DROP -> recyclerView.context.color(R.color.rate_dropped_dark)
-                else -> 0
-            }
+        val background = PaintDrawable(look.background)
+        val corners = context.dp(8)
+        background.setCornerRadius(corners.toFloat())
+        if (toRight) background.setBounds(item.left, item.top, item.left + dX + corners, item.bottom)
+        else background.setBounds(item.right + dX - if (isCurrentlyActive) corners else 0, item.top, item.right, item.bottom)
+        background.draw(c)
 
-            val icon = when (swipeToRightAction) {
-                RateSwipeAction.INCREMENT -> recyclerView.context.drawable(R.drawable.ic_plus_one_filled)
-                RateSwipeAction.CHANGE -> recyclerView.context.drawable(R.drawable.ic_list_change)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.drawable(R.drawable.ic_pause_rate)
-                RateSwipeAction.DROP -> recyclerView.context.drawable(R.drawable.ic_close)
-                else -> null
-            }
+        val icon = look.icon?.let { context.drawable(it) } ?: return
+        val margin = context.dp(24)
+        val top = item.top + (item.bottom - item.top) / 2 - icon.intrinsicHeight / 2
+        val left = if (toRight) item.left + margin else item.right - margin - icon.intrinsicWidth
+        icon.setBounds(left, top, left + icon.intrinsicWidth, top + icon.intrinsicHeight)
+        icon.tint(look.iconColor)
+        icon.draw(c)
+    }
 
-            if (icon != null) {
-                val size = icon.intrinsicHeight
-                val halfSize = size / 2
-                val margin = recyclerView.context.dp(24)
-                val top = viewHolder.itemView.top + (viewHolder.itemView.bottom - viewHolder.itemView.top) / 2 - halfSize
-                icon.setBounds(viewHolder.itemView.left + margin, top, viewHolder.itemView.left + margin + icon.intrinsicWidth, top + icon.intrinsicHeight)
-                icon.tint(iconColor)
-                icon.draw(c)
-            }
-        } else {
-            val backgroundColor = when (swipeToLeftAction) {
-                RateSwipeAction.INCREMENT, RateSwipeAction.CHANGE -> recyclerView.context.colorAttr(R.attr.colorSecondaryTransparent)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.colorAttr(R.attr.colorRateOnHold)
-                RateSwipeAction.DROP -> recyclerView.context.colorAttr(R.attr.colorRateDropped)
-                else -> 0
-            }
-
-            val background = PaintDrawable(backgroundColor)
-            val corners = recyclerView.context.dp(8).toFloat()
-            background.setCornerRadius(corners)
-            background.setBounds(viewHolder.itemView.right + dX.toInt() - if (isCurrentlyActive) corners.toInt() else 0, viewHolder.itemView.top, viewHolder.itemView.right, viewHolder.itemView.bottom)
-            background.draw(c)
-
-            val iconColor = when (swipeToLeftAction) {
-                RateSwipeAction.INCREMENT, RateSwipeAction.CHANGE -> recyclerView.context.colorAttr(R.attr.colorSecondary)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.color(R.color.rate_on_hold_dark)
-                RateSwipeAction.DROP -> recyclerView.context.color(R.color.rate_dropped_dark)
-                else -> 0
-            }
-
-            val icon = when (swipeToLeftAction) {
-                RateSwipeAction.INCREMENT -> recyclerView.context.drawable(R.drawable.ic_plus_one_filled)
-                RateSwipeAction.CHANGE -> recyclerView.context.drawable(R.drawable.ic_list_change)
-                RateSwipeAction.ON_HOLD -> recyclerView.context.drawable(R.drawable.ic_pause_rate)
-                RateSwipeAction.DROP -> recyclerView.context.drawable(R.drawable.ic_close)
-                else -> null
-            }
-
-            if (icon != null) {
-                val size = icon.intrinsicHeight
-                val halfSize = size / 2
-                val margin = recyclerView.context.dp(24)
-                val top = viewHolder.itemView.top + (viewHolder.itemView.bottom - viewHolder.itemView.top) / 2 - halfSize
-                icon.setBounds(viewHolder.itemView.right - margin - icon.intrinsicWidth, top, viewHolder.itemView.right - margin, top + icon.intrinsicHeight)
-                icon.tint(iconColor)
-                icon.draw(c)
+    /** What each swipe action looks like: the background colour, the icon and its colour. */
+    private class SwipeLook(val background: Int, val iconColor: Int, val icon: Int?) {
+        companion object {
+            fun of(context: Context, action: RateSwipeAction): SwipeLook = when (action) {
+                RateSwipeAction.INCREMENT -> SwipeLook(context.colorAttr(R.attr.colorSecondaryTransparent), context.colorAttr(R.attr.colorSecondary), R.drawable.ic_plus_one_filled)
+                RateSwipeAction.CHANGE -> SwipeLook(context.colorAttr(R.attr.colorSecondaryTransparent), context.colorAttr(R.attr.colorSecondary), R.drawable.ic_list_change)
+                RateSwipeAction.ON_HOLD -> SwipeLook(context.colorAttr(R.attr.colorRateOnHold), context.color(R.color.rate_on_hold_dark), R.drawable.ic_pause_rate)
+                RateSwipeAction.DROP -> SwipeLook(context.colorAttr(R.attr.colorRateDropped), context.color(R.color.rate_dropped_dark), R.drawable.ic_close)
+                RateSwipeAction.DISABLED -> SwipeLook(0, 0, null)
             }
         }
     }

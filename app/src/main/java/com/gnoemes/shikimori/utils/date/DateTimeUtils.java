@@ -16,8 +16,6 @@ public interface DateTimeUtils {
 
     boolean isTomorrow(DateTime time);
 
-    boolean isYesterday(DateTime time);
-
     boolean isSameYear(DateTime time);
 
     boolean isSameYear(DateTime firstDate, DateTime secondDate);

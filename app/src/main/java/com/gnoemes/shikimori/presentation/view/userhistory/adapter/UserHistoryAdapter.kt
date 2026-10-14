@@ -5,16 +5,14 @@ import com.gnoemes.shikimori.entity.common.presentation.ProgressItem
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryHeaderViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
-import com.gnoemes.shikimori.utils.images.ImageLoader
 
 class UserHistoryAdapter(
-        imageLoader: ImageLoader,
         callback: (Type, Long) -> Unit
 ) : BasePaginationAdapter() {
 
     init {
         delegatesManager.apply {
-            addDelegate(UserHistoryAdapterDelegate(imageLoader, callback))
+            addDelegate(UserHistoryAdapterDelegate(callback))
             addDelegate(UserHistoryHeaderAdapterDelegate())
             addDelegate(UserHistoryWithoutTargetAdapterDelegate())
         }

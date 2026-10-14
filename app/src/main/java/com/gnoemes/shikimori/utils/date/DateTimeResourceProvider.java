@@ -29,13 +29,9 @@ public interface DateTimeResourceProvider {
 
     String getYesterdayMessage();
 
-    String getThisWeekMessage();
-
     String getDaysAgoString(int days);
 
-    String getWeeksAgoString(int weeks);
-
-    String getMonthsAgoString(int months, boolean onlyWithNums);
+    String getMonthsAgoString(int months);
 
     String getYearsAgoString(int years);
 

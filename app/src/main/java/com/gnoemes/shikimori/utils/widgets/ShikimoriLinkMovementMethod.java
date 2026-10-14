@@ -12,16 +12,22 @@ import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import com.gnoemes.shikimori.entity.common.domain.Type;
+import com.gnoemes.shikimori.entity.common.presentation.shikimori.ShikimoriViews;
 import com.gnoemes.shikimori.presentation.view.common.widget.shikimori.ShikimoriTextView;
 
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * Link taps in one text view: a web link opens as usual, one of the app's own links
+ * ({@code <TYPE>_<id>}, see {@code ShikimoriTextView.appendLink}) goes to that view's listener, and
+ * anything else - {@code mailto:}, a site-relative path - is left alone. One per text view: a shared
+ * one held the listener of whichever view was made last, and that view with it.
+ */
 public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
 
-    private static ShikimoriTextView.LinkClickListener clickListener;
+    private final ShikimoriTextView.LinkClickListener clickListener;
 
-    private static ShikimoriLinkMovementMethod linkMovementMethod = new ShikimoriLinkMovementMethod();
+    public ShikimoriLinkMovementMethod(ShikimoriTextView.LinkClickListener clickListener) {
+        this.clickListener = clickListener;
+    }
 
     @Override
     public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
@@ -46,12 +52,11 @@ public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
 
             if (links.length != 0) {
                 if (action == MotionEvent.ACTION_UP) {
-                    String url = ((URLSpan) links[0]).getURL();
-                    if (URLUtil.isNetworkUrl(url)) {
+                    String url = links[0] instanceof URLSpan ? ((URLSpan) links[0]).getURL() : null;
+                    if (url != null && URLUtil.isNetworkUrl(url)) {
                         links[0].onClick(widget);
-                    } else {
-                        List<String> list = Arrays.asList(url.split("_"));
-                        clickListener.onLinkClicked(Type.valueOf(list.get(0)), Long.parseLong(list.get(1)));
+                    } else if (url != null) {
+                        onAppLink(url);
                     }
                 } else if (action == MotionEvent.ACTION_DOWN) {
                     Selection.setSelection(buffer,
@@ -67,8 +72,20 @@ public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
         return super.onTouchEvent(widget, buffer, event);
     }
 
-    public static android.text.method.MovementMethod getInstance(ShikimoriTextView.LinkClickListener listener) {
-        clickListener = listener;
-        return linkMovementMethod;
+    //split at the last divider: a type's own name can hold one (CLUB_PAGE)
+    private void onAppLink(String url) {
+        int divider = url.lastIndexOf(ShikimoriViews.ACTION_DIVIDER);
+        if (divider <= 0) return;
+
+        Type type;
+        long id;
+        try {
+            type = Type.valueOf(url.substring(0, divider));
+            id = Long.parseLong(url.substring(divider + ShikimoriViews.ACTION_DIVIDER.length()));
+        } catch (IllegalArgumentException notAppLink) {
+            //NumberFormatException is one too
+            return;
+        }
+        clickListener.onLinkClicked(type, id);
     }
 }

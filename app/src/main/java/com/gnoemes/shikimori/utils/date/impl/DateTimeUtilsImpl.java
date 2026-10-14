@@ -29,11 +29,6 @@ public class DateTimeUtilsImpl implements DateTimeUtils {
     }
 
     @Override
-    public boolean isYesterday(DateTime date) {
-        return getNowDateTime().toLocalDate().minusDays(1).equals(new LocalDate(date));
-    }
-
-    @Override
     public boolean isSameYear(DateTime time) {
         return getNowDateTime().toLocalDate().getYear() == time.toLocalDate().getYear();
     }

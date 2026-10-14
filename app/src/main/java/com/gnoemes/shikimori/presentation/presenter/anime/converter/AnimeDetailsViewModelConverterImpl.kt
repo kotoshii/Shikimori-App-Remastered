@@ -10,73 +10,55 @@ import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.roles.domain.Person
-import com.gnoemes.shikimori.entity.user.domain.Statistic
-import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
-import com.gnoemes.shikimori.utils.color
-import com.gnoemes.shikimori.utils.colorSpan
+import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
+import com.gnoemes.shikimori.presentation.presenter.details.BaseTitleDetailsViewModelConverter
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.joda.time.Interval
 import javax.inject.Inject
 
 class AnimeDetailsViewModelConverterImpl @Inject constructor(
-        private val context: Context,
-        private val settings: SettingsSource,
-        private val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor
-) : AnimeDetailsViewModelConverter {
+        context: Context,
+        settings: SettingsSource,
+        dateTimeConverter: DateTimeConverter,
+        textProcessor: BBCodesTextProcessor,
+        private val titleText: TitleTextConverter
+) : BaseTitleDetailsViewModelConverter<AnimeDetails>(context, settings, dateTimeConverter, textProcessor), AnimeDetailsViewModelConverter {
 
-    override fun convertHead(it: AnimeDetails, isGuest: Boolean): DetailsHeadItem {
-
-        val name = if (!settings.isRussianNaming) it.name else it.nameRu.nullIfEmpty() ?: it.name
-
-
-        return DetailsHeadItem(
-                Type.ANIME,
-                name,
-                it.image,
-                it.score,
-                it.userRate?.status,
-                isGuest
+    companion object {
+        private val CREATOR_ROLES = mapOf(
+                "Director" to R.string.person_director,
+                "Original Creator" to R.string.person_original_creator
         )
     }
 
-    override fun convertInfo(it: AnimeDetails, creators: List<Pair<Person, List<String>>>): DetailsInfoItem {
-        val nameSecond = if (!settings.isRussianNaming) it.nameRu.nullIfEmpty() ?: it.name else it.name
 
+    override val statusLabels = listOf(
+            "Watching|Смотрю" to R.string.rate_watching,
+            "Planned to Watch|Запланировано" to R.string.rate_planned,
+            "Completed|Просмотрено" to R.string.rate_completed,
+            "On Hold|Отложено" to R.string.rate_on_hold,
+            "Dropped|Брошено" to R.string.rate_dropped
+    )
+
+    override fun convertInfo(it: AnimeDetails, creators: List<Pair<Person, List<String>>>): DetailsInfoItem {
         val tags = mutableListOf<DetailsTagItem>()
 
         it.studios.firstOrNull()?.let {
             tags.add(DetailsTagItem(it.id, DetailsTagItem.TagType.STUDIO, it.name, it))
         }
-
-        //demographic first, then genres, then the long tail of themes - GenreV2.Kind is
-        //declared in that order, and sortedBy is stable so shikimori's own order survives
-        //inside each kind
-        it.genres
-                .sortedBy { genre -> genre.kind.ordinal }
-                .forEach { genre ->
-                    tags.add(DetailsTagItem(genre.id, DetailsTagItem.TagType.GENRE, genre.russianName, genre))
-                }
+        tags.addAll(genreTags(it.genres))
 
         val info = mutableListOf<Any>()
 
         //ongoing or anons indicator
-        if (it.status == Status.ANONS || it.status == Status.ONGOING) {
-            val color = if (it.status == Status.ONGOING) R.color.status_ongoing else R.color.status_anons
-            val description = convertStatus(it.status).colorSpan(context.color(color))
-
-            info.add(InfoItem(description, context.getString(R.string.common_status)))
-        }
+        statusItem(it.status)?.let { item -> info.add(item) }
 
         //release date (or next episode date for ongoings)
         if (it.status == Status.ANONS && it.dateAired != null) {
-            val description = it.dateAired.toTitleDate()
-            val category = context.getString(R.string.details_release_date)
-            info.add(InfoItem(description, category))
+            info.add(anonsDateItem(it.dateAired))
         } else if (it.status == Status.ONGOING && it.nextEpisodeDate != null) {
             val now = DateTime.now()
             if (now.isBefore(it.nextEpisodeDate)) {
@@ -155,89 +137,13 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         }
 
         //creators
-        creators
-                .asSequence()
-                .filter { it.second.contains("Director") || it.second.contains("Original Creator") }
-                .sortedByDescending { it.second.contains("Director") }
-                .forEach {
-                    val description = it.first.nameRu.nullIfEmpty() ?: it.first.name
-                    val category = it.second.firstOrNull { role -> role == "Director" || role == "Original Creator" }?.let { convertRole(it) }
-                    if (category != null) {
-                        info.add(InfoClickableItem(it.first.id, it.first.linkedType, description, it.first.image, category))
-                    }
-                }
+        info.addAll(creatorItems(creators, CREATOR_ROLES, "Director"))
 
-        return DetailsInfoItem(nameSecond, tags, info)
+        return DetailsInfoItem(secondName(it), tags, info)
     }
 
-    override fun getActions(status: Status): DetailsActionItem {
-        val actions = DetailsActionType.values().toMutableList()
-
-        if (status == Status.ANONS) actions.remove(DetailsActionType.SIMILAR)
-
-        return DetailsActionItem(actions)
-    }
-
-    override fun convertScores(t: List<Statistic>): List<UserStatisticItem> {
-        val sum = t.sumBy { it.value }
-
-        return t
-                .asSequence()
-                .map { UserStatisticItem(it.name, it.value, it.value / sum.toFloat()) }
-                .sortedByDescending { it.category.toInt() }
-                .toMutableList()
-    }
-
-    override fun convertStatuses(t: List<Statistic>): List<UserStatisticItem> {
-        val items = mutableListOf(
-                Pair("Watching|Смотрю", UserStatisticItem(context.getString(R.string.rate_watching), 0, 0f)),
-                Pair("Planned to Watch|Запланировано", UserStatisticItem(context.getString(R.string.rate_planned), 0, 0f)),
-                Pair("Completed|Просмотрено", UserStatisticItem(context.getString(R.string.rate_completed), 0, 0f)),
-                Pair("On Hold|Отложено", UserStatisticItem(context.getString(R.string.rate_on_hold), 0, 0f)),
-                Pair("Dropped|Брошено", UserStatisticItem(context.getString(R.string.rate_dropped), 0, 0f))
-        )
-
-        val sum = t.sumBy { it.value }
-
-        return items
-                .mapNotNull { pair ->
-                    val item = t.find { pair.first.split("|").contains(it.name) }
-                    if (item != null) pair.second.copy(count = item.value, progress = item.value / sum.toFloat())
-                    else null
-                }
-    }
-
-    override fun convertDescriptionItem(description: String?): DetailsDescriptionItem {
-        val processedText = description?.let { textProcessor.process(it) }
-        return DetailsDescriptionItem(processedText)
-    }
-
-    private fun convertRole(it: String): String? = when (it) {
-        "Director" -> context.getString(R.string.person_director)
-        "Original Creator" -> context.getString(R.string.person_original_creator)
-        else -> null
-    }
-
-    private fun convertStatus(status: Status): String {
-        return when (status) {
-            Status.ANONS -> context.getString(R.string.status_anons)
-            Status.ONGOING -> context.getString(R.string.status_ongoing)
-            Status.RELEASED -> context.getString(R.string.status_released)
-            else -> context.getString(R.string.error_no_data)
-        }
-    }
-
-    private fun getLocalizedType(type: AnimeType): String {
-        return when (type) {
-            AnimeType.TV -> context.getString(R.string.type_tv_short_translatable)
-            AnimeType.OVA -> context.getString(R.string.type_ova)
-            AnimeType.ONA -> context.getString(R.string.type_ona)
-            AnimeType.MUSIC -> context.getString(R.string.type_music_translatable)
-            AnimeType.MOVIE -> context.getString(R.string.type_movie_translatable)
-            AnimeType.SPECIAL -> context.getString(R.string.type_special_translatable)
-            else -> context.getString(R.string.type_tv_short_translatable)
-        }
-    }
+    private fun getLocalizedType(type: AnimeType): String =
+            titleText.typeLabel(type) ?: context.getString(R.string.type_tv_short_translatable)
 
     private fun convertRating(ageRating: AgeRating): String? {
         val names = context.resources.getStringArray(R.array.age_ratings_values)
@@ -251,6 +157,4 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
     private fun Duration.toHours(): String = "$standardHours ${context.getString(R.string.hour_short)}"
     private fun Duration.toHoursAndMinutes(): String = "$standardHours ${context.getString(R.string.hour_short)} ${toMinutes()}"
     private fun Duration.toDays(): String = context.resources.getQuantityString(R.plurals.days, standardDays.toInt(), standardDays)
-
-    private fun DateTime.toTitleDate() = this.toString("dd ${dateTimeConverter.convertShortMonth(this)} yyyy")
 }

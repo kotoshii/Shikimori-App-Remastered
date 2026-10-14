@@ -1,12 +1,17 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
+import com.gnoemes.shikimori.domain.search.filter.FilterInteractor
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFilterView
+import io.reactivex.Single
 
-abstract class BaseFilterPresenter<View : BaseFilterView> : BaseNetworkPresenter<View>() {
+abstract class BaseFilterPresenter<View : BaseFilterView>(
+        private val filterInteractor: FilterInteractor
+) : BaseNetworkPresenter<View>() {
 
     lateinit var type: Type
     lateinit var appliedFilters: HashMap<String, MutableList<FilterItem>>
@@ -16,6 +21,13 @@ abstract class BaseFilterPresenter<View : BaseFilterView> : BaseNetworkPresenter
     }
 
     abstract fun loadData()
+
+    /** The filter categories of this [type]: anime, manga or ranobe each have their own. */
+    protected fun loadCategories(): Single<List<FilterCategory>> = when (type) {
+        Type.MANGA -> filterInteractor.getMangaFilters()
+        Type.RANOBE -> filterInteractor.getRanobeFilters()
+        else -> filterInteractor.getAnimeFilters()
+    }
 
     protected open fun onFiltersChanged() {
         viewState.setResetEnabled(appliedFilters.size > 0)

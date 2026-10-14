@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.gnoemes.shikimori.App
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.main.MainActivity
 import com.gnoemes.shikimori.presentation.view.update.InstallActivity
@@ -183,7 +184,7 @@ class AppUpdateService : Service() {
             target = apk
 
             Log.d(TAG, "downloading $url -> ${apk.absolutePath}")
-            val downloaded = VideoFileDownloader()
+            val downloaded = VideoFileDownloader((application as App).httpClient)
                     .download(url, emptyMap(), apk, progress(version))
 
             when {

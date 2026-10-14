@@ -15,7 +15,6 @@ import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.presentation.presenter.auth.AuthPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
@@ -119,6 +118,15 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
     override fun onAnime365() {
         webView.loadUrl(ANIME_365_SIGN_IN)
+    }
+
+    override fun onAnime365SignedIn() {
+        Toast.makeText(
+            applicationContext,
+            R.string.settings_anime_365_success,
+            Toast.LENGTH_LONG
+        ).show()
+        onBackPressed()
     }
 
     override fun setTitle(title: String) {}
@@ -229,14 +237,7 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
         }
 
         private fun onSuccess(code: String) {
-            getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-                .putString(SettingsExtras.ANIME_365_TOKEN, code)
-            Toast.makeText(
-                applicationContext,
-                R.string.settings_anime_365_success,
-                Toast.LENGTH_LONG
-            ).show()
-            onBackPressed()
+            presenter.onAnime365TokenReceived(code)
         }
     }
 

@@ -1,12 +1,8 @@
 package com.gnoemes.shikimori.presentation.view.series.episodes
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.Fade
@@ -48,7 +44,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
 
     private val adapter by lazy { EpisodeAdapter(presenter::onEpisodeClicked, presenter::onEpisodeLongClick) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? = inflater.inflate(getDialogLayout(), container, false)
+    override val useWrapperLayout = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -99,20 +95,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(0, 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
-                setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.colorAttr(R.attr.colorOnPrimary))
-            }
+            applyAppStyle()
         }
     }
 
@@ -197,10 +180,6 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     override fun onEpisodeSelected(episodeId: Long, episode: Int, isAlternative: Boolean) {
         (parentFragment as? EpisodesCallback)?.onEpisodeSelected(episodeId, episode, isAlternative)
         onBackPressed()
-    }
-
-    override fun showSystemMessage(message: String) {
-        Toast.makeText(context!!, message, Toast.LENGTH_SHORT).show()
     }
 
     interface EpisodesCallback {

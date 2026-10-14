@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.di.app.module.local;
 
-import android.content.Context;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.NonNull;
@@ -15,6 +14,7 @@ import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite;
 
 import javax.inject.Singleton;
 
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
@@ -31,9 +31,7 @@ public interface DbModule {
                 .build();
     }
 
-    @Provides
+    @Binds
     @Singleton
-    static SQLiteOpenHelper provideSqLiteOpenHelper(Context context) {
-        return new DbOpenHelper(context);
-    }
+    SQLiteOpenHelper bindSqLiteOpenHelper(DbOpenHelper helper);
 }

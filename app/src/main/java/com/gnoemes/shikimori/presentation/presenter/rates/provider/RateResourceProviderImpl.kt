@@ -4,17 +4,15 @@ import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
+import com.gnoemes.shikimori.utils.nameRes
 import javax.inject.Inject
 
 class RateResourceProviderImpl @Inject constructor(
         private val context: Context
 ) : RateResourceProvider {
 
-    override val animeRatesWithCount: List<String>
-        get() = context.resources.getStringArray(R.array.anime_rate_stasuses).asList()
-
-    override val mangaRatesWithCount: List<String>
-        get() = context.resources.getStringArray(R.array.manga_rate_stasuses).asList()
+    override fun getRateStatusName(status: RateStatus, isAnime: Boolean): String =
+            context.getString(status.nameRes(isAnime))
 
     override fun getChangeRateStatusMessage(type: Type, status: RateStatus): String = when (type) {
         Type.ANIME -> getAnimeStatus(status)

@@ -56,7 +56,6 @@ class PersonDetailsViewModelConverterImpl @Inject constructor(
     }
 
     private fun convertHeadItem(t: PersonDetails): DetailsHeadSimpleItem = DetailsHeadSimpleItem(
-            Type.PERSON,
             t.image,
             context.getString(R.string.on_eng),
             t.name,

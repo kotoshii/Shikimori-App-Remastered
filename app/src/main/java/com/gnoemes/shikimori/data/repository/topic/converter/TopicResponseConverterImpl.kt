@@ -24,7 +24,7 @@ class TopicResponseConverterImpl @Inject constructor(
 
         return Topic(
                 it.id,
-                it.title,
+                it.title.orEmpty(),
                 it.description,
                 it.descriptionHtml,
                 it.footer,
@@ -34,7 +34,7 @@ class TopicResponseConverterImpl @Inject constructor(
                 userConverter.convertResponse(it.user)!!,
                 convertType(it.type, it.description, it.descriptionHtml),
                 it.linkedType,
-                linkedConverter.convertResponse(it.linked),
+                linkedConverter.convertResponse(it.linked, it.linkedType),
                 it.isViewed,
                 it.event,
                 it.episode

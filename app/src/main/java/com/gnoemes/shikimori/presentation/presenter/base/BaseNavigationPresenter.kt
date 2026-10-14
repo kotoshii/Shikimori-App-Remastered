@@ -1,8 +1,8 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
+import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
-import com.gnoemes.shikimori.entity.manga.presentation.MangaNavigationData
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import ru.terrakok.cicerone.Router
@@ -10,10 +10,13 @@ import ru.terrakok.cicerone.Router
 
 abstract class BaseNavigationPresenter<View : BaseView> : BasePresenter<View>() {
 
+    //set by the screen, from its tab's RouterProvider. A screen without one must not navigate: this
+    //used to fall back to a new Router() that went nowhere, so such a call failed silently; now it
+    //throws at once. Errors are shown by the screen itself (BaseNetworkView.showErrorMessage)
     lateinit var localRouter: Router
 
     override val router: Router
-        get() = if (::localRouter.isInitialized) localRouter else Router()
+        get() = localRouter
 
     override fun onBackPressed() = router.exit()
 
@@ -22,11 +25,11 @@ abstract class BaseNavigationPresenter<View : BaseView> : BasePresenter<View>() 
     }
 
     open fun onMangaClicked(id: Long) {
-        router.navigateTo(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.MANGA))
+        router.navigateTo(Screens.MANGA_DETAILS, CommonNavigationData(id, Type.MANGA))
     }
 
     open fun onRanobeClicked(id: Long){
-        router.navigateTo(Screens.MANGA_DETAILS, MangaNavigationData(id, Type.RANOBE))
+        router.navigateTo(Screens.MANGA_DETAILS, CommonNavigationData(id, Type.RANOBE))
     }
 
     open fun onCharacterClicked(id: Long) {

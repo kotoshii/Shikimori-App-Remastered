@@ -1,23 +1,25 @@
 package com.gnoemes.shikimori.data.repository.common.impl
 
+import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.data.repository.common.CharacterResponseConverter
 import com.gnoemes.shikimori.data.repository.common.PersonResponseConverter
 import com.gnoemes.shikimori.data.repository.common.RolesResponseConverter
 import com.gnoemes.shikimori.entity.common.data.RolesResponse
 import com.gnoemes.shikimori.entity.common.domain.Roles
-import com.gnoemes.shikimori.utils.nullIfEmpty
 import javax.inject.Inject
 
 class RolesResponseConverterImpl @Inject constructor(
         private val characterConverter: CharacterResponseConverter,
-        private val personConverter: PersonResponseConverter
+        private val personConverter: PersonResponseConverter,
+        private val settings: SettingsSource
 ) : RolesResponseConverter {
 
     override fun apply(t: List<RolesResponse>): Roles {
         val characters = t
                 .asSequence()
                 .filter { it.character != null }
-                .sortedBy { it.character?.nameRu.nullIfEmpty() ?: it.character?.name }
+                .sortedBy { it.character?.let { character -> settings.titleName(character.name, character.nameRu) } }
                 .sortedByDescending { it.roles.contains("Main") }
                 .mapNotNull { characterConverter.convertResponse(it.character) }
                 .toList()

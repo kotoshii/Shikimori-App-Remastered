@@ -11,7 +11,7 @@ import com.gnoemes.shikimori.entity.roles.domain.PersonDetails
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.person.converter.PersonDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.person.PersonView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import javax.inject.Inject
 
 @InjectViewState

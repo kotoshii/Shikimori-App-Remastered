@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.annotation.LayoutRes
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
@@ -130,6 +131,10 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
 
     override fun showNetworkView() {
         networkErrorView?.visible()
+    }
+
+    override fun showErrorMessage(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
     override fun hideNetworkView() {

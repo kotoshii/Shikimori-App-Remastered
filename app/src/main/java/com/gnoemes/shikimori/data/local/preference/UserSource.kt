@@ -7,6 +7,9 @@ interface UserSource {
 
     fun getUserId(): Long
 
+    /** Signed in to shikimori: the one rule, wherever the app asks. */
+    fun isSignedIn(): Boolean
+
     fun setUserId(id: Long)
 
     fun getUser(): UserBrief?

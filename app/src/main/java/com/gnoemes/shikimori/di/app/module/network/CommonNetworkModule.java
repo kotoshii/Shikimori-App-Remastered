@@ -1,12 +1,10 @@
 package com.gnoemes.shikimori.di.app.module.network;
 
 import com.gnoemes.shikimori.BuildConfig;
-import com.gnoemes.shikimori.entity.app.domain.Constants;
+import com.gnoemes.shikimori.di.app.annotations.BaseHttpClient;
 import com.gnoemes.shikimori.utils.network.MissingPosterInterceptor;
 import com.gnoemes.shikimori.utils.network.ShikimoriRateLimiter;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
-
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
@@ -16,42 +14,35 @@ import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 @Module
 public interface CommonNetworkModule {
 
     @Provides
     @Singleton
-    static OkHttpClient provideOkHttpClient(HttpLoggingInterceptor interceptor,
+    static OkHttpClient provideOkHttpClient(@BaseHttpClient OkHttpClient base,
+                                            HttpLoggingInterceptor interceptor,
                                             UserAgentInterceptor userAgentInterceptor,
                                             MissingPosterInterceptor missingPosterInterceptor,
                                             ShikimoriRateLimiter rateLimiter) {
-        return new OkHttpClient.Builder()
+        return base.newBuilder()
                 //application interceptor on purpose: it needs the final, decoded body, once per call
                 .addInterceptor(missingPosterInterceptor)
                 //innermost of the two, so the poster lookup it triggers is queued separately
                 .addInterceptor(rateLimiter)
                 .addNetworkInterceptor(userAgentInterceptor)
                 .addNetworkInterceptor(interceptor)
-                .connectTimeout(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build();
     }
 
     @Provides
     @Singleton
-    static Retrofit.Builder provideRetrofitBuilder(Converter.Factory factory, OkHttpClient client) {
-        return new Retrofit.Builder()
+    static Retrofit provideRetrofit(Retrofit.Builder builder, Converter.Factory factory, OkHttpClient client) {
+        return builder
                 .client(client)
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .addConverterFactory(factory);
-    }
-
-    @Provides
-    @Singleton
-    static Retrofit provideRetrofit(Retrofit.Builder builder) {
-        return builder.baseUrl(BuildConfig.ShikimoriBaseUrl).build();
+                .addConverterFactory(factory)
+                .baseUrl(BuildConfig.ShikimoriBaseUrl)
+                .build();
     }
 
 }

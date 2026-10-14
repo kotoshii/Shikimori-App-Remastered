@@ -57,11 +57,6 @@ public class DateTimeResourceProviderImpl implements DateTimeResourceProvider {
     }
 
     @Override
-    public String getThisWeekMessage() {
-        return context.getString(R.string.common_this_week);
-    }
-
-    @Override
     public String getDaysAgoString(int days) {
         if (days == 1 || days == 0) {
             return context.getString(R.string.day_ago);
@@ -70,23 +65,9 @@ public class DateTimeResourceProviderImpl implements DateTimeResourceProvider {
     }
 
     @Override
-    public String getWeeksAgoString(int weeks) {
-        if (weeks == 0) {
-            return getThisWeekMessage();
-        }
-        if (weeks == 1) {
-            return context.getString(R.string.week_ago);
-        }
-        return context.getResources().getQuantityString(R.plurals.weeks_ago, weeks, weeks);
-    }
-
-    @Override
-    public String getMonthsAgoString(int months, boolean onlyWithNums) {
+    public String getMonthsAgoString(int months) {
         if (months == 1) {
             return context.getString(R.string.month_ago);
-        }
-        if (months >= 6 && !onlyWithNums) {
-            return context.getString(R.string.history_half_year_ago);
         }
 
         return context.getResources().getQuantityString(R.plurals.months_ago, months, months);

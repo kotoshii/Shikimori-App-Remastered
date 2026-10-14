@@ -43,6 +43,12 @@ fun <E> MutableList<E>.clearAndAddAll(items: Collection<E>) {
     addAll(items)
 }
 
+/**
+ * Shikimori's paged lists (rates, comments, topics, history) send `limit + 1` items when a next page
+ * exists; the extra one is the first item of the next page, so keeping it shows it twice.
+ */
+fun <T> List<T>.dropExtraPageItem(limit: Int): List<T> = take(limit)
+
 fun String.toBold(): SpannableStringBuilder {
     val builder = SpannableStringBuilder()
             .append(this)
@@ -110,8 +116,6 @@ fun String.toUri() = Uri.parse(this)
 
 fun Boolean.toInt(): Int = if (this) 1 else 0
 
-fun Int.toBoolean(): Boolean? = if (this > 1) null else this == 1
-
 fun Int.unknownIfZero(): String = if (this == 0) "xxx" else toString()
 
 fun Context.dimen(@DimenRes dimen: Int) = this.resources.getDimension(dimen)
@@ -156,24 +160,6 @@ fun Toolbar?.addBackButton(@DrawableRes icon: Int = R.drawable.ic_arrow_back, li
     this?.navigationIcon = this?.context?.drawable(icon)
     listener?.let { this?.setNavigationOnClickListener { listener.invoke() } }
 }
-
-fun <T> Single<T>.appendLoadingLogic(viewState: BaseView): Single<T> =
-        this.doOnSubscribe { viewState.onShowLoading() }
-                .doOnSubscribe { viewState.hideEmptyView() }
-                .doOnSubscribe { viewState.hideNetworkView() }
-                .doOnSubscribe { viewState.showContent(false) }
-                .doAfterTerminate { viewState.onHideLoading() }
-                .doOnEvent { _, _ -> viewState.onHideLoading() }
-                .doOnSuccess { viewState.showContent(true) }
-                //content was hidden on subscribe, so a failure that nobody recognises used to leave
-                //the screen blank for good. Errors that do have a view of their own - network and
-                //http codes - hide it again in BaseNetworkPresenter.processErrors.
-                .doOnError { viewState.showContent(true) }
-
-fun <T> Single<T>.appendLightLoadingLogic(viewState: BaseView): Single<T> =
-        this.doOnSubscribe { viewState.onShowLightLoading() }
-                .doAfterTerminate { viewState.onHideLightLoading() }
-                .doOnEvent { _, _ -> viewState.onHideLightLoading() }
 
 inline fun <T : Fragment> T.withArgs(
         argsBuilder: Bundle.() -> Unit): T =

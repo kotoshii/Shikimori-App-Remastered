@@ -12,13 +12,16 @@ import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
+import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.nameRes
 import org.joda.time.DateTime
 import javax.inject.Inject
 
 class FilterSourceImpl @Inject constructor(
         private val context: Context,
         private val settingsSource: SettingsSource,
-        private val genreVocabulary: GenreVocabularySource
+        private val genreVocabulary: GenreVocabularySource,
+        private val dateTimeConverter: DateTimeConverter
 ) : FilterSource {
 
     companion object {
@@ -32,7 +35,7 @@ class FilterSourceImpl @Inject constructor(
 
     override fun getAnimeFilters(): List<FilterCategory> = listOf(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
-            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
+            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, true)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
             FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, true)),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, true)),
@@ -68,7 +71,7 @@ class FilterSourceImpl @Inject constructor(
     private fun getFilters(type: FilterType, isAnime: Boolean = false): MutableList<FilterItem> {
         return when (type) {
             FilterType.GENRE -> getGenres(isAnime)
-            FilterType.SEASON -> getSeasons()
+            FilterType.SEASON -> getSeasons(isAnime)
             FilterType.STATUS -> getStatuses()
             FilterType.RATE -> getRates(isAnime)
             FilterType.KIND -> getKinds(isAnime)
@@ -103,9 +106,8 @@ class FilterSourceImpl @Inject constructor(
 
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =
-            getList(if (anime) R.array.anime_rate_stasuses else R.array.manga_rate_stasuses)
-                    .zip(RateStatus.values().map { it.status.toLowerCase() }.toMutableList())
-                    .map { (name, value) -> convert(FilterType.RATE.value, value, name) }
+            RateStatus.values()
+                    .map { convert(FilterType.RATE.value, it.status.toLowerCase(), context.getString(it.nameRes(anime))) }
                     .toMutableList()
 
     private fun getStatuses(): MutableList<FilterItem> =
@@ -143,105 +145,34 @@ class FilterSourceImpl @Inject constructor(
     private fun getSeasonString(): String = context.getString(R.string.common_season)
     private fun getList(arrayRes: Int): MutableList<String> = context.resources.getStringArray(arrayRes).toMutableList()
 
-    private fun getSeasons(): MutableList<FilterItem> {
-        val seasons = getList(R.array.seasons).zip(SearchConstants.SEASONS.values())
+    /**
+     * The catalog's season list as the live site has it (checked 2026-10-13): for anime, every season
+     * of next year, this year and last year; then each year from next year down to 2015, the decades
+     * from the 2010s to the 1970s, and «До 1980» (`ancient`, which takes everything up to 1980). Manga
+     * and ranobe get no seasons. 2015 and the decades are fixed on the site, not counted from today.
+     */
+    private fun getSeasons(isAnime: Boolean): MutableList<FilterItem> {
+        val nextYear = DateTime.now().year + 1
+        val items = mutableListOf<FilterItem>()
 
-        val season = getCurrentSeason()
-        val nextSeason = getNextSeason(season)
-        val prevSeason = getPrevSeason(season)
-
-        val seasonQue = listOf(nextSeason, season, prevSeason, getPrevSeason(prevSeason))
-
-        fun getSeasonValue(season: SearchConstants.SEASONS, year: Int): String {
-            return "${season}_$year"
-        }
-
-        fun getSeasonLocalization(season: SearchConstants.SEASONS, year: Int): String? {
-            return seasons.find { it.second == season }?.first?.plus(" $year")
-        }
-
-        fun getSeasonFilter(season: SearchConstants.SEASONS, year: Int): FilterItem {
-            return FilterItem(SearchConstants.SEASON, getSeasonValue(season, year), getSeasonLocalization(season, year))
-        }
-
-        fun getYearFilter(year: Int): FilterItem {
-            return FilterItem(SearchConstants.SEASON, "$year", "$year ${context.getString(R.string.common_year).toLowerCase()}")
-        }
-
-        fun getYearFilter(year: IntRange): FilterItem {
-            return FilterItem(SearchConstants.SEASON, "${year.first}_${year.last}", "${year.first} - ${year.last}")
-        }
-
-        return mutableListOf<FilterItem>()
-                .apply {
-                    //last seasons
-                    add(getSeasonFilter(nextSeason, getSeasonYear(seasonQue, nextSeason)))
-                    add(getSeasonFilter(season, getSeasonYear(seasonQue, season)))
-                    add(getSeasonFilter(prevSeason, getSeasonYear(seasonQue, prevSeason)))
-                    add(getSeasonFilter(getPrevSeason(prevSeason), getSeasonYear(seasonQue, getPrevSeason(prevSeason))))
-
-                    //last two years
-                    add(getYearFilter(getSeasonYear(seasonQue, nextSeason)))
-                    val lastYearSingle = getSeasonYear(seasonQue, nextSeason) - 1
-                    add(getYearFilter(lastYearSingle))
-
-                    //Ranges
-                    add(getYearFilter(IntRange(2016, lastYearSingle - 1)))
-                    add(getYearFilter(2011..2015))
-                    add(getYearFilter(2000..2010))
-
-                    //older
-                    add(FilterItem(SearchConstants.SEASON, "1950_1999", context.getString(R.string.filter_older)))
+        if (isAnime) {
+            val seasons = listOf(SearchConstants.SEASONS.WINTER, SearchConstants.SEASONS.SPRING, SearchConstants.SEASONS.SUMMER, SearchConstants.SEASONS.FALL)
+            for (year in nextYear downTo nextYear - 2) {
+                seasons.forEach {
+                    val season = SeasonYear(it, year)
+                    items.add(FilterItem(SearchConstants.SEASON, season.value, dateTimeConverter.convertSeasonToString(season)))
                 }
-    }
-
-    private fun getCurrentYear(): Int {
-        return DateTime.now().year
-    }
-
-    private fun getCurrentMonth(): Int {
-        return DateTime.now().monthOfYear + 1
-    }
-
-    private fun getSeasonYear(seasonQue: List<SearchConstants.SEASONS>, season: SearchConstants.SEASONS): Int {
-        val year = getCurrentYear()
-
-        val seasonIndex = seasonQue.indexOf(season)
-        val winterIndex = seasonQue.indexOf(SearchConstants.SEASONS.WINTER)
-
-        return when {
-            (seasonIndex == 0 && season == SearchConstants.SEASONS.WINTER) || (season == SearchConstants.SEASONS.WINTER && getCurrentMonth() == 12) -> year + 1
-            winterIndex != 0 && seasonIndex > winterIndex -> year - 1
-            else -> year
+            }
         }
-    }
-
-    private fun getCurrentSeason(): SearchConstants.SEASONS {
-        val month = getCurrentMonth()
-        return when (month) {
-            12, in 1..2 -> SearchConstants.SEASONS.WINTER
-            in 3..5 -> SearchConstants.SEASONS.SPRING
-            in 6..8 -> SearchConstants.SEASONS.SUMMER
-            else -> SearchConstants.SEASONS.FALL
+        for (year in nextYear downTo 2015) {
+            items.add(FilterItem(SearchConstants.SEASON, "$year", "$year"))
         }
-    }
-
-    private fun getNextSeason(season: SearchConstants.SEASONS): SearchConstants.SEASONS {
-        return when (season) {
-            SearchConstants.SEASONS.FALL -> SearchConstants.SEASONS.WINTER
-            SearchConstants.SEASONS.WINTER -> SearchConstants.SEASONS.SPRING
-            SearchConstants.SEASONS.SPRING -> SearchConstants.SEASONS.SUMMER
-            else -> SearchConstants.SEASONS.FALL
+        //201x is the 2010s: «10-е»
+        for (decade in 201 downTo 197) {
+            items.add(FilterItem(SearchConstants.SEASON, "${decade}x", context.getString(R.string.filter_decade, "${decade % 10}0")))
         }
-    }
-
-    private fun getPrevSeason(season: SearchConstants.SEASONS): SearchConstants.SEASONS {
-        return when (season) {
-            SearchConstants.SEASONS.WINTER -> SearchConstants.SEASONS.FALL
-            SearchConstants.SEASONS.SPRING -> SearchConstants.SEASONS.WINTER
-            SearchConstants.SEASONS.SUMMER -> SearchConstants.SEASONS.SPRING
-            else -> SearchConstants.SEASONS.SUMMER
-        }
+        items.add(FilterItem(SearchConstants.SEASON, "ancient", context.getString(R.string.filter_older)))
+        return items
     }
 
 }

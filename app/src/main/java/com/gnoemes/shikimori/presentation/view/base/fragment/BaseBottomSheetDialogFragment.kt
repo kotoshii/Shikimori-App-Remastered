@@ -21,11 +21,17 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
     protected lateinit var bottomSheet: FrameLayout
     open var autoExpand = true
 
+    //the sheet's layout inside the shared one (dialog_base_bottom_sheet: a toolbar over the content),
+    //or alone, for a sheet that brings its own
+    protected open val useWrapperLayout = true
+
     var peekHeight = -1
 
     private val viewHandler = Handler()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
+        if (!useWrapperLayout) return inflater.inflate(getDialogLayout(), container, false)
+
         val view = inflater.inflate(R.layout.dialog_base_bottom_sheet, container, false)
         if (getDialogLayout() != android.view.View.NO_ID) {
             inflater.inflate(getDialogLayout(), view.findViewById(R.id.fragment_content), true)

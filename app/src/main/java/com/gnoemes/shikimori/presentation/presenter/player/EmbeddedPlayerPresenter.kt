@@ -12,7 +12,7 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerView
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
@@ -64,9 +64,11 @@ class EmbeddedPlayerPresenter @Inject constructor(
             viewState.apply {
                 setEpisodeSubtitle(currentEpisode)
                 playVideo(it, video.subAss, needReset, parsers.headers(video))
-                val resolutions = video.tracks.asSequence().filter { it.quality != "unknown" }.map { it.quality }.toList()
+                val resolutions = video.tracks.filter { track -> track.isQualityKnown }.map { track -> track.quality }
                 setResolutions(resolutions)
-                selectTrack(currentTrack)
+                //the menu lists the known qualities only, so its position is not the track's
+                val position = resolutions.indexOf(it.quality)
+                if (position >= 0) selectTrack(position)
             }
             currentTrack = 0
             setEpisodeWatched()
@@ -154,10 +156,10 @@ class EmbeddedPlayerPresenter @Inject constructor(
         viewState.showMessage(resourceProvider.videoNotFoundMessage, videos.isEmpty())
     }
 
-    //for the first video and for a switch alike. This screen's navigator is a no-op, so
-    //BaseNetworkPresenter.processErrors would show nothing: say the video could not be loaded and stay,
-    //so whatever is playing keeps playing and prev/next still work. An anti-bot check is not the video
-    //being gone, and the player cannot get past it, so that one says what happened and leaves
+    //for the first video and for a switch alike. Not BaseNetworkPresenter.processErrors, which would
+    //only name the network error: say the video could not be loaded and stay, so whatever is playing
+    //keeps playing and prev/next still work. An anti-bot check is not the video being gone, and the
+    //player cannot get past it, so that one says what happened and leaves
     private fun processVideoErrors(episode: Int, throwable: Throwable) {
         pendingEpisode = null
         Log.w(TAG, "loading episode $episode failed", throwable)

@@ -2,12 +2,12 @@ package com.gnoemes.shikimori.di.app.module;
 
 import com.gnoemes.shikimori.data.local.services.DownloadSource;
 import com.gnoemes.shikimori.data.local.services.impl.DownloadSourceImpl;
+import com.gnoemes.shikimori.data.repository.app.AppUpdateSource;
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository;
-import com.gnoemes.shikimori.data.repository.app.TaskRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenRepository;
 import com.gnoemes.shikimori.data.repository.app.TokenSource;
+import com.gnoemes.shikimori.data.repository.app.impl.AppUpdateSourceImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.AuthorizationRepositoryImpl;
-import com.gnoemes.shikimori.data.repository.app.impl.TaskRepostioryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.app.impl.TokenSourceImpl;
 import com.gnoemes.shikimori.data.repository.download.DownloadRepository;
@@ -58,9 +58,9 @@ public interface RepositoryModule {
 
     @Binds
     @Singleton
-    TaskRepository bindTaskRepository(TaskRepostioryImpl repostiory);
+    Anime365TokenSource bindAnime365TokenSource(Anime365TokenSourceImpl source);
 
     @Binds
     @Singleton
-    Anime365TokenSource bindAnime365TokenSource(Anime365TokenSourceImpl source);
+    AppUpdateSource bindAppUpdateSource(AppUpdateSourceImpl source);
 }

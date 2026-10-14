@@ -19,4 +19,8 @@ enum class MangaType(val type: String) {
     DOUJIN("doujin"),
     @SerializedName("")
     UNKNOWN("");
+
+    /** Novels and light novels are what shikimori calls ranobe. */
+    val isRanobe: Boolean
+        get() = this == NOVEL || this == LIGHT_NOVEL
 }

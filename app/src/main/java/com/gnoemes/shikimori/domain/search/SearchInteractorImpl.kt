@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.domain.search
 import com.gnoemes.shikimori.data.repository.search.SearchRepository
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
@@ -30,14 +31,9 @@ class SearchInteractorImpl @Inject constructor(
                     .flatMap { repository.getAnimeList(it) }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<List<Manga>> =
+    override fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int): Single<List<Manga>> =
             queryBuilder.createQueryFromFilters(filters, page, limit)
-                    .flatMap { repository.getMangaList(it) }
-                    .applyErrorHandlerAndSchedulers()
-
-    override fun loadRanobeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<List<Manga>> =
-            queryBuilder.createQueryFromFilters(filters, page, limit)
-                    .flatMap { repository.getRanobeList(it) }
+                    .flatMap { repository.getMangaList(it, type) }
                     .applyErrorHandlerAndSchedulers()
 
 }

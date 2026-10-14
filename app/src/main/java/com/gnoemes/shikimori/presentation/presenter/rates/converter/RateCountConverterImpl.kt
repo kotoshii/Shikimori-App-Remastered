@@ -13,42 +13,20 @@ class RateCountConverterImpl @Inject constructor(
 
     override fun countAnimeRates(t: UserDetails): List<RateCategory> {
         return if (!t.stats.hasAnime) emptyList()
-        else {
-            val statuses = t.stats.animeStatuses
-            val formatStrings = resourceProvider.animeRatesWithCount
-            countRates(statuses, formatStrings)
-        }
+        else countRates(t.stats.animeStatuses, isAnime = true)
     }
 
     override fun countMangaRates(t: UserDetails): List<RateCategory> {
         return if (!t.stats.hasManga) emptyList()
-        else {
-            val statuses = t.stats.mangaStatuses
-            val formatStrings = resourceProvider.mangaRatesWithCount
-            countRates(statuses, formatStrings)
-        }
+        else countRates(t.stats.mangaStatuses, isAnime = false)
     }
 
-    private fun countRates(statuses: List<Status>?, formatStrings: List<String>): List<RateCategory> {
-        val watchingCount = countRateSize(statuses, RateStatus.WATCHING)
-        val plannedCount = countRateSize(statuses, RateStatus.PLANNED)
-        val rewatchingCount = countRateSize(statuses, RateStatus.REWATCHING)
-        val watchedCount = countRateSize(statuses, RateStatus.COMPLETED)
-        val onHoldCount = countRateSize(statuses, RateStatus.ON_HOLD)
-        val droppedCount = countRateSize(statuses, RateStatus.DROPPED)
-
-        val counts = arrayOf(watchingCount, plannedCount,
-                rewatchingCount, watchedCount,
-                onHoldCount, droppedCount)
-
-        return RateStatus.values()
-                .zip(formatStrings)
-                .mapIndexedNotNull { index, pair ->
-                    val count = counts[index]
-                    if (count > 0) RateCategory(pair.first, pair.second, count)
-                    else null
-                }
-    }
+    private fun countRates(statuses: List<Status>?, isAnime: Boolean): List<RateCategory> =
+            RateStatus.values().mapNotNull { status ->
+                val count = countRateSize(statuses, status)
+                if (count > 0) RateCategory(status, resourceProvider.getRateStatusName(status, isAnime), count)
+                else null
+            }
 
     private fun countRateSize(statuses: List<Status>?, rateStatus: RateStatus): Int {
         return statuses?.asSequence()?.filter { it.name == rateStatus }?.sumBy { it.size }

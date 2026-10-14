@@ -6,12 +6,11 @@ import android.text.method.LinkMovementMethod
 import android.view.View
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
+import com.gnoemes.shikimori.entity.app.domain.AppUpdate
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.MarkdownRenderer
 import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.dimenAttr
-import com.gnoemes.shikimori.utils.getDefaultSharedPreferences
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
@@ -24,8 +23,8 @@ import kotlinx.android.synthetic.main.dialog_changelog.*
  * this project's release notes are written with - see BUILD_AND_RELEASE.md, which pins that set as
  * an authoring rule so notes and renderer cannot drift apart.
  *
- * Everything shown here comes from preferences rather than a fresh api call: the check that filled
- * them runs at app start, and the settings badge can be tapped hours later, possibly offline.
+ * Everything shown here is what the last update check stored, not a fresh api call: the check
+ * runs at app start, and the settings badge can be tapped hours later, possibly offline.
  */
 class ChangelogDialog : BaseBottomSheetDialogFragment() {
 
@@ -36,24 +35,11 @@ class ChangelogDialog : BaseBottomSheetDialogFragment() {
         private const val ARGUMENT_CHANGELOG = "ARGUMENT_CHANGELOG"
         private const val ARGUMENT_APK_URL = "ARGUMENT_APK_URL"
 
-        fun newInstance(version: String, changelog: String?, apkUrl: String?) = ChangelogDialog().withArgs {
-            putString(ARGUMENT_VERSION, version)
-            putString(ARGUMENT_CHANGELOG, changelog)
-            putString(ARGUMENT_APK_URL, apkUrl)
-        }
-
-        /**
-         * The dialog for whatever release the last update check found, or null if it found none -
-         * the caller then has nothing to show and should fall back to the releases page.
-         */
-        fun fromPreferences(context: Context): ChangelogDialog? {
-            val prefs = context.getDefaultSharedPreferences()
-            val version = prefs.getString(SettingsExtras.NEW_VERSION_TAG, null)
-
-            return if (version.isNullOrBlank()) null
-            else newInstance(version,
-                    prefs.getString(SettingsExtras.NEW_VERSION_CHANGELOG, null),
-                    prefs.getString(SettingsExtras.NEW_VERSION_APK_URL, null))
+        /** The release the last update check found - see `AppUpdateSource.getAvailableUpdate`. */
+        fun newInstance(update: AppUpdate) = ChangelogDialog().withArgs {
+            putString(ARGUMENT_VERSION, update.version)
+            putString(ARGUMENT_CHANGELOG, update.changelog)
+            putString(ARGUMENT_APK_URL, update.apkUrl)
         }
     }
 

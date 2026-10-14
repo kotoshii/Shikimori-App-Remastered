@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.domain.search
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
@@ -16,7 +17,6 @@ interface SearchInteractor {
 
     fun loadAnimeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Anime>>
 
-    fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
-
-    fun loadRanobeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
+    /** [type] MANGA or RANOBE. */
+    fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Manga>>
 }

@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.auth
 
 import com.arellomobile.mvp.InjectViewState
+import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.auth.AuthInteractor
 import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
@@ -9,7 +10,8 @@ import javax.inject.Inject
 
 @InjectViewState
 class AuthPresenter @Inject constructor(
-        private val interactor: AuthInteractor
+        private val interactor: AuthInteractor,
+        private val anime365TokenSource: Anime365TokenSource
 ) : BaseNetworkPresenter<AuthView>() {
 
     var authType: AuthType? = null
@@ -30,5 +32,10 @@ class AuthPresenter @Inject constructor(
 
     private fun onSuccess() {
         viewState.onBackPressed()
+    }
+
+    fun onAnime365TokenReceived(token: String) {
+        anime365TokenSource.setToken(token)
+        viewState.onAnime365SignedIn()
     }
 }

@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.main
 
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
+import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNavigationPresenter
@@ -14,7 +15,8 @@ import javax.inject.Inject
 @InjectViewState
 class MainPresenter @Inject constructor(
         private val _router: Router,
-        private val genreVocabulary: GenreVocabularySource
+        private val genreVocabulary: GenreVocabularySource,
+        private val appUpdateSource: AppUpdateSource
 ) : BaseNavigationPresenter<MainView>() {
 
     private var disposable: CompositeDisposable = CompositeDisposable()
@@ -25,6 +27,15 @@ class MainPresenter @Inject constructor(
     override fun initData() {
         onTabItemSelected(BottomScreens.RATES)
         refreshGenres()
+        checkForUpdate()
+    }
+
+    /** Once per start; a newer release shows up as a notification and the settings badge. */
+    private fun checkForUpdate() {
+        val d = appUpdateSource.check()
+                .subscribeOn(Schedulers.io())
+                .subscribe({}, { Log.w(TAG, "update check failed", it) })
+        disposable.add(d)
     }
 
     /**
@@ -39,27 +50,17 @@ class MainPresenter @Inject constructor(
         disposable.add(d)
     }
 
+    //the list and the catalog let their first screen act first (scroll up, open the search); every
+    //tab goes back to its first screen otherwise
     fun onTabItemReselected(screenKey: String) {
-        when (screenKey) {
-            BottomScreens.RATES -> viewState.rateActionOrClearBackStack()
-            BottomScreens.CALENDAR -> viewState.clearCalendarBackStack()
-            BottomScreens.SEARCH -> viewState.searchActionOrClearSearchBackStack()
-            BottomScreens.MAIN -> viewState.clearMainBackStack()
-            BottomScreens.MORE -> viewState.clearMoreBackStack()
-        }
+        if (screenKey == BottomScreens.RATES || screenKey == BottomScreens.SEARCH) viewState.tabRootActionOrClearBackStack(screenKey)
+        else viewState.clearBackStack(screenKey)
     }
 
+    //«Ещё» opens on its first screen each time
     fun onTabItemSelected(screenKey: String) {
-        when (screenKey) {
-            BottomScreens.RATES -> router.replaceScreen(BottomScreens.RATES)
-            BottomScreens.CALENDAR -> router.replaceScreen(BottomScreens.CALENDAR)
-            BottomScreens.SEARCH -> router.replaceScreen(BottomScreens.SEARCH)
-            BottomScreens.MAIN -> router.replaceScreen(BottomScreens.MAIN)
-            BottomScreens.MORE -> {
-                viewState.clearMoreBackStack()
-                router.replaceScreen(BottomScreens.MORE)
-            }
-        }
+        if (screenKey == BottomScreens.MORE) viewState.clearBackStack(screenKey)
+        router.replaceScreen(screenKey)
     }
 
     override fun onDestroy() {

@@ -4,10 +4,12 @@ import com.gnoemes.shikimori.di.auth.AuthModule;
 import com.gnoemes.shikimori.di.base.scopes.ActivityScope;
 import com.gnoemes.shikimori.di.main.module.MainModule;
 import com.gnoemes.shikimori.di.player.PlayerModule;
+import com.gnoemes.shikimori.di.settings.SettingsFragmentInjectionModule;
 import com.gnoemes.shikimori.presentation.view.auth.AuthActivity;
 import com.gnoemes.shikimori.presentation.view.main.MainActivity;
 import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerActivity;
 import com.gnoemes.shikimori.presentation.view.player.web.WebPlayerActivity;
+import com.gnoemes.shikimori.presentation.view.settings.SettingsActivity;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
@@ -30,4 +32,8 @@ public interface ActivityInjectionModule {
     @ActivityScope
     @ContributesAndroidInjector
     WebPlayerActivity webPlayerActivity();
+
+    @ActivityScope
+    @ContributesAndroidInjector(modules = SettingsFragmentInjectionModule.class)
+    SettingsActivity settingsActivityInjector();
 }

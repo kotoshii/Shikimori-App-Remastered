@@ -10,13 +10,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
-import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
-import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
-import com.gnoemes.shikimori.data.network.GithubApi
-import com.gnoemes.shikimori.entity.app.data.GithubReleaseResponse
+import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
@@ -28,7 +25,6 @@ import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
-import io.reactivex.schedulers.Schedulers
 import ru.terrakok.cicerone.NavigatorHolder
 import ru.terrakok.cicerone.Router
 import ru.terrakok.cicerone.commands.Command
@@ -40,8 +36,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     companion object {
         /** Set by the "Изменения" action of the update notification. */
         const val EXTRA_SHOW_CHANGELOG = "EXTRA_SHOW_CHANGELOG"
-
-        private const val TAG = "MainActivity"
     }
 
     @InjectPresenter
@@ -54,7 +48,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     lateinit var localNavigatorHolder: NavigatorHolder
 
     @Inject
-    lateinit var githubApi: GithubApi
+    lateinit var appUpdateSource: AppUpdateSource
 
     private val tabs = arrayOf(
             Tab(R.id.tab_rates, BottomScreens.RATES),
@@ -68,10 +62,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
-        if (savedInstanceState == null) {
-            checkForUpdate()
-        }
-
         showChangelogIfRequested()
     }
 
@@ -93,7 +83,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
             presenter.onTabItemReselected(tab.screenKey)
         }
 
-        navbarDivider.visibleIf { getCurrentTheme != R.style.ShikimoriAppTheme_Amoled }
+        navbarDivider.visibleIf { activeTheme != Theme.AMOLED }
     }
 
     private fun initContainer() {
@@ -111,52 +101,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         ta.commitNow()
     }
 
-    /**
-     * The old check compared the version name against `lastVersion` in the upstream firestore,
-     * which this fork does not control, so it always reported an update. This asks our own
-     * releases instead, and compares properly so only a genuinely newer tag counts.
-     */
-    private fun checkForUpdate() {
-        //the check can be turned off in settings; the badge and anything already stored stay as
-        //they are, so an update found earlier is still reachable
-        if (!getDefaultSharedPreferences().getBoolean(SettingsExtras.CHECK_UPDATES_ON_START, true)) return
-
-        githubApi.getLatestRelease()
-                .subscribeOn(Schedulers.io())
-                .subscribe({ onReleaseChecked(it) }, { Log.w(TAG, "update check failed", it) })
-    }
-
-    /**
-     * Keeps the newest release in preferences so the changelog dialog and the download work without
-     * asking github again - the settings badge can be tapped hours later, possibly offline.
-     */
-    private fun onReleaseChecked(release: GithubReleaseResponse) {
-        val hasUpdate = compareVersions(release.tag, BuildConfig.VERSION_NAME) > 0
-        val prefs = getDefaultSharedPreferences()
-
-        prefs.putBoolean(SettingsExtras.NEW_VERSION_AVAILABLE, hasUpdate)
-
-        if (!hasUpdate) {
-            //nothing newer - drop what an earlier check left, or the badge would open a stale changelog
-            prefs.remove(SettingsExtras.NEW_VERSION_TAG)
-            prefs.remove(SettingsExtras.NEW_VERSION_CHANGELOG)
-            prefs.remove(SettingsExtras.NEW_VERSION_APK_URL)
-            return
-        }
-
-        //tags are written as v0.8.10; the app talks about versions, not tags
-        val version = release.tag.orEmpty().trimStart('v', 'V')
-
-        prefs.putString(SettingsExtras.NEW_VERSION_TAG, version)
-        //localizedBody, not body: the notes carry english after a marker and the dialog shows only
-        //the russian half of them
-        prefs.putString(SettingsExtras.NEW_VERSION_CHANGELOG, release.localizedBody)
-        prefs.putString(SettingsExtras.NEW_VERSION_APK_URL, release.apkUrl)
-
-        //this runs on an io thread and can outlive the activity, so the notification uses the app
-        AppUpdateService.notifyAvailable(applicationContext, version, release.apkUrl)
-    }
-
     private fun showChangelogIfRequested() {
         if (intent?.getBooleanExtra(EXTRA_SHOW_CHANGELOG, false) != true) return
 
@@ -167,27 +111,21 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
 
     /** Falls back to the releases page when no check has stored a release yet. */
     private fun showChangelog() {
-        val dialog = ChangelogDialog.fromPreferences(this)
+        val dialog = appUpdateSource.getAvailableUpdate()?.let { ChangelogDialog.newInstance(it) }
 
         if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
         else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
-    private fun invokeTabRootActionOrClearBackStack(screenKey: String) {
-        val fm = fragmentManager
-        val fragment: Fragment? = fm.findFragmentByTag(screenKey)
-        fragment.ifNotNull {
-            if (it is TabContainer && it.invokeTabRootAction())
-            else (it as RouterProvider).localRouter.backTo(null)
-        }
+    override fun tabRootActionOrClearBackStack(screenKey: String) {
+        val fragment = fragmentManager.findFragmentByTag(screenKey) ?: return
+        if (fragment is TabContainer && fragment.invokeTabRootAction()) return
+        clearBackStack(screenKey)
     }
 
-    private fun clearBackStack(screenKey: String) {
-        val fm = fragmentManager
-        val fragment: Fragment? = fm.findFragmentByTag(screenKey)
-        fragment.ifNotNull {
-            (it as RouterProvider).localRouter.backTo(null)
-        }
+    override fun clearBackStack(screenKey: String) {
+        val fragment = fragmentManager.findFragmentByTag(screenKey) ?: return
+        (fragment as RouterProvider).localRouter.backTo(null)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -264,16 +202,6 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setTitle(title: String) = Unit
-
-    override fun clearMoreBackStack() = clearBackStack(BottomScreens.MORE)
-
-    override fun clearMainBackStack() = clearBackStack(BottomScreens.MAIN)
-
-    override fun searchActionOrClearSearchBackStack() = invokeTabRootActionOrClearBackStack(BottomScreens.SEARCH)
-
-    override fun clearCalendarBackStack() = clearBackStack(BottomScreens.CALENDAR)
-
-    override fun rateActionOrClearBackStack() = invokeTabRootActionOrClearBackStack(BottomScreens.RATES)
 
 
     data class Tab(

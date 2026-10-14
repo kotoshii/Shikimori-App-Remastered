@@ -1,6 +1,10 @@
 package com.gnoemes.shikimori.presentation.presenter.userhistory.conveter
 
+import android.content.Context
+import androidx.annotation.StringRes
+import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.user.domain.UserHistory
@@ -8,11 +12,11 @@ import com.gnoemes.shikimori.entity.user.presentation.UserHistoryHeaderViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.date.DateTimeUtils
-import com.gnoemes.shikimori.utils.nullIfEmpty
-import org.joda.time.*
+import org.joda.time.DateTime
 import javax.inject.Inject
 
 class UserHistoryViewModelConverterImpl @Inject constructor(
+        private val context: Context,
         private val settings: SettingsSource,
         private val utils: DateTimeUtils,
         private val dateConverter: DateTimeConverter
@@ -22,10 +26,11 @@ class UserHistoryViewModelConverterImpl @Inject constructor(
             t.map { convertHistory(it) }
 
     private fun convertHistory(it: UserHistory): UserHistoryViewModel {
-        val name = if (it.target is Anime) {
-            if (settings.isRussianNaming) it.target.nameRu.nullIfEmpty() ?: it.target.name else it.target.name
-        } else  {
-            if (settings.isRussianNaming) (it.target as Manga).nameRu.nullIfEmpty() ?: it.target.name else it.target?.linkedName
+        //an entry can come without a title
+        val name = when (val target = it.target) {
+            is Anime -> settings.titleName(target.name, target.nameRu)
+            is Manga -> settings.titleName(target.name, target.nameRu)
+            else -> target?.linkedName
         }
 
        return UserHistoryViewModel(
@@ -38,50 +43,61 @@ class UserHistoryViewModelConverterImpl @Inject constructor(
         )
     }
 
-    //TODO refactor?
+    /** The entries under the site's headers: a header wherever the interval changes, so none repeats. */
     override fun groupItems(items: List<UserHistoryViewModel>): List<Any> {
-        val newList = mutableListOf<Any>()
-
-        var prevDate: DateTime? = null
-        var prevWeeks = 0
-        var prevMonths = 0
         val now = utils.nowDateTime
+        val list = mutableListOf<Any>()
+        var previous: HistoryInterval? = null
+
         items.forEach { item ->
-            val hasDate = prevDate != null
-
-            val days = !hasDate || (isSameWeek(item.actionDateTime, now) && (!utils.isSameDay(item.actionDateTime, prevDate) && isHalfWeek(item.actionDateTime, now) || (!isHalfWeek(item.actionDateTime, now) && isHalfWeek(now, prevDate!!))))
-            val weeks = hasDate && (isSameMonth(item.actionDateTime, now) && (!isSameWeek(item.actionDateTime, now) && Weeks.weeksBetween(item.actionDateTime, now).weeks != prevWeeks))
-            val months = hasDate && (isSameYear(item.actionDateTime, now) && (!isSameMonth(item.actionDateTime, now) && Months.monthsBetween(item.actionDateTime, now).months != prevMonths))
-            val years = hasDate && !utils.isSameYear(item.actionDateTime, prevDate)
-
-            val isNeedCategory = days || weeks || months || years
-
-            if (isNeedCategory) {
-                newList.add(convertHeader(item))
-                prevDate = item.actionDateTime
-            }
-
-            prevWeeks = Weeks.weeksBetween(item.actionDateTime, now).weeks
-            prevMonths = Months.monthsBetween(item.actionDateTime, now).months
-            newList.add(item)
+            val interval = HistoryInterval.of(item.actionDateTime, now)
+            if (interval != previous) list.add(UserHistoryHeaderViewModel(context.getString(interval.title)))
+            previous = interval
+            list.add(item)
         }
-
-        return newList
+        return list
     }
 
-    private fun convertHeader(item: UserHistoryViewModel): UserHistoryHeaderViewModel = UserHistoryHeaderViewModel(
-            dateConverter.convertHistoryDateToString(item.actionDateTime)
-    )
+    /**
+     * The site's history intervals and headers (`user_history_query.rb`, `datetime.intervals`),
+     * newest first: each is "older than the one before it, but not older than its own limit".
+     */
+    private enum class HistoryInterval(@StringRes val title: Int) {
+        TODAY(R.string.common_today),
+        YESTERDAY(R.string.common_yesterday),
+        DURING_WEEK(R.string.history_during_week),
+        WEEK(R.string.history_week_ago),
+        TWO_WEEKS(R.string.history_two_weeks_ago),
+        THREE_WEEKS(R.string.history_three_weeks_ago),
+        MONTH(R.string.history_month_ago),
+        TWO_MONTHS(R.string.history_two_months_ago),
+        THREE_MONTHS(R.string.history_three_months_ago),
+        FOUR_MONTHS(R.string.history_four_months_ago),
+        FIVE_MONTHS(R.string.history_five_months_ago),
+        HALF_YEAR(R.string.history_half_year_ago),
+        YEAR(R.string.history_year_ago),
+        TWO_YEARS(R.string.history_two_years_ago),
+        MANY_YEARS(R.string.history_long_ago);
 
-    private fun isHalfWeek(first: DateTime, second: DateTime): Boolean {
-        return Math.abs(Days.daysBetween(first.toLocalDateTime(), second.toLocalDateTime()).days) < 2
+        companion object {
+            fun of(date: DateTime, now: DateTime): HistoryInterval = when {
+                date.isBefore(now.minusYears(3)) -> MANY_YEARS
+                date.isBefore(now.minusYears(2)) -> TWO_YEARS
+                date.isBefore(now.minusYears(1)) -> YEAR
+                date.isBefore(now.minusMonths(6)) -> HALF_YEAR
+                date.isBefore(now.minusMonths(5)) -> FIVE_MONTHS
+                date.isBefore(now.minusMonths(4)) -> FOUR_MONTHS
+                date.isBefore(now.minusMonths(3)) -> THREE_MONTHS
+                date.isBefore(now.minusMonths(2)) -> TWO_MONTHS
+                date.isBefore(now.minusMonths(1)) -> MONTH
+                date.isBefore(now.minusWeeks(3)) -> THREE_WEEKS
+                date.isBefore(now.minusWeeks(2)) -> TWO_WEEKS
+                date.isBefore(now.minusWeeks(1)) -> WEEK
+                //the site: before the end of the day before yesterday
+                date.isBefore(now.minusDays(1).withTimeAtStartOfDay()) -> DURING_WEEK
+                date.isBefore(now.withTimeAtStartOfDay()) -> YESTERDAY
+                else -> TODAY
+            }
+        }
     }
-
-
-    private fun isSameWeek(first: DateTime, second: DateTime): Boolean = Weeks.weeksBetween(first.toLocalDateTime(), second.toLocalDateTime()).weeks == 0
-
-    private fun isSameMonth(first: DateTime, second: DateTime): Boolean = Months.monthsBetween(first, second).months == 0
-
-    private fun isSameYear(first: DateTime, second: DateTime): Boolean = Years.yearsBetween(first, second).years == 0
-
 }

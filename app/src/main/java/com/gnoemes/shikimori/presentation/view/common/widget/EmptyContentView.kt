@@ -14,10 +14,6 @@ class EmptyContentView @JvmOverloads constructor(context: Context,
 
     override fun getLayout(): Int = R.layout.view_empty
 
-    fun setText(text: String) {
-        descriptionTextView.text = text
-    }
-
     fun setText(@StringRes textRes: Int) {
         descriptionTextView.setText(textRes)
     }

@@ -22,7 +22,7 @@ interface BaseDetailsView : BaseFragmentView {
     fun setActionItem(item : DetailsActionItem)
 
     @StateStrategyType(SkipStrategy::class)
-    fun showRateDialog(title : String, userRate: UserRate?)
+    fun showRateDialog(title : String, userRate: UserRate?, isAnime: Boolean)
 
     @StateStrategyType(SkipStrategy::class)
     fun showStatusDialog(id : Long, name : String, currentStatus: RateStatus?, isAnime : Boolean)

@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.topic.details
 
-import com.gnoemes.shikimori.entity.common.domain.LinkedContent
 import com.gnoemes.shikimori.entity.topic.presentation.TopicContentViewModel
+import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
 
@@ -21,6 +21,6 @@ interface TopicView : BasePaginationView {
 
     fun showCommentsLoading(show : Boolean)
 
-    fun setLinkedContent(linked: LinkedContent?)
+    fun setLinkedContent(linked: TopicLinkedViewModel?)
 
 }

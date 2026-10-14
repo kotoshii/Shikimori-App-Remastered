@@ -18,7 +18,7 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.common.provider.ShareResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.translations.converter.TranslationsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -48,9 +48,7 @@ class SeriesPresenter @Inject constructor(
 
     private val items = mutableListOf<TranslationViewModel>()
     private lateinit var selectedVideo: TranslationVideo
-    private var selectedDownloadUrl: String? = null
-    private var selectedDownloadAudioUrl: String? = null
-    private var selectedDownloadVideo: Video? = null
+    private var selectedDownload: SeriesDownloadItem? = null
     private var selectedPlayer: PlayerType? = null
 
     private var isWatchSession = false
@@ -67,10 +65,9 @@ class SeriesPresenter @Inject constructor(
         viewState.setTitle(navigationData.name)
         viewState.changeSource(isAlternative)
 
-        if (episode != null) {
-            viewState.setEpisodeName(episode!!)
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-        } else viewState.showFab(false)
+        val opening = episode
+        if (opening != null) showEpisodeName(opening)
+        else viewState.showFab(false)
 
         if (navigationData.episodesAired == 1) {
             viewState.hideEpisodeName()
@@ -101,11 +98,26 @@ class SeriesPresenter @Inject constructor(
                     .subscribe(this::setData, this::processErrors)
                     .addToDisposables()
 
-    private fun loadEpisodes() = interactor.getEpisodes(navigationData.animeId, isAlternative)
+    //with no episode asked for: the first one not watched, else the last watched. Back from watching,
+    //the last watched one
+    private fun loadEpisodes() = loadEpisodeList { items ->
+        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
+        isWatchSession = false
+        showEpisode(items, episode ?: 1)
+    }
+
+    //the next episode when the source has it, else the current one again. When the source has
+    //neither, the next one, as having no translations yet
+    fun onNextEpisode() = loadEpisodeList { items ->
+        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
+        showEpisode(items, (episode ?: 0) + 1)
+    }
+
+    private fun loadEpisodeList(onLoaded: (List<Episode>) -> Unit) = interactor.getEpisodes(navigationData.animeId, isAlternative)
             .map { it.take(navigationData.episodesAired) }
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe(this::openPriorityEpisode, this::processErrors)
+            .subscribe({ onLoaded(it) }, this::processErrors)
             .addToDisposables()
 
     private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
@@ -122,31 +134,41 @@ class SeriesPresenter @Inject constructor(
 
     fun onRefresh() = loadWithEpisode()
 
-    private fun openPriorityEpisode(items: List<Episode>) {
-        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
-        episodeId = items.firstOrNull { it.index == episode }?.id
-        isWatchSession = false
-        if (episode != null && episodeId != null) {
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.setEpisodeName(episode!!)
-            loadData(episodeId!!)
-            viewState.showFab(true)
-        } else if (navigationData.episodesAired > 0) {
-            if (episode == null) episode = 1
-            viewState.setEpisodeName(episode!!)
-            viewState.onHideLoading()
-            viewState.hideEmptyView()
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.showEmptyAuthorsView(true, isAlternative)
-            viewState.showContent(false)
-            viewState.showFab(true)
-        } else {
-            viewState.onHideLoading()
-            viewState.showEmptyView()
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-            viewState.showFab(false)
+    /**
+     * The chosen [episode]: its translations when the source has it. If not, while anything is out,
+     * episode [notFound] as having no translations yet; else that nothing is out.
+     */
+    private fun showEpisode(items: List<Episode>, notFound: Int) {
+        val id = items.firstOrNull { it.index == episode }?.id
+        episodeId = id
+        when {
+            id != null -> {
+                showEpisodeName(episode!!)
+                loadData(id)
+                viewState.showFab(true)
+            }
+            navigationData.episodesAired > 0 -> {
+                episode = notFound
+                showEpisodeName(notFound)
+                viewState.onHideLoading()
+                viewState.hideEmptyView()
+                viewState.showEmptyAuthorsView(true, isAlternative)
+                viewState.showContent(false)
+                viewState.showFab(true)
+            }
+            else -> {
+                viewState.onHideLoading()
+                viewState.showEmptyView()
+                viewState.hideEpisodeName()
+                viewState.showNextEpisode(false)
+                viewState.showFab(false)
+            }
         }
+    }
+
+    private fun showEpisodeName(episode: Int) {
+        viewState.setEpisodeName(episode)
+        viewState.showNextEpisode(episode != navigationData.episodesAired)
     }
 
     private fun setData(data: List<TranslationViewModel>) {
@@ -168,41 +190,6 @@ class SeriesPresenter @Inject constructor(
         } else viewState.showData(it)
     }
 
-    fun onNextEpisode() = interactor.getEpisodes(navigationData.animeId, isAlternative)
-            .map { it.take(navigationData.episodesAired) }
-            .doOnSubscribe { viewState.showEpisodeLoading(true) }
-            .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe(this::loadNextEpisode, this::processErrors)
-            .addToDisposables()
-
-
-    private fun loadNextEpisode(items: List<Episode>) {
-        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
-        episodeId = items.firstOrNull { it.index == episode }?.id
-        if (episode != null && episodeId != null) {
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.setEpisodeName(episode!!)
-            loadData(episodeId!!)
-            viewState.showFab(true)
-        } else if (navigationData.episodesAired > 0) {
-            if (episode == null) episode = 0
-            episode = episode?.plus(1)
-            viewState.setEpisodeName(episode!!)
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.onHideLoading()
-            viewState.hideEmptyView()
-            viewState.showEmptyAuthorsView(true, isAlternative)
-            viewState.showContent(false)
-            viewState.showFab(true)
-        } else {
-            viewState.onHideLoading()
-            viewState.showEmptyView()
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-            viewState.showFab(false)
-        }
-    }
-
     fun onSearchClicked() {
         viewState.showSearchView()
     }
@@ -218,8 +205,7 @@ class SeriesPresenter @Inject constructor(
         this.episodeId = episodeId
         this.episode = episode
 
-        viewState.setEpisodeName(episode)
-        viewState.showNextEpisode(episode != navigationData.episodesAired)
+        showEpisodeName(episode)
 
         if (isAlternative != alternative) {
             viewState.changeSource(alternative)
@@ -234,17 +220,11 @@ class SeriesPresenter @Inject constructor(
         //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
         //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
         //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
-        val videoUrl = item.url
+        val videoUrl = item.track.url
 
         //the same four things the downloaded file is named after, so a shared link and a saved file
-        //describe the episode alike. Blanks drop out rather than leaving separators behind - an
-        //unknown author, "не выбрано" for the kind, or a parser that could not tell the quality
-        val details = listOf(
-                item.video.author,
-                item.video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
-                item.quality.orEmpty(),
-                item.hosting
-        ).filter { it.isNotBlank() }
+        //describe the episode alike. Blanks drop out rather than leaving separators behind
+        val details = listOf(item.author, item.kind, item.quality, item.hosting).filter { it.isNotBlank() }
 
         val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
@@ -429,38 +409,30 @@ class SeriesPresenter @Inject constructor(
         else processErrors(throwable)
     }
 
-    fun onTrackForDownloadSelected(url: String, video: Video) {
+    fun onTrackForDownloadSelected(item: SeriesDownloadItem) {
         //Kodik urls used to be truncated at ".mp4" here to turn the hls manifest into a direct file,
         //because DownloadManager could only fetch one url. That file stopped existing - the shortened
         //url answers 500 - and DownloadService walks the playlist itself now, so the url is
         //passed through untouched.
-        selectedDownloadUrl = url
-        selectedDownloadAudioUrl = video.tracks.find { it.url == url }?.audioUrl
-        selectedDownloadVideo = video
+        selectedDownload = item
         viewState.checkPermissions()
     }
 
     fun onStoragePermissionsAccepted() {
         val downloadPath = settingsSource.downloadFolder
 
-        if (downloadPath.isNotEmpty()) downloadVideo(selectedDownloadUrl, selectedDownloadAudioUrl, selectedDownloadVideo)
+        if (downloadPath.isNotEmpty()) selectedDownload?.let(this::downloadVideo)
         else viewState.showFolderChooserDialog()
     }
 
-    private fun downloadVideo(url: String?, audioUrl: String?, video: Video?) {
+    private fun downloadVideo(item: SeriesDownloadItem) {
         val data = DownloadVideoData(
-                navigationData.animeId, navigationData.name, episode!!, url, audioUrl,
-                parsers.headers(video),
-                author = video?.author.orEmpty(),
-                //the chosen track carries the quality; "unknown" is what parsers use when they
-                //cannot tell, and the ui hides it the same way
-                quality = video?.tracks?.find { it.url == url }?.quality
-                        ?.takeIf { it.isNotBlank() && it != "unknown" }
-                        ?.let { "${it}p" }
-                        .orEmpty(),
-                kind = video?.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
-                //domain-shaped for every hosting ("vk.com", "cda.pl")
-                hosting = video?.hosting?.synonymType.orEmpty()
+                navigationData.animeId, navigationData.name, episode!!, item.track.url, item.track.audioUrl,
+                parsers.headers(item.video),
+                author = item.author,
+                quality = item.quality,
+                kind = item.kind,
+                hosting = item.hosting
         )
         downloadInteractor.downloadVideo(data)
                 .subscribe({}, this::processDownloadErrors)

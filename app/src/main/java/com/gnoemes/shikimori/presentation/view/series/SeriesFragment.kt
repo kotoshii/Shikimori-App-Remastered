@@ -1,12 +1,10 @@
 package com.gnoemes.shikimori.presentation.view.series
 
-import android.Manifest
 import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
@@ -17,20 +15,16 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.files.folderChooser
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
-import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
-import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
-import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadHostingDialog
+import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadDialog
+import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadHostingDialog
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment
@@ -40,7 +34,6 @@ import com.gnoemes.shikimori.presentation.view.series.translations.adapter.Trans
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import com.kotlinpermissions.KotlinPermissions
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
@@ -138,20 +131,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(0, 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
-                setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.colorAttr(R.attr.colorOnPrimary))
-            }
+            applyAppStyle()
         }
 
         emptyContentView.setText(R.string.episodes_not_found)
@@ -236,7 +216,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
     }
 
-    override fun onDownload(url: String, video: Video) = getPresenter().onTrackForDownloadSelected(url, video)
+    override fun onDownload(item: SeriesDownloadItem) = getPresenter().onTrackForDownloadSelected(item)
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
     override fun onDownloadHostingSelected(video: TranslationVideo) = getPresenter().onDownloadHostingSelected(video)
 
@@ -371,25 +351,9 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         Toast.makeText(requireContext(), R.string.series_hosting_challenge, Toast.LENGTH_LONG).show()
     }
 
-    override fun checkPermissions() {
-        KotlinPermissions.with(activity!!)
-                .permissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .onAccepted { getPresenter().onStoragePermissionsAccepted() }
-                .ask()
-    }
+    override fun checkPermissions() = activity!!.askStoragePermission { getPresenter().onStoragePermissionsAccepted() }
 
-    override fun showFolderChooserDialog() {
-        MaterialDialog(context!!).show {
-            folderChooser(
-                    allowFolderCreation = true,
-                    emptyTextRes = R.string.download_folder_empty,
-                    folderCreationLabel = R.string.download_new_folder)
-            { _, file ->
-                putSetting(SettingsExtras.DOWNLOAD_FOLDER, file.absolutePath)
-            }
-            positiveButton { getPresenter().onStoragePermissionsAccepted() }
-        }
-    }
+    override fun showFolderChooserDialog() = context!!.chooseDownloadFolder(onPositive = { getPresenter().onStoragePermissionsAccepted() })
 
     override fun showQualityChooser(items: List<Pair<String, String>>) {
         val dialog = ListDialogFragment.newInstance()

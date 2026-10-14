@@ -187,10 +187,6 @@ class ShikimoriContentView @JvmOverloads constructor(
     private fun cycleHeightExpansion(layout: LinearLayout) {
         val end = if (layout.height == COLLAPSED_MAX_HEIGHT) contentHeight + EXPAND_BUTTON_HEIGHT else COLLAPSED_MAX_HEIGHT
 
-//        ValueAnimator.ofInt(layout.height, end)
-//                .apply { addUpdateListener { layout.layoutParams.apply { height = it.animatedValue as Int; layout.requestLayout() } } }
-//                .setDuration(500)
-//                .start()
         layout.layoutParams.height = end
         layout.requestLayout()
     }

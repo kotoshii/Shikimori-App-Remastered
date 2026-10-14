@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.data.repository.search
 
 import com.gnoemes.shikimori.data.network.AnimeApi
 import com.gnoemes.shikimori.data.network.MangaApi
-import com.gnoemes.shikimori.data.network.RanobeApi
 import com.gnoemes.shikimori.data.network.RolesApi
 import com.gnoemes.shikimori.data.repository.common.AnimeResponseConverter
 import com.gnoemes.shikimori.data.repository.common.CharacterResponseConverter
@@ -21,7 +20,6 @@ import javax.inject.Inject
 class SearchRepositoryImpl @Inject constructor(
         private val animesApi: AnimeApi,
         private val mangaApi: MangaApi,
-        private val ranobeApi: RanobeApi,
         private val rolesApi: RolesApi,
         private val animeResponseConverter: AnimeResponseConverter,
         private val mangaResponseConverter: MangaResponseConverter,
@@ -39,12 +37,8 @@ class SearchRepositoryImpl @Inject constructor(
             animesApi.getList(withGenreV2(queryMap))
                     .map(animeResponseConverter)
 
-    override fun getMangaList(queryMap: Map<String, String>): Single<List<Manga>> =
-            mangaApi.getList(withGenreV2(queryMap))
-                    .map(mangaResponseConverter)
-
-    override fun getRanobeList(queryMap: Map<String, String>): Single<List<Manga>> =
-            ranobeApi.getList(withGenreV2(queryMap))
+    override fun getMangaList(queryMap: Map<String, String>, type: Type): Single<List<Manga>> =
+            mangaApi.getList(MangaApi.kind(type), withGenreV2(queryMap))
                     .map(mangaResponseConverter)
 
     /**
@@ -70,8 +64,7 @@ class SearchRepositoryImpl @Inject constructor(
     override fun getList(type: Type, queryMap: Map<String, String>): Single<List<LinkedContent>> =
             (when (type) {
                 Type.ANIME -> getAnimeList(queryMap)
-                Type.MANGA -> getMangaList(queryMap)
-                Type.RANOBE -> getRanobeList(queryMap)
+                Type.MANGA, Type.RANOBE -> getMangaList(queryMap, type)
                 else -> Single.error(IllegalArgumentException("$type search is not supported"))
             })
                     .map { it }

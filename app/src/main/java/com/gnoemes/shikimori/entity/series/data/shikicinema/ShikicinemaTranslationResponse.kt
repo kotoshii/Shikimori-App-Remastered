@@ -29,11 +29,8 @@ data class ShikicinemaTranslationResponse (
         }
 
     val kind: TranslationType
-        get() = when (_kind) {
-            "субтитры" -> TranslationType.SUB_RU
-            "озвучка" -> TranslationType.VOICE_RU
-            else -> TranslationType.RAW
-        }
+        get() = listOf(TranslationType.SUB_RU, TranslationType.VOICE_RU).find { it.shikicinemaKind == _kind }
+                ?: TranslationType.RAW
 
     val hosting: String
         get() = URL(url).host

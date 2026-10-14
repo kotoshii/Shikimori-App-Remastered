@@ -14,16 +14,12 @@ import javax.inject.Inject
 
 @InjectViewState
 class FilterSeasonsPresenter @Inject constructor(
-        private val interactor: FilterInteractor,
+        interactor: FilterInteractor,
         private val converter: FilterViewModelConverter
-) : BaseFilterPresenter<FilterSeasonsView>() {
+) : BaseFilterPresenter<FilterSeasonsView>(interactor) {
 
     override fun loadData() =
-            (when (type) {
-                Type.MANGA -> interactor.getMangaFilters()
-                Type.RANOBE -> interactor.getRanobeFilters()
-                else -> interactor.getAnimeFilters()
-            })
+            loadCategories()
                     .map { list -> list.first { it.filterType == FilterType.SEASON } }
                     .map { converter.convertSeasons(it, appliedFilters) }
                     .doOnSuccess { loadCustomFilters() }

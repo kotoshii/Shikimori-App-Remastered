@@ -5,7 +5,6 @@ import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -30,9 +29,6 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     @Inject
     lateinit var imageLoader: ImageLoader
-
-    @Inject
-    lateinit var settings: SettingsSource
 
     @InjectPresenter
     lateinit var personPresenter: PersonPresenter

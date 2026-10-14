@@ -10,7 +10,8 @@ interface EmbeddedPlayerView : BaseNetworkView {
 
     fun showMessage(s: String, exit : Boolean = false)
 
-    fun selectTrack(currentTrack: Int)
+    //a position in the quality menu
+    fun selectTrack(position: Int)
     fun setEpisodeSubtitle(currentEpisode: Int)
 
     fun playVideo(it: Track, subtitles: String?, needReset: Boolean, headers: Map<String, String>)

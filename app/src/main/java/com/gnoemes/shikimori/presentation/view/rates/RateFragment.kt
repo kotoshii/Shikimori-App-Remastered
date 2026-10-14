@@ -122,20 +122,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
                     return true
                 }
             })
-            findViewById<SearchView.SearchAutoComplete>(R.id.search_src_text)?.apply {
-                setPadding(0, 0, context.dp(8), 0)
-                setHintTextColor(context.colorStateList(context.attr(R.attr.colorOnPrimarySecondary).resourceId))
-            }
-            findViewById<LinearLayout>(R.id.search_edit_frame)?.apply {
-                layoutParams = (layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    marginStart = 0
-                    leftMargin = 0
-                }
-            }
-            findViewById<ImageView>(R.id.search_close_btn)?.apply {
-                setPadding(context!!.dp(12), 0, context!!.dp(12), 0)
-                tint(context.colorAttr(R.attr.colorOnPrimary))
-            }
+            applyAppStyle()
         }
 
         savedInstanceState?.let {
@@ -396,11 +383,11 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         authLayout.visibleIf { show }
     }
 
-    override fun showRateMessage(taskId: Int, message: String, rateId: Long) {
+    override fun showRateMessage(message: String, rateId: Long) {
         Snackbar.make(coordinator, message, Snackbar.LENGTH_LONG)
                 .floatingStyle(context!!)
                 .setActionTextColor(context!!.colorAttr(R.attr.colorSecondary))
-                .setAction(R.string.common_cancel_variant) { getPresenter().onTaskCanceled(taskId, rateId) }
+                .setAction(R.string.common_cancel_variant) { getPresenter().onChangeCanceled(rateId) }
                 .show()
     }
 

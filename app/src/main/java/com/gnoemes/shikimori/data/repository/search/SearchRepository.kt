@@ -12,9 +12,8 @@ interface SearchRepository {
 
     fun getAnimeList(queryMap: Map<String, String>): Single<List<Anime>>
 
-    fun getMangaList(queryMap: Map<String, String>): Single<List<Manga>>
-
-    fun getRanobeList(queryMap: Map<String, String>): Single<List<Manga>>
+    /** [type] MANGA or RANOBE. */
+    fun getMangaList(queryMap: Map<String, String>, type: Type): Single<List<Manga>>
 
     fun getCharacterList(queryMap: Map<String, String>): Single<List<Character>>
 

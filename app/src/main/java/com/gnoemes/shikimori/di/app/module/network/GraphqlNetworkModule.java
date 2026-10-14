@@ -7,13 +7,11 @@ import com.gnoemes.shikimori.data.repository.common.TitleGenreSource;
 import com.gnoemes.shikimori.data.repository.common.impl.PosterSourceImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.GenreVocabularySourceImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.TitleGenreSourceImpl;
+import com.gnoemes.shikimori.di.app.annotations.BaseHttpClient;
 import com.gnoemes.shikimori.di.app.annotations.GraphqlApi;
-import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.utils.network.MissingPosterInterceptor;
 import com.gnoemes.shikimori.utils.network.ShikimoriRateLimiter;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
-
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
 
@@ -23,13 +21,12 @@ import dagger.Provides;
 import okhttp3.OkHttpClient;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 /**
  * GraphQL recovers posters the REST api stopped serving (see {@link MissingPosterInterceptor}) and
  * supplies genres v2: each title's genres and the genre list.
  * <p>
- * It gets a dedicated, deliberately bare OkHttp client: the poster interceptor is installed on the
+ * It gets its own client, made from the bare base one: the poster interceptor is installed on the
  * REST clients, so reusing one of those would make every GraphQL answer re-enter the interceptor.
  * No authentication is needed either - these queries answer fine anonymously.
  */
@@ -39,26 +36,24 @@ public interface GraphqlNetworkModule {
     @Provides
     @Singleton
     @GraphqlApi
-    static OkHttpClient provideOkHttpClient(UserAgentInterceptor userAgentInterceptor,
+    static OkHttpClient provideOkHttpClient(@BaseHttpClient OkHttpClient base,
+                                            UserAgentInterceptor userAgentInterceptor,
                                             ShikimoriRateLimiter rateLimiter) {
-        return new OkHttpClient.Builder()
+        return base.newBuilder()
                 //the same limiter as the rest clients: one queue for the whole host
                 .addInterceptor(rateLimiter)
                 .addInterceptor(userAgentInterceptor)
-                .connectTimeout(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .build();
     }
 
     @Provides
     @Singleton
     @GraphqlApi
-    static Retrofit provideRetrofit(Converter.Factory factory, @GraphqlApi OkHttpClient client) {
-        return new Retrofit.Builder()
+    static Retrofit provideRetrofit(Retrofit.Builder builder, Converter.Factory factory, @GraphqlApi OkHttpClient client) {
+        //the builder brings Rx: the poster lookup takes its answer as a blocking Call, but the
+        //genre lookup is composed into a repository chain and needs a Single
+        return builder
                 .client(client)
-                //the poster lookup takes its answer as a blocking Call, but the genre lookup is
-                //composed into a repository chain and needs a Single
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(factory)
                 .baseUrl(BuildConfig.ShikimoriBaseUrl)
                 .build();

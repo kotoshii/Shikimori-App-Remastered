@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.entity.common.presentation.SortAction
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.presentation.RateSortViewModel
 import com.gnoemes.shikimori.utils.inflate
+import com.gnoemes.shikimori.utils.nameRes
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_rate_sort.view.*
@@ -55,13 +56,7 @@ class RateSortAdapterDelegate(
         }
 
         private fun getLocalizedStatus(status: RateStatus, anime: Boolean): String =
-                if (anime)
-                    RateStatus.values()
-                            .zip(itemView.resources.getStringArray(R.array.anime_rate_stasuses))[status.ordinal]
-                            .second
-                else RateStatus.values()
-                        .zip(itemView.resources.getStringArray(R.array.manga_rate_stasuses))[status.ordinal]
-                        .second
+                itemView.context.getString(status.nameRes(anime))
 
 
     }

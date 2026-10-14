@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.common.domain.LinkedContent
+import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.topic.domain.TopicType
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
@@ -47,7 +47,7 @@ class TopicClubAdapterDelegate(
             itemView.divider.gone()
             itemView.linkedImageView.setOnClickListener {
                 item.linked?.let { content ->
-                    navigationCallback.invoke(content.linkedType, content.linkedId)
+                    navigationCallback.invoke(content.type, content.id)
                 }
             }
 
@@ -63,7 +63,7 @@ class TopicClubAdapterDelegate(
             itemView.commentView.text = item.commentsCount.toString()
         }
 
-        private fun setLinkedContent(linked: LinkedContent?) {
+        private fun setLinkedContent(linked: TopicLinkedViewModel?) {
             with(itemView) {
                 linkedImageView.visibleIf { linked != null }
 

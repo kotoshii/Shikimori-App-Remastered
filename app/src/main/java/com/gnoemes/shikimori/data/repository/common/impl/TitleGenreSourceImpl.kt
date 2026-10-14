@@ -45,18 +45,6 @@ class TitleGenreSourceImpl @Inject constructor(
                 ?.firstOrNull()
                 ?.genres
                 .orEmpty()
-                .mapNotNull { genre ->
-                    //a genre with no id or no russian label cannot be shown or searched for, and
-                    //shikimori declares both non-null - so this only fires if the api changes
-                    val genreId = genre.id?.toLongOrNull() ?: return@mapNotNull null
-                    val russian = genre.russian?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-
-                    GenreV2(
-                            genreId,
-                            genre.name.orEmpty(),
-                            russian,
-                            GenreV2.Kind.of(genre.kind)
-                    )
-                }
+                .mapNotNull { GenreV2.of(it.id, it.name, it.russian, it.kind) }
     }
 }

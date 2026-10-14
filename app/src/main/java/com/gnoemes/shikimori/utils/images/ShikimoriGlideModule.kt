@@ -16,8 +16,8 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
+import com.gnoemes.shikimori.App
 import okhttp3.Cache
-import okhttp3.OkHttpClient
 import java.io.File
 import java.io.InputStream
 
@@ -36,7 +36,9 @@ class ShikimoriGlideModule : AppGlideModule() {
     }
 
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
-        val client = OkHttpClient.Builder().cache(Cache(File(context.cacheDir, "net_cache"), 5L * 1024 * 1024)).build()
+        val client = (context.applicationContext as App).httpClient.newBuilder()
+                .cache(Cache(File(context.cacheDir, "net_cache"), 5L * 1024 * 1024))
+                .build()
         registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
     }
 }

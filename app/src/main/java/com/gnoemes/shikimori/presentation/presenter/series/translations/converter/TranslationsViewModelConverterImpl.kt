@@ -7,7 +7,7 @@ import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
-import java.net.URLEncoder
+import com.gnoemes.shikimori.utils.labelRes
 import javax.inject.Inject
 
 class TranslationsViewModelConverterImpl @Inject constructor(
@@ -17,20 +17,17 @@ class TranslationsViewModelConverterImpl @Inject constructor(
 
     private val unknownAuthor by lazy { context.getString(R.string.translation_unknown_author) }
 
-    override fun convertTranslations(translations: List<Translation>, setting: TranslationSetting?): List<TranslationViewModel> {
+    //by author. A translation with no author stays alone, under its position: nothing says two of
+    //them are by the same people
+    override fun convertTranslations(translations: List<Translation>, setting: TranslationSetting?): List<TranslationViewModel> =
+            translations.withIndex()
+                    .groupBy({ (index, translation) -> translation.author.trim().let { Pair(it, if (it.isEmpty()) index else -1) } }, { it.value })
+                    .mapNotNull { (key, group) -> convertTranslation(key.first, group, setting) }
 
+    //an empty author is an unknown one; the label says so only here, in the view model
+    private fun convertTranslation(author: String, translations: List<Translation>, setting: TranslationSetting?): TranslationViewModel? {
+        if (translations.isEmpty()) return null
 
-        return translations
-                .mapIndexed { index, translation -> if (translation.author.isEmpty()) translation.copy(author = "$unknownAuthor $index") else translation }
-                .groupBy { it.author.trim() }
-                .mapNotNull { convertTranslation(it, setting) }
-    }
-
-
-    private fun convertTranslation(it: Map.Entry<String, List<Translation>>, setting: TranslationSetting?): TranslationViewModel? {
-        if (it.value.isEmpty()) return null
-
-        val author = if (it.key.contains(unknownAuthor)) it.key.replace(Regex("\\d"), "") else it.key
         val builder = StringBuilder()
 
         fun appendDot(withSpace: Boolean = false) {
@@ -40,9 +37,9 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             if (withSpace) builder.append(space)
         }
 
-        val hasBd = it.value.find { it.quality == TranslationQuality.BD || it.quality == TranslationQuality.DVD } != null
-        val isSameAuthor = author == setting?.lastAuthor
-        val canBeDownloaded = it.value.find { parsers.isSupported(it.hosting) } != null
+        val hasBd = translations.find { it.quality == TranslationQuality.BD || it.quality == TranslationQuality.DVD } != null
+        val isSameAuthor = author.isNotEmpty() && author == setting?.lastAuthor
+        val canBeDownloaded = translations.find { parsers.isSupported(it.hosting) } != null
 
 
         if (isSameAuthor) {
@@ -68,43 +65,38 @@ class TranslationsViewModelConverterImpl @Inject constructor(
         }
 
         val description: CharSequence? = if (builder.isNotEmpty()) builder else null
-        val videos = it.value.map { t -> convertVideo(t) }
+        val videos = translations.map { t -> convertVideo(t) }
 
         return TranslationViewModel(
-                it.value.first().videoId,
-                it.value.first().type,
-                author,
+                translations.first().videoId,
+                author.ifEmpty { unknownAuthor },
                 description,
                 videos,
                 isSameAuthor,
                 canBeDownloaded,
-                it.value.first().episodesSize
+                translations.first().episodesSize
         )
     }
 
     override fun convertTrack(video: Video, track: Track): SeriesDownloadItem = SeriesDownloadItem(
-            video.hosting.synonymType,
-            track.quality.let { if (it.isBlank() || it == "unknown")  null else "${it}p"},
-            track.url,
-            video
+            track,
+            video,
+            video.author,
+            //in lower case, as it sits inside the line: «… - 07 (720p, озвучка, kodik.cc)»
+            video.translationType?.labelRes?.let { context.getString(it).toLowerCase() }.orEmpty(),
+            track.displayQuality.orEmpty(),
+            //domain-shaped for every hosting ("vk.com", "cda.pl")
+            video.hosting.synonymType
     )
 
-    private fun convertVideo(t: Translation): TranslationVideo {
-
-        val simpleAuthor = URLEncoder.encode(t.author.replace(Regex("\\(.+\\)"), "").trim(), "utf-8")
-
-        return TranslationVideo(
-                t.videoId,
-                t.animeId,
-                t.episodeId,
-                //TODO multi language
-                "russian",
-                if (t.author.contains(unknownAuthor)) "" else t.author,
-                simpleAuthor,
-                t.type,
-                t.hosting,
-                t.webPlayerUrl
-        )
-    }
+    private fun convertVideo(t: Translation): TranslationVideo = TranslationVideo(
+            t.videoId,
+            t.animeId,
+            t.episodeId,
+            t.author,
+            t.type,
+            t.hosting,
+            t.webPlayerUrl
+    )
 
 }

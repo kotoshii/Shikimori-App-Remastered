@@ -3,11 +3,11 @@ package com.gnoemes.shikimori.presentation.view.calendar.adapter
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarAnimeItem
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
+import com.gnoemes.shikimori.utils.iconRes
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
@@ -56,23 +56,13 @@ class CalendarAnimeAdapter(
                 descriptionView.text = item.description
 
                 if (item.status != null) {
-                    rateView.setIconResource(getRateIcon(item.status))
+                    rateView.setIconResource(item.status.iconRes)
                     rateView.setIconTintResource(getRateColor(item.status))
                 }
 
                 rateView.visibleIf { item.status != null }
                 seasonLastView.visibleIf { item.isLast }
             }
-        }
-
-        @DrawableRes
-        private fun getRateIcon(status: RateStatus): Int = when (status) {
-            RateStatus.WATCHING -> R.drawable.ic_play_rate
-            RateStatus.PLANNED -> R.drawable.ic_planned
-            RateStatus.REWATCHING -> R.drawable.ic_replay
-            RateStatus.COMPLETED -> R.drawable.ic_check
-            RateStatus.ON_HOLD -> R.drawable.ic_pause_rate
-            RateStatus.DROPPED -> R.drawable.ic_close
         }
 
         @ColorRes

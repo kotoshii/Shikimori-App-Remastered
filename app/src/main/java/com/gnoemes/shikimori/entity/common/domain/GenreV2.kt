@@ -23,6 +23,20 @@ data class GenreV2(
         val kind: Kind
 ) : Parcelable {
 
+    companion object {
+
+        /**
+         * A genre from the api's fields, or null without an id or a russian label: such a genre
+         * can be neither shown nor searched for. Shikimori declares both non-null, so this only
+         * fires if the api changes.
+         */
+        fun of(id: String?, name: String?, russian: String?, kind: String?): GenreV2? {
+            val genreId = id?.toLongOrNull() ?: return null
+            val label = russian?.takeIf { it.isNotBlank() } ?: return null
+            return GenreV2(genreId, name.orEmpty(), label, Kind.of(kind))
+        }
+    }
+
     /**
      * Declaration order is display order - demographic first, the long tail of themes last.
      * See the details chips in `AnimeDetailsViewModelConverterImpl`.

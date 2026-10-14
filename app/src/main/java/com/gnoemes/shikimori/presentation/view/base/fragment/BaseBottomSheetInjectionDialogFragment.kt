@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.base.fragment
 
 import android.content.Context
+import android.widget.Toast
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
 import dagger.android.support.AndroidSupportInjection
@@ -21,6 +22,10 @@ abstract class BaseBottomSheetInjectionDialogFragment<Presenter : BasePresenter<
 
     override fun onBackPressed() {
         dismiss()
+    }
+
+    override fun showErrorMessage(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
     fun hideSoftInput() = Unit
