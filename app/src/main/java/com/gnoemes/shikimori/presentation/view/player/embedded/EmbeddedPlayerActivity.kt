@@ -1,15 +1,9 @@
 package com.gnoemes.shikimori.presentation.view.player.embedded
 
-import android.annotation.SuppressLint
-import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
-import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.support.v4.media.session.MediaSessionCompat
 import android.text.SpannableStringBuilder
 import android.util.Log
@@ -54,7 +48,6 @@ import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
 import javax.inject.Inject
 import kotlin.math.absoluteValue
-import kotlin.math.roundToInt
 
 class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPlayerView>(), EmbeddedPlayerView {
 
@@ -84,6 +77,8 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         set(value) {}
 
     private val controller by lazy { PlayerController(settingsSource) }
+    private val screen by lazy { PlayerScreen(this) }
+    private val levels by lazy { PlayerLevels(this) }
 
     private val smallOffsetText by lazy { "${settingsSource.forwardRewindOffset / 1000} ${getString(R.string.player_seconds_short)}" }
     private val bigOffsetText by lazy { "${settingsSource.forwardRewindOffsetBig / 1000} ${getString(R.string.player_seconds_short)}" }
@@ -91,17 +86,11 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     private val volumeIcon by lazy { drawable(R.drawable.ic_volume) }
     private val offsetColor by lazy { color(R.color.player_unlock_background) }
 
-    private var currentVolume: Int = 0
-    private var currentBrightness: Int = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.ShikimoriAppTheme_Player)
         theme.applyStyle(getCurrentAscentTheme, true)
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-
-        currentVolume = audioManager().getStreamVolume(AudioManager.STREAM_MUSIC)
-        currentBrightness = (window.attributes.screenBrightness / 2.55f).toInt()
 
         toolbar.addBackButton(icon = R.drawable.ic_arrow_back_player) { onBackPressed() }
 
@@ -124,28 +113,20 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         includedToolbar.gone()
         unlockView.hide()
 
-        pipView.visibleIf { hasPip }
+        pipView.visibleIf { screen.hasPip }
 
         prev.onClick { presenter.loadPrevEpisode() }
         next.onClick { presenter.loadNextEpisode() }
-        rotationView.onClick { toggleOrientation() }
+        rotationView.onClick { screen.toggleOrientation() }
         lockView.onClick { controller.lock() }
         unlockView.onClick { controller.unlock() }
-        pipView.onClick { enterPip() }
+        pipView.onClick { screen.enterPip() }
     }
-
-    private fun enterPip() {
-        if (hasPip) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) enterPictureInPictureMode(PictureInPictureParams.Builder().build())
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) enterPictureInPictureMode()
-        }
-    }
-
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (settingsSource.isAutoPip)
-            enterPip()
+            screen.enterPip()
     }
 
     override fun onStart() {
@@ -166,80 +147,17 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
-            hideSystemUi()
+            screen.hideSystemUi()
         }
-    }
-
-    private fun hideSystemUi() {
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_IMMERSIVE
-                        // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        // Hide the nav bar and status bar
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-
-        if (isAutoRotationEnabled) {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        }
+        screen.onConfigurationChanged()
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
         playerView.useController = !isInPictureInPictureMode
-    }
-
-    private fun toggleOrientation() {
-        val orientation = this.resources.configuration.orientation
-
-        when (orientation) {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_USER -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-    }
-
-    private fun updateOrientation() {
-        val orientation = this.resources.configuration.orientation
-
-        when (orientation) {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, ActivityInfo.SCREEN_ORIENTATION_USER -> requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        }
-
-        if (!controller.isLocked && isAutoRotationEnabled) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    }
-
-    private fun changeBrightness(percent: Int) {
-        currentBrightness += percent
-
-        if (currentBrightness > 100) currentBrightness = 100
-        else if (currentBrightness < 1) currentBrightness = 1
-
-        val text = "$currentBrightness%"
-        showParamChanges(text, brightnessIcon)
-
-        window.attributes = window.attributes.apply { screenBrightness = 2.55f * currentBrightness / 255f }
-    }
-
-    private fun changeVolume(percent: Int) {
-        val manager = audioManager()
-
-        val max = manager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        currentVolume += percent
-
-        if (currentVolume > max) currentVolume = max
-        else if (currentVolume < 0) currentVolume = 0
-
-        manager.setStreamVolume(AudioManager.STREAM_MUSIC, currentVolume, 0)
-        val percentVolume = if (currentVolume == 0) 0 else (currentVolume / (max * 0.01f)).roundToInt()
-        val text = "$percentVolume%"
-        showParamChanges(text, volumeIcon)
     }
 
     private fun changeProgressSlide(current: Long, max: Long, offset: Long) {
@@ -354,25 +272,19 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     // Player controller
     ///////////////////////////////////////////////////////////////////////////
 
+    /** ExoPlayer, the media session and the controls; the touch gestures are [PlayerGestureHandler]'s. */
     private inner class PlayerController(
             private val settingsSource: PlayerSettingsSource
-    ) : Player.EventListener, PlayerControlView.VisibilityListener {
+    ) : Player.EventListener, PlayerControlView.VisibilityListener, PlayerGestureHandler.Callback {
 
         private val player: SimpleExoPlayer
 
-        var isLocked: Boolean = false
+        override var isLocked: Boolean = false
         private var controlsVisibility = View.GONE
-        private val detector: GestureDetector
-        private val scaleDetector: ScaleGestureDetector
-        private val gestureListener = ExoPlayerGestureListener()
         private val playerMargin by lazy { dimenAttr(android.R.attr.actionBarSize) }
 
         private val smallOffset by lazy { settingsSource.forwardRewindOffset }
         private val bigOffset by lazy { settingsSource.forwardRewindOffsetBig }
-        private val isGesturesEnabled by lazy { settingsSource.isGesturesEnabled }
-        private val isVolumeAndBrightnessGesturesEnabled by lazy { settingsSource.isVolumeAndBrightnessGesturesEnabled }
-        private val isVolumeAndBrightnessInverted by lazy { settingsSource.isVolumeAndBrightnessInverted }
-        private val isSlideControl by lazy { settingsSource.isForwardRewindSlide }
         private val isZoomProportional by lazy { settingsSource.isZoomProportional }
 
         private val speedRates = listOf(0.25f, 0.5f, 1f, 1.25f, 1.5f, 2f)
@@ -420,9 +332,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             playerView.setControllerShowOnTouch(false)
             playerView.setControllerVisibilityListener(this)
             playerView.controllerAutoShow = false
-            detector = GestureDetector(this@EmbeddedPlayerActivity, gestureListener)
-            scaleDetector = ScaleGestureDetector(this@EmbeddedPlayerActivity, gestureListener)
-            playerView.setOnTouchListener(gestureListener)
+            playerView.setOnTouchListener(PlayerGestureHandler(this@EmbeddedPlayerActivity, playerView, playerMargin, settingsSource, this))
             exo_progress.addListener(progressListener)
             resolutionSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
             speedSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
@@ -488,8 +398,8 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
         fun lock() {
             isLocked = true
-            updateOrientation()
-            onLockedScreenTouch()
+            screen.holdOrientation(locked = true)
+            onLockedTouch()
         }
 
         fun unlock() {
@@ -497,33 +407,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT))
             unlockSurface.gone()
             unlockView.hide()
-            updateOrientation()
-        }
-
-        fun onFastForward(): Boolean {
-            forwardView.text = smallOffsetText
-            seek(smallOffset)
-            hideForwardAfterTimeout()
-            return true
-        }
-
-        fun onRewind(): Boolean {
-            rewindView.text = smallOffsetText
-            seek(-smallOffset)
-            hideRewindAfterTimeout()
-            return true
-        }
-
-        fun onBigForward() {
-            forwardView.text = bigOffsetText
-            seek(bigOffset)
-            hideForwardAfterTimeout()
-        }
-
-        fun onBigRewind() {
-            rewindView.text = bigOffsetText
-            seek(-bigOffset)
-            hideRewindAfterTimeout()
+            screen.holdOrientation(locked = false)
         }
 
         private fun seek(pos: Long) {
@@ -561,24 +445,62 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             }
         }
 
-        private fun toggleControllerVisibility(): Boolean {
+        ///////////////////////////////////////////////////////////////////////////
+        // Gestures
+        ///////////////////////////////////////////////////////////////////////////
+
+        override fun onTap() {
             if (isVisible && !controlsInAction) playerView.hideController()
             else if (!controlsInAction) playerView.showController()
-            return true
         }
 
-        private fun onActionEnd() {
-            controlsInAction = false
-            hideAfterTimeout()
-        }
-
-        private fun onLockedScreenTouch(): Boolean {
+        override fun onLockedTouch() {
             unlockView.show()
             TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_IN))
             unlockSurface.visible()
             playerView.hideController()
             hideUnlockAfterTimeout()
-            return false
+        }
+
+        override fun onSeekTap(forward: Boolean, big: Boolean) {
+            val offset = if (big) bigOffset else smallOffset
+            val text = if (big) bigOffsetText else smallOffsetText
+
+            if (forward) {
+                forwardView.text = text
+                seek(offset)
+                hideForwardAfterTimeout()
+            } else {
+                rewindView.text = text
+                seek(-offset)
+                hideRewindAfterTimeout()
+            }
+        }
+
+        override fun onBrightnessStep(step: Int) = showParamChanges("${levels.changeBrightness(step)}%", brightnessIcon)
+
+        override fun onVolumeStep(step: Int) = showParamChanges("${levels.changeVolume(step)}%", volumeIcon)
+
+        override fun onSeekSwipe(offset: Long) = changeProgressSlide(player.currentPosition, player.duration, offset)
+
+        override fun onSwipeEnd(seekOffset: Long?) {
+            paramChangesView.removeCallbacks(delayedParamChangesHide)
+            paramChangesView.postDelayed(delayedParamChangesHide, UNLOCK_HIDE_DELAY)
+            levels.onSwipeEnd()
+
+            if (seekOffset != null) seek(seekOffset)
+        }
+
+        override fun onZoom(zoomed: Boolean) {
+            playerView.resizeMode =
+                    if (!zoomed) AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    else if (isZoomProportional) AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                    else AspectRatioFrameLayout.RESIZE_MODE_FILL
+        }
+
+        private fun onActionEnd() {
+            controlsInAction = false
+            hideAfterTimeout()
         }
 
         private fun hideForwardAfterTimeout() {
@@ -613,145 +535,11 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         private val delayedUnlockHide = Runnable { unlockView.hide(); TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT)); unlockSurface.gone() }
         private val delayedParamChangesHide = Runnable { TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT)); paramChangesView.gone() }
         private val dragPostHideRunnable = Runnable { dragProgress.gone(); dragProgress.text = null }
-
-        private inner class ExoPlayerGestureListener : GestureDetector.SimpleOnGestureListener(), View.OnTouchListener, ScaleGestureDetector.OnScaleGestureListener {
-
-            private var isDrag: Boolean = false
-            private var isSlide: Boolean = false
-            private var slideOffset = 0L
-            private var lastTapMills = 0L
-            private var scaleFactor = 0.5f
-            private var scrollFirstTapX = 0
-
-            private val MOVEMENT_TH = 30
-            private val stepBrightness = 5
-            private val stepVolume = 1
-
-            @SuppressLint("ClickableViewAccessibility")
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-                if (event == null || event.y < playerMargin / 2 || event.x > playerView.width - playerMargin) return false
-
-                return if (!isLocked) {
-                    if (event.action == MotionEvent.ACTION_UP && isDrag) {
-                        isDrag = false
-                        onScrollEnd()
-                    }
-
-                    if (isGesturesEnabled) kotlin.run { scaleDetector.onTouchEvent(event); detector.onTouchEvent(event) }
-                    else {
-                        when {
-                            (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_DOWN) && System.currentTimeMillis() - lastTapMills > 500 -> {
-                                lastTapMills = System.currentTimeMillis()
-                                toggleControllerVisibility()
-                            }
-                            else -> false
-                        }
-                    }
-                } else onLockedScreenTouch()
-            }
-
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                return toggleControllerVisibility()
-            }
-
-            override fun onLongPress(e: MotionEvent?) {
-                if (e == null || isSlideControl) return
-
-                when {
-                    e.x > playerView.width - playerView.width / 3 -> onBigForward()
-                    e.x < playerView.width / 3 -> onBigRewind()
-                }
-            }
-
-            override fun onDoubleTap(e: MotionEvent?): Boolean {
-                if (e == null || isSlideControl) return false
-
-                return when {
-                    e.x > playerView.width - playerView.width / 3 -> onFastForward()
-                    e.x < playerView.width / 3 -> onRewind()
-                    else -> false
-                }
-            }
-
-            override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-                if (e1 == null || e2 == null) return false
-
-                return if (isVolumeAndBrightnessGesturesEnabled) {
-                    val diff = Math.abs(e1.y - e2.y).toInt()
-                    isDrag = true
-
-                    val stepChanged = Math.abs(distanceY).roundToInt() % 3 == 0 && diff > MOVEMENT_TH
-
-                    if (stepChanged && (e1.y > playerMargin && e2.y > playerMargin)) when {
-                        e1.x < playerView.width / 3 -> leftAreaScroll(distanceY > 0)
-                        e1.x > playerView.width - playerView.width / 3 -> rightAreaScroll(distanceY > 0)
-                        else -> false
-                    }
-                    else false
-
-                } else if (isSlideControl) {
-                    slideOffset = -(scrollFirstTapX - e2.x).toInt() * 100L
-                    isDrag = true
-                    isSlide = true
-
-                    changeProgressSlide(player.currentPosition, player.duration, slideOffset)
-                    Log.i("DEVE", " $slideOffset")
-                    scrollFirstTapX = e1.x.toInt()
-
-                    return true
-                } else false
-            }
-
-            override fun onScale(detector: ScaleGestureDetector?): Boolean {
-                scaleFactor *= scaleDetector.scaleFactor
-
-                scaleFactor = Math.max(0.1f, Math.min(scaleFactor, 1.0f))
-
-                if (scaleFactor > 0.5f) playerView.resizeMode = if (isZoomProportional) AspectRatioFrameLayout.RESIZE_MODE_ZOOM else AspectRatioFrameLayout.RESIZE_MODE_FILL
-                else playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-
-                return true
-            }
-
-            override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean = true
-            override fun onScaleEnd(detector: ScaleGestureDetector?) = Unit
-
-            private fun onScrollEnd() {
-                paramChangesView.removeCallbacks(delayedParamChangesHide)
-                paramChangesView.postDelayed(delayedParamChangesHide, UNLOCK_HIDE_DELAY)
-
-                if (isSlide) {
-                    seek(slideOffset)
-                    isSlide = false
-                    slideOffset = 0L
-                    scrollFirstTapX = 0
-                }
-            }
-
-            private fun leftAreaScroll(increasing: Boolean): Boolean {
-                if (isVolumeAndBrightnessInverted) changeBrightness(if (increasing) stepBrightness else -stepBrightness)
-                else changeVolume(if (increasing) stepVolume else -stepVolume)
-                return true
-            }
-
-            private fun rightAreaScroll(increasing: Boolean): Boolean {
-                if (isVolumeAndBrightnessInverted) changeVolume(if (increasing) stepVolume else -stepVolume)
-                else changeBrightness(if (increasing) stepBrightness else -stepBrightness)
-                return true
-            }
-        }
     }
-
-    private val isAutoRotationEnabled: Boolean
-        get() = android.provider.Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
 
     private fun toMinutesAndSecond(value: Long): String? {
         if (value.absoluteValue !in 0..Int.MAX_VALUE) return null
 
         return Duration.millis(Math.abs(value)).toMinutesAndSeconds()
     }
-
-    private val hasPip: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-
 }
