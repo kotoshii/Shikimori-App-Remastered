@@ -15,16 +15,9 @@ class RateViewModelConverterImpl @Inject constructor(
         private val titleText: TitleTextConverter
 ) : RateViewModelConverter {
 
-    override fun apply(t: List<Any>, pinned: List<PinnedRate>): List<Any> =
-            t.asSequence()
-                    .map {
-                        if (it is Rate) convertRate(it, pinned)
-                        else it
-                    }.sortedBy {
-                        if (it is RateViewModel) !it.isPinned
-                        else false
-                    }
-                    .toMutableList()
+    override fun apply(rates: List<Rate>, pinned: List<PinnedRate>): List<RateViewModel> =
+            rates.map { convertRate(it, pinned) }
+                    .sortedBy { !it.isPinned }
 
     private fun convertRate(it: Rate, pinned: List<PinnedRate>): RateViewModel {
         val type = if (it.manga == null) Type.ANIME else Type.MANGA

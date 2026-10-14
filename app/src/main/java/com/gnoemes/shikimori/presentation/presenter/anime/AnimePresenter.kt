@@ -67,13 +67,8 @@ open class AnimePresenter @Inject constructor(
     override fun onWatchOnline() {
         val anime = details ?: return
 
-        val data = SeriesNavigationData(id,
-                anime.image,
-                title,
-                anime.userRate?.id,
-                anime.userRate?.episodes ?: 0,
-                if (anime.status == Status.RELEASED) anime.episodes else anime.episodesAired,
-                null)
+        val data = SeriesNavigationData.of(id, anime.image, title, anime.status, anime.episodes, anime.episodesAired,
+                anime.userRate?.id, anime.userRate?.episodes ?: 0, null)
         router.navigateTo(Screens.SERIES, data)
     }
 
