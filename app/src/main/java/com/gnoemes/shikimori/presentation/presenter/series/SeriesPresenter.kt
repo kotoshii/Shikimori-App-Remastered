@@ -67,10 +67,9 @@ class SeriesPresenter @Inject constructor(
         viewState.setTitle(navigationData.name)
         viewState.changeSource(isAlternative)
 
-        if (episode != null) {
-            viewState.setEpisodeName(episode!!)
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-        } else viewState.showFab(false)
+        val opening = episode
+        if (opening != null) showEpisodeName(opening)
+        else viewState.showFab(false)
 
         if (navigationData.episodesAired == 1) {
             viewState.hideEpisodeName()
@@ -101,11 +100,26 @@ class SeriesPresenter @Inject constructor(
                     .subscribe(this::setData, this::processErrors)
                     .addToDisposables()
 
-    private fun loadEpisodes() = interactor.getEpisodes(navigationData.animeId, isAlternative)
+    //with no episode asked for: the first one not watched, else the last watched. Back from watching,
+    //the last watched one
+    private fun loadEpisodes() = loadEpisodeList { items ->
+        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
+        isWatchSession = false
+        showEpisode(items, episode ?: 1)
+    }
+
+    //the next episode when the source has it, else the current one again. When the source has
+    //neither, the next one, as having no translations yet
+    fun onNextEpisode() = loadEpisodeList { items ->
+        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
+        showEpisode(items, (episode ?: 0) + 1)
+    }
+
+    private fun loadEpisodeList(onLoaded: (List<Episode>) -> Unit) = interactor.getEpisodes(navigationData.animeId, isAlternative)
             .map { it.take(navigationData.episodesAired) }
             .doOnSubscribe { viewState.showEpisodeLoading(true) }
             .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe(this::openPriorityEpisode, this::processErrors)
+            .subscribe({ onLoaded(it) }, this::processErrors)
             .addToDisposables()
 
     private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
@@ -122,31 +136,41 @@ class SeriesPresenter @Inject constructor(
 
     fun onRefresh() = loadWithEpisode()
 
-    private fun openPriorityEpisode(items: List<Episode>) {
-        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
-        episodeId = items.firstOrNull { it.index == episode }?.id
-        isWatchSession = false
-        if (episode != null && episodeId != null) {
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.setEpisodeName(episode!!)
-            loadData(episodeId!!)
-            viewState.showFab(true)
-        } else if (navigationData.episodesAired > 0) {
-            if (episode == null) episode = 1
-            viewState.setEpisodeName(episode!!)
-            viewState.onHideLoading()
-            viewState.hideEmptyView()
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.showEmptyAuthorsView(true, isAlternative)
-            viewState.showContent(false)
-            viewState.showFab(true)
-        } else {
-            viewState.onHideLoading()
-            viewState.showEmptyView()
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-            viewState.showFab(false)
+    /**
+     * The chosen [episode]: its translations when the source has it. If not, while anything is out,
+     * episode [notFound] as having no translations yet; else that nothing is out.
+     */
+    private fun showEpisode(items: List<Episode>, notFound: Int) {
+        val id = items.firstOrNull { it.index == episode }?.id
+        episodeId = id
+        when {
+            id != null -> {
+                showEpisodeName(episode!!)
+                loadData(id)
+                viewState.showFab(true)
+            }
+            navigationData.episodesAired > 0 -> {
+                episode = notFound
+                showEpisodeName(notFound)
+                viewState.onHideLoading()
+                viewState.hideEmptyView()
+                viewState.showEmptyAuthorsView(true, isAlternative)
+                viewState.showContent(false)
+                viewState.showFab(true)
+            }
+            else -> {
+                viewState.onHideLoading()
+                viewState.showEmptyView()
+                viewState.hideEpisodeName()
+                viewState.showNextEpisode(false)
+                viewState.showFab(false)
+            }
         }
+    }
+
+    private fun showEpisodeName(episode: Int) {
+        viewState.setEpisodeName(episode)
+        viewState.showNextEpisode(episode != navigationData.episodesAired)
     }
 
     private fun setData(data: List<TranslationViewModel>) {
@@ -168,41 +192,6 @@ class SeriesPresenter @Inject constructor(
         } else viewState.showData(it)
     }
 
-    fun onNextEpisode() = interactor.getEpisodes(navigationData.animeId, isAlternative)
-            .map { it.take(navigationData.episodesAired) }
-            .doOnSubscribe { viewState.showEpisodeLoading(true) }
-            .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe(this::loadNextEpisode, this::processErrors)
-            .addToDisposables()
-
-
-    private fun loadNextEpisode(items: List<Episode>) {
-        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
-        episodeId = items.firstOrNull { it.index == episode }?.id
-        if (episode != null && episodeId != null) {
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.setEpisodeName(episode!!)
-            loadData(episodeId!!)
-            viewState.showFab(true)
-        } else if (navigationData.episodesAired > 0) {
-            if (episode == null) episode = 0
-            episode = episode?.plus(1)
-            viewState.setEpisodeName(episode!!)
-            viewState.showNextEpisode(episode != navigationData.episodesAired)
-            viewState.onHideLoading()
-            viewState.hideEmptyView()
-            viewState.showEmptyAuthorsView(true, isAlternative)
-            viewState.showContent(false)
-            viewState.showFab(true)
-        } else {
-            viewState.onHideLoading()
-            viewState.showEmptyView()
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-            viewState.showFab(false)
-        }
-    }
-
     fun onSearchClicked() {
         viewState.showSearchView()
     }
@@ -218,8 +207,7 @@ class SeriesPresenter @Inject constructor(
         this.episodeId = episodeId
         this.episode = episode
 
-        viewState.setEpisodeName(episode)
-        viewState.showNextEpisode(episode != navigationData.episodesAired)
+        showEpisodeName(episode)
 
         if (isAlternative != alternative) {
             viewState.changeSource(alternative)
