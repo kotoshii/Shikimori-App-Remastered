@@ -7,7 +7,7 @@ import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.friends.converter.FriendsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.friends.FriendsView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import javax.inject.Inject
 
 @InjectViewState

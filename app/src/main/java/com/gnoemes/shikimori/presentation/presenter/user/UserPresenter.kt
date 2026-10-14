@@ -19,7 +19,7 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.user.converter.UserDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.user.UserView
 import com.gnoemes.shikimori.utils.appendHostIfNeed
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.net.URLEncoder

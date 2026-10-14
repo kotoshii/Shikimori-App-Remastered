@@ -8,8 +8,6 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.RateButtonListItem
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.presentation.view.base.fragment.RateButtonListView
-import com.gnoemes.shikimori.utils.appendLightLoadingLogic
-import com.gnoemes.shikimori.utils.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single
 

@@ -18,7 +18,7 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.common.provider.ShareResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.translations.converter.TranslationsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Observable
 import io.reactivex.Single

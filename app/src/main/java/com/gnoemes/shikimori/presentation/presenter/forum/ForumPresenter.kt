@@ -8,7 +8,7 @@ import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.view.forum.ForumView
 import com.gnoemes.shikimori.presentation.presenter.forum.converter.ForumConverter
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import javax.inject.Inject
 
 @InjectViewState

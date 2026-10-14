@@ -12,7 +12,7 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerView
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 

@@ -11,7 +11,7 @@ import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.SearchViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.SearchView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.Single
 import javax.inject.Inject
 

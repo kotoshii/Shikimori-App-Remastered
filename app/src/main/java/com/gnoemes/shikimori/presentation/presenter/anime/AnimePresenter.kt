@@ -17,7 +17,7 @@ import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsCont
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.details.BaseDetailsPresenter
 import com.gnoemes.shikimori.presentation.view.anime.AnimeView
-import com.gnoemes.shikimori.utils.appendLightLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLightLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single
 import javax.inject.Inject

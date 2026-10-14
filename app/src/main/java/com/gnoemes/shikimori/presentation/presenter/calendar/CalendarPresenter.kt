@@ -7,7 +7,7 @@ import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.calendar.converter.CalendarViewModelConverter
 import com.gnoemes.shikimori.presentation.view.calendar.CalendarView
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.applySingleSchedulers
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single

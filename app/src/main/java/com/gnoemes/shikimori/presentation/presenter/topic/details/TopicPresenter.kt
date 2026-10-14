@@ -13,7 +13,7 @@ import com.gnoemes.shikimori.presentation.presenter.topic.converter.TopicViewMod
 import com.gnoemes.shikimori.presentation.presenter.topic.provider.TopicResourceProvider
 import com.gnoemes.shikimori.presentation.view.topic.details.TopicView
 import com.gnoemes.shikimori.presentation.presenter.topic.converter.CommentViewModelConverter
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

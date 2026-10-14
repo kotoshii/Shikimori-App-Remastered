@@ -21,8 +21,8 @@ import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsView
-import com.gnoemes.shikimori.utils.appendLightLoadingLogic
-import com.gnoemes.shikimori.utils.appendLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLightLoadingLogic
+import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.applySingleSchedulers
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.firstUpperCase
