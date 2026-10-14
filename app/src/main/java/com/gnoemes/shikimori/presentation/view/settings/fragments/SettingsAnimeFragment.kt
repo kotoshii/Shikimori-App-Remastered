@@ -36,7 +36,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
 
         preference(R.string.settings_anime_translation_type_key)?.apply {
             summary = prefs().getString(SettingsExtras.TRANSLATION_TYPE, notSelected)
-                    ?.let { type -> TranslationType.values().find { it.isEqualType(type) }?.localizedType }
+                    ?.let { type -> TranslationType.values().find { it.isEqualType(type) }?.labelRes?.let { getString(it) } }
                     ?: notSelected
             onPreferenceClickListener = translationClickListener
         }

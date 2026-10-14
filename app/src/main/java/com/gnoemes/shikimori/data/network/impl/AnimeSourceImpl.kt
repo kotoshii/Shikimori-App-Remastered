@@ -106,9 +106,8 @@ class AnimeSourceImpl @Inject constructor(
 
 
     private fun getShikicinemaType(type: TranslationType) = when (type) {
-        TranslationType.VOICE_RU -> "озвучка"
-        TranslationType.SUB_RU -> "субтитры"
-        else -> "оригинал"
+        TranslationType.VOICE_RU, TranslationType.SUB_RU -> type.shikicinemaKind
+        else -> TranslationType.RAW.shikicinemaKind
     }
 }
 

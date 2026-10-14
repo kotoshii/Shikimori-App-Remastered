@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.series.domain.*
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
+import com.gnoemes.shikimori.utils.labelRes
 import java.net.URLEncoder
 import javax.inject.Inject
 
@@ -83,8 +84,8 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             track,
             video,
             video.author,
-            //"не выбрано" is no kind at all
-            video.translationType?.takeIf { it != TranslationType.ALL }?.localizedType.orEmpty(),
+            //in lower case, as it sits inside the line: «… - 07 (720p, озвучка, kodik.cc)»
+            video.translationType?.labelRes?.let { context.getString(it).toLowerCase() }.orEmpty(),
             track.displayQuality.orEmpty(),
             //domain-shaped for every hosting ("vk.com", "cda.pl")
             video.hosting.synonymType
