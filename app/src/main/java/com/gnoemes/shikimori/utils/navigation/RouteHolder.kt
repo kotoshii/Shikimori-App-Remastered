@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.presenter.common
+package com.gnoemes.shikimori.utils.navigation
 
 import android.content.Context
 import android.content.Intent

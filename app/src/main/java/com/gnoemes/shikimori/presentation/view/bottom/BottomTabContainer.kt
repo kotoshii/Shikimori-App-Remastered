@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.di.base.modules.BaseFragmentModule
-import com.gnoemes.shikimori.entity.main.LocalCiceroneHolder
-import com.gnoemes.shikimori.presentation.presenter.common.RouteHolder
+import com.gnoemes.shikimori.utils.navigation.LocalCiceroneHolder
+import com.gnoemes.shikimori.utils.navigation.RouteHolder
 import com.gnoemes.shikimori.presentation.view.base.fragment.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import dagger.android.AndroidInjector

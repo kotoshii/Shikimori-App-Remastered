@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.entity.main
+package com.gnoemes.shikimori.utils.navigation
 
 import ru.terrakok.cicerone.Cicerone
 import ru.terrakok.cicerone.Router

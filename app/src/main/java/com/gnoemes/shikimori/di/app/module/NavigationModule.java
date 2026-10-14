@@ -1,6 +1,6 @@
 package com.gnoemes.shikimori.di.app.module;
 
-import com.gnoemes.shikimori.entity.main.LocalCiceroneHolder;
+import com.gnoemes.shikimori.utils.navigation.LocalCiceroneHolder;
 
 import javax.inject.Singleton;
 
