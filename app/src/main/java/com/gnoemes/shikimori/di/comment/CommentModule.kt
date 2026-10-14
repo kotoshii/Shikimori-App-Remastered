@@ -6,8 +6,8 @@ import com.gnoemes.shikimori.data.repository.comments.converter.CommentResponseC
 import com.gnoemes.shikimori.data.repository.comments.converter.CommentResponseConverterImpl
 import com.gnoemes.shikimori.domain.comment.CommentInteractor
 import com.gnoemes.shikimori.domain.comment.CommentInteractorImpl
-import com.gnoemes.shikimori.presentation.view.topic.details.converter.CommentViewModelConverter
-import com.gnoemes.shikimori.presentation.view.topic.details.converter.CommentViewModelConverterImpl
+import com.gnoemes.shikimori.presentation.presenter.topic.converter.CommentViewModelConverter
+import com.gnoemes.shikimori.presentation.presenter.topic.converter.CommentViewModelConverterImpl
 import dagger.Binds
 import dagger.Module
 

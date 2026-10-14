@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.view.topic.details.converter
+package com.gnoemes.shikimori.presentation.presenter.topic.converter
 
 import android.content.Context
 import com.gnoemes.shikimori.R

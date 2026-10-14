@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.view.topic.details.converter
+package com.gnoemes.shikimori.presentation.presenter.topic.converter
 
 import com.gnoemes.shikimori.entity.comment.domain.Comment
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
