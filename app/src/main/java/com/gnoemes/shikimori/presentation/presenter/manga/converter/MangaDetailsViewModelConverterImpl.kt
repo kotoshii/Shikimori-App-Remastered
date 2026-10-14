@@ -31,7 +31,6 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
         )
     }
 
-    override val headType: Type = Type.MANGA
 
     override val statusLabels = listOf(
             "Reading|Читаю" to R.string.rate_reading,

@@ -24,8 +24,6 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
 
     //TODO process exceptions
     protected open fun processErrors(throwable: Throwable) {
-//        val errorUtils = ErrorUtils()
-//        errorUtils.processErrors(throwable, router, viewState)
         when ((throwable as? BaseException)?.tag) {
             NetworkException.TAG -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage(throwable.localizedMessage.orEmpty()) }
             ServiceCodeException.TAG -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage("HTTP error ${(throwable as ServiceCodeException).serviceCode}") }

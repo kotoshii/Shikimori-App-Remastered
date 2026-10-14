@@ -33,10 +33,6 @@ class NetworkErrorView @JvmOverloads constructor(context: Context,
 
     }
 
-    fun setText(string: String) {
-        descriptionTextView.text = string
-    }
-
     fun setText(@StringRes stringRes: Int) {
         descriptionTextView.setText(stringRes)
     }

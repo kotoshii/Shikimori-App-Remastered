@@ -34,7 +34,6 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         )
     }
 
-    override val headType: Type = Type.ANIME
 
     override val statusLabels = listOf(
             "Watching|Смотрю" to R.string.rate_watching,

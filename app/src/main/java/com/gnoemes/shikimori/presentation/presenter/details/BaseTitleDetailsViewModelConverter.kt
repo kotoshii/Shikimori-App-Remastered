@@ -32,14 +32,10 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
         private val textProcessor: BBCodesTextProcessor
 ) : TitleDetailsViewModelConverter<D> {
 
-    /** The type the head shows. */
-    protected abstract val headType: Type
-
     /** The statistics' status rows, in order: the api's names (english|russian) and the label. */
     protected abstract val statusLabels: List<Pair<String, Int>>
 
     override fun convertHead(it: D, isGuest: Boolean): DetailsHeadItem = DetailsHeadItem(
-            headType,
             settings.titleName(it.name, it.nameRu),
             it.image,
             it.score,

@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
 import com.gnoemes.shikimori.utils.labelRes
-import java.net.URLEncoder
 import javax.inject.Inject
 
 class TranslationsViewModelConverterImpl @Inject constructor(
@@ -70,7 +69,6 @@ class TranslationsViewModelConverterImpl @Inject constructor(
 
         return TranslationViewModel(
                 translations.first().videoId,
-                translations.first().type,
                 author.ifEmpty { unknownAuthor },
                 description,
                 videos,
@@ -91,22 +89,14 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             video.hosting.synonymType
     )
 
-    private fun convertVideo(t: Translation): TranslationVideo {
-
-        val simpleAuthor = URLEncoder.encode(t.author.replace(Regex("\\(.+\\)"), "").trim(), "utf-8")
-
-        return TranslationVideo(
-                t.videoId,
-                t.animeId,
-                t.episodeId,
-                //TODO multi language
-                "russian",
-                t.author,
-                simpleAuthor,
-                t.type,
-                t.hosting,
-                t.webPlayerUrl
-        )
-    }
+    private fun convertVideo(t: Translation): TranslationVideo = TranslationVideo(
+            t.videoId,
+            t.animeId,
+            t.episodeId,
+            t.author,
+            t.type,
+            t.hosting,
+            t.webPlayerUrl
+    )
 
 }

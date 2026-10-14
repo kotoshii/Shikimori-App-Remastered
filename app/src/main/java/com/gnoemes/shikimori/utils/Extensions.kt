@@ -116,8 +116,6 @@ fun String.toUri() = Uri.parse(this)
 
 fun Boolean.toInt(): Int = if (this) 1 else 0
 
-fun Int.toBoolean(): Boolean? = if (this > 1) null else this == 1
-
 fun Int.unknownIfZero(): String = if (this == 0) "xxx" else toString()
 
 fun Context.dimen(@DimenRes dimen: Int) = this.resources.getDimension(dimen)

@@ -34,7 +34,6 @@ class CharacterDetailsViewModelConverterImpl @Inject constructor(
     }
 
     private fun convertHeadItem(t: CharacterDetails): DetailsHeadSimpleItem = DetailsHeadSimpleItem(
-            Type.CHARACTER,
             t.image,
             context.getString(R.string.on_ru),
             t.nameRu,

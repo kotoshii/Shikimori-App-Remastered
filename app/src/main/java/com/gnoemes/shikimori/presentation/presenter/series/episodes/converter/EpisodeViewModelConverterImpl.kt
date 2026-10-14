@@ -18,7 +18,6 @@ class EpisodeViewModelConverterImpl @Inject constructor() : EpisodeViewModelConv
         return EpisodeViewModel(
                 it.id,
                 it.index,
-                it.animeId,
                 it.isWatched,
                 it.index == currentEpisode,
                 userStatus == UserStatus.GUEST

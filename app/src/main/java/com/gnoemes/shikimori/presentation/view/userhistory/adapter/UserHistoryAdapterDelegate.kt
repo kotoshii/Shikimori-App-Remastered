@@ -13,7 +13,6 @@ import com.bumptech.glide.request.transition.Transition
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.utils.images.GlideApp
-import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
@@ -21,7 +20,6 @@ import kotlinx.android.synthetic.main.item_user_history.view.*
 
 
 class UserHistoryAdapterDelegate(
-        private val imageLoader: ImageLoader,
         private val callback: (Type, Long) -> Unit
 ) : AbsListItemAdapterDelegate<UserHistoryViewModel, Any, UserHistoryAdapterDelegate.ViewHolder>() {
 

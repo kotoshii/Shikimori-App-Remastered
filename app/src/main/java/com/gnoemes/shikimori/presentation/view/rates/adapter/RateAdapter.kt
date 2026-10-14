@@ -9,7 +9,6 @@ import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
 import com.gnoemes.shikimori.entity.rates.presentation.RateSortViewModel
 import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
 import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
-import com.gnoemes.shikimori.presentation.view.common.adapter.ProgressAdapterDelegate
 import com.gnoemes.shikimori.presentation.view.series.episodes.adapter.SeriesPlaceholderAdapterDelegate
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.ItemTouchHelperAdapter
@@ -24,10 +23,8 @@ class RateAdapter(
 ) : BasePaginationAdapter(), ItemTouchHelperAdapter {
 
     init {
-        items = mutableListOf()
         delegatesManager.apply {
             addDelegate(RateAdapterDelegate(imageLoader, navigationCallback, callback, listActionCallback))
-            addDelegate(ProgressAdapterDelegate())
             addDelegate(RateSortAdapterDelegate(sortCallback))
             addDelegate(SeriesPlaceholderAdapterDelegate())
         }

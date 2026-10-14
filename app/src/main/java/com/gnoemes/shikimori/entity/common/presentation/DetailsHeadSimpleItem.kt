@@ -1,10 +1,8 @@
 package com.gnoemes.shikimori.entity.common.presentation
 
 import com.gnoemes.shikimori.entity.common.domain.Image
-import com.gnoemes.shikimori.entity.common.domain.Type
 
 data class DetailsHeadSimpleItem(
-        val detailsType : Type,
         val image : Image,
         val firstLabel : String,
         val firstName : String?,

@@ -16,7 +16,6 @@ import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
-import com.gnoemes.shikimori.presentation.presenter.common.provider.RatingResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.details.BaseDetailsPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.common.adapter.ActionAdapter
@@ -40,9 +39,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
 
     @Inject
     lateinit var imageLoader: ImageLoader
-
-    @Inject
-    lateinit var resourceProvider: RatingResourceProvider
 
     private var detailsName: String? = null
 

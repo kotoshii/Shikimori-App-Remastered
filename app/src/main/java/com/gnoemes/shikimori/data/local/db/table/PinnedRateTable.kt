@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.data.local.db.table
 
-import com.pushtorefresh.storio3.sqlite.queries.Query
 
 object PinnedRateTable {
     const val TABLE = "pinned"
@@ -19,10 +18,4 @@ object PinnedRateTable {
             "$COLUMN_STATUS TEXT NOT NULL, " +
             "$COLUMN_ORDER INTEGER, " +
             "PRIMARY KEY ($COLUMN_ID , $COLUMN_TYPE, $COLUMN_STATUS));"
-
-    const val DROP_QUERY = "DROP TABLE IF EXISTS $TABLE"
-
-    val ALL_QUERY: Query = Query.builder()
-            .table(TABLE)
-            .build()
 }
