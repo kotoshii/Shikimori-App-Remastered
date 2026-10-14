@@ -32,8 +32,8 @@ class PlayerSettingsSourceImpl @Inject constructor(
         get() = prefs.getBoolean(SettingsExtras.PLAYER_IS_AUTO_PIP, true)
 
     override val forwardRewindOffset: Long
-        get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET, 10000)
+        get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET, SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_DEFAULT)
 
     override val forwardRewindOffsetBig: Long
-        get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, 90000)
+        get() = prefs.getLong(SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG, SettingsExtras.PLAYER_FORWARD_REWIND_OFFSET_BIG_DEFAULT)
 }
