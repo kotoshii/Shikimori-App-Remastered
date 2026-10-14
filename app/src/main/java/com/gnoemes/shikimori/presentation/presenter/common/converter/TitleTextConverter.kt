@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.presenter.common.converter
 
 import android.content.Context
 import android.text.SpannableStringBuilder
+import androidx.annotation.StringRes
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
@@ -12,6 +13,16 @@ import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.faintTextColor
 import javax.inject.Inject
+
+/** «Анонс», «Онгоинг», «Вышло»: a title's status; «Нет данных» when it has none. */
+@get:StringRes
+val Status.labelRes: Int
+    get() = when (this) {
+        Status.ANONS -> R.string.status_anons
+        Status.ONGOING -> R.string.status_ongoing
+        Status.RELEASED -> R.string.status_released
+        Status.NONE -> R.string.error_no_data
+    }
 
 /**
  * A title's type label and the line under its name on the cards of «Похожее», «Хронология» and the

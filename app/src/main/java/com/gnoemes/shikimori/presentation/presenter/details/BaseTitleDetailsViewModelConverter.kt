@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.user.domain.Statistic
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.labelRes
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
@@ -93,7 +94,7 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
         if (status != Status.ANONS && status != Status.ONGOING) return null
 
         val color = if (status == Status.ONGOING) R.color.status_ongoing else R.color.status_anons
-        val description = convertStatus(status).colorSpan(context.color(color))
+        val description = context.getString(status.labelRes).colorSpan(context.color(color))
         return InfoItem(description, context.getString(R.string.common_status))
     }
 
@@ -114,13 +115,6 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
                         InfoClickableItem(person.id, person.linkedType, settings.titleName(person.name, person.nameRu), person.image, context.getString(roles.getValue(role)))
                     }
                     .toList()
-
-    private fun convertStatus(status: Status): String = when (status) {
-        Status.ANONS -> context.getString(R.string.status_anons)
-        Status.ONGOING -> context.getString(R.string.status_ongoing)
-        Status.RELEASED -> context.getString(R.string.status_released)
-        else -> context.getString(R.string.error_no_data)
-    }
 
     protected fun DateTime.toTitleDate() = this.toString("dd ${dateTimeConverter.convertShortMonth(this)} yyyy")
 }
