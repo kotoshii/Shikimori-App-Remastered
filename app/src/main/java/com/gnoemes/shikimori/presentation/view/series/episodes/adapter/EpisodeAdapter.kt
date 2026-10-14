@@ -1,68 +1,29 @@
 package com.gnoemes.shikimori.presentation.view.series.episodes.adapter
 
-import androidx.recyclerview.widget.DiffUtil
 import com.gnoemes.shikimori.entity.series.presentation.EpisodePlaceholderItem
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
-import com.hannesdorfmann.adapterdelegates4.ListDelegationAdapter
+import com.gnoemes.shikimori.presentation.view.common.adapter.BaseAdapter
 
 class EpisodeAdapter(
         callback: (EpisodeViewModel) -> Unit,
         longPressListener: (EpisodeViewModel) -> Unit
-) : ListDelegationAdapter<MutableList<Any>>() {
+) : BaseAdapter<Any>() {
 
     init {
-        items = mutableListOf()
-
         delegatesManager.addDelegate(EpisodeAdapterDelegate(callback, longPressListener))
         delegatesManager.addDelegate(EpisodePlaceholderAdapterDelegate())
         delegatesManager.addDelegate(SeriesPlaceholderAdapterDelegate())
     }
 
-    override fun getItemId(position: Int): Long {
-        return items[position].hashCode().toLong()
+    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
+        oldItem is EpisodeViewModel && newItem is EpisodeViewModel -> oldItem.index == newItem.index
+        oldItem is EpisodePlaceholderItem && newItem is EpisodePlaceholderItem -> oldItem.index == newItem.index
+        else -> false
     }
 
-    fun bindItems(newItems: List<Any>) {
-        val oldData = items.toList()
-
-        items.clear()
-        items.addAll(newItems)
-
-        DiffUtil
-                .calculateDiff(DiffCallback(items, oldData), false)
-                .dispatchUpdatesTo(this)
+    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean = when {
+        oldItem is EpisodeViewModel && newItem is EpisodeViewModel -> oldItem == newItem
+        oldItem is EpisodePlaceholderItem && newItem is EpisodePlaceholderItem -> oldItem == newItem
+        else -> false
     }
-
-    private inner class DiffCallback(
-            private val newItems: List<Any>,
-            private val oldItems: List<Any>
-    ) : DiffUtil.Callback() {
-
-        override fun getOldListSize() = oldItems.size
-        override fun getNewListSize() = newItems.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldItems[oldItemPosition]
-            val newItem = newItems[newItemPosition]
-
-            return when {
-                oldItem is EpisodeViewModel && newItem is EpisodeViewModel -> oldItem.index == newItem.index
-                oldItem is EpisodePlaceholderItem && newItem is EpisodePlaceholderItem -> oldItem.index == newItem.index
-                else -> false
-            }
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            val oldItem = oldItems[oldItemPosition]
-            val newItem = newItems[newItemPosition]
-
-            return when {
-                oldItem is EpisodeViewModel && newItem is EpisodeViewModel -> oldItem == newItem
-                oldItem is EpisodePlaceholderItem && newItem is EpisodePlaceholderItem -> oldItem == newItem
-                else -> false
-            }
-        }
-    }
-
-
 }
