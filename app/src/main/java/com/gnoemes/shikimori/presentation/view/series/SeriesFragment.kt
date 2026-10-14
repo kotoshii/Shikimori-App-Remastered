@@ -23,8 +23,8 @@ import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
-import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadDialog
-import com.gnoemes.shikimori.presentation.presenter.series.download.SeriesDownloadHostingDialog
+import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadDialog
+import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadHostingDialog
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment

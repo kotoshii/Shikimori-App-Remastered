@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.presenter.series.download
+package com.gnoemes.shikimori.presentation.view.series.download
 
 import android.view.View
 import android.view.ViewGroup
