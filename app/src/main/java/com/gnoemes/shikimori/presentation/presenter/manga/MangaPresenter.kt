@@ -28,10 +28,15 @@ class MangaPresenter @Inject constructor(
         contentConverter: DetailsContentViewModelConverter
 ) : BaseDetailsPresenter<MangaView, MangaDetails>(ratesInteractor, userInteractor, resourceProvider, contentConverter, settingsSource) {
 
-    //MANGA or RANOBE, set by the screen from its navigation data
+    //MANGA or RANOBE: first what the screen was opened with, then what the loaded title says
     override var type: Type = Type.MANGA
 
+    //the title decides, not the screen that opened the page - «Мой список» opens every entry of the
+    //manga tab as a manga. /api/mangas answers for a ranobe too (checked 2026-10-14), so a page
+    //opened as a manga still loads, and from here on its genre tap, similar and chronology are
+    //the ranobe's
     override fun fetchDetails(): Single<MangaDetails> = mangaInteractor.getDetails(id, type)
+            .doOnSuccess { type = if (it.type.isRanobe) Type.RANOBE else Type.MANGA }
 
     override val characterFactory: (id: Long) -> Single<Roles>
         get() = { mangaInteractor.getRoles(it, type) }

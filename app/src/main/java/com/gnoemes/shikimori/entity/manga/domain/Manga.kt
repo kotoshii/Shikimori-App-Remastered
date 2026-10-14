@@ -19,7 +19,7 @@ data class Manga(
         val chapters: Int,
         val dateAired: DateTime?,
         val dateReleased: DateTime?,
-        val isRanobe: Boolean = type == MangaType.NOVEL || type == MangaType.LIGHT_NOVEL
+        val isRanobe: Boolean = type.isRanobe
         //a novel is a ranobe wherever it is listed - saying MANGA here opened ranobe in manga mode
         //from search, chronology, similar and related alike, which then searched manga on a genre tap
 ) : LinkedContent(id, if (isRanobe) Type.RANOBE else Type.MANGA, image.original, name)
