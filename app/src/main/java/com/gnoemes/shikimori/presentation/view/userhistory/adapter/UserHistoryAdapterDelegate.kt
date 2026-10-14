@@ -12,7 +12,6 @@ import com.bumptech.glide.request.target.BitmapImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
-import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.images.GlideApp
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
@@ -58,7 +57,7 @@ class UserHistoryAdapterDelegate(
                             override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                 super.onResourceReady(resource, transition)
 
-                                val defaultColor = Utils.getDominantColor(resource)
+                                val defaultColor = dominantColor(resource)
 
                                 Palette.Builder(resource).generate {
                                     val dominantColor = it?.getLightVibrantColor(defaultColor)!!
@@ -75,4 +74,12 @@ class UserHistoryAdapterDelegate(
         }
 
     }
+}
+
+//the colour of the whole picture, shrunk to one pixel
+private fun dominantColor(bitmap: Bitmap): Int {
+    val pixel = Bitmap.createScaledBitmap(bitmap, 1, 1, true)
+    val color = pixel.getPixel(0, 0)
+    pixel.recycle()
+    return color
 }

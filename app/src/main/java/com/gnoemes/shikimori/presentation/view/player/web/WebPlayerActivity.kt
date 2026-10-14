@@ -18,7 +18,6 @@ import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
-import com.gnoemes.shikimori.utils.Utils
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_web_player.*
@@ -84,7 +83,7 @@ class WebPlayerActivity : BaseThemedActivity() {
             if (!url.isNullOrBlank()) {
                 val token = anime365TokenSource.getToken()
 
-                val useIFrame = Utils.checkNeedIFrame(url)
+                val useIFrame = needsIFrame(url)
 
                 if (url.contains(ANIME_365_REGEX) && !token.isNullOrBlank()) webView.loadUrl("$url?access_token=$token")
                 else if (useIFrame) {
@@ -175,3 +174,6 @@ class WebPlayerActivity : BaseThemedActivity() {
     }
 
 }
+
+//aparat's page breaks inside an iframe; every other hosting's player is wrapped in one
+private fun needsIFrame(url: String): Boolean = !url.contains("aparat")
