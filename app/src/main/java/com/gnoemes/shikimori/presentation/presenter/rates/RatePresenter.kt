@@ -4,13 +4,11 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.local.preference.RateSortSource
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.preference.titleName
-import com.gnoemes.shikimori.domain.app.CancelableTaskInteractor
 import com.gnoemes.shikimori.domain.rates.PinnedRateInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.series.SeriesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.Task
 import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ContentException
 import com.gnoemes.shikimori.entity.auth.AuthType
@@ -48,7 +46,6 @@ class RatePresenter @Inject constructor(
         private val ratesInteractor: RatesInteractor,
         private val seriesInteractor: SeriesInteractor,
         private val sortResourceProvider: SortResourceProvider,
-        private val taskInteractor: CancelableTaskInteractor,
         private val pinInteractor: PinnedRateInteractor,
         private val resourceProvider: CommonResourceProvider,
         private val settingsSource: SettingsSource,
@@ -76,7 +73,7 @@ class RatePresenter @Inject constructor(
     private var query: String? = null
     private var pinnedRates: Int = 0
 
-    private var localRemovedItems = mutableListOf<Long>()
+    private val pendingChanges = PendingRateChanges()
 
     override fun onViewReattached() {
         loadUserOrCategories()
@@ -149,7 +146,6 @@ class RatePresenter @Inject constructor(
             rateStatus = null
             this.type = if (type == Type.ANIME) Type.MANGA else Type.ANIME
             viewState.selectType(type)
-            localRemovedItems.clear()
             loadRateCategories()
         }
     }
@@ -159,7 +155,6 @@ class RatePresenter @Inject constructor(
             this.rateStatus = rateStatus
             viewState.scrollToTop()
             viewState.selectRateStatus(rateStatus)
-            localRemovedItems.clear()
             loadData()
         }
     }
@@ -168,12 +163,14 @@ class RatePresenter @Inject constructor(
         router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(null, if (anime) Type.ANIME else Type.MANGA))
     }
 
-    fun onTaskCanceled(taskId: Int, rateId: Long) {
-        localRemovedItems.remove(rateId)
+    fun onChangeCanceled(rateId: Long) {
+        pendingChanges.cancel(rateId)
+        onRefresh()
+    }
 
-        taskInteractor.cancelTask(taskId)
-                .subscribe(this::onRefresh, this::processErrors)
-                .addToDisposables()
+    override fun onDestroy() {
+        pendingChanges.sendAll()
+        super.onDestroy()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -195,7 +192,8 @@ class RatePresenter @Inject constructor(
     }
 
     override fun showData(show: Boolean, data: List<Rate>) {
-        items = data.toMutableList()
+        //without the entries waiting to be changed or deleted
+        items = data.filterNot { pendingChanges.isWaiting(it.id) }.toMutableList()
         if (show) onSortChanged(sort, isDescendingSort)
         else viewState.showContent(show)
     }
@@ -209,12 +207,6 @@ class RatePresenter @Inject constructor(
 
     private fun localRefresh() {
         onSortChanged(sort)
-    }
-
-    private fun removeFromListAndRefresh(item: Rate) {
-        localRemovedItems.add(item.id)
-        items.remove(item)
-        localRefresh()
     }
 
     fun onQueryChanged(newText: String?) {
@@ -348,39 +340,34 @@ class RatePresenter @Inject constructor(
                 return
             }
 
-            val task = Task {
-                ratesInteractor.changeRateStatus(id, newStatus)
-                        .subscribeAndRefresh(id)
-            }
-            taskInteractor.newTask(task)
-                    .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getChangeRateStatusMessage(item.type, newStatus), item.id) }
-                    .subscribe({ removeFromListAndRefresh(item) }, this::processErrors)
-                    .addToDisposables()
+            waitAndSend(item, ratesInteractor.changeRateStatus(id, newStatus),
+                    rateResourceProvider.getChangeRateStatusMessage(item.type, newStatus))
         }
     }
 
     fun onDeleteRate(id: Long) {
         val item = items.find { (it as? Rate)?.id == id } as? Rate
-        if (item != null) {
-            val task = Task {
-                ratesInteractor.deleteRate(id)
-                        .subscribeAndRefresh(id)
-            }
-            taskInteractor.newTask(task)
-                    .doOnNext { viewState.showRateMessage(it, rateResourceProvider.getDeleteRateMessage(item.type), item.id) }
-                    .subscribe({ removeFromListAndRefresh(item) }, this::processErrors)
-                    .addToDisposables()
-        }
+        if (item != null) waitAndSend(item, ratesInteractor.deleteRate(id), rateResourceProvider.getDeleteRateMessage(item.type))
+    }
+
+    //the entry leaves the list at once; the change is sent after the «Отменить» wait. A change that
+    //fails brings the entry back
+    private fun waitAndSend(item: Rate, change: Completable, message: String) {
+        pendingChanges.add(item.id, change, this::onRateChanged) { onRefresh(); processErrors(it) }
+        viewState.showRateMessage(message, item.id)
+        items.remove(item)
+        localRefresh()
     }
 
     fun onUpdateRate(rate: UserRate) =
             ratesInteractor.updateRate(rate)
-                    .subscribeAndRefresh(rate.id!!)
+                    .subscribe(this::onRateChanged, this::processErrors)
+                    .addToDisposables()
 
-    private fun Completable.subscribeAndRefresh(id: Long) {
-        this.doOnComplete { loadUserOrCategories() }
-                .subscribe(this@RatePresenter::onRefresh, this@RatePresenter::processErrors)
-                .addToDisposables()
+    //the tab counts change too
+    private fun onRateChanged() {
+        loadUserOrCategories()
+        onRefresh()
     }
 
     fun onSortChanged(sort: RateSort) {
@@ -443,12 +430,6 @@ class RatePresenter @Inject constructor(
                 .flatMap { rates ->
                     pinInteractor.getPinnedRates(type, rateStatus ?: RateStatus.WATCHING)
                             .map { converter.apply(rates, it) }
-                }
-                .map { list ->
-                    list.filter {
-                        if (it is RateViewModel) !localRemovedItems.contains(it.id)
-                        else true
-                    }
                 }
                 .subscribe({ setData(it) }, this::processErrors)
                 .addToDisposables()
