@@ -32,6 +32,9 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
     /** The genre and season panels open almost full height; the sheet itself does not. */
     protected open val isTall: Boolean = false
 
+    //each panel brings its own toolbar
+    override val useWrapperLayout = false
+
     /** For the `@ProvidePresenter` of each: the presenter starts with the arguments, on a copy of the filters. */
     @Suppress("UNCHECKED_CAST")
     protected fun P.withArguments(): P = apply {

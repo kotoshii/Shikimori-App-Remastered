@@ -3,9 +3,7 @@ package com.gnoemes.shikimori.presentation.view.common.fragment
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.forEach
 import com.gnoemes.shikimori.R
@@ -59,9 +57,7 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
         peekHeight = context.dp(210)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getDialogLayout(), container, false)
-    }
+    override val useWrapperLayout = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -2,9 +2,7 @@ package com.gnoemes.shikimori.presentation.view.rates.status
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.gnoemes.shikimori.R
@@ -39,9 +37,7 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getDialogLayout(), container, false)
-    }
+    override val useWrapperLayout = false
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
