@@ -2,15 +2,16 @@ package com.gnoemes.shikimori.utils.rx
 
 import com.gnoemes.shikimori.entity.app.domain.exceptions.*
 import com.google.gson.JsonSyntaxException
+import com.google.gson.stream.MalformedJsonException
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import retrofit2.HttpException
-import java.net.ConnectException
+import java.io.EOFException
+import java.io.IOException
 import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.util.*
-import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLException
 
 class ErrorProcessing<T> {
 
@@ -28,24 +29,23 @@ class ErrorProcessing<T> {
 
     @Throws(TitleException::class, NetworkException::class, ServiceCodeException::class, ContentException::class)
     internal fun throwProcessException(throwable: Throwable): Throwable {
-        if (throwable is UnknownHostException) {
-            throw NetworkException("Internet error")
-        }
-
-        if (throwable is ConnectException) {
-            throw NetworkException("Internet error")
-        }
-
-        if (throwable is SSLHandshakeException) {
-            throw NetworkException("SSLHandshake error")
-        }
-
         if (throwable is SocketTimeoutException) {
-            throw NetworkException("Connection timeout")
+            throw NetworkException(NetworkException.Kind.TIMEOUT)
         }
 
-        if (throwable is JsonSyntaxException) {
+        if (throwable is SSLException) {
+            throw NetworkException(NetworkException.Kind.SECURE_CONNECTION)
+        }
+
+        //an answer that came but could not be read: Gson's own errors, an empty body included
+        if (throwable is JsonSyntaxException || throwable is MalformedJsonException || throwable is EOFException) {
             throw TitleException("", "Json syntax error")
+        }
+
+        //no connection, refused, reset, cut off - anything else that kept the answer from arriving.
+        //These used to be only logged, and the screen just never loaded (BUGS #65)
+        if (throwable is IOException) {
+            throw NetworkException(NetworkException.Kind.NO_CONNECTION)
         }
 
         if (throwable is HttpException) {
