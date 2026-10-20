@@ -23,6 +23,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabContainer
 import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
@@ -114,7 +115,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val dialog = appUpdateSource.getAvailableUpdate()?.let { ChangelogDialog.newInstance(it) }
 
         if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
-        else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
+        else startOutsideActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
     override fun tabRootActionOrClearBackStack(screenKey: String) {

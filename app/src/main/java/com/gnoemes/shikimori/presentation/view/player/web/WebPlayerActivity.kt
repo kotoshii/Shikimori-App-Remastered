@@ -18,6 +18,7 @@ import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_web_player.*
@@ -154,7 +155,7 @@ class WebPlayerActivity : BaseThemedActivity() {
                 if (Pattern.compile("https?://vk\\.com/").matcher(url).find()) {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
+                    startOutsideActivity(intent)
                     true
                 } else false
 

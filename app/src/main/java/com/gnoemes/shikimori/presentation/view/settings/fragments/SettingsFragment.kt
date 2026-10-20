@@ -7,6 +7,7 @@ import android.view.View
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.view.common.widget.preferences.AppGroupPreference
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.preference
 import com.gnoemes.shikimori.utils.toUri
 
@@ -30,6 +31,6 @@ class SettingsFragment : BaseSettingsFragment() {
     }
 
     private fun openWeb(url: String) {
-        startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+        requireContext().startOutsideActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
     }
 }

@@ -16,6 +16,7 @@ import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.settings.fragments.SettingsFragment
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.utils.*
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.google.android.material.appbar.AppBarLayout
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -120,7 +121,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         val dialog = appUpdateSource.getAvailableUpdate()?.let { ChangelogDialog.newInstance(it) }
 
         if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
-        else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
+        else startOutsideActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
     override fun showToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = true }

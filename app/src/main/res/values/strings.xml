@@ -48,6 +48,7 @@
     <string name="common_error_secure_connection">Не удалось установить защищённое соединение</string>
     <string name="common_error_timeout">Сервер не ответил вовремя</string>
     <string name="common_error_server">Сервер вернул ошибку %d</string>
+    <string name="common_no_app_to_open">Нет приложения, чтобы открыть это</string>
     <string name="common_error_message_without_pull">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.</string>
     <string name="common_description">Описание</string>
     <string name="common_cancel">Отмена</string>
