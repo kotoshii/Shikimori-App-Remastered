@@ -33,7 +33,9 @@ class UserPresenter @Inject constructor(
 ) : BaseNetworkPresenter<UserView>() {
 
     var id: Long = Constants.NO_ID
-    private var wasGuest = false
+
+    //the «Профиль» tab: it shows whoever is signed in now, looked up again each time, as the app may
+    //have signed out or another account signed in since (BUGS #70)
     private var isMe = false
 
     private var animeExpanded = false
@@ -43,26 +45,36 @@ class UserPresenter @Inject constructor(
 
     override fun initData() {
         if (id == Constants.NO_ID) {
+            isMe = true
             viewState.addSettings()
-            if (isGuest()) {
-                wasGuest = true
-                viewState.showContent(false)
-                viewState.showAuthView(true)
-            } else loadMyUser()
+            showMyProfile(reload = true)
         } else loadData()
     }
 
     override fun onViewReattached() {
-        if (wasGuest) loadMyUser()
+        if (isMe) showMyProfile(reload = false)
     }
 
-    private fun loadMyUser() = interactor.getMyUserId()
-            .doOnSuccess { id = it }
-            .doOnSubscribe { isMe = true }
-            .doOnSuccess { wasGuest = false }
-            .doOnSuccess { viewState.showAuthView(false) }
-            .subscribe({ loadData() }, this::processErrors)
-            .addToDisposables()
+    /** The signed-in user's profile, or «Войти»; [reload] loads the profile even when it is the one shown. */
+    private fun showMyProfile(reload: Boolean) {
+        if (isGuest()) showSignedOut()
+        else interactor.getMyUserId()
+                .subscribe({
+                    if (reload || it != id) {
+                        id = it
+                        viewState.showAuthView(false)
+                        loadData()
+                    }
+                }, this::processErrors)
+                .addToDisposables()
+    }
+
+    private fun showSignedOut() {
+        id = Constants.NO_ID
+        viewState.hideNetworkView()
+        viewState.showContent(false)
+        viewState.showAuthView(true)
+    }
 
     private fun loadData() =
             loadUser()
@@ -192,7 +204,8 @@ class UserPresenter @Inject constructor(
     }
 
     fun onRefresh() {
-        loadData()
+        if (isMe) showMyProfile(reload = true)
+        else loadData()
     }
 
     private fun checkUserStatus(): Boolean {
@@ -203,6 +216,12 @@ class UserPresenter @Inject constructor(
     }
 
     private fun isGuest(): Boolean = interactor.getUserStatus() == UserStatus.GUEST
+
+    //the tab's own profile shows «Войти» after a sign-out, whatever failed
+    override fun processErrors(throwable: Throwable) {
+        if (isMe && isGuest()) showSignedOut()
+        else super.processErrors(throwable)
+    }
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)
     fun onSignUp() = openAuth(AuthType.SIGN_UP)

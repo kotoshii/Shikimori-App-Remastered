@@ -8,8 +8,6 @@ import com.gnoemes.shikimori.domain.rates.PinnedRateInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
-import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
-import com.gnoemes.shikimori.entity.app.domain.exceptions.ContentException
 import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -23,6 +21,7 @@ import com.gnoemes.shikimori.entity.rates.presentation.RateSortViewModel
 import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
+import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.ViewController
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
@@ -53,15 +52,23 @@ class RatePresenter @Inject constructor(
 ) : BasePaginationPresenter<Rate, RateView>(), ViewController<Rate> {
 
     var type: Type = Type.ANIME
-    var userId: Long = Constants.NO_ID
+    /** The user these lists were opened for, from a profile; null for the «Списки» tab, the signed-in user's own. */
+    var ownerId: Long? = null
     var rateStatus: RateStatus? = null
     var priorityStatus: RateStatus? = null
+
+    //whose lists are shown now. The signed-in user's are looked up on every load, never kept: the app
+    //may have signed out, or another account signed in, since (BUGS #70)
+    private var userId: Long = Constants.NO_ID
 
     private val isAnime: Boolean
         get() = type == Type.ANIME
 
     private val isUserExist: Boolean
         get() = userId != Constants.NO_ID
+
+    private val isSignedOutOfMyList: Boolean
+        get() = ownerId == null && userInteractor.getUserStatus() == UserStatus.GUEST
 
 
     private var isDescendingSort: Boolean = false
@@ -101,27 +108,66 @@ class RatePresenter @Inject constructor(
     ///////////////////////////////////////////////////////////////////////////
 
     private fun loadUserOrCategories() {
-        if (isUserExist) loadRateCategories()
-        else loadMyUser()
+        val owner = ownerId
+        when {
+            owner != null -> {
+                userId = owner
+                loadRateCategories()
+            }
+            isSignedOutOfMyList -> showSignedOut()
+            else -> loadMyUser()
+        }
     }
 
-    private fun loadRateCategories() =
-            userInteractor.getDetails(userId)
-                    .map {
-                        if (isAnime) rateCountConverter.countAnimeRates(it)
-                        else rateCountConverter.countMangaRates(it)
-                    }
-                    .subscribe(this::setRateData, this::processErrors)
-                    .addToDisposables()
+    private fun loadRateCategories() {
+        if (isSignedOutOfMyList) {
+            showSignedOut()
+            return
+        }
+        userInteractor.getDetails(userId)
+                .map {
+                    if (isAnime) rateCountConverter.countAnimeRates(it)
+                    else rateCountConverter.countMangaRates(it)
+                }
+                .subscribe(this::setRateData, this::processErrors)
+                .addToDisposables()
+    }
 
-
+    //another account than the one shown starts from its own first tab
     private fun loadMyUser() =
             userInteractor.getMyUserId()
-                    .doOnSuccess { userId = it }
-                    .doOnSuccess { loadRateCategories() }
-                    .subscribe({ }, this::processUserErrors)
+                    .subscribe({
+                        if (it != userId) forgetShownLists()
+                        userId = it
+                        loadRateCategories()
+                    }, this::processErrors)
+                    .addToDisposables()
+
+    //nothing of the lists shown before stays: the user signed out, or another account signed in
+    private fun forgetShownLists() {
+        destroyPaginator()
+        rateStatus = null
+        rates = emptyList()
+    }
+
+    //the «Войти» view of the «Списки» tab
+    private fun showSignedOut() {
+        forgetShownLists()
+        userId = Constants.NO_ID
+        viewState.onHideLoading()
+        viewState.setNavigationItems(emptyList())
+        viewState.hideNetworkView()
+        viewState.showEmptyRatesView(false)
+        viewState.showContent(false)
+        viewState.showNeedAuthView(true)
+    }
 
     private fun setRateData(items: List<RateCategory>) {
+        //signed out while loading: a request that found no readable login went on as a guest (#21)
+        if (isSignedOutOfMyList) {
+            showSignedOut()
+            return
+        }
         viewState.setNavigationItems(items)
         viewState.showNeedAuthView(false)
         if (items.isNotEmpty()) {
@@ -137,13 +183,10 @@ class RatePresenter @Inject constructor(
         }
     }
 
-    private fun processUserErrors(throwable: Throwable) {
-        when ((throwable as? BaseException)?.tag) {
-            ContentException.TAG -> {
-                viewState.showNeedAuthView(true)
-                viewState.showContent(false)
-            }
-        }
+    //the tab's own lists show «Войти» after a sign-out, whatever failed
+    override fun processErrors(throwable: Throwable) {
+        if (isSignedOutOfMyList) showSignedOut()
+        else super.processErrors(throwable)
     }
 
     fun onChangeType() {
@@ -183,6 +226,11 @@ class RatePresenter @Inject constructor(
     // Rate list logic
     ///////////////////////////////////////////////////////////////////////////
 
+    override fun loadData() {
+        if (isSignedOutOfMyList) showSignedOut()
+        else super.loadData()
+    }
+
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<Rate>> {
         return if (rateStatus == null) { page: Int -> Single.error(IllegalStateException()) }
         else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
@@ -198,6 +246,10 @@ class RatePresenter @Inject constructor(
     }
 
     override fun showData(show: Boolean, data: List<Rate>) {
+        if (isSignedOutOfMyList) {
+            showSignedOut()
+            return
+        }
         rates = data.filterNot { pendingChanges.isWaiting(it.id) }
         if (show) showRates()
         else viewState.showContent(show)

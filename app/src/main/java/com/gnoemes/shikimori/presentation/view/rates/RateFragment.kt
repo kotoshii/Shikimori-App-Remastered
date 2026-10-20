@@ -68,7 +68,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         localRouter = (parentFragment as RouterProvider).localRouter
         val data = arguments?.getParcelable<RateNavigationData>(AppExtras.ARGUMENT_RATE_DATA)
         data?.let {
-            userId = it.userId
+            ownerId = it.userId
             type = it.type
             priorityStatus = it.status
         }

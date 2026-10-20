@@ -28,8 +28,9 @@ class RatesInteractorImpl @Inject constructor(
 
     override fun deleteRate(id: Long): Completable = repository.deleteRate(id).applyErrorHandlerAndSchedulers()
 
-    override fun createRate(id: Long, type: Type, rate: UserRate, userId: Long): Completable =
-            repository.createRate(id, type, rate, userId)
+    override fun createRate(id: Long, type: Type, rate: UserRate): Completable =
+            userRepository.getMyUserId()
+                    .flatMapCompletable { repository.createRate(id, type, rate, it) }
                     .applyErrorHandlerAndSchedulers()
 
     override fun createRateWithResult(id: Long, type: Type, status: RateStatus): Single<UserRate> =

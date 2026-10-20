@@ -17,6 +17,7 @@ import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
+import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
@@ -44,7 +45,10 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     var id: Long = Constants.NO_ID
 
     protected var rateId: Long = Constants.NO_ID
-    protected var userId: Long = Constants.NO_ID
+
+    /** Read when needed, never kept: the app may sign the user out while the page is open (BUGS #70). */
+    private val isGuest: Boolean
+        get() = userInteractor.getUserStatus() == UserStatus.GUEST
 
     /** The title's details, once loaded. */
     protected var details: D? = null
@@ -73,11 +77,15 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     }
 
     override fun initData() {
-        loadUser()
         loadData()
     }
 
     override fun onViewReattached() {
+        redrawHead()
+    }
+
+    //the head again: its rate buttons follow the sign-in as it is now
+    private fun redrawHead() {
         loadDetails()
                 .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
                 .addToDisposables()
@@ -86,7 +94,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     private fun loadDetails(): Single<DetailsHeadItem> =
             fetchDetails()
                     .doOnSuccess { details = it; rateId = it.userRate?.id ?: Constants.NO_ID }
-                    .map { detailsConverter.convertHead(it, userId == Constants.NO_ID) }
+                    .map { detailsConverter.convertHead(it, isGuest) }
 
     private fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem> =
             loadDetails()
@@ -135,35 +143,35 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
                     }, this::processErrors)
                     .addToDisposables()
 
-    protected open fun loadUser() =
-            userInteractor.getMyUserId()
-                    .doOnSuccess { userId = it }
-                    .subscribe({}, this::processUserErrors)
-                    .addToDisposables()
-
     //the creators are rows of the info block, so it is drawn again with them
     private fun setCreators(creators: List<Pair<Person, List<String>>>) {
         this.creators.clearAndAddAll(creators)
         withDetails { viewState.setInfoItem(detailsConverter.convertInfo(it, this.creators)) }
     }
 
-    protected open fun createRate(rate: UserRate?, newStatus: RateStatus? = null) {
-        if (userId != Constants.NO_ID) {
-            ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus), userId)
-                    .updateContentData()
-        } else {
-            router.showSystemMessage(resourceProvider.needAuth)
-        }
+    protected open fun createRate(rate: UserRate?, newStatus: RateStatus? = null) = whenSignedIn {
+        ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus))
+                .updateContentData()
     }
 
-    protected open fun updateRate(rate: UserRate) {
+    protected open fun updateRate(rate: UserRate) = whenSignedIn {
         ratesInteractor.updateRate(rate)
                 .updateContentData()
     }
 
-    protected open fun changeRateStatus(newStatus: RateStatus) {
+    protected open fun changeRateStatus(newStatus: RateStatus) = whenSignedIn {
         ratesInteractor.changeRateStatus(rateId, newStatus)
                 .updateContentData()
+    }
+
+    //a page drawn before an automatic sign-out still shows its rate buttons: tell the user, and draw
+    //the head again without them
+    private inline fun whenSignedIn(action: () -> Unit) {
+        if (!isGuest) action()
+        else {
+            router.showSystemMessage(resourceProvider.needAuth)
+            redrawHead()
+        }
     }
 
     open fun onUpdateOrCreateRate(rate: UserRate) {
@@ -173,7 +181,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
-    open fun onDeleteRate(id: Long) {
+    open fun onDeleteRate(id: Long) = whenSignedIn {
         ratesInteractor.deleteRate(id)
                 .updateContentData()
     }
@@ -274,10 +282,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
 
     /** Only the anime page can be watched. */
     protected open fun onWatchOnline() {
-    }
-
-    protected open fun processUserErrors(throwable: Throwable) {
-        throwable.printStackTrace()
     }
 
     protected open fun Completable.updateContentData() {

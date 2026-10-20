@@ -17,7 +17,8 @@ interface RatesInteractor {
 
     fun deleteRate(id: Long): Completable
 
-    fun createRate(id: Long, type: Type, rate: UserRate, userId: Long): Completable
+    /** Adds the title to the signed-in user's list. */
+    fun createRate(id: Long, type: Type, rate: UserRate): Completable
 
     fun createRateWithResult(id: Long, type: Type, status: RateStatus) : Single<UserRate>
 

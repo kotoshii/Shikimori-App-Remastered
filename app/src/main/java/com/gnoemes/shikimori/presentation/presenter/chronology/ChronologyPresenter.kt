@@ -35,9 +35,9 @@ class ChronologyPresenter @Inject constructor(
         super.initData()
     }
 
-    override fun loadItems(): Single<List<ChronologyViewModel>> =
+    override fun loadItems(isGuest: Boolean): Single<List<ChronologyViewModel>> =
             interactor.getItems(data.id, data.type, chronologyType)
-                    .map { converter.apply(it, userId == null) }
+                    .map { converter.apply(it, isGuest) }
 
     //the title itself on the first load; the top on a reload
     override fun showItems(loaded: List<ChronologyViewModel>, isFirst: Boolean) {
