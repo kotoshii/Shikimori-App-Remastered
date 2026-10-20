@@ -13,7 +13,8 @@ import javax.inject.Inject
 class AuthHolder @Inject constructor(
         private val tokenRepository: TokenRepository,
         private val authRepository: AuthorizationRepository,
-        private val userRepository: UserSource
+        private val userRepository: UserSource,
+        private val siteCookies: ShikimoriSiteCookies
 ) {
 
     fun getToken(): Token? = tokenRepository.getToken()
@@ -34,12 +35,16 @@ class AuthHolder @Inject constructor(
     fun refresh() {
         updateToken()
                 .subscribe({}, {
-                    if (it is HttpException) {
-                        userRepository.clearUser()
-                        tokenRepository.saveToken(null).blockingGet()
-                    }
+                    if (it is HttpException) signOut()
                 })
 
+    }
+
+    /** Forgets the login on the phone, and the site's session in the in-app browser (BUGS #4). */
+    fun signOut() {
+        userRepository.clearUser()
+        tokenRepository.saveToken(null).blockingAwait()
+        siteCookies.forget()
     }
 
 }
