@@ -27,14 +27,18 @@ class UserSourceImpl @Inject constructor(
         prefs.putLong(SettingsExtras.USER_ID, id)
     }
 
+    /**
+     * The saved user, or null - also for a value that cannot be read, or reads with empty fields (a
+     * name renamed by a release build's shrinking, BUGS #21): it is then loaded again.
+     */
     override fun getUser(): UserBrief? {
-        return try {
-            val json = prefs.getString(SettingsExtras.USER_BRIEF, "")
+        val json = prefs.getString(SettingsExtras.USER_BRIEF, null) ?: return null
+        val user = try {
             gson.fromJson<UserBrief>(json, UserBrief::class.java)
         } catch (e: JsonSyntaxException) {
-            throw IllegalStateException("User doesn't exist")
+            null
         }
-
+        return user?.takeUnless { it.nickname.isNullOrBlank() }
     }
 
     override fun setUser(user: UserBrief) {

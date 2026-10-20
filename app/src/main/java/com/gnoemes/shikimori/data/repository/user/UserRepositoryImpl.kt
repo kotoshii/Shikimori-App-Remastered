@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
 import com.gnoemes.shikimori.utils.dropExtraPageItem
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -29,17 +30,13 @@ class UserRepositoryImpl @Inject constructor(
                         else Single.just(it)
                     }
 
+    //the saved user while signed in, else from the api - also when the saved one cannot be read
     override fun getMyUserBrief(): Single<UserBrief> =
-            Single.fromCallable { userSource.getUserStatus() }
-                    .filter { it == UserStatus.AUTHORIZED }
-                    .map { userSource.getUser()!! }
-                    .toSingle()
-                    .onErrorResumeNext { _ ->
-                        api.getCurrentUserBrief()
-                                .map { converter.convertResponse(it)!! }
-                                .doOnSuccess { userSource.setUser(it) }
-                                .doOnSuccess { userSource.setUserId(it.id) }
-                    }
+            Maybe.fromCallable<UserBrief> { if (userSource.getUserStatus() == UserStatus.AUTHORIZED) userSource.getUser() else null }
+                    .switchIfEmpty(api.getCurrentUserBrief()
+                            .map { converter.convertResponse(it)!! }
+                            .doOnSuccess { userSource.setUser(it) }
+                            .doOnSuccess { userSource.setUserId(it.id) })
 
     override fun getDetails(id: Long): Single<UserDetails> =
             api.getUserProfile(id)

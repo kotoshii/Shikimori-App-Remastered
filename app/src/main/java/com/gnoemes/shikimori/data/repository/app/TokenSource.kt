@@ -8,6 +8,4 @@ interface TokenSource {
     fun saveToken(token: Token?): Completable
 
     fun getToken(): Token?
-
-    fun isTokenExists(): Boolean
 }

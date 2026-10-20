@@ -38,7 +38,16 @@ class AuthHolder @Inject constructor(
         private const val TAG = "AuthHolder"
     }
 
-    fun getToken(): Token? = tokenRepository.getToken()
+    /**
+     * The token to send, or null for a guest. Signed in without a token that can be read means the
+     * saved login is broken - by an update that renamed its fields in a release build, say - so the
+     * user is signed out rather than left sending requests that all fail (BUGS #21).
+     */
+    fun getToken(): Token? {
+        val token = tokenRepository.getToken()
+        if (token == null && userRepository.isSignedIn()) signOut()
+        return token
+    }
 
     /**
      * A fresh token after a request sent with [sentHeader] was refused, or null to give up. A request
