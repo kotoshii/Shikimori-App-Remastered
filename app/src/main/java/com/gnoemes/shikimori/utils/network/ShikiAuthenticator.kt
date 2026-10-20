@@ -6,24 +6,28 @@ import okhttp3.Response
 import okhttp3.Route
 import javax.inject.Inject
 
+/**
+ * Answers a 401 from the signed-in client: one retry on a fresh token, or none. Every 401 used to be
+ * retried - up to OkHttp's 20 follow-ups, past the rate limiter - so a login that no longer worked
+ * sent 21 requests for each one a screen made (BUGS #35).
+ */
 class ShikiAuthenticator @Inject constructor(
         private val holder: AuthHolder
 ) : Authenticator {
 
     companion object {
-        private const val ACCESS_TOKEN_HEADER = "Authorization"
+        private const val HTTP_UNAUTHORIZED = 401
     }
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        val storedToken = "Bearer ${holder.getToken()?.authToken}"
-        val requestToken = response.request().header(ACCESS_TOKEN_HEADER)
+        //a guest's request has no token to refresh, and one already retried on a fresh token was
+        //refused for some other reason
+        val sent = response.request().header(AUTHORIZATION_HEADER) ?: return null
+        if (generateSequence(response.priorResponse()) { it.priorResponse() }.any { it.code() == HTTP_UNAUTHORIZED }) return null
 
-        val builder = response.request().newBuilder()
-
-        if (storedToken == requestToken) {
-            holder.refresh()
-        }
-
-        return builder.header(ACCESS_TOKEN_HEADER, "Bearer ${holder.getToken()?.authToken}").build()
+        val token = holder.refreshAfter(sent) ?: return null
+        return response.request().newBuilder()
+                .header(AUTHORIZATION_HEADER, token.authorizationHeader)
+                .build()
     }
 }
