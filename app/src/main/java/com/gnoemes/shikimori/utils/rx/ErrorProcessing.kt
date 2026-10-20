@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.utils.rx
 
 import com.gnoemes.shikimori.entity.app.domain.exceptions.*
+import com.gnoemes.shikimori.utils.network.SignedOutException
 import com.google.gson.JsonSyntaxException
 import com.google.gson.stream.MalformedJsonException
 import io.reactivex.Completable
@@ -29,6 +30,11 @@ class ErrorProcessing<T> {
 
     @Throws(TitleException::class, NetworkException::class, ServiceCodeException::class, ContentException::class)
     internal fun throwProcessException(throwable: Throwable): Throwable {
+        //before the other connection errors: it is an IOException too
+        if (throwable is SignedOutException) {
+            throw NetworkException(NetworkException.Kind.SIGNED_OUT)
+        }
+
         if (throwable is SocketTimeoutException) {
             throw NetworkException(NetworkException.Kind.TIMEOUT)
         }

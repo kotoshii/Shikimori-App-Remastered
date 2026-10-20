@@ -185,8 +185,11 @@ class RatePresenter @Inject constructor(
 
     //the tab's own lists show «Войти» after a sign-out, whatever failed
     override fun processErrors(throwable: Throwable) {
-        if (isSignedOutOfMyList) showSignedOut()
-        else super.processErrors(throwable)
+        if (isSignedOutOfMyList) {
+            //once, while the lists are still shown: several requests can fail on one sign-out
+            if (userId != Constants.NO_ID) showSignedOutMessage(throwable)
+            showSignedOut()
+        } else super.processErrors(throwable)
     }
 
     fun onChangeType() {

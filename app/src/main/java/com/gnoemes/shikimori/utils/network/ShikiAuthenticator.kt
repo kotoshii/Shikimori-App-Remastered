@@ -9,7 +9,8 @@ import javax.inject.Inject
 /**
  * Answers a 401 from the signed-in client: one retry on a fresh token, or none. Every 401 used to be
  * retried - up to OkHttp's 20 follow-ups, past the rate limiter - so a login that no longer worked
- * sent 21 requests for each one a screen made (BUGS #35).
+ * sent 21 requests for each one a screen made (BUGS #35). When the login is gone, the request fails
+ * with [SignedOutException] (from [AuthHolder.refreshAfter]).
  */
 class ShikiAuthenticator @Inject constructor(
         private val holder: AuthHolder

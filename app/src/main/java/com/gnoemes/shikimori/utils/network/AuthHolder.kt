@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.data.repository.app.AuthorizationRepository
 import com.gnoemes.shikimori.data.repository.app.TokenRepository
 import com.gnoemes.shikimori.entity.app.domain.Token
+import java.io.IOException
 import retrofit2.HttpException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,6 +19,13 @@ val Token.authorizationHeader: String
 
 private const val HTTP_BAD_REQUEST = 400
 private const val HTTP_UNAUTHORIZED = 401
+
+/**
+ * A request during which the app signed the user out - shikimori refused the login, or the saved one
+ * could not be read - or that was sent signed in just before another request did. The screen says so
+ * instead of showing the 401 (BUGS #70).
+ */
+class SignedOutException : IOException("signed out")
 
 /**
  * The login's one owner: the token to send, its refresh, and signing out.
@@ -41,34 +49,44 @@ class AuthHolder @Inject constructor(
     /**
      * The token to send, or null for a guest. Signed in without a token that can be read means the
      * saved login is broken - by an update that renamed its fields in a release build, say - so the
-     * user is signed out rather than left sending requests that all fail (BUGS #21).
+     * user is signed out rather than left sending requests that all fail (BUGS #21), and this request
+     * fails with [SignedOutException].
      */
+    @Throws(SignedOutException::class)
     fun getToken(): Token? {
         val token = tokenRepository.getToken()
-        if (token == null && userRepository.isSignedIn()) signOut()
+        if (token == null && userRepository.isSignedIn()) {
+            signOut()
+            throw SignedOutException()
+        }
         return token
     }
 
     /**
-     * A fresh token after a request sent with [sentHeader] was refused, or null to give up. A request
-     * that raced another one's refresh gets the token that refresh saved. Only shikimori refusing the
-     * refresh token signs the user out; a network or server error keeps the login for the next try.
+     * A fresh token after a request sent with [sentHeader] was refused, or null to give up and keep
+     * the login: a network or server error, and the next request tries again. A request that raced
+     * another one's refresh gets the token that refresh saved.
+     *
+     * Throws [SignedOutException] when shikimori refused the refresh token - the user is signed out
+     * here - or when another request already signed the user out.
      */
     @Synchronized
+    @Throws(SignedOutException::class)
     fun refreshAfter(sentHeader: String): Token? {
-        val stored = tokenRepository.getToken() ?: return null
+        val stored = tokenRepository.getToken() ?: throw SignedOutException()
         if (stored.authorizationHeader != sentHeader) return stored
 
-        return try {
-            authRepository.refreshToken(stored.refreshToken)
+        try {
+            return authRepository.refreshToken(stored.refreshToken)
                     .flatMap { tokenRepository.saveToken(it).toSingleDefault(it) }
                     .blockingGet()
         } catch (e: Exception) {
             Log.w(TAG, "token refresh failed", e)
             val code = (e as? HttpException)?.code()
-            if (code == HTTP_BAD_REQUEST || code == HTTP_UNAUTHORIZED) signOut()
-            null
+            if (code != HTTP_BAD_REQUEST && code != HTTP_UNAUTHORIZED) return null
         }
+        signOut()
+        throw SignedOutException()
     }
 
     /** Forgets the login on the phone, and the site's session in the in-app browser (BUGS #4). */

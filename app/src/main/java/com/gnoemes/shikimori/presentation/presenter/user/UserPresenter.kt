@@ -219,8 +219,11 @@ class UserPresenter @Inject constructor(
 
     //the tab's own profile shows «Войти» after a sign-out, whatever failed
     override fun processErrors(throwable: Throwable) {
-        if (isMe && isGuest()) showSignedOut()
-        else super.processErrors(throwable)
+        if (isMe && isGuest()) {
+            //once, while the profile is still shown: several requests can fail on one sign-out
+            if (id != Constants.NO_ID) showSignedOutMessage(throwable)
+            showSignedOut()
+        } else super.processErrors(throwable)
     }
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)

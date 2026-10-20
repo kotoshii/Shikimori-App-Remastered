@@ -35,4 +35,13 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
             else -> Log.e("Error", throwable.toString())
         }
     }
+
+    /**
+     * Says why the user was signed out when [throwable] comes from the request on which the app did it
+     * (BUGS #70): for a screen that shows «Войти» instead of its error view.
+     */
+    protected fun showSignedOutMessage(throwable: Throwable) {
+        if ((throwable as? NetworkException)?.kind == NetworkException.Kind.SIGNED_OUT)
+            viewState.showErrorMessage(commonResources.networkError(NetworkException.Kind.SIGNED_OUT))
+    }
 }

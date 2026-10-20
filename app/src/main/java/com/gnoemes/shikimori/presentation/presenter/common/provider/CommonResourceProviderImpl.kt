@@ -25,6 +25,7 @@ class CommonResourceProviderImpl @Inject constructor(
         NetworkException.Kind.NO_CONNECTION -> R.string.common_error_no_connection
         NetworkException.Kind.SECURE_CONNECTION -> R.string.common_error_secure_connection
         NetworkException.Kind.TIMEOUT -> R.string.common_error_timeout
+        NetworkException.Kind.SIGNED_OUT -> R.string.common_error_signed_out
     })
 
     override fun serverError(code: Int): String = context.getString(R.string.common_error_server, code)
