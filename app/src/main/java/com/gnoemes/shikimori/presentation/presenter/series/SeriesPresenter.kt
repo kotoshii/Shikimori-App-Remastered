@@ -46,6 +46,14 @@ class SeriesPresenter @Inject constructor(
     private var setting: TranslationSetting? = null
     private var query: String? = null
 
+    //the type this title was last watched in is read before its first translations; until then the
+    //type button stays hidden, so a type picked by hand is never replaced by the saved one
+    private var isTypeKnown = false
+    //the episode list is loading, so which episode will show is not known yet
+    private var isLoadingEpisodes = false
+    //no episode is out at all: neither the source nor the type can change that
+    private var isNothingOut = false
+
     private val items = mutableListOf<TranslationViewModel>()
     private lateinit var selectedVideo: TranslationVideo
     private var selectedDownload: SeriesDownloadItem? = null
@@ -53,9 +61,18 @@ class SeriesPresenter @Inject constructor(
 
     private var isWatchSession = false
 
+    //where the list on screen comes from. A source, type or episode switch, «Повторить» and the
+    //return from a player each replace the load still running, so its late answer can no longer
+    //cover the new one (BUGS #52)
+    private val listLoad = loadSlot()
+    //the hosting's page, looked up for «Внешний плеер» or «Скачать». A list load cancels it too; it
+    //never cancels a list load
+    private val videoLookup = loadSlot()
+
     override fun initData() {
         super.initData()
         type = settingsSource.translationType
+        isTypeKnown = !settingsSource.useLocalTranslationSettings
         episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
         episodeId = episode?.toLong()
         //the episode list and the player read the count from here, and add what they write to it
@@ -64,73 +81,78 @@ class SeriesPresenter @Inject constructor(
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
         viewState.changeSource(isAlternative)
-
-        val opening = episode
-        if (opening != null) showEpisodeName(opening)
-        else viewState.showFab(false)
-
-        if (navigationData.episodesAired == 1) {
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-        }
+        if (episode == null) viewState.showFab(false)
 
         loadWithEpisode()
     }
 
+    //back from a player the list loads again - once: every later return to the screen used to reload
+    //it too (BUGS #62)
     override fun onViewReattached() {
         super.onViewReattached()
 
         if (isWatchSession) {
             loadWithEpisode()
+            isWatchSession = false
         }
     }
 
     private fun loadWithEpisode() {
-        if (episodeId != null) loadData(episodeId!!)
-        else loadEpisodes()
-    }
-
-    private fun loadData(episodeId: Long) =
-            loadSettingsIfNeed()
-                    .flatMap { loadTranslations(it, episodeId) }
-                    .appendLoadingLogic(viewState)
-                    .doOnSubscribe { viewState.showEmptyAuthorsView(false) }
-                    .subscribe(this::setData, this::processErrors)
-                    .addToDisposables()
-
-    //with no episode asked for: the first one not watched, else the last watched. Back from watching,
-    //the last watched one
-    private fun loadEpisodes() = loadEpisodeList { items ->
-        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
-        isWatchSession = false
-        showEpisode(items, episode ?: 1)
+        val id = episodeId
+        if (id != null) load(translations(id))
+        //with no episode asked for: the first one not watched, else the last watched
+        else loadEpisodes { items ->
+            if (episode == null) episode = items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index
+            episode ?: 1
+        }
     }
 
     //the next episode when the source has it, else the current one again. When the source has
     //neither, the next one, as having no translations yet
-    fun onNextEpisode() = loadEpisodeList { items ->
+    fun onNextEpisode() = loadEpisodes { items ->
         episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
-        showEpisode(items, (episode ?: 0) + 1)
+        (episode ?: 0) + 1
     }
 
-    private fun loadEpisodeList(onLoaded: (List<Episode>) -> Unit) = interactor.getEpisodes(navigationData.animeId, isAlternative)
-            .map { it.take(navigationData.episodesAired) }
-            .doOnSubscribe { viewState.showEpisodeLoading(true) }
-            .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe({ onLoaded(it) }, this::processErrors)
-            .addToDisposables()
+    /**
+     * The episode list, then the episode [pick] sets: [pick] returns the one shown as having no
+     * translations yet when the source lacks it (see [showEpisode]).
+     */
+    private fun loadEpisodes(pick: (List<Episode>) -> Int) = load(
+            loadSettingsIfNeed()
+                    .flatMap { interactor.getEpisodes(navigationData.animeId, isAlternative) }
+                    .map { it.take(navigationData.episodesAired) }
+                    .flatMap { showEpisode(it, pick(it)) },
+            loadsEpisodes = true)
 
-    private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
-            .getTranslations(type, navigationData.animeId, episodeId, isAlternative, true)
-            .doOnSubscribe { viewState.setTranslationType(type) }
-            .map { converter.convertTranslations(it, setting) }
+    private fun translations(episodeId: Long): Single<Loaded> =
+            loadSettingsIfNeed()
+                    .flatMap { interactor.getTranslations(it, navigationData.animeId, episodeId, isAlternative, true) }
+                    .map { Loaded.Translations(converter.convertTranslations(it, setting)) }
 
-    private fun loadSettingsIfNeed(): Single<TranslationType> = (if (setting == null && settingsSource.useLocalTranslationSettings) loadSettings() else Single.just(type))
+    //the type this title was last watched in, read once, when that setting is on
+    private fun loadSettingsIfNeed(): Single<TranslationType> =
+            if (isTypeKnown) Single.just(type)
+            else interactor.getTranslationSettings(navigationData.animeId)
+                    .doOnSuccess {
+                        setting = it
+                        type = it.lastType ?: settingsSource.translationType
+                        isTypeKnown = true
+                        showControls()
+                    }
+                    .map { type }
 
-    private fun loadSettings() =
-            interactor.getTranslationSettings(navigationData.animeId)
-                    .doOnSuccess { setting = it }
-                    .map { type = it.lastType ?: settingsSource.translationType;type }
+    /** Replaces whatever the list was loading, and a video lookup, with [single]. */
+    private fun load(single: Single<Loaded>, loadsEpisodes: Boolean = false) {
+        videoLookup.cancel()
+        listLoad.start {
+            isLoadingEpisodes = loadsEpisodes
+            showControls()
+            single.appendLoadingLogic(viewState)
+                    .doOnSubscribe { viewState.showEmptyAuthorsView(false) }
+                    .subscribe(this::onLoaded, this::onLoadFailed)
+        }
+    }
 
     fun onRefresh() = loadWithEpisode()
 
@@ -138,37 +160,53 @@ class SeriesPresenter @Inject constructor(
      * The chosen [episode]: its translations when the source has it. If not, while anything is out,
      * episode [notFound] as having no translations yet; else that nothing is out.
      */
-    private fun showEpisode(items: List<Episode>, notFound: Int) {
+    private fun showEpisode(items: List<Episode>, notFound: Int): Single<Loaded> {
         val id = items.firstOrNull { it.index == episode }?.id
         episodeId = id
-        when {
-            id != null -> {
-                showEpisodeName(episode!!)
-                loadData(id)
-                viewState.showFab(true)
-            }
-            navigationData.episodesAired > 0 -> {
-                episode = notFound
-                showEpisodeName(notFound)
-                viewState.onHideLoading()
-                viewState.hideEmptyView()
-                viewState.showEmptyAuthorsView(true, isAlternative)
-                viewState.showContent(false)
-                viewState.showFab(true)
-            }
-            else -> {
-                viewState.onHideLoading()
-                viewState.showEmptyView()
-                viewState.hideEpisodeName()
-                viewState.showNextEpisode(false)
-                viewState.showFab(false)
-            }
+        isLoadingEpisodes = false
+        isNothingOut = id == null && navigationData.episodesAired <= 0
+        if (id == null && !isNothingOut) episode = notFound
+        showControls()
+        viewState.showFab(!isNothingOut)
+
+        return when {
+            id != null -> translations(id)
+            isNothingOut -> Single.just(Loaded.NothingOut)
+            else -> Single.just(Loaded.NoTranslations)
         }
     }
 
-    private fun showEpisodeName(episode: Int) {
-        viewState.setEpisodeName(episode)
-        viewState.showNextEpisode(episode != navigationData.episodesAired)
+    private fun onLoaded(loaded: Loaded) {
+        when (loaded) {
+            is Loaded.Translations -> setData(loaded.items)
+            Loaded.NoTranslations -> {
+                viewState.hideEmptyView()
+                viewState.showEmptyAuthorsView(true, isAlternative)
+                viewState.showContent(false)
+            }
+            Loaded.NothingOut -> viewState.showEmptyView()
+        }
+    }
+
+    //whatever failed, the source can still be switched and «Повторить» tries again (BUGS #53)
+    private fun onLoadFailed(throwable: Throwable) {
+        isLoadingEpisodes = false
+        showControls()
+        processErrors(throwable)
+    }
+
+    /**
+     * Which toolbar controls show (BUGS #53): the source and the type whenever they can change
+     * anything; the episode chip and › only for a known episode of a title with more than one, and
+     * not while the episode list loads - a tap there needs the episode.
+     */
+    private fun showControls() {
+        val shownEpisode = episode.takeIf { !isLoadingEpisodes && !isNothingOut && navigationData.episodesAired != 1 }
+        viewState.showControls(
+                !isNothingOut,
+                type.takeIf { isTypeKnown && !isNothingOut },
+                shownEpisode,
+                shownEpisode != null && shownEpisode != navigationData.episodesAired)
     }
 
     private fun setData(data: List<TranslationViewModel>) {
@@ -205,8 +243,6 @@ class SeriesPresenter @Inject constructor(
         this.episodeId = episodeId
         this.episode = episode
 
-        showEpisodeName(episode)
-
         if (isAlternative != alternative) {
             viewState.changeSource(alternative)
             isAlternative = alternative
@@ -226,7 +262,8 @@ class SeriesPresenter @Inject constructor(
         //describe the episode alike. Blanks drop out rather than leaving separators behind
         val details = listOf(item.author, item.kind, item.quality, item.hosting).filter { it.isNotBlank() }
 
-        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
+        //the video's own episode, not the screen's (BUGS #69 B8)
+        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, item.video.episodeId.toInt(), videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
     }
 
@@ -263,33 +300,34 @@ class SeriesPresenter @Inject constructor(
         //of failing it - but if that leaves nothing at all, the reason is worth reporting
         var challenged = false
 
-        Observable.fromIterable(videos)
-                .flatMapSingle { payload ->
-                    interactor.getVideo(payload)
-                            .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
-                            //a hosting that cannot be resolved is left out rather than failing the
-                            //whole list, which matters when more than one is being resolved
-                            .onErrorReturn {
-                                if (it is HostingChallengeException) challenged = true
-                                emptyList<SeriesDownloadItem>()
-                            }
-                }
-                .flatMapIterable { it }
-                .toList()
-                .appendLoadingLogic(viewState)
-                .subscribe({ items ->
-                    when {
-                        items.isNotEmpty() -> viewState.showDownloadDialog(videos.first().author, items)
-                        challenged -> viewState.showHostingChallengeError()
-                        else -> viewState.showTracksNotFoundError()
+        videoLookup.start {
+            Observable.fromIterable(videos)
+                    .flatMapSingle { payload ->
+                        interactor.getVideo(payload)
+                                .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
+                                //a hosting that cannot be resolved is left out rather than failing the
+                                //whole list, which matters when more than one is being resolved
+                                .onErrorReturn {
+                                    if (it is HostingChallengeException) challenged = true
+                                    emptyList<SeriesDownloadItem>()
+                                }
                     }
-                }, this::processErrors)
-                .addToDisposables()
+                    .flatMapIterable { it }
+                    .toList()
+                    .appendLoadingLogic(viewState)
+                    .subscribe({ items ->
+                        when {
+                            items.isNotEmpty() -> viewState.showDownloadDialog(videos.first().author, items)
+                            challenged -> viewState.showHostingChallengeError()
+                            else -> viewState.showTracksNotFoundError()
+                        }
+                    }, this::processErrors)
+        }
     }
 
     fun showEpisodes() {
-        val data = EpisodesNavigationData(navigationData.animeId, episode!!, isAlternative)
-        viewState.showEpisodesDialog(data)
+        val episode = episode ?: return
+        viewState.showEpisodesDialog(EpisodesNavigationData(navigationData.animeId, episode, isAlternative))
     }
 
     fun onTypeChanged(newType: TranslationType) {
@@ -381,9 +419,11 @@ class SeriesPresenter @Inject constructor(
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {
         //the built-in player counts the episode itself, once it starts playing. A failed count is
-        //only logged: it happens in the background and must not cover the screen with an error
+        //only logged: it happens in the background and must not cover the screen with an error.
+        //The video's own episode, not the screen's (BUGS #69 B8)
         if (increment) {
-            progressInteractor.episodePlayed(payload.animeId, episode!!)
+            val episode = payload.episodeIndex
+            progressInteractor.episodePlayed(payload.animeId, episode)
                     .subscribe({}, { Log.w(TAG, "could not count episode $episode", it) })
                     .addToDisposables()
         }
@@ -393,20 +433,27 @@ class SeriesPresenter @Inject constructor(
                 .addToDisposables()
     }
 
-    private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
+    private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) = videoLookup.start {
         interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
                 .subscribe(onSubscribe::invoke, this::processVideoErrors)
-                .addToDisposables()
     }
 
     /**
-     * A hosting that asks for an anti-bot check has a cause worth naming - otherwise it reads as
-     * the video being gone, which is what the generic path says.
+     * A failed lookup is a message, and the list stays (BUGS #60). An anti-bot check and a connection
+     * or server error each say what happened; anything else reads as the video being gone, as an
+     * unreadable hosting page does.
      */
     private fun processVideoErrors(throwable: Throwable) {
-        if (throwable is HostingChallengeException) viewState.showHostingChallengeError()
-        else processErrors(throwable)
+        val message = errorMessage(throwable)
+        when {
+            throwable is HostingChallengeException -> viewState.showHostingChallengeError()
+            message != null -> viewState.showErrorMessage(message)
+            else -> {
+                Log.w(LOOKUP_TAG, "video lookup failed", throwable)
+                viewState.showTracksNotFoundError()
+            }
+        }
     }
 
     fun onTrackForDownloadSelected(item: SeriesDownloadItem) {
@@ -427,7 +474,8 @@ class SeriesPresenter @Inject constructor(
 
     private fun downloadVideo(item: SeriesDownloadItem) {
         val data = DownloadVideoData(
-                navigationData.animeId, navigationData.name, episode!!, item.track.url, item.track.audioUrl,
+                //the video's own episode, not the screen's (BUGS #69 B8)
+                navigationData.animeId, navigationData.name, item.video.episodeId.toInt(), item.track.url, item.track.audioUrl,
                 parsers.headers(item.video),
                 author = item.author,
                 quality = item.quality,
@@ -447,7 +495,19 @@ class SeriesPresenter @Inject constructor(
     private fun processDownloadErrors(throwable: Throwable) {
     }
 
+    /** How a list load ends. */
+    private sealed class Loaded {
+        class Translations(val items: List<TranslationViewModel>) : Loaded()
+
+        /** The episode is out, but the source has nothing for it yet. */
+        object NoTranslations : Loaded()
+
+        /** No episode is out at all. */
+        object NothingOut : Loaded()
+    }
+
     companion object {
         private const val TAG = "WatchProgress"
+        private const val LOOKUP_TAG = "VideoLookup"
     }
 }

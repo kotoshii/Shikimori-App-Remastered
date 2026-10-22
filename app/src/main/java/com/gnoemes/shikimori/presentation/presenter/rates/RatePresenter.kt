@@ -33,7 +33,6 @@ import com.gnoemes.shikimori.presentation.view.rates.RateView
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.SerialDisposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -82,11 +81,7 @@ class RatePresenter @Inject constructor(
     private val pendingChanges = PendingRateChanges()
 
     //the sort and search in progress: a newer one replaces it, so an older result never shows last
-    private val shownRates = SerialDisposable()
-
-    init {
-        shownRates.addToDisposables()
-    }
+    private val shownRates = loadSlot()
 
     override fun onViewReattached() {
         loadUserOrCategories()
@@ -439,14 +434,16 @@ class RatePresenter @Inject constructor(
         val sorts = if (isAnime) sortResourceProvider.getAnimeRateSorts() else sortResourceProvider.getMangaRateSorts()
         val sortBar = RateSortViewModel(status, currentSort, sorts, descending, isAnime)
 
-        shownRates.set(pinInteractor.getPinnedRates(type, status)
-                .observeOn(Schedulers.computation())
-                .map { pinned ->
-                    val shown = sortAndSearchRates(entries, currentSort, descending, search) { name, nameRu -> settingsSource.titleName(name, nameRu) }
-                    converter.apply(shown, pinned)
-                }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ setData(sortBar, it, search != null) }, this::processErrors))
+        shownRates.start {
+            pinInteractor.getPinnedRates(type, status)
+                    .observeOn(Schedulers.computation())
+                    .map { pinned ->
+                        val shown = sortAndSearchRates(entries, currentSort, descending, search) { name, nameRu -> settingsSource.titleName(name, nameRu) }
+                        converter.apply(shown, pinned)
+                    }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ setData(sortBar, it, search != null) }, this::processErrors)
+        }
     }
 
     private fun setData(sortBar: RateSortViewModel, items: List<RateViewModel>, isSearch: Boolean) {

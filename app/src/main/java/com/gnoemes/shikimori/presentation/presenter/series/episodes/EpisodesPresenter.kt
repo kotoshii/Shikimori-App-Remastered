@@ -30,6 +30,9 @@ class EpisodesPresenter @Inject constructor(
     private val items = mutableListOf<EpisodeViewModel>()
     private var query : String? = null
 
+    //a source switch or «Повторить» replaces the list still loading (BUGS #52)
+    private val episodesLoad = loadSlot()
+
     override fun initData() {
         super.initData()
         isAlternativeSource = navigationData.isAlternative
@@ -42,11 +45,11 @@ class EpisodesPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() =
-            loadEpisodes()
-                    .appendLoadingLogic(viewState)
-                    .subscribe(this::setData, this::processErrors)
-                    .addToDisposables()
+    private fun loadData() = episodesLoad.start {
+        loadEpisodes()
+                .appendLoadingLogic(viewState)
+                .subscribe(this::setData, this::processErrors)
+    }
 
     private fun loadEpisodes(): Single<List<EpisodeViewModel>> =
             interactor.getEpisodes(navigationData.animeId, isAlternativeSource)

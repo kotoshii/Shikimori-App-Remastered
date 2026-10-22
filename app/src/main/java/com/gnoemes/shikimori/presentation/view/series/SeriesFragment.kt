@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Fade
+import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
@@ -76,6 +77,15 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     private val defaultCorners by lazy { context!!.dimen(R.dimen.margin_big) }
+
+    //the toolbar as the presenter last set it (SeriesView.showControls), and the picker open over it
+    private var isSourceShown = false
+    private var shownType: TranslationType? = null
+    private var shownEpisode: Int? = null
+    private var isNextShown = false
+    private var openPicker: Picker? = null
+
+    private enum class Picker { SOURCES, TYPES }
 
     private val adapter by lazy {
         TranslationsAdapter(getPresenter()::onHostingClicked, ::copyHostingUrl, getPresenter()::onMenuClicked)
@@ -142,13 +152,13 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         translationBtn.gone()
         progress.visible()
 
-        translationBtn.onClick { showTypes(true) }
+        translationBtn.onClick { openPicker(Picker.TYPES) }
         voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
         subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
         originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
 
         episodeChip.onClick { getPresenter().showEpisodes() }
-        sourceChangeBtn.onClick { showSources(true) }
+        sourceChangeBtn.onClick { openPicker(Picker.SOURCES) }
 
         mainSource.onClick { onSourceSelected(false) }
         altSource.onClick { onSourceSelected(true) }
@@ -160,31 +170,34 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     private fun onTypeSelected(newType: TranslationType) {
         getPresenter().onTypeChanged(newType)
-        showTypes(false)
+        openPicker(null)
     }
 
     private fun onSourceSelected(isAlternative: Boolean) {
         getPresenter().onSourceChanged(isAlternative)
-        showSources(false)
+        openPicker(null)
     }
 
-    private fun showSources(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, AutoTransition())
-        if (show && !translationBtn.isVisible()) showTypes(false)
-        sourceChangeBtn.visibleIf { !show }
-        if (episodeChip.isEnabled) episodeChip.visibleIf { !show }
-        if (nextEpisodeBtn.isEnabled) nextEpisodeBtn.visibleIf { !show }
-        mainSource.visibleIf { show }
-        altSource.visibleIf { show }
+    private fun openPicker(picker: Picker?) {
+        openPicker = picker
+        showToolbar(AutoTransition())
     }
 
-    private fun showTypes(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, AutoTransition())
-        if (show && !sourceChangeBtn.isVisible()) showSources(false)
-        translationBtn.visibleIf { !show }
-        voiceBtn.visibleIf { show }
-        subtitlesBtn.visibleIf { show }
-        originalBtn.visibleIf { show }
+    //the one place that decides what the toolbar shows: the presenter's controls, with an open
+    //picker in place of the buttons it covers
+    private fun showToolbar(transition: Transition) {
+        TransitionManager.beginDelayedTransition(motionLayout, transition)
+        val sources = openPicker == Picker.SOURCES
+        val types = openPicker == Picker.TYPES
+        episodeChip.visibleIf { shownEpisode != null && !sources }
+        nextEpisodeBtn.visibleIf { isNextShown && !sources }
+        sourceChangeBtn.visibleIf { isSourceShown && !sources }
+        mainSource.visibleIf { sources }
+        altSource.visibleIf { sources }
+        translationBtn.visibleIf { shownType != null && !types }
+        voiceBtn.visibleIf { types }
+        subtitlesBtn.visibleIf { types }
+        originalBtn.visibleIf { types }
     }
 
     private val shadowScrollListener = object : RecyclerView.OnScrollListener() {
@@ -256,46 +269,30 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         adapter.bindItems(mutableListOf(emptyItem))
     }
 
-    override fun setEpisodeName(index: Int) {
-        val text = "# ".colorSpan(context!!.colorAttr(R.attr.colorSecondaryTransparent)).append("$index")
-        episodeChip.text = text
-    }
+    override fun showControls(isSourceShown: Boolean, type: TranslationType?, episode: Int?, isNextShown: Boolean) {
+        this.isSourceShown = isSourceShown
+        shownType = type
+        shownEpisode = episode
+        this.isNextShown = isNextShown
+        //a picker whose button went away closes with it
+        if (openPicker == Picker.SOURCES && !isSourceShown || openPicker == Picker.TYPES && type == null) openPicker = null
 
-    override fun showNextEpisode(show: Boolean) {
-        nextEpisodeBtn.isEnabled = show
-        nextEpisodeBtn.visibleIf { show }
-    }
-
-    override fun hideEpisodeName() {
-        episodeChip.isEnabled = false
-        episodeChip.gone()
-    }
-
-    override fun showEpisodeLoading(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, Fade())
-        if (episodeChip.isEnabled) episodeChip.visibleIf { !show }
-        if (nextEpisodeBtn.isEnabled) nextEpisodeBtn.visibleIf { !show }
-        sourceChangeBtn.visibleIf { !show }
-    }
-
-    override fun changeSource(isAlternative: Boolean) {
-        mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
-        altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
-    }
-
-    override fun setTranslationType(type: TranslationType) {
         val icon = when (type) {
             TranslationType.VOICE_RU -> R.drawable.ic_voice
             TranslationType.SUB_RU -> R.drawable.ic_subs
             TranslationType.RAW -> R.drawable.ic_original
             else -> 0
         }
+        if (icon != 0) translationBtn.setIconResource(icon)
 
-        if (icon != 0) {
-            translationBtn.setIconResource(icon)
-        }
+        if (episode != null) episodeChip.text = "# ".colorSpan(context!!.colorAttr(R.attr.colorSecondaryTransparent)).append("$episode")
 
-        if (!translationBtn.isVisible()) translationBtn.visible()
+        showToolbar(Fade())
+    }
+
+    override fun changeSource(isAlternative: Boolean) {
+        mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
+        altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
     }
 
     override fun showSearchView() {
@@ -367,7 +364,6 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         actionBtn.gone()
         titleView.setText(R.string.series_empty_episode_title)
         descriptionView.setText(R.string.series_empty_episode_description)
-        sourceChangeBtn.gone()
     }
 
     override fun showContent(show: Boolean) = recyclerView.visibleIf { show }

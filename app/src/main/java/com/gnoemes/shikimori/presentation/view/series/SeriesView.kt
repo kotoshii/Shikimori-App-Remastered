@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.series
 
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Image
@@ -15,11 +16,14 @@ interface SeriesView : BaseFragmentView {
 
     fun showData(newItems: List<TranslationViewModel>)
 
-    fun setEpisodeName(index: Int)
+    /**
+     * The toolbar's own controls: the source button, the type button showing [type], the episode chip
+     * showing [episode] and ›. A null [type] or [episode] hides its button.
+     */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showControls(isSourceShown: Boolean, type: TranslationType?, episode: Int?, isNextShown: Boolean)
 
     fun changeSource(isAlternative : Boolean)
-
-    fun setTranslationType(type: TranslationType)
 
     @StateStrategyType(AddToEndSingleTagStrategy::class, tag = "search")
     fun showSearchView()
@@ -70,10 +74,4 @@ interface SeriesView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun scrollToPosition(position: Int)
-
-    fun showEpisodeLoading(show: Boolean)
-
-    fun hideEpisodeName()
-
-    fun showNextEpisode(show: Boolean)
 }

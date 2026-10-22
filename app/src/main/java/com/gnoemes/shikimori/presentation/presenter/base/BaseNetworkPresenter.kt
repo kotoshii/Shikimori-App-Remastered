@@ -28,12 +28,20 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
         compositeDisposable.add(this)
     }
 
+    /** A [LoadSlot] for the loads that replace each other on this screen; it closes with the screen. */
+    protected fun loadSlot(): LoadSlot = LoadSlot().also { it.addToDisposables() }
+
     protected open fun processErrors(throwable: Throwable) {
-        when (throwable) {
-            is NetworkException -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage(commonResources.networkError(throwable.kind)) }
-            is ServiceCodeException -> viewState.apply { showNetworkView(); showContent(false); showErrorMessage(commonResources.serverError(throwable.serviceCode)) }
-            else -> Log.e("Error", throwable.toString())
-        }
+        val message = errorMessage(throwable)
+        if (message != null) viewState.apply { showNetworkView(); showContent(false); showErrorMessage(message) }
+        else Log.e("Error", throwable.toString())
+    }
+
+    /** What the user reads when a request did not get through or the server refused it; null for any other error. */
+    protected fun errorMessage(throwable: Throwable): String? = when (throwable) {
+        is NetworkException -> commonResources.networkError(throwable.kind)
+        is ServiceCodeException -> commonResources.serverError(throwable.serviceCode)
+        else -> null
     }
 
     /**
