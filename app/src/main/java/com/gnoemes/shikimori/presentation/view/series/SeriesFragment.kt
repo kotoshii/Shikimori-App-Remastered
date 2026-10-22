@@ -73,11 +73,27 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     fun providePresenter(): SeriesPresenter = presenterProvider.get().apply {
         localRouter = (parentFragment as RouterProvider).localRouter
         navigationData = arguments?.getParcelable(SERIES_NAVIGATION_DATA)!!
+        restoredState = this@SeriesFragment.restoredState
     }
 
     companion object {
         fun newInstance(data: SeriesNavigationData) = SeriesFragment().withArgs { putParcelable(SERIES_NAVIGATION_DATA, data) }
         private const val SERIES_NAVIGATION_DATA = "SERIES_NAVIGATION_DATA"
+        private const val SERIES_STATE = "SERIES_STATE"
+    }
+
+    //read before the presenter is made, which happens inside super.onCreate. After a rotation Moxy
+    //keeps the presenter, and only after Android killed the app is a new one made from this
+    private var restoredState: SeriesState? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        restoredState = savedInstanceState?.getParcelable(SERIES_STATE)
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        getPresenter().state?.let { outState.putParcelable(SERIES_STATE, it) }
     }
 
     private val defaultCorners by lazy { context!!.dimen(R.dimen.margin_big) }

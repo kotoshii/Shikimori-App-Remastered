@@ -39,6 +39,10 @@ class SeriesPresenter @Inject constructor(
     lateinit var navigationData: SeriesNavigationData
     lateinit var type: TranslationType
 
+    //what the screen showed before Android killed the app in the background, if it did: set by the
+    //screen from its saved state
+    var restoredState: SeriesState? = null
+
     private var episode: Int? = null
     private var episodeId: Long? = null
     private var isAlternative: Boolean = settingsSource.altSourceByDefault
@@ -46,7 +50,8 @@ class SeriesPresenter @Inject constructor(
     private var query: String? = null
 
     //the type this title was last watched in is read before its first translations; until then the
-    //type button stays hidden, so a type picked by hand is never replaced by the saved one
+    //type button stays hidden, so a type picked by hand is never replaced by the saved one. A type
+    //brought back from the saved state is known from the start
     private var isTypeKnown = false
     //the episode list is loading, so which episode will show is not known yet
     private var isLoadingEpisodes = false
@@ -68,10 +73,17 @@ class SeriesPresenter @Inject constructor(
 
     override fun initData() {
         super.initData()
-        type = settingsSource.translationType
-        isTypeKnown = !settingsSource.useLocalTranslationSettings
-        episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
-        episodeId = episode?.toLong()
+        val restored = restoredState
+        type = restored?.type ?: settingsSource.translationType
+        isTypeKnown = restored?.type != null || !settingsSource.useLocalTranslationSettings
+        if (restored != null) {
+            episode = restored.episode
+            episodeId = restored.episodeId
+            isAlternative = restored.isAlternative
+        } else {
+            episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
+            episodeId = episode?.toLong()
+        }
         //the episode list and the player read the count from here, and add what they write to it
         progressInteractor.remember(navigationData.animeId, navigationData.rateId, navigationData.watchedEpisodes)
 
@@ -127,17 +139,26 @@ class SeriesPresenter @Inject constructor(
                     .flatMap { interactor.getTranslations(it, navigationData.animeId, episodeId, isAlternative, true) }
                     .map { Loaded.Translations(converter.convertTranslations(it, setting)) }
 
-    //the type this title was last watched in, read once, when that setting is on
+    //this title's saved choice - the type and the author last watched - read once, when that setting
+    //is on. A type already known stays
     private fun loadSettingsIfNeed(): Single<TranslationType> =
-            if (isTypeKnown) Single.just(type)
+            if (setting != null || !settingsSource.useLocalTranslationSettings) Single.just(type)
             else interactor.getTranslationSettings(navigationData.animeId)
                     .doOnSuccess {
                         setting = it
-                        type = it.lastType ?: settingsSource.translationType
+                        if (!isTypeKnown) type = it.lastType ?: settingsSource.translationType
                         isTypeKnown = true
                         showControls()
                     }
                     .map { type }
+
+    /**
+     * What the screen shows, for its saved state ([SeriesState]). Null before the screen has started:
+     * a screen restored in a tab that was never opened again still keeps what it was given.
+     */
+    val state: SeriesState?
+        get() = if (!::type.isInitialized) restoredState
+        else SeriesState(episode, episodeId, isAlternative, type.takeIf { isTypeKnown })
 
     /** Replaces whatever the list was loading, and a video lookup, with [single]. */
     private fun load(single: Single<Loaded>, loadsEpisodes: Boolean = false) {
