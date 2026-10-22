@@ -5,7 +5,10 @@ import com.arellomobile.mvp.viewstate.strategy.OneExecutionStateStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Image
+import com.gnoemes.shikimori.entity.series.domain.PlayerType
+import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -33,7 +36,7 @@ interface SeriesView : BaseFragmentView {
     fun onSearchClosed()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showPlayerDialog()
+    fun showPlayerDialog(playing: EmbeddedPlayerNavigationData)
 
     @StateStrategyType(SkipStrategy::class)
     fun showDownloadHostingDialog(title : String, videos: List<TranslationVideo>, hasUnsupported: Boolean)
@@ -54,7 +57,7 @@ interface SeriesView : BaseFragmentView {
     fun showFolderChooserDialog()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showQualityChooser(items: List<Pair<String, String>>)
+    fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>)
 
     /** Opens [url] in another app, and tells the presenter when one opened: [video]'s episode counts then. */
     @StateStrategyType(OneExecutionStateStrategy::class)

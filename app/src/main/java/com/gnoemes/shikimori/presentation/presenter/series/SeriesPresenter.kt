@@ -54,9 +54,7 @@ class SeriesPresenter @Inject constructor(
     private var isNothingOut = false
 
     private val items = mutableListOf<TranslationViewModel>()
-    private lateinit var selectedVideo: TranslationVideo
     private var selectedDownload: SeriesDownloadItem? = null
-    private var selectedPlayer: PlayerType? = null
 
     private var isWatchSession = false
 
@@ -345,49 +343,58 @@ class SeriesPresenter @Inject constructor(
         viewState.scrollToPosition(0)
     }
 
-    fun onPlayerSelected(playerType: PlayerType) {
-        openVideo(selectedVideo, playerType)
+    fun onHostingClicked(video: TranslationVideo) {
+        //what the built-in player needs goes into the picker with the video, so a tap there still works
+        //after Android has killed the app and brought the picker back (BUGS #48, T5-35)
+        val episodesSize = items.firstOrNull()?.episodesSize ?: return
+        val playing = EmbeddedPlayerNavigationData(navigationData.name, episodesSize, video, isAlternative)
+
+        if (!parsers.isSupported(video.videoHosting)) openVideo(playing, PlayerType.WEB)
+        else if (!settingsSource.isAskForPlayer) openVideo(playing, settingsSource.playerType)
+        else viewState.showPlayerDialog(playing)
     }
 
-    fun onHostingClicked(video: TranslationVideo) {
-        this.selectedVideo = video
-        if (!parsers.isSupported(video.videoHosting)) openVideo(video, PlayerType.WEB)
-        else if (!settingsSource.isAskForPlayer) openVideo(video, settingsSource.playerType)
-        else viewState.showPlayerDialog()
+    //«Запомнить выбор» keeps the player picked and stops asking (BUGS #33)
+    fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) {
+        if (remember) {
+            settingsSource.playerType = playerType
+            settingsSource.isAskForPlayer = false
+        }
+        openVideo(playing, playerType)
     }
 
     //Only embedded player can process object payload
     //Others o uses urls
-    private fun openVideo(payload: TranslationVideo, playerType: PlayerType) {
+    private fun openVideo(playing: EmbeddedPlayerNavigationData, playerType: PlayerType) {
+        val video = playing.payload
+
         //anime365 resolves nothing without a login, so say so instead of opening a player that will
         //find no tracks. The web player is the exception - it loads anime365's own page, which asks
         //for the login itself
-        if (playerType != PlayerType.WEB && needsAnime365Login(payload)) {
+        if (playerType != PlayerType.WEB && needsAnime365Login(video)) {
             viewState.showAnime365LoginRequired()
             return
         }
 
-        if (playerType == PlayerType.EMBEDDED) play(payload, playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, isAlternative))
-        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) play(payload, playerType, payload.webPlayerUrl)
-        else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
+        if (playerType == PlayerType.EMBEDDED) play(video, playerType, playing)
+        else if (playerType == PlayerType.WEB && video.webPlayerUrl != null) play(video, playerType, video.webPlayerUrl)
+        else getVideoAndExecute(video) { showQualityChooser(video, playerType, it.tracks) }
     }
 
     /** Anime365 needs a paid account, and without the token nothing it hands back has tracks. */
     private fun needsAnime365Login(video: TranslationVideo): Boolean =
             video.videoHosting is VideoHosting.SMOTRET_ANIME && tokenSource.getToken() == null
 
-    private fun showQualityChooser(tracks: List<Track>) {
+    private fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>) {
         if (tracks.isEmpty()) {
             viewState.showTracksNotFoundError()
             return
         }
-        if (tracks.size == 1 || settingsSource.isExternalBestQuality) play(selectedVideo, selectedPlayer!!, tracks.firstOrNull()?.url)
-        else viewState.showQualityChooser(tracks.map { Pair(it.quality, it.url) })
+        if (tracks.size == 1 || settingsSource.isExternalBestQuality) play(video, playerType, tracks.first().url)
+        else viewState.showQualityChooser(video, playerType, tracks)
     }
 
-    fun onQualityChoosed(url: String?) {
-        play(selectedVideo, selectedPlayer!!, url)
-    }
+    fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, url: String) = play(video, playerType, url)
 
     /** Opens [video] in [playerType]: [payload] is the built-in player's data, else the url to play. */
     private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {

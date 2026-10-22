@@ -22,6 +22,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
+import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
@@ -30,7 +31,6 @@ import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadHos
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment
 import com.gnoemes.shikimori.presentation.view.series.translations.adapter.TranslationsAdapter
 import com.gnoemes.shikimori.utils.*
@@ -51,7 +51,7 @@ import javax.inject.Inject
 class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         SeriesView,
         PlayerSelectDialog.Callback,
-        ListDialogFragment.DialogCallback,
+        QualitySelectDialog.Callback,
         EpisodesFragment.EpisodesCallback,
         SeriesDownloadDialog.SeriesDownloadCallback,
         SeriesDownloadHostingDialog.Callback,
@@ -222,15 +222,11 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         recyclerView.removeOnScrollListener(shadowScrollListener)
     }
 
-    override fun onPlayerSelected(playerType: PlayerType) {
-        getPresenter().onPlayerSelected(playerType)
-    }
+    override fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) =
+            getPresenter().onPlayerSelected(playing, playerType, remember)
 
-    override fun dialogItemCallback(tag: String?, action: String) {
-        if (tag == "QualityDialog") {
-            getPresenter().onQualityChoosed(action)
-        }
-    }
+    override fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, url: String) =
+            getPresenter().onQualitySelected(video, playerType, url)
 
     override fun onDownload(item: SeriesDownloadItem) = getPresenter().onTrackForDownloadSelected(item)
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
@@ -314,8 +310,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         backdrop.radius = defaultCorners
     }
 
-    override fun showPlayerDialog() {
-        val dialog = PlayerSelectDialog.newInstance()
+    override fun showPlayerDialog(playing: EmbeddedPlayerNavigationData) {
+        val dialog = PlayerSelectDialog.newInstance(playing)
         dialog.show(childFragmentManager, "PlayerSelect")
     }
 
@@ -361,11 +357,9 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         if (requireContext().startOutsideActivity(intent)) getPresenter().onExternalPlayerOpened(video)
     }
 
-    override fun showQualityChooser(items: List<Pair<String, String>>) {
-        val dialog = ListDialogFragment.newInstance()
-        dialog.apply {
-            setItems(items)
-        }.show(childFragmentManager, "QualityDialog")
+    override fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>) {
+        val dialog = QualitySelectDialog.newInstance(video, playerType, tracks)
+        dialog.show(childFragmentManager, "QualityDialog")
     }
 
     override fun showEmptyView() {
