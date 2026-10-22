@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -284,7 +285,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
         if (icon != 0) translationBtn.setIconResource(icon)
 
-        if (episode != null) episodeChip.text = "# ".colorSpan(context!!.colorAttr(R.attr.colorSecondaryTransparent)).append("$episode")
+        //«#» lighter than the number, at Material's 60% for secondary text. It was the chip's own
+        //background colour, and could hardly be seen (BUGS #74)
+        val hashColor = ColorUtils.setAlphaComponent(context!!.colorAttr(R.attr.colorSecondary), 153)
+        if (episode != null) episodeChip.text = "# ".colorSpan(hashColor).append("$episode")
 
         showToolbar(Fade())
     }
