@@ -230,6 +230,22 @@
     </style>
 
     <!--
+        A text field's line and cursor take colorPrimary, a colour close to a dialog's own: the
+        skip-length field could hardly be seen (BUGS #51). Here they take the accent; the field's
+        states stay Material's. Its filled box is colorSurface laid under the box colour, which
+        material-dialogs leaves empty - black on Amoled's grey dialogs - so the box is made
+        see-through and shows whatever it sits on.
+    -->
+    <style name="TextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="materialThemeOverlay">@style/TextInputThemeOverlay</item>
+    </style>
+
+    <style name="TextInputThemeOverlay" parent="ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox">
+        <item name="colorPrimary">?attr/colorSecondary</item>
+        <item name="colorSurface">@android:color/transparent</item>
+    </style>
+
+    <!--
         Replaces the material-dialogs style of the same name to add scrollbars="none". The first
         three items are copied from the library and have to stay in step with it.
 

@@ -75,6 +75,8 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         }
 
         emptyContentView.setText(R.string.episodes_not_found)
+        //the sheet has «Повторить», not a pull to refresh
+        networkErrorView.setText(R.string.common_error_message_without_pull)
         networkErrorView.showButton()
         networkErrorView.callback = { presenter.onRefresh() }
         emptyContentView.gone()
