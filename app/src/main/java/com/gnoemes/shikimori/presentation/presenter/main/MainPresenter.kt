@@ -24,8 +24,14 @@ class MainPresenter @Inject constructor(
     override val router: Router
         get() = _router
 
+    //set by the screen: Android brought the app back after killing it in the background, and the
+    //tabs and the bottom bar came back as the user left them
+    var isRestored = false
+
+    //a new start opens on «Списки». A restored one stays on the tab the user left: switching to
+    //«Списки» hid that tab while the bottom bar still marked it, and a tap there then cleared it
     override fun initData() {
-        onTabItemSelected(BottomScreens.RATES)
+        if (!isRestored) onTabItemSelected(BottomScreens.RATES)
         refreshGenres()
         checkForUpdate()
     }

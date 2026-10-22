@@ -43,7 +43,11 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     lateinit var mainPresenter: MainPresenter
 
     @ProvidePresenter
-    fun providePresenter(): MainPresenter = presenterProvider.get()
+    fun providePresenter(): MainPresenter = presenterProvider.get().apply { isRestored = restoring }
+
+    //this screen comes from saved state - after a rotation, or after Android killed the app in the
+    //background. Read when the presenter is made, which after a rotation it is not
+    private var restoring = false
 
     @Inject
     lateinit var localNavigatorHolder: NavigatorHolder
@@ -60,6 +64,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        restoring = savedInstanceState != null
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
