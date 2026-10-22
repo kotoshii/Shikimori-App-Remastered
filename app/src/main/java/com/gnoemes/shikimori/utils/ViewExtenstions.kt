@@ -15,6 +15,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.iterator
+import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -117,6 +118,16 @@ fun View.dp(dp: Int): Int = context.dp(dp)
 
 @ColorInt
 fun View.color(@ColorRes colorRes: Int): Int = context.color(colorRes)
+
+/**
+ * Hides the keyboard when it types into this fragment. Found by the fragment's own view, so a screen
+ * and a bottom sheet work alike: a sheet is a window of its own, and the activity's focus is not in it
+ * (BUGS #27).
+ */
+fun Fragment.hideSoftInput() {
+    val window = view?.windowToken ?: return
+    context?.inputMethodManager()?.hideSoftInputFromWindow(window, 0)
+}
 
 
 

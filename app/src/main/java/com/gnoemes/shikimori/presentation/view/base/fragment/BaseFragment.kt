@@ -13,7 +13,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
 import com.gnoemes.shikimori.utils.gone
-import com.gnoemes.shikimori.utils.inputMethodManager
+import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.visibleIf
 import dagger.android.support.AndroidSupportInjection
@@ -89,10 +89,6 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    fun hideSoftInput() {
-        activity?.inputMethodManager()?.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
     }
 
     ///////////////////////////////////////////////////////////////////////////

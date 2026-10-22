@@ -28,7 +28,6 @@ abstract class BaseBottomSheetInjectionDialogFragment<Presenter : BasePresenter<
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
-    fun hideSoftInput() = Unit
     override fun setTitle(title: String) = Unit
     override fun setTitle(stringRes: Int) = Unit
 }

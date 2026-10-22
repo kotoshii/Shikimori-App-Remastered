@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.hideRefresh
+import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.showRefresh
 import com.gnoemes.shikimori.utils.visibleIf
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
