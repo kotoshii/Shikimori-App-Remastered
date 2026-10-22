@@ -20,7 +20,6 @@ import com.gnoemes.shikimori.presentation.presenter.series.translations.converte
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
-import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -284,44 +283,24 @@ class SeriesPresenter @Inject constructor(
 
         //asking which hosting first means only that one is resolved. Resolving the whole group up
         //front cost a page fetch per hosting, and all but the chosen one were thrown away
-        if (filteredItems.size == 1) showDownloadQualities(filteredItems)
+        if (filteredItems.size == 1) showDownloadQualities(filteredItems.first())
         else viewState.showDownloadHostingDialog(filteredItems.first().author, filteredItems, filteredItems.size < videos.size)
     }
 
-    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(listOf(video))
+    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(video)
 
-    private fun showDownloadQualities(videos: List<TranslationVideo>) {
-        if (videos.all(::needsAnime365Login)) {
+    //looked up as for a player, and a failure reads the same: a connection that failed is no longer
+    //taken for a deleted video (BUGS #61)
+    private fun showDownloadQualities(video: TranslationVideo) {
+        if (needsAnime365Login(video)) {
             viewState.showAnime365LoginRequired()
             return
         }
 
-        //remembered rather than thrown, because a failed hosting is dropped from the list instead
-        //of failing it - but if that leaves nothing at all, the reason is worth reporting
-        var challenged = false
-
-        videoLookup.start {
-            Observable.fromIterable(videos)
-                    .flatMapSingle { payload ->
-                        interactor.getVideo(payload)
-                                .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
-                                //a hosting that cannot be resolved is left out rather than failing the
-                                //whole list, which matters when more than one is being resolved
-                                .onErrorReturn {
-                                    if (it is HostingChallengeException) challenged = true
-                                    emptyList<SeriesDownloadItem>()
-                                }
-                    }
-                    .flatMapIterable { it }
-                    .toList()
-                    .appendLoadingLogic(viewState)
-                    .subscribe({ items ->
-                        when {
-                            items.isNotEmpty() -> viewState.showDownloadDialog(videos.first().author, items)
-                            challenged -> viewState.showHostingChallengeError()
-                            else -> viewState.showTracksNotFoundError()
-                        }
-                    }, this::processErrors)
+        getVideoAndExecute(video) { found ->
+            val items = found.tracks.map { converter.convertTrack(found, it) }
+            if (items.isEmpty()) viewState.showTracksNotFoundError()
+            else viewState.showDownloadDialog(video.author, items)
         }
     }
 
