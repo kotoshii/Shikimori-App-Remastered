@@ -367,8 +367,8 @@ class SeriesPresenter @Inject constructor(
             return
         }
 
-        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, isAlternative))
-        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
+        if (playerType == PlayerType.EMBEDDED) play(payload, playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, isAlternative))
+        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) play(payload, playerType, payload.webPlayerUrl)
         else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
     }
 
@@ -381,19 +381,30 @@ class SeriesPresenter @Inject constructor(
             viewState.showTracksNotFoundError()
             return
         }
-        if (tracks.size == 1 || settingsSource.isExternalBestQuality) openPlayer(selectedPlayer!!, tracks.firstOrNull()?.url)
+        if (tracks.size == 1 || settingsSource.isExternalBestQuality) play(selectedVideo, selectedPlayer!!, tracks.firstOrNull()?.url)
         else viewState.showQualityChooser(tracks.map { Pair(it.quality, it.url) })
     }
 
     fun onQualityChoosed(url: String?) {
-        openPlayer(selectedPlayer!!, url)
+        play(selectedVideo, selectedPlayer!!, url)
     }
 
-    override fun openPlayer(playerType: PlayerType, payload: Any?) {
-        super.openPlayer(playerType, payload)
+    /** Opens [video] in [playerType]: [payload] is the built-in player's data, else the url to play. */
+    private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {
+        //another app may not be there to open it: the screen tries, and says when one did
+        if (playerType == PlayerType.EXTERNAL) viewState.openExternalPlayer(video, payload?.toString())
+        else {
+            openPlayer(playerType, payload)
+            onPlayerOpened(video, playerType)
+        }
+    }
 
+    //«Внешний плеер» counts the episode only once an app has opened it (BUGS #63)
+    fun onExternalPlayerOpened(video: TranslationVideo) = onPlayerOpened(video, PlayerType.EXTERNAL)
+
+    private fun onPlayerOpened(video: TranslationVideo, playerType: PlayerType) {
         isWatchSession = true
-        saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, selectedVideo)
+        saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, video)
     }
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {

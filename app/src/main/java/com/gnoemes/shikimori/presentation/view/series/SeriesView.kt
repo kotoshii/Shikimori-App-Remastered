@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.series
 
 import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
+import com.arellomobile.mvp.viewstate.strategy.OneExecutionStateStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Image
@@ -54,6 +55,10 @@ interface SeriesView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun showQualityChooser(items: List<Pair<String, String>>)
+
+    /** Opens [url] in another app, and tells the presenter when one opened: [video]'s episode counts then. */
+    @StateStrategyType(OneExecutionStateStrategy::class)
+    fun openExternalPlayer(video: TranslationVideo, url: String?)
 
     fun showFab(show : Boolean)
 

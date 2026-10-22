@@ -20,6 +20,7 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Image
+import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.presentation.*
@@ -34,6 +35,8 @@ import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment
 import com.gnoemes.shikimori.presentation.view.series.translations.adapter.TranslationsAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.navigation.RouteHolder
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -351,6 +354,12 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun checkPermissions() = activity!!.askStoragePermission { getPresenter().onStoragePermissionsAccepted() }
 
     override fun showFolderChooserDialog() = context!!.chooseDownloadFolder(onPositive = { getPresenter().onStoragePermissionsAccepted() })
+
+    //opened here, not through the router: only here is it known whether an app took it
+    override fun openExternalPlayer(video: TranslationVideo, url: String?) {
+        val intent = RouteHolder.createActivityIntent(context, Screens.EXTERNAL_PLAYER, url) ?: return
+        if (requireContext().startOutsideActivity(intent)) getPresenter().onExternalPlayerOpened(video)
+    }
 
     override fun showQualityChooser(items: List<Pair<String, String>>) {
         val dialog = ListDialogFragment.newInstance()
