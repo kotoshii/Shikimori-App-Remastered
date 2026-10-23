@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
 import com.gnoemes.shikimori.utils.labelRes
+import com.gnoemes.shikimori.utils.toUri
 import javax.inject.Inject
 
 class TranslationsViewModelConverterImpl @Inject constructor(
@@ -65,7 +66,8 @@ class TranslationsViewModelConverterImpl @Inject constructor(
         }
 
         val description: CharSequence? = if (builder.isNotEmpty()) builder else null
-        val videos = translations.map { t -> convertVideo(t) }
+        //one chip per video: Shikicinema lists one video several times in a card (P7-T5 Q29)
+        val videos = translations.map { t -> convertVideo(t) }.distinctBy { sameVideoKey(it) }
 
         return TranslationViewModel(
                 translations.first().videoId,
@@ -88,6 +90,18 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             //domain-shaped for every hosting ("vk.com", "cda.pl")
             video.hosting.synonymType
     )
+
+    /**
+     * Rows with the same key play the same video, and the first of them stays. AnimeJoy lists one file
+     * under each of its domains, so its rows compare by the `file=` inside the link - a domain that
+     * moves keeps its file and merges, a new file does not. Any other row compares by the very same
+     * link.
+     */
+    private fun sameVideoKey(video: TranslationVideo): String {
+        val url = video.webPlayerUrl ?: return "row " + video.videoId
+        val file = if (video.videoHosting is VideoHosting.ANIMEJOY) url.toUri().getQueryParameter("file") else null
+        return if (file != null) "file $file" else url
+    }
 
     private fun convertVideo(t: Translation): TranslationVideo = TranslationVideo(
             t.videoId,
