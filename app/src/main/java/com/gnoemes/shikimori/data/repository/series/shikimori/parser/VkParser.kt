@@ -22,7 +22,7 @@ class VkParser @Inject constructor(
         if (isChallenge(html)) throw HostingChallengeException()
 
         val regex = Regex("\"(mp4_144|mp4_240|mp4_360|mp4_480|mp4_720|mp4_1080)\":\\s?\"(.*?)\"")
-        val matches = regex.findAll(html)
+        val matches = regex.findAll(ownFiles(html) ?: html)
 
         return matches
                 .map { it.destructured.toList() }
@@ -44,6 +44,20 @@ class VkParser @Inject constructor(
      * windows-1251), and it appears nowhere in a real player page.
      */
     private fun isChallenge(html: String) = html.contains("hash429")
+
+    /**
+     * The video's own `"files":{…}` object; null when the page has none, and then the whole page is
+     * read as before. The page also lists a trailer's files under the same `mp4_*` keys - a short
+     * preview clip - which doubled every quality in the menu, and picked from a quality list opened or
+     * saved the clip (live 2026-10-23: 117 MB against 308 KB at 360p). The object holds only strings,
+     * so its first `}` ends it.
+     */
+    private fun ownFiles(html: String): String? {
+        val start = html.indexOf("\"files\":{")
+        if (start < 0) return null
+        val end = html.indexOf('}', start)
+        return if (end < 0) null else html.substring(start, end + 1)
+    }
 
     /**
      * vk.com embeds the file list as json inside `window.cur`, so the urls arrive escaped:
