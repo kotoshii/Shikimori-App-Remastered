@@ -19,9 +19,9 @@ import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
 import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
-import com.gnoemes.shikimori.presentation.presenter.common.converter.labelRes
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.tag
 import com.gnoemes.shikimori.utils.toBold
 import com.gnoemes.shikimori.utils.unknownIfZero
@@ -70,13 +70,13 @@ class TopicViewModelConverterImpl @Inject constructor(
                 line(R.string.details_type, String.format(context.getString(R.string.type_pattern_without_duration),
                         titleText.typeLabel(linked.type) ?: linked.type.type.toUpperCase(), linked.episodes.unknownIfZero())),
                 line(R.string.details_season, dateTimeConverter.convertAnimeSeasonToString(linked.dateAired)),
-                line(R.string.details_status, context.getString(linked.status.labelRes)))
+                line(R.string.details_status, context.getString(linked.status.labelRes(true))))
         is Manga -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl,
                 settings.titleName(linked.name, linked.nameRu),
                 line(R.string.details_type, String.format(context.getString(R.string.type_pattern_manga),
                         titleText.typeLabel(linked.type).orEmpty(), linked.volumes.unknownIfZero(), linked.chapters.unknownIfZero())),
                 line(R.string.details_season, dateTimeConverter.convertAnimeSeasonToString(linked.dateAired)),
-                line(R.string.details_status, context.getString(linked.status.labelRes)))
+                line(R.string.details_status, context.getString(linked.status.labelRes(false))))
         is Character -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl, settings.titleName(linked.name, linked.nameRu))
         is Person -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl, settings.titleName(linked.name, linked.nameRu))
         else -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl, linked.linkedName)

@@ -103,7 +103,11 @@
 
     <string name="status_anons">Анонс</string>
     <string name="status_ongoing">Онгоинг</string>
-    <string name="status_released">Завершен</string>
+    <string name="status_released">Вышло</string>
+    <string name="status_publishing">Выходит</string>
+    <string name="status_published">Издано</string>
+    <string name="status_paused">Приостановлено</string>
+    <string name="status_discontinued">Прекращено</string>
 
     <string name="rate_empty">Здесь пока ничего нет</string>
     <string name="rate_watching">Смотрю</string>
@@ -285,7 +289,8 @@
     <string name="filter_decade">%1$s-е</string>
     <string name="filter_drop">Сбросить</string>
     <string name="filters">Фильтры</string>
-    <string name="filters_latest">Недавно вышедшие</string>
+    <string name="filters_latest_anime">Недавно вышло</string>
+    <string name="filters_latest_manga">Недавно издано</string>
     <string name="filters_hint">Долгое нажатие на элемент исключает его.</string>
     <string name="filters_genres">Жанры</string>
     <!-- genres v2 splits one flat list into three kinds; these title the filter sheet sections -->
@@ -508,13 +513,6 @@
         <item>chapters</item>
         <item>aired_on</item>
         <item>name</item>
-    </string-array>
-
-    <string-array name="filter_statuses">
-        <item>@string/status_anons</item>
-        <item>@string/status_ongoing</item>
-        <item>@string/status_released</item>
-        <item>@string/filters_latest</item>
     </string-array>
 
     <string-array name="anime_types">

@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.presenter.common.converter
 
 import android.content.Context
 import android.text.SpannableStringBuilder
-import androidx.annotation.StringRes
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.anime.domain.AnimeType
@@ -10,19 +9,11 @@ import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.gnoemes.shikimori.utils.color
+import com.gnoemes.shikimori.utils.colorRes
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.faintTextColor
+import com.gnoemes.shikimori.utils.labelRes
 import javax.inject.Inject
-
-/** «Анонс», «Онгоинг», «Вышло»: a title's status; «Нет данных» when it has none. */
-@get:StringRes
-val Status.labelRes: Int
-    get() = when (this) {
-        Status.ANONS -> R.string.status_anons
-        Status.ONGOING -> R.string.status_ongoing
-        Status.RELEASED -> R.string.status_released
-        Status.NONE -> R.string.error_no_data
-    }
 
 /**
  * A title's type label and the line under its name on the cards of «Похожее», «Хронология» and the
@@ -58,7 +49,7 @@ class TitleTextConverter @Inject constructor(
     /** Status, start year (as the site shows it), type, episodes. */
     fun describe(anime: Anime): CharSequence {
         val line = Line()
-        line.addStatus(anime.status)
+        line.addStatus(anime.status, true)
         if (anime.status != Status.ONGOING) line.add(anime.dateAired?.year?.toString())
         line.add(typeLabel(anime.type))
 
@@ -75,7 +66,7 @@ class TitleTextConverter @Inject constructor(
     /** Status, start year, type, chapters. */
     fun describe(manga: Manga): CharSequence {
         val line = Line()
-        line.addStatus(manga.status)
+        line.addStatus(manga.status, false)
         if (manga.status != Status.ONGOING) line.add(manga.dateAired?.year?.toString())
         line.add(typeLabel(manga.type))
 
@@ -103,10 +94,9 @@ class TitleTextConverter @Inject constructor(
             text.append(part)
         }
 
-        fun addStatus(status: Status) = when (status) {
-            Status.ANONS -> add(context.getString(R.string.status_anons).colorSpan(context.color(R.color.status_anons)))
-            Status.ONGOING -> add(context.getString(R.string.status_ongoing).colorSpan(context.color(R.color.status_ongoing)))
-            else -> Unit
+        fun addStatus(status: Status, isAnime: Boolean) {
+            val color = status.colorRes ?: return
+            add(context.getString(status.labelRes(isAnime)).colorSpan(context.color(color)))
         }
     }
 }

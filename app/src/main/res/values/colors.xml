@@ -117,5 +117,8 @@
 
     <color name="status_anons">#ff2d58</color>
     <color name="status_ongoing">#0088ff</color>
+    <!--the site's colours for these two manga statuses (b-anime_status_tag.sass)-->
+    <color name="status_paused">#a063cf</color>
+    <color name="status_discontinued">#b19143</color>
 
 </resources>

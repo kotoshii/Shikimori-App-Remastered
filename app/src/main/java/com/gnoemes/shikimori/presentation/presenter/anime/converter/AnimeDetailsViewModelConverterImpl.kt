@@ -54,7 +54,7 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         val info = mutableListOf<Any>()
 
         //ongoing or anons indicator
-        statusItem(it.status)?.let { item -> info.add(item) }
+        statusItem(it.status, true)?.let { item -> info.add(item) }
 
         //release date (or next episode date for ongoings)
         if (it.status == Status.ANONS && it.dateAired != null) {

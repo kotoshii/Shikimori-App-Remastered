@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.nameRes
 import org.joda.time.DateTime
 import javax.inject.Inject
@@ -38,7 +39,7 @@ class FilterSourceImpl @Inject constructor(
     override fun getAnimeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, true)),
-            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
+            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, true)),
             rateCategory(true),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, true)),
             FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION)),
@@ -79,7 +80,7 @@ class FilterSourceImpl @Inject constructor(
         return when (type) {
             FilterType.GENRE -> getGenres(isAnime)
             FilterType.SEASON -> getSeasons(isAnime)
-            FilterType.STATUS -> getStatuses()
+            FilterType.STATUS -> getStatuses(isAnime)
             FilterType.RATE -> getRates(isAnime)
             FilterType.KIND -> getKinds(isAnime)
             FilterType.DURATION -> getDurations()
@@ -117,11 +118,19 @@ class FilterSourceImpl @Inject constructor(
                     .map { convert(FilterType.RATE.value, it.status.toLowerCase(), context.getString(it.nameRes(anime))) }
                     .toMutableList()
 
-    private fun getStatuses(): MutableList<FilterItem> =
-            getList(R.array.filter_statuses)
-                    .zip(Status.values().map { it.status.toLowerCase() }.toMutableList().apply { set(lastIndex, "latest") })
-                    .map { (name, value) -> convert(FilterType.STATUS.value, value, name) }
-                    .toMutableList()
+    /**
+     * The «Статус» chips, in the site's words and order for the type. Explicit pairs: the list used to
+     * be the labels zipped with `Status.values()` by position, which a new status would have shifted
+     * (BUGS #9). Paused and discontinued are for manga and ranobe only - the api answers anime's with
+     * 422; «Недавно вышло»/«Недавно издано» is the api's `latest`, not a status.
+     */
+    private fun getStatuses(anime: Boolean): MutableList<FilterItem> {
+        val statuses = if (anime) listOf(Status.ANONS, Status.ONGOING, Status.RELEASED)
+        else listOf(Status.ANONS, Status.ONGOING, Status.RELEASED, Status.PAUSED, Status.DISCONTINUED)
+        val items = statuses.map { convert(FilterType.STATUS.value, it.status, context.getString(it.labelRes(anime))) }
+        val latest = convert(FilterType.STATUS.value, "latest", context.getString(if (anime) R.string.filters_latest_anime else R.string.filters_latest_manga))
+        return (items.take(3) + latest + items.drop(3)).toMutableList()
+    }
 
     /**
      * v2 genres, from the accumulated vocabulary. The old hardcoded genre list knew 48 genres where
