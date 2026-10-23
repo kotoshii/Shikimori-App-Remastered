@@ -19,12 +19,19 @@ class SearchQueryBuilderImpl @Inject constructor(
     override fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int?, limit: Int?): Single<Map<String, String>> =
             Single.fromCallable<Map<String, String>> {
                 val queryMap = ArrayMap<String, String>()
-                //no filters: the catalog's default list, by rank
-                if (filters.isNullOrEmpty()) queryMap[SearchConstants.ORDER] = SearchConstants.ORDER_BY.RANKED.toString()
-                else filters.forEach { entry -> queryMap[entry.key] = convertFilters(entry.value) }
+                filters?.forEach { entry -> queryMap[entry.key] = convertFilters(entry.value) }
                 queryMap.putPageAndCensored(page, limit)
                 queryMap
             }
+
+    //a studio or genre opened from a title page, or a search, goes out sorted too (BUGS #12). Only the
+    //title lists: character and people search read nothing but the text
+    override fun createTitleListQuery(filters: Map<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<Map<String, String>> =
+            createQueryFromFilters(filters, page, limit)
+                    .map { query ->
+                        if (query.containsKey(SearchConstants.ORDER)) query
+                        else query + (SearchConstants.ORDER to SearchConstants.DEFAULT_ORDER.toString())
+                    }
 
     override fun createQueryFromIds(ids: MutableCollection<Long>): Single<Map<String, String>> =
             Single.fromCallable<Map<String, String>> {

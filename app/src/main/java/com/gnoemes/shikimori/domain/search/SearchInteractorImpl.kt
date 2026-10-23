@@ -27,12 +27,12 @@ class SearchInteractorImpl @Inject constructor(
                     .applyErrorHandlerAndSchedulers()
 
     override fun loadAnimeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<List<Anime>> =
-            queryBuilder.createQueryFromFilters(filters, page, limit)
+            queryBuilder.createTitleListQuery(filters, page, limit)
                     .flatMap { repository.getAnimeList(it) }
                     .applyErrorHandlerAndSchedulers()
 
     override fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int): Single<List<Manga>> =
-            queryBuilder.createQueryFromFilters(filters, page, limit)
+            queryBuilder.createTitleListQuery(filters, page, limit)
                     .flatMap { repository.getMangaList(it, type) }
                     .applyErrorHandlerAndSchedulers()
 

@@ -100,6 +100,7 @@ class SearchPresenter @Inject constructor(
 
         filters.clear()
         onRefresh()
+        showFilterIcon()
     }
 
     private fun getType(pos: Int): Type {
@@ -127,8 +128,12 @@ class SearchPresenter @Inject constructor(
     fun onFilterSelected(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         filters = appliedFilters
         onRefresh()
-        viewState.updateFilterIcon(appliedFilters.isEmpty())
+        showFilterIcon()
     }
+
+    //whether anything narrows the list, after every change. The search text counts: «Сбросить» in the
+    //sheet is the only way to clear it, and the icon shows where to look (BUGS #16a, P7-T5 Q22)
+    private fun showFilterIcon() = viewState.updateFilterIcon(filters.isEmpty())
 
     private fun onPayloadSearch() {
         searchPayload?.let {
@@ -136,12 +141,14 @@ class SearchPresenter @Inject constructor(
             else if (it.studioId != null) onStudioSearch(it.studioId)
         }
         viewState.addBackButton()
+        showFilterIcon()
     }
 
     fun onQuerySearch(query: String?) {
         val filterItem = FilterItem(SearchConstants.SEARCH, query, null)
         putFilter(filterItem)
         onRefresh()
+        showFilterIcon()
     }
 
     private fun onStudioSearch(studioId: Long) {

@@ -33,7 +33,7 @@ open class FilterPresenter @Inject constructor(
     private fun loadSortFilters() {
         sortsOfThisType()
                 .doOnSuccess { sortItems.clearAndAddAll(it) }
-                .subscribe(this::setSortFilters, this::processErrors)
+                .subscribe({ showSort() }, this::processErrors)
                 .addToDisposables()
     }
 
@@ -60,16 +60,19 @@ open class FilterPresenter @Inject constructor(
         viewState.showSortFilters(sortItems)
     }
 
-    private fun setSortFilters(it: List<FilterItem>) {
-        val selectedItem = it.find { it.value == appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value } ?: it.first()
-        clearAndAddToSelected(SearchConstants.ORDER, selectedItem)
-        viewState.setSortFilterText(selectedItem.localizedText!!)
+    //the sort chosen, else the default. Only a chosen sort is in the filters: the default stored there
+    //counted as a filter for «Сбросить» and the catalog's filter button (BUGS #16a)
+    private fun showSort() {
+        val chosen = appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value ?: SearchConstants.DEFAULT_ORDER.toString()
+        val item = sortItems.find { it.value == chosen } ?: sortItems.firstOrNull() ?: return
+        viewState.setSortFilterText(item.localizedText!!)
     }
 
     fun onSortChanged(newSort: FilterItem) {
-        clearAndAddToSelected(SearchConstants.ORDER, newSort)
-        viewState.setSortFilterText(newSort.localizedText!!)
-        viewState.setResetEnabled(newSort != sortItems.first())
+        if (newSort.value == SearchConstants.DEFAULT_ORDER.toString()) appliedFilters.remove(SearchConstants.ORDER)
+        else appliedFilters[SearchConstants.ORDER] = mutableListOf(newSort)
+        showSort()
+        onFiltersChanged()
     }
 
     fun onFilterAction(type: FilterType, action: FilterAction) {
@@ -95,12 +98,7 @@ open class FilterPresenter @Inject constructor(
 
     override fun onResetClicked() {
         super.onResetClicked()
-        loadSortFilters()
-    }
-
-    private fun clearAndAddToSelected(key: String, filterItem: FilterItem) {
-        clearSection(key)
-        addToSelected(key, filterItem)
+        showSort()
     }
 
     private fun clearSection(key: String) {
