@@ -48,10 +48,10 @@ abstract class BaseRateButtonListPresenter<View : RateButtonListView, Item : Rat
         if (drawnForGuest != null && drawnForGuest != isGuest) reloadData()
     }
 
-    protected fun loadData() {
+    protected fun loadData(refresh: Boolean = false) {
         val guest = isGuest
         loadItems(guest)
-                .appendLoadingLogic(viewState)
+                .appendLoadingLogic(viewState, refresh)
                 .subscribe({ setData(it, guest) }, this::processErrors)
                 .addToDisposables()
     }
@@ -102,6 +102,6 @@ abstract class BaseRateButtonListPresenter<View : RateButtonListView, Item : Rat
     }
 
     fun onRefresh() {
-        loadData()
+        loadData(refresh = true)
     }
 }

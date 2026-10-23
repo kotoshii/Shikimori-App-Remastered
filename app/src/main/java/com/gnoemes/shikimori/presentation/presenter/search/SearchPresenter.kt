@@ -44,12 +44,18 @@ class SearchPresenter @Inject constructor(
         else loadSimple()
     }
 
-    private fun loadSimple() {
+    //characters and people keep the list shown under the spinner, as the paged kinds do (BUGS #66)
+    override fun onRefresh() {
+        if (isPagination()) super.onRefresh()
+        else loadSimple(refresh = true)
+    }
+
+    private fun loadSimple(refresh: Boolean = false) {
         if (filters.isEmpty()) {
             viewState.apply { showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
         } else {
             getSimpleRequestFactory()
-                    .appendLoadingLogic(viewState)
+                    .appendLoadingLogic(viewState, refresh)
                     .subscribe({ showData(true, it) }, this::processErrors)
                     .addToDisposables()
         }
