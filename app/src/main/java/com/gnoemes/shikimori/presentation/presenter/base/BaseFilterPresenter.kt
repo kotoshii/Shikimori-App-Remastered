@@ -75,12 +75,12 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         addToSelected(key, newItem)
     }
 
+    //added when missing. A chip already there used to replace the whole list with itself: typing a
+    //season that was already picked dropped every other season (BUGS #59 N3)
     protected open fun addToSelected(key: String, value: FilterItem) {
-        if (appliedFilters[key] != null && !appliedFilters[key]?.contains(value)!!) {
-            appliedFilters[key]?.add(value)
-        } else {
-            appliedFilters[key] = mutableListOf(value)
-        }
+        val list = appliedFilters[key]
+        if (list == null) appliedFilters[key] = mutableListOf(value)
+        else if (!list.contains(value)) list.add(value)
     }
 
     //the key goes with its last item - only when that item is the one asked for: a one-item list was
