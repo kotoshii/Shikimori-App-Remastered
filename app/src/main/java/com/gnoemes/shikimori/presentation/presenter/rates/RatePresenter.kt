@@ -140,6 +140,8 @@ class RatePresenter @Inject constructor(
 
     //nothing of the lists shown before stays: the user signed out, or another account signed in
     private fun forgetShownLists() {
+        //a sort still running would show them again: rebuilding the tab's view restarts one
+        shownRates.cancel()
         destroyPaginator()
         rateStatus = null
         rates = emptyList()
