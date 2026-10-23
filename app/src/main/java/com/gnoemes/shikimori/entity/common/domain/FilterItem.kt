@@ -20,16 +20,9 @@ data class FilterItem(
         return localizedText ?: ""
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other is FilterItem) {
-            val (action1, value1, localizedText1) = other
-            if (value1 != null && value != null && localizedText != null) {
-                return (action == action1
-                        && value == value1)
-            }
-        }
-        return super.equals(other)
-    }
+    //the label plays no part: the studio and search items have none, and the old check compared them as
+    //different objects only when this side had no label, so a == b did not mean b == a (BUGS #69 B14)
+    override fun equals(other: Any?): Boolean = other is FilterItem && action == other.action && value == other.value
 
     override fun hashCode(): Int {
         var result = action.hashCode()

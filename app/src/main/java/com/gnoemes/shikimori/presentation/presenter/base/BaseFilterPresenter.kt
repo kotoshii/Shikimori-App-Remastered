@@ -83,12 +83,12 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         }
     }
 
+    //the key goes with its last item - only when that item is the one asked for: a one-item list was
+    //dropped whatever item was asked (BUGS #69 B14). The lists are this panel's own copies
     protected open fun removeFromSelected(key: String, value: FilterItem) {
-        if (appliedFilters[key]?.size == 1) {
-            appliedFilters.remove(key)
-        } else {
-            appliedFilters[key]?.remove(value)
-        }
+        val list = appliedFilters[key] ?: return
+        list.remove(value)
+        if (list.isEmpty()) appliedFilters.remove(key)
     }
 
     protected fun String.invertValue(): String = if (this.contains("!")) this.replace("!", "") else "!${this}"

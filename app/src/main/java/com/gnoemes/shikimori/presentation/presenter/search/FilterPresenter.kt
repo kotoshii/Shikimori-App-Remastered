@@ -84,14 +84,15 @@ open class FilterPresenter @Inject constructor(
         }
     }
 
+    //a panel gets only its own filter and hands back only that: with the whole map, unpicking the last
+    //genre came back as "no genre key" and left the old genres in (BUGS #14), and the panel's «Сбросить»
+    //counted the other filters
     private fun showNested(type: FilterType) {
-        when(type) {
-            FilterType.GENRE -> {
-                viewState.showGenresDialog(super.type, appliedFilters)
-            }
-            FilterType.SEASON -> {
-                viewState.showSeasonsDialog(super.type, appliedFilters)
-            }
+        val own = HashMap<String, MutableList<FilterItem>>()
+        appliedFilters[type.value]?.let { own[type.value] = it }
+        when (type) {
+            FilterType.GENRE -> viewState.showGenresDialog(super.type, own)
+            FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own)
             else -> Unit
         }
     }
@@ -132,8 +133,10 @@ open class FilterPresenter @Inject constructor(
     }
 
     fun onNestedFilterCallback(key: String?, newAppliedFilters: HashMap<String, MutableList<FilterItem>>) {
-        if (newAppliedFilters.isEmpty()) clearSection(key!!)
-        else appliedFilters.putAll(newAppliedFilters)
+        if (key == null) return
+        val chosen = newAppliedFilters[key]
+        if (chosen.isNullOrEmpty()) appliedFilters.remove(key)
+        else appliedFilters[key] = chosen
         onFiltersChanged()
     }
 

@@ -35,11 +35,17 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
     //each panel brings its own toolbar
     override val useWrapperLayout = false
 
-    /** For the `@ProvidePresenter` of each: the presenter starts with the arguments, on a copy of the filters. */
+    /**
+     * For the `@ProvidePresenter` of each: the presenter starts with the arguments, on a full copy of
+     * the filters - the lists too. The arguments hold the caller's own map until Android rebuilds the
+     * screen, so a shallow copy let a change reach the caller even when the panel was closed with ✕
+     * (BUGS #54, #72); only accepting hands the filters back.
+     */
     @Suppress("UNCHECKED_CAST")
     protected fun P.withArguments(): P = apply {
         type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
-        appliedFilters = HashMap(arguments?.getSerializable(FILTERS_KEY) as HashMap<String, MutableList<FilterItem>>)
+        val filters = arguments?.getSerializable(FILTERS_KEY) as? HashMap<String, MutableList<FilterItem>>
+        appliedFilters = HashMap(filters.orEmpty().mapValues { it.value.toMutableList() })
     }
 
     override fun onAttach(context: Context) {
