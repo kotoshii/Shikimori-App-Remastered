@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.data.local.services.impl
 import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.data.local.services.FilterSource
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
 import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class FilterSourceImpl @Inject constructor(
         private val context: Context,
         private val settingsSource: SettingsSource,
+        private val userSource: UserSource,
         private val genreVocabulary: GenreVocabularySource,
         private val dateTimeConverter: DateTimeConverter
 ) : FilterSource {
@@ -33,30 +35,35 @@ class FilterSourceImpl @Inject constructor(
         private val R18_MANGA = setOf(602L, 65L, 75L)   //the same three, manga ids
     }
 
-    override fun getAnimeFilters(): List<FilterCategory> = listOf(
+    override fun getAnimeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, true)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, true)),
+            rateCategory(true),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, true)),
             FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION)),
             FilterCategory(FilterType.AGE_RATING, getAgeRatingString(), getFilters(FilterType.AGE_RATING))
     )
 
-    override fun getMangaFilters(): List<FilterCategory> = listOf(
+    override fun getMangaFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE)),
+            rateCategory(false),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND))
     )
 
-    override fun getRanobeFilters(): List<FilterCategory> = listOf(
+    override fun getRanobeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE))
+            rateCategory(false)
     )
+
+    //«Список» filters by the signed-in user's own list; a guest has none to filter by (BUGS #15)
+    private fun rateCategory(anime: Boolean): FilterCategory? =
+            if (userSource.isSignedIn()) FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, anime))
+            else null
 
     override fun getAnimeSortFilters(): List<FilterItem> =
             getList(R.array.anime_search_sort)
