@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.series.data.OkPlayerData
 import com.gnoemes.shikimori.entity.series.data.OkPlayerFlashvarsMetadata
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
@@ -149,7 +150,7 @@ class OkParser @Inject constructor(
             }
 
     private fun List<Track>.sorted(): List<Track> =
-            distinctBy { it.quality }.sortedByDescending { it.quality.toIntOrNull() ?: 0 }
+            distinctBy { it.quality }.sortedByQuality()
 
     private fun getResolution(okQuality: String?): String? {
         return when (okQuality) {

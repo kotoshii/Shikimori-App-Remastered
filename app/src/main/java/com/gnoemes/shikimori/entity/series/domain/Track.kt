@@ -24,3 +24,9 @@ data class Track(
         const val UNKNOWN_QUALITY = "unknown"
     }
 }
+
+/**
+ * Best quality first, a track whose quality is not a number last: every parser sorts with this. Five
+ * of them sorted with `toInt()`, which throws on such a track as soon as there are two (BUGS #1, #24).
+ */
+fun List<Track>.sortedByQuality(): List<Track> = sortedByDescending { it.quality.toIntOrNull() ?: -1 }

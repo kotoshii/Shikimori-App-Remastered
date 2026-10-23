@@ -4,6 +4,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.data.CdaPlayerData
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
@@ -71,7 +72,7 @@ class CdaParser @Inject constructor(
 
                     Track(quality, "$base/$file", audioUrl)
                 }
-                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
+                .sortedByQuality()
     }
 
     private fun String.nullIfEmpty(): String? = if (isEmpty()) null else this

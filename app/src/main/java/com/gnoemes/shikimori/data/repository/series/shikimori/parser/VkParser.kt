@@ -4,6 +4,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -30,7 +31,7 @@ class VkParser @Inject constructor(
                     Track(key.replace("mp4_", ""), unescape(value))
                 }
                 .toList()
-                .sortedByDescending { it.quality.toInt() }
+                .sortedByQuality()
     }
 
     /**

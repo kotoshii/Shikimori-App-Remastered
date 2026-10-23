@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.data.MatreshkaPlaylistData
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
@@ -68,8 +69,8 @@ class MatreshkaParser @Inject constructor(
                     Track(quality.toString(), match.value)
                 }
                 .distinctBy { it.quality }
-                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
                 .toList()
+                .sortedByQuality()
     }
 
     /** Reads the base64'd description in the middle of a stream url. */

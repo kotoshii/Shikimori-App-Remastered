@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.gnoemes.shikimori.utils.putString
 import io.reactivex.Single
 import retrofit2.HttpException
@@ -224,7 +225,7 @@ class KodikParser @Inject constructor(
 
                     Track(quality, if (url.startsWith("http")) url else "https:$url")
                 }
-                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
+                .sortedByQuality()
     }
 
     /**

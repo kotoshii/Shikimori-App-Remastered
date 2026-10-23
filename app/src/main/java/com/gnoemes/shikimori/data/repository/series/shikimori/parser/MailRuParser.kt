@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.series.data.MailRuPlayerData
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.google.gson.Gson
 import io.reactivex.Single
 import org.jsoup.Jsoup
@@ -63,7 +64,7 @@ class MailRuParser @Inject constructor(
 
                     Track(quality, url)
                 }
-                ?.sortedByDescending { it.quality.toInt() }
+                ?.sortedByQuality()
                 .orEmpty()
     }
 
