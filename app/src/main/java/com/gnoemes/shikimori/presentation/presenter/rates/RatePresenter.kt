@@ -70,8 +70,13 @@ class RatePresenter @Inject constructor(
         get() = ownerId == null && userInteractor.getUserStatus() == UserStatus.GUEST
 
 
-    private var isDescendingSort: Boolean = false
-    private var sort: RateSort = RateSort.Id
+    //the sort saved for the type shown, read each time: a copy kept here missed the anime ↔ manga switch (BUGS #7)
+    private val sort: RateSort
+        get() = sortSource.getSort(type)
+
+    private val isDescendingSort: Boolean
+        get() = sortSource.getOrder(type)
+
     private var query: String? = null
     private var pinnedRates: Int = 0
 
@@ -90,10 +95,6 @@ class RatePresenter @Inject constructor(
 
     override fun initData() {
         viewState.setNavigationItems(emptyList())
-
-        sort = sortSource.getSort(type)
-        isDescendingSort = sortSource.getOrder(type)
-
         viewState.selectType(type)
         loadUserOrCategories()
     }
@@ -418,8 +419,6 @@ class RatePresenter @Inject constructor(
     }
 
     private fun onSortChanged(sort: RateSort, desc: Boolean) {
-        isDescendingSort = desc
-        this.sort = sort
         sortSource.saveSort(type, sort)
         sortSource.saveOrder(type, desc)
         showRates()
