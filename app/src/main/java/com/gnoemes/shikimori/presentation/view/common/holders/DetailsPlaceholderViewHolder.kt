@@ -18,4 +18,12 @@ class DetailsPlaceholderViewHolder(
             content.visible()
         }
     }
+
+    fun showPlaceholder() {
+        if (!placeholder.isVisible()) {
+            content.gone()
+            placeholder.visible()
+            placeholder.startShimmer()
+        }
+    }
 }

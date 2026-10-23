@@ -77,10 +77,10 @@ class UserRateViewHolder(
     }
 
     fun bind(item: UserRateViewModel) {
-        if (item.rates.toList().sumBy { it.second } == 0) {
-            view.gone()
-            return
-        }
+        //shown again when a reload has rates: a section that was empty once stayed hidden (BUGS #58)
+        val hasRates = item.rates.toList().sumBy { it.second } > 0
+        view.visibleIf { hasRates }
+        if (!hasRates) return
         this.item = item
 
         holder.bind(item.rates)
@@ -97,6 +97,19 @@ class UserRateViewHolder(
             scoreLayout.subHeaderView.text = scoreSubHeader
             updateVisibility(false)
         }
+    }
+
+    //back to the start: its spinner in place of the rates shown, the statistics folded
+    fun reset() {
+        item = null
+        with(view) {
+            visible()
+            progressView.visible()
+            rateProgressLayout.gone()
+            menuView.gone()
+            arrowBtn.rotation = 0f
+        }
+        updateVisibility(false)
     }
 
     private fun updateVisibility(isExpanded: Boolean) {

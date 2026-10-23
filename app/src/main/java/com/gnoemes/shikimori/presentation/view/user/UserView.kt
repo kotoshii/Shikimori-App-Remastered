@@ -27,6 +27,12 @@ interface UserView : BaseFragmentView {
 
     fun addSettings()
 
+    /**
+     * Back to the start: the header expanded, the top, the placeholders instead of the user shown.
+     * AddToEnd like the data, so a rebuilt view replays it after the old user's data, not before.
+     */
+    fun resetProfile()
+
     /** «Выйти» in the toolbar menu of the tab's own profile, only while signed in. */
     @StateStrategyType(AddToEndSingleStrategy::class)
     fun showSignOut(show: Boolean)

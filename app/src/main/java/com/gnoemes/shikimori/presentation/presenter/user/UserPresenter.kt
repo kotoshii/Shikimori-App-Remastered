@@ -19,7 +19,6 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.user.converter.UserDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.user.UserView
 import com.gnoemes.shikimori.utils.appendHostIfNeed
-import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.net.URLEncoder
@@ -43,6 +42,9 @@ class UserPresenter @Inject constructor(
 
     private lateinit var currentUser: UserDetails
 
+    //one profile load at a time: «Повторить» tapped again, or a sign-in, starts it anew (T5-19)
+    private val profileLoad = loadSlot()
+
     override fun initData() {
         if (id == Constants.NO_ID) {
             isMe = true
@@ -62,6 +64,7 @@ class UserPresenter @Inject constructor(
         else interactor.getMyUserId()
                 .subscribe({
                     if (reload || it != id) {
+                        if (id != Constants.NO_ID && it != id) forgetShownProfile()
                         id = it
                         viewState.showAuthView(false)
                         loadData()
@@ -71,50 +74,72 @@ class UserPresenter @Inject constructor(
     }
 
     private fun showSignedOut() {
+        profileLoad.cancel()
+        if (id != Constants.NO_ID) forgetShownProfile()
         id = Constants.NO_ID
         viewState.hideNetworkView()
         viewState.showContent(false)
         viewState.showAuthView(true)
     }
 
-    private fun loadData() =
-            loadUser()
-                    .doOnSuccess { loadFavorites() }
-                    .doOnSuccess { loadFriends() }
-                    .doOnSuccess { loadClubs() }
-                    .subscribe({}, this::processErrors)
-                    .addToDisposables()
+    /**
+     * The profile shown goes back to the start when its account goes: a header left scrolled kept the
+     * old name and avatar after «Выйти», and the next account's load showed the old data until its own.
+     */
+    private fun forgetShownProfile() {
+        animeExpanded = false
+        mangaExpanded = false
+        viewState.resetProfile()
+    }
 
-    private fun loadUser(showLoading: Boolean = true): Single<UserDetails> =
+    /**
+     * The user, then its three rows side by side. It starts by hiding the error view and showing the
+     * profile with its placeholders: «Повторить» gave no sign of a new load before (T5-19). Not the
+     * shared loading logic - the profile has no screen spinner, and it hid the first row's.
+     */
+    private fun loadData() = profileLoad.start {
+        loadUser()
+                .flatMapCompletable { Completable.merge(listOf(loadFavorites(), loadFriends(), loadClubs())) }
+                .doOnSubscribe {
+                    viewState.hideNetworkView()
+                    viewState.showContent(true)
+                }
+                .subscribe({}, this::processErrors)
+    }
+
+    private fun loadUser(): Single<UserDetails> =
             interactor.getDetails(id)
-                    .flatMap {
-                        if (showLoading) Single.just(it).appendLoadingLogic(viewState)
-                        else Single.just(it)
-                    }
                     .doOnSuccess { currentUser = it }
                     .doOnSuccess { viewState.setInfo(converter.convertInfo(it)) }
                     .doOnSuccess { viewState.setHead(converter.convertHead(it)) }
                     .doOnSuccess { viewState.setAnimeRate(converter.convertAnimeRate(it.stats)) }
                     .doOnSuccess { viewState.setMangaRate(converter.convertMangaRate(it.stats)) }
 
-    private fun loadFavorites() =
+    private fun loadFavorites(): Completable =
             interactor.getFavorites(id)
                     .map { converter.convertFavorites(it) }
-                    .subscribe({ viewState.setFavorites(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+                    .doOnSuccess { viewState.setFavorites(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone()
 
     //the first 100, the api's most: the row shows a few, and «ещё N+» when there may be more (BUGS #30)
-    private fun loadFriends() =
+    private fun loadFriends(): Completable =
             interactor.getFriends(id, 1)
                     .map { converter.convertFriends(it, mayHaveMore = it.size == Constants.MAX_FRIENDS_LIMIT) }
-                    .subscribe({ viewState.setFriends(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+                    .doOnSuccess { viewState.setFriends(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone()
 
-    private fun loadClubs() =
+    private fun loadClubs(): Completable =
             interactor.getClubs(id)
                     .map { converter.convertClubs(it) }
-                    .subscribe({ viewState.setClubs(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+                    .doOnSuccess { viewState.setClubs(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone()
+
+    //a row that fails says so and lets the others finish, as when each was loaded on its own
+    private fun Completable.reportedAlone(): Completable =
+            doOnError(this@UserPresenter::processErrors).onErrorComplete()
 
     fun onAction(action: UserProfileAction) {
         when (action) {
@@ -149,10 +174,8 @@ class UserPresenter @Inject constructor(
     }
 
     private fun onFriendshipStatusChanged(newStatus: Boolean) {
-        if (checkUserStatus()) {
-            router.showSystemMessage(resourceProvider.needAuth)
-            return
-        }
+        //checkUserStatus shows the message itself; it was shown twice (T5-16)
+        if (checkUserStatus()) return
 
         (if (newStatus) interactor.addToFriends(id)
         else interactor.removeFriend(id))
@@ -200,7 +223,7 @@ class UserPresenter @Inject constructor(
     }
 
     private fun Completable.updateUserData() {
-        andThen(loadUser(false))
+        andThen(loadUser())
                 .subscribe({ }, this@UserPresenter::processErrors)
                 .addToDisposables()
     }

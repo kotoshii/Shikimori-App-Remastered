@@ -66,10 +66,6 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     private var animeRateHolder: UserRateViewHolder? = null
     private var mangaRateHolder: UserRateViewHolder? = null
 
-    private var favoritesHolder: UserContentViewHolder? = null
-    private var friendsHolder: UserContentViewHolder? = null
-    private var clubsHolder: UserContentViewHolder? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(getFragmentLayout(), container, false)
     }
@@ -147,20 +143,28 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
 
     override fun setFavorites(isMe: Boolean, it: UserContentViewModel) {
         val layout = if (isMe) thirdContentLayout else firstContentLayout
-        favoritesHolder = UserContentViewHolder(layout, favoritesAdapter)
-        favoritesHolder?.bind(it)
+        UserContentViewHolder(layout, favoritesAdapter).bind(it)
     }
 
     override fun setFriends(isMe: Boolean, it: UserContentViewModel) {
         val layout = if (isMe) firstContentLayout else secondContentLayout
-        friendsHolder = UserContentViewHolder(layout, friendsAdapter)
-        friendsHolder?.bind(it)
+        UserContentViewHolder(layout, friendsAdapter).bind(it)
     }
 
     override fun setClubs(isMe: Boolean, it: UserContentViewModel) {
         val layout = if (isMe) secondContentLayout else thirdContentLayout
-        clubsHolder = UserContentViewHolder(layout, clubsAdapter)
-        clubsHolder?.bind(it)
+        UserContentViewHolder(layout, clubsAdapter).bind(it)
+    }
+
+    override fun resetProfile() {
+        appBarLayout.setExpanded(true, false)
+        scrollView.scrollTo(0, 0)
+        nameCollapsedView.text = null
+        imageLoader.clearImage(avatarCollapsedView)
+        infoHolder?.reset()
+        animeRateHolder?.reset()
+        mangaRateHolder?.reset()
+        listOf(firstContentLayout, secondContentLayout, thirdContentLayout).forEach { UserContentViewHolder.reset(it) }
     }
 
     override fun showContent(show: Boolean) {

@@ -51,4 +51,7 @@ class UserInfoViewHolder(
         }
     }
 
+    //back to the placeholder, as before the first user
+    fun reset() = placeholder.showPlaceholder()
+
 }
