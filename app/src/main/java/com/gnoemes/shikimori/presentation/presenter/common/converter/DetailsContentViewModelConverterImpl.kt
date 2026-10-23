@@ -162,9 +162,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         )
     }
 
-    /** «TV  •  2019»: the type and the start year, as the site's cards show them; no start date, no year. */
+    /** «TV Сериал  •  2019»: the type and the start year, as the site's cards show them; no start date, no year. */
     private fun typeAndYear(type: String, dateAired: DateTime?): CharSequence {
-        val text = SpannableStringBuilder(type.toUpperCase())
+        val text = SpannableStringBuilder(type)
         if (dateAired != null) {
             text.append("  •  ".colorSpan(dividerColor))
             text.append("${dateAired.year}".colorSpan(dividerColor))

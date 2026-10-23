@@ -11,12 +11,15 @@ import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.search.presentation.SearchItem
+import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.utils.unknownIfZero
 import javax.inject.Inject
 
 class SearchViewModelConverterImpl @Inject constructor(
         private val context: Context,
-        private val settings: SettingsSource
+        private val settings: SettingsSource,
+        //the type in the site's words, as its catalog cards show it: the api's raw kind (LIGHT_NOVEL) showed here
+        private val titleText: TitleTextConverter
 ) : SearchViewModelConverter {
     override fun apply(t: List<Any>): List<SearchItem> =
             t.mapNotNull { convertItem(it) }
@@ -60,7 +63,7 @@ class SearchViewModelConverterImpl @Inject constructor(
                 if (it.isRanobe) Type.RANOBE else Type.MANGA,
                 nameText,
                 it.image,
-                it.type.type
+                titleText.typeLabel(it.type).orEmpty()
         )
     }
 
@@ -73,7 +76,7 @@ class SearchViewModelConverterImpl @Inject constructor(
                 Type.ANIME,
                 nameText,
                 it.image,
-                it.type.type
+                titleText.typeLabel(it.type).orEmpty()
         )
     }
 }

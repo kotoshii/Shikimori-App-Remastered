@@ -17,34 +17,17 @@ import javax.inject.Inject
 
 /**
  * A title's type label and the line under its name on the cards of «Похожее», «Хронология» and the
- * list, written once: «Онгоинг  •  TV  •  5/12 эп.», «2019  •  TV  •  24 эп.».
+ * list, written once: «Онгоинг  •  TV Сериал  •  5/12 эп.», «2019  •  TV Сериал  •  24 эп.».
  */
 class TitleTextConverter @Inject constructor(
         private val context: Context
 ) {
 
-    /** «TV», «OVA», «Фильм»…; null for a kind the app has no label for. */
-    fun typeLabel(type: AnimeType): String? = when (type) {
-        AnimeType.TV -> context.getString(R.string.type_tv_short_translatable)
-        AnimeType.OVA -> context.getString(R.string.type_ova)
-        AnimeType.ONA -> context.getString(R.string.type_ona)
-        AnimeType.MUSIC -> context.getString(R.string.type_music_translatable)
-        AnimeType.MOVIE -> context.getString(R.string.type_movie_translatable)
-        AnimeType.SPECIAL -> context.getString(R.string.type_special_translatable)
-        else -> null
-    }
+    /** «TV Сериал», «OVA», «Спецвыпуск»…: the site's words, as on its cards; null for no kind. */
+    fun typeLabel(type: AnimeType): String? = type.labelRes?.let { context.getString(it) }
 
     /** «Манга», «Ранобэ», «Ваншот»…; null for an unknown kind. */
-    fun typeLabel(type: MangaType): String? = when (type) {
-        MangaType.MANGA -> context.getString(R.string.type_manga_translatable)
-        MangaType.NOVEL -> context.getString(R.string.type_novel_translatable)
-        MangaType.LIGHT_NOVEL -> context.getString(R.string.type_novel_translatable)
-        MangaType.ONE_SHOT -> context.getString(R.string.type_one_shot_translatable)
-        MangaType.DOUJIN -> context.getString(R.string.type_doujin_translatable)
-        MangaType.MANHUA -> context.getString(R.string.type_manhua_translatable)
-        MangaType.MANHWA -> context.getString(R.string.type_manhwa_translatable)
-        MangaType.UNKNOWN -> null
-    }
+    fun typeLabel(type: MangaType): String? = type.labelRes?.let { context.getString(it) }
 
     /** Status, start year (as the site shows it), type, episodes. */
     fun describe(anime: Anime): CharSequence {

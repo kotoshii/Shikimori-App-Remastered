@@ -101,16 +101,25 @@ class FilterSourceImpl @Inject constructor(
                     .map { (name, value) -> convert(FilterType.DURATION.value, value, name) }
                     .toMutableList()
 
-    private fun getKinds(anime: Boolean): MutableList<FilterItem> =
-            getList(if (anime) R.array.anime_types else R.array.manga_types)
-                    .zip(getList(if (anime) R.array.anime_types_name else R.array.manga_types_name))
-                    .asSequence()
-                    .mapNotNull { pair ->
-                        if (anime) AnimeType.values().find { it.type == pair.second }?.let { Pair(pair.first, it.type) }
-                        else MangaType.values().find { it.type == pair.second }?.let { Pair(pair.first, it.type) }
-                    }
-                    .map { (name, value) -> convert(FilterType.KIND.value, value, name) }
-                    .toMutableList()
+    /**
+     * The «Тип» chips, in the site's words and order: the same words as the cards. «TV: 12 серий»,
+     * «TV: 24 серии», «TV: 48+ серий» narrow «TV Сериал» by its episode count, as on the site; they are
+     * values of the api's `kind` filter, not kinds of a title.
+     */
+    private fun getKinds(anime: Boolean): MutableList<FilterItem> {
+        val kinds = if (anime) listOf(
+                AnimeType.TV.type to AnimeType.TV.labelRes,
+                AnimeType.TV_13.type to R.string.type_tv_13,
+                AnimeType.TV_24.type to R.string.type_tv_24,
+                AnimeType.TV_48.type to R.string.type_tv_48
+        ) + listOf(AnimeType.MOVIE, AnimeType.OVA, AnimeType.ONA, AnimeType.SPECIAL, AnimeType.TV_SPECIAL, AnimeType.MUSIC, AnimeType.PV, AnimeType.CM)
+                .map { it.type to it.labelRes }
+        else listOf(MangaType.MANGA, MangaType.MANHWA, MangaType.MANHUA, MangaType.ONE_SHOT, MangaType.DOUJIN)
+                .map { it.type to it.labelRes }
+        return kinds
+                .mapNotNull { (value, label) -> label?.let { convert(FilterType.KIND.value, value, context.getString(it)) } }
+                .toMutableList()
+    }
 
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =

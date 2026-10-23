@@ -244,20 +244,28 @@
     <string name="person_story">Сюжет</string>
     <string name="person_story_and_art">Сюжет и рисовка</string>
 
-    <string name="type_tv_translatable">TV сериал</string>
+    <!--the site's words for the kinds, as on its cards - utils/TypeExtensions.kt-->
+    <string name="type_tv_translatable">TV Сериал</string>
     <string name="type_tv_long_translatable">Сериал</string>
     <string name="type_tv_short_translatable">TV</string>
     <string name="type_movie_translatable">Фильм</string>
+    <string name="type_special_full_translatable">Спецвыпуск</string>
     <string name="type_special_translatable">Спешл</string>
+    <string name="type_tv_special_full_translatable">TV Спецвыпуск</string>
     <string name="type_music_translatable">Клип</string>
-    <string name="type_tv_13" translatable="false">TV 13</string>
-    <string name="type_tv_24" translatable="false">TV 24</string>
-    <string name="type_tv_48" translatable="false">TV 48</string>
+    <string name="type_pv_translatable">Проморолик</string>
+    <string name="type_cm_translatable">Реклама</string>
+    <!--«TV Сериал» by episode count, in the «Тип» filter: the site nests «— 12 серий» under «TV Сериал»,
+        a chip has no nesting, so «TV:» stands for it (Q85). The api: up to 16, 17-28, 29 and more-->
+    <string name="type_tv_13">TV: 12 серий</string>
+    <string name="type_tv_24">TV: 24 серии</string>
+    <string name="type_tv_48">TV: 48+ серий</string>
     <string name="type_ova" translatable="false">OVA</string>
     <string name="type_ona" translatable="false">ONA</string>
 
     <string name="type_manga_translatable">Манга</string>
     <string name="type_novel_translatable">Ранобэ</string>
+    <string name="type_novella_translatable">Новелла</string>
     <string name="type_one_shot_translatable">Ваншот</string>
     <string name="type_doujin_translatable">Додзинси</string>
     <string name="type_manhua_translatable">Маньхуа</string>
@@ -521,30 +529,6 @@
         <item>name</item>
     </string-array>
 
-    <string-array name="anime_types">
-        <item>@string/type_tv_translatable</item>
-        <item>@string/type_movie_translatable</item>
-        <item>@string/type_special_translatable</item>
-        <item>@string/type_music_translatable</item>
-        <item>@string/type_ova</item>
-        <item>@string/type_ona</item>
-        <item>@string/type_tv_13</item>
-        <item>@string/type_tv_24</item>
-        <item>@string/type_tv_48</item>
-    </string-array>
-
-    <string-array name="anime_types_name">
-        <item>tv</item>
-        <item>movie</item>
-        <item>special</item>
-        <item>music</item>
-        <item>ova</item>
-        <item>ona</item>
-        <item>tv_13</item>
-        <item>tv_24</item>
-        <item>tv_48</item>
-    </string-array>
-
     <string-array name="duration">
         <item>@string/duration_small</item>
         <item>@string/duration_medium</item>
@@ -555,22 +539,6 @@
         <item>S</item>
         <item>D</item>
         <item>F</item>
-    </string-array>
-
-    <string-array name="manga_types">
-        <item>@string/type_manga_translatable</item>
-        <item>@string/type_manhwa_translatable</item>
-        <item>@string/type_manhua_translatable</item>
-        <item>@string/type_one_shot_translatable</item>
-        <item>@string/type_doujin_translatable</item>
-    </string-array>
-
-    <string-array name="manga_types_name">
-        <item>manga</item>
-        <item>manhwa</item>
-        <item>manhua</item>
-        <item>one_shot</item>
-        <item>doujin</item>
     </string-array>
 
     <string-array name="age_ratings">
