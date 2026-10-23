@@ -5,17 +5,36 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <!--what a tap does: the sheet opens for a single file too, since its arrow shares the link-->
+    <TextView
+        android:id="@+id/downloadNotice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
+        android:text="@string/download_choose_quality"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="13sp" />
+
     <TextView
         android:id="@+id/mergeNotice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:paddingStart="16dp"
+        android:paddingLeft="16dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
         android:textColor="?attr/colorOnSurface"
         android:textSize="13sp"
         android:visibility="gone"
         tools:text="Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически."
         tools:visibility="visible" />
 
+    <!-- no top padding: VerticalSpaceItemDecorator already insets the first card by 16dp -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"

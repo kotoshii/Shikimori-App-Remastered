@@ -303,7 +303,7 @@ class SeriesPresenter @Inject constructor(
         //asking which hosting first means only that one is resolved. Resolving the whole group up
         //front cost a page fetch per hosting, and all but the chosen one were thrown away
         if (filteredItems.size == 1) showDownloadQualities(filteredItems.first())
-        else viewState.showDownloadHostingDialog(filteredItems.first().author, filteredItems, filteredItems.size < videos.size)
+        else viewState.showDownloadHostingDialog(converter.authorLabel(filteredItems.first().author), filteredItems, filteredItems.size < videos.size)
     }
 
     fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(video)
@@ -319,7 +319,7 @@ class SeriesPresenter @Inject constructor(
         getVideoAndExecute(video) { found ->
             val items = found.tracks.map { converter.convertTrack(found, it) }
             if (items.isEmpty()) viewState.showTracksNotFoundError()
-            else viewState.showDownloadDialog(video.author, items)
+            else viewState.showDownloadDialog(converter.authorLabel(video.author), items)
         }
     }
 

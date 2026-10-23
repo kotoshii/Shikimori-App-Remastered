@@ -71,7 +71,7 @@ class TranslationsViewModelConverterImpl @Inject constructor(
 
         return TranslationViewModel(
                 translations.first().videoId,
-                author.ifEmpty { unknownAuthor },
+                authorLabel(author),
                 description,
                 videos,
                 isSameAuthor,
@@ -79,6 +79,8 @@ class TranslationsViewModelConverterImpl @Inject constructor(
                 translations.first().episodesSize
         )
     }
+
+    override fun authorLabel(author: String): String = author.trim().ifEmpty { unknownAuthor }
 
     override fun convertTrack(video: Video, track: Track): SeriesDownloadItem = SeriesDownloadItem(
             track,

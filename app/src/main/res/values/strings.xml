@@ -423,6 +423,8 @@
     <string name="favorites_other_people">Прочие люди</string>
 
     <string name="download_choose_hosting">Этот перевод есть на нескольких источниках. Выберите один — список качеств откроется следующим шагом.</string>
+    <string name="download_choose_quality">Нажмите на качество, чтобы скачать видео, или на стрелку, чтобы поделиться ссылкой.</string>
+    <string name="download_quality_unknown">Качество неизвестно</string>
     <string name="download_choose_hosting_unsupported">Часть источников этого перевода не поддерживается приложением, поэтому их нет в списке.</string>
     <string name="download_will_be_merged">Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически. Дождитесь окончания обеих загрузок.</string>
     <string name="download_new_folder">Новая папка</string>
