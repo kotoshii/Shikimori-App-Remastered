@@ -77,6 +77,15 @@ fun Toolbar.showMenu() {
 }
 
 /**
+ * A number at the toolbar's end, such as how many clubs: one menu item, its title replaced each time.
+ * Each screen added another item on every load, so a refresh piled them up (BUGS #45).
+ */
+fun Toolbar.showCount(count: Int) {
+    if (menu.findItem(R.id.item_count) == null) inflateMenu(R.menu.menu_count)
+    menu.findItem(R.id.item_count)?.title = count.toString()
+}
+
+/**
  * The app's look for a search field in a toolbar: no gap before the text, the hint in the faint
  * text colour and, with [closeButton], a padded close button in the toolbar's text colour.
  */
