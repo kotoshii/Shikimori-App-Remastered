@@ -357,7 +357,9 @@ class DownloadService : Service() {
     private fun title(data: DownloadVideoData): String {
         //padded so episode 10 does not sort before episode 2 in a file manager
         val episode = data.episodeIndex.toString().padStart(2, '0')
-        val meta = listOf(data.quality, data.kind, data.hosting).filter { it.isNotBlank() }
+        //each part cleaned like the names: a quality came from a hosting's page, and once held a whole
+        //url (BUGS #1, #59 N10)
+        val meta = listOf(data.quality, data.kind, data.hosting).map { safeName(it) }.filter { it.isNotBlank() }
 
         val prefix = if (data.author.isBlank()) "" else "[" + safeName(data.author) + "] "
         val suffix = " - " + episode + if (meta.isEmpty()) "" else " (" + meta.joinToString(", ") + ")"
