@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.ColorUtils
+import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
@@ -183,9 +184,22 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
             setOnMenuItemClickListener {
                 when (it.itemId) {
                     R.id.item_settings -> getPresenter().onSettingsClicked()
+                    R.id.item_sign_out -> getPresenter().onSignOutClicked()
                 }
                 true
             }
+        }
+    }
+
+    override fun showSignOut(show: Boolean) {
+        toolbar?.menu?.findItem(R.id.item_sign_out)?.isVisible = show
+    }
+
+    override fun showSignOutDialog() {
+        MaterialDialog(context!!).show {
+            message(R.string.user_sign_out_confirm)
+            positiveButton(R.string.user_sign_out) { getPresenter().onSignOutConfirmed() }
+            negativeButton(R.string.common_cancel)
         }
     }
 

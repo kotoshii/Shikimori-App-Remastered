@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.user
 
 import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
+import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHeadViewModel
@@ -25,6 +26,13 @@ interface UserView : BaseFragmentView {
     fun setMangaRate(data: UserRateViewModel)
 
     fun addSettings()
+
+    /** «Выйти» in the toolbar menu of the tab's own profile, only while signed in. */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showSignOut(show: Boolean)
+
+    @StateStrategyType(SkipStrategy::class)
+    fun showSignOutDialog()
 
     @StateStrategyType(AddToEndSingleStrategy::class)
     fun showAuthView(show: Boolean)

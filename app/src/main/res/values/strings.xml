@@ -315,6 +315,8 @@
     <br><b>!summer_2001</b> - кроме Лета 2001 года]]></string>
 
     <string name="more_settings">Настройки</string>
+    <string name="user_sign_out">Выйти</string>
+    <string name="user_sign_out_confirm">Выйти из аккаунта?</string>
 
     <string name="topic_news">Новости</string>
     <string name="topic_my_feed">Моя лента</string>

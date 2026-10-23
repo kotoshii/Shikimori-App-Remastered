@@ -57,6 +57,7 @@ class UserPresenter @Inject constructor(
 
     /** The signed-in user's profile, or «Войти»; [reload] loads the profile even when it is the one shown. */
     private fun showMyProfile(reload: Boolean) {
+        viewState.showSignOut(!isGuest())
         if (isGuest()) showSignedOut()
         else interactor.getMyUserId()
                 .subscribe({
@@ -224,6 +225,15 @@ class UserPresenter @Inject constructor(
             if (id != Constants.NO_ID) showSignedOutMessage(throwable)
             showSignedOut()
         } else super.processErrors(throwable)
+    }
+
+    //asked first: a sign-out also ends the site's session in the in-app browser
+    fun onSignOutClicked() = viewState.showSignOutDialog()
+
+    fun onSignOutConfirmed() {
+        interactor.signOut()
+                .subscribe({ showMyProfile(reload = true) }, this::processErrors)
+                .addToDisposables()
     }
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)

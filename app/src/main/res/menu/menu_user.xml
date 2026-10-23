@@ -8,6 +8,9 @@
         android:title="@string/more_settings"
         app:iconTint="?attr/colorOnSurface"
         app:showAsAction="ifRoom" />
-
-
+    <item
+        android:id="@+id/item_sign_out"
+        android:title="@string/user_sign_out"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

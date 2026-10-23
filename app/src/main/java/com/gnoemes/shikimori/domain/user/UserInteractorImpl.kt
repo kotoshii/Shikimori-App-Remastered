@@ -4,12 +4,15 @@ import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
+import com.gnoemes.shikimori.utils.network.AuthHolder
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
 
 class UserInteractorImpl @Inject constructor(
-        private val repository: UserRepository
+        private val repository: UserRepository,
+        //owns the login (P7-T5 stage 1): the same sign-out as a refused refresh token
+        private val authHolder: AuthHolder
 ) : UserInteractor {
 
     override fun getMyUserId(): Single<Long> = repository.getMyUserId().applyErrorHandlerAndSchedulers()
@@ -40,4 +43,8 @@ class UserInteractorImpl @Inject constructor(
     override fun removeFriend(id: Long): Completable = repository.removeFriend(id).applyErrorHandlerAndSchedulers()
 
     override fun getUserStatus(): UserStatus = repository.getUserStatus()
+
+    override fun signOut(): Completable =
+            Completable.fromAction { authHolder.signOut() }
+                    .applyErrorHandlerAndSchedulers()
 }
