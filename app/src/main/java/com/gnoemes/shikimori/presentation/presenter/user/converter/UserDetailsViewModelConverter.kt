@@ -16,7 +16,8 @@ interface UserDetailsViewModelConverter  {
 
     fun convertInfo(t : UserDetails) : UserInfoViewModel
 
-    fun convertFriends(t : List<UserBrief>) : UserContentViewModel
+    /** [mayHaveMore]: [t] was cut at the api's limit, so the "more" tile counts at least that many. */
+    fun convertFriends(t : List<UserBrief>, mayHaveMore : Boolean) : UserContentViewModel
 
     fun convertFavorites(t : FavoriteList) : UserContentViewModel
 

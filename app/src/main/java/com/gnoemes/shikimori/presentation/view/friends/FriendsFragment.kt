@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.friends
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
@@ -10,7 +9,8 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
 import com.gnoemes.shikimori.presentation.presenter.friends.FriendsPresenter
-import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
+import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
+import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.friends.adapter.FriendsAdapter
 import com.gnoemes.shikimori.utils.*
@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.layout_default_list.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
-class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsView {
+class FriendsFragment : BasePaginationFragment<FriendViewModel, FriendsPresenter, FriendsView>(), FriendsView {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -39,7 +39,7 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
         fun newInstance(id : Long) = FriendsFragment().withArgs { putLong(AppExtras.ARGUMENT_USER_ID, id) }
     }
 
-    private val adapter by lazy { FriendsAdapter(imageLoader, getPresenter()::onContentClicked).apply { if (!hasObservers()) setHasStableIds(true) } }
+    private val friendsAdapter by lazy { FriendsAdapter(imageLoader, getPresenter()::onContentClicked).apply { if (!hasObservers()) setHasStableIds(true) } }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,9 +52,8 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
         with(recyclerView) {
             adapter = this@FriendsFragment.adapter
             layoutManager = LinearLayoutManager(context)
+            addOnScrollListener(nextPageListener)
         }
-
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -65,27 +64,6 @@ class FriendsFragment : BaseFragment<FriendsPresenter, FriendsView>(), FriendsVi
 
     override fun getFragmentLayout(): Int = R.layout.fragment_default_list
 
-    ///////////////////////////////////////////////////////////////////////////
-    // MVP
-    ///////////////////////////////////////////////////////////////////////////
-
-    override fun showData(items: List<FriendViewModel>) {
-        adapter.bindItems(items)
-    }
-
-    override fun showFriendsCount(count: Int) {
-        toolbar?.menu?.add("$count")
-        toolbar?.menu?.getItem(0)?.apply {
-            isEnabled = false
-            setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
-    }
-
-    override fun showContent(show: Boolean) {
-        recyclerView.visibleIf { show }
-    }
-
-    override fun onShowLoading() = refreshLayout.showRefresh()
-
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override val adapter: BasePaginationAdapter
+        get() = friendsAdapter
 }

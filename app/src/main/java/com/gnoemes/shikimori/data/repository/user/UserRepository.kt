@@ -14,7 +14,7 @@ interface UserRepository {
 
     fun getDetails(id: Long): Single<UserDetails>
 
-    fun getFriends(id: Long): Single<List<UserBrief>>
+    fun getFriends(id: Long, page: Int, limit: Int): Single<List<UserBrief>>
 
     fun getFavorites(id: Long): Single<FavoriteList>
 

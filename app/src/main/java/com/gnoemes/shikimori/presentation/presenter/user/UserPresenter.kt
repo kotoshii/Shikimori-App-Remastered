@@ -103,9 +103,10 @@ class UserPresenter @Inject constructor(
                     .subscribe({ viewState.setFavorites(currentUser.isMe, it) }, this::processErrors)
                     .addToDisposables()
 
+    //the first 100, the api's most: the row shows a few, and «ещё N+» when there may be more (BUGS #30)
     private fun loadFriends() =
-            interactor.getFriends(id)
-                    .map { converter.convertFriends(it) }
+            interactor.getFriends(id, 1)
+                    .map { converter.convertFriends(it, mayHaveMore = it.size == Constants.MAX_FRIENDS_LIMIT) }
                     .subscribe({ viewState.setFriends(currentUser.isMe, it) }, this::processErrors)
                     .addToDisposables()
 

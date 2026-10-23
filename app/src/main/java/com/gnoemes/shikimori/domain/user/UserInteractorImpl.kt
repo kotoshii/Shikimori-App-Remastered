@@ -26,7 +26,7 @@ class UserInteractorImpl @Inject constructor(
                     }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getFriends(id: Long): Single<List<UserBrief>> = repository.getFriends(id).applyErrorHandlerAndSchedulers()
+    override fun getFriends(id: Long, page: Int, limit: Int): Single<List<UserBrief>> = repository.getFriends(id, page, limit).applyErrorHandlerAndSchedulers()
 
     override fun getFavorites(id: Long): Single<FavoriteList> = repository.getFavorites(id).applyErrorHandlerAndSchedulers()
 

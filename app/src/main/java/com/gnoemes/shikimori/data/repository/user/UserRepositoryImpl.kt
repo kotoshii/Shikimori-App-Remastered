@@ -42,8 +42,8 @@ class UserRepositoryImpl @Inject constructor(
             api.getUserProfile(id)
                     .map(detailsConverter::convertResponse)
 
-    override fun getFriends(id: Long): Single<List<UserBrief>> =
-            api.getUserFriends(id)
+    override fun getFriends(id: Long, page: Int, limit: Int): Single<List<UserBrief>> =
+            api.getUserFriends(id, page, limit)
                     .map(converter)
 
     override fun getFavorites(id: Long): Single<FavoriteList> =

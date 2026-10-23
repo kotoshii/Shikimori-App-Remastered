@@ -37,9 +37,9 @@ class UserContentMoreAdapterDelegate(
 
         fun bind(item : UserContentMoreItem) {
             this.item = item
-            val text = "+${item.size}"
+            val count = if (item.isAtLeast) "${item.size}+" else "${item.size}"
             container.isSelected = true
-            container.text = text
+            container.text = itemView.context.getString(R.string.profile_more_format, count)
         }
     }
 }

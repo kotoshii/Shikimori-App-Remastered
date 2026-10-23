@@ -44,7 +44,7 @@ class UserContentViewHolder(
         val items = mutableListOf<Any>()
         items.addAll(item.content)
 
-        if (item.needShowMore) items.add(UserContentMoreItem(item.type, item.moreSize))
+        if (item.needShowMore) items.add(UserContentMoreItem(item.type, item.moreSize, item.moreIsAtLeast))
         adapter.bindItems(items)
 
         val stringRes = when (item.type) {

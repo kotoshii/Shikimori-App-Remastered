@@ -22,6 +22,9 @@ object Constants {
 
     const val MAX_LIMIT = 1000
 
+    //the most friends the api sends in one request
+    const val MAX_FRIENDS_LIMIT = 100
+
     const val MAX_ANIME_LIMIT = 50
 
     const val EXIT_TIMEOUT = 3L * 1000
