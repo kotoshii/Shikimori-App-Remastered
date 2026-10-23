@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.utils
 
+import com.gnoemes.shikimori.entity.app.domain.exceptions.HiddenListException
+import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.utils.rx.ErrorProcessing
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -52,3 +54,13 @@ inline fun <reified T> Single<T>.applyErrorHandlerAndSchedulers(scheduler: Sched
 inline fun <reified T> Observable<T>.applyErrorHandlerAndSchedulers(scheduler: Scheduler = Schedulers.io()): Observable<T> {
     return applyErrorHandler(ErrorProcessing()).applySchedulers(scheduler)
 }
+
+/**
+ * A 403 on a user's list or history: its owner's «Могут видеть мой список» hides it from the viewer,
+ * signed in or not (the api's `authorize_lists_access`). After the error handler, which makes the 403
+ * a [ServiceCodeException].
+ */
+fun <T> Single<T>.hiddenListOnForbidden(isGuest: () -> Boolean): Single<T> =
+        onErrorResumeNext { e: Throwable ->
+            Single.error(if ((e as? ServiceCodeException)?.serviceCode == 403) HiddenListException(isGuest()) else e)
+        }

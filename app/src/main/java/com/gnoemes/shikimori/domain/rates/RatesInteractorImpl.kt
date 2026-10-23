@@ -6,7 +6,9 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
+import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
+import com.gnoemes.shikimori.utils.hiddenListOnForbidden
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -19,10 +21,14 @@ class RatesInteractorImpl @Inject constructor(
     override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
             repository.getAnimeRates(id, page, limit, rateStatus)
                     .applyErrorHandlerAndSchedulers()
+                    .hiddenListOnForbidden(this::isGuest)
 
     override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
             repository.getMangaRates(id, page, limit, rateStatus)
                     .applyErrorHandlerAndSchedulers()
+                    .hiddenListOnForbidden(this::isGuest)
+
+    private fun isGuest(): Boolean = userRepository.getUserStatus() == UserStatus.GUEST
 
     override fun getRate(id: Long): Single<UserRate> = repository.getRate(id).applyErrorHandlerAndSchedulers()
 

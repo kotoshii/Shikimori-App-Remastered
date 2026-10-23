@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
 import com.gnoemes.shikimori.entity.app.domain.exceptions.BaseException
+import com.gnoemes.shikimori.entity.app.domain.exceptions.HiddenListException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.NetworkException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.PageOffsetPaginator
@@ -83,7 +84,8 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
 
     override fun showEmptyError(show: Boolean, throwable: Throwable?) {
         if ((throwable as? BaseException)?.tag != NetworkException.TAG
-                && (throwable as? BaseException)?.tag != ServiceCodeException.TAG) {
+                && (throwable as? BaseException)?.tag != ServiceCodeException.TAG
+                && (throwable as? BaseException)?.tag != HiddenListException.TAG) {
             if (show) viewState.showEmptyView()
         }
 
@@ -97,6 +99,17 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
 
     override fun onAllData() {
         viewState.onAllData()
+    }
+
+    //a list its owner hides: a message in its place, not the error view and «Сервер вернул ошибку 403» -
+    //a retry cannot help
+    override fun processErrors(throwable: Throwable) {
+        if (throwable is HiddenListException) viewState.apply {
+            hideNetworkView()
+            showContent(false)
+            showHiddenListView(throwable.guest)
+        }
+        else super.processErrors(throwable)
     }
 
 }

@@ -15,4 +15,7 @@ interface BasePaginationView : BaseFragmentView {
 
     fun onAllData()
 
+    /** Its owner's «Могут видеть мой список» hides the list from the viewer; [guest]: signed out. */
+    fun showHiddenListView(guest: Boolean)
+
 }

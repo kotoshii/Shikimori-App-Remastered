@@ -428,6 +428,9 @@
     <string name="profile_history_format">История %s</string>
     <!--the profile's "more" tile: «ещё 36», or «ещё 95+» when the list was cut at the api's limit-->
     <string name="profile_more_format">ещё %s</string>
+    <!--a user's history or list that their «Могут видеть мой список» hides: the api answers 403-->
+    <string name="list_hidden">Пользователь скрыл свой список и историю.</string>
+    <string name="list_hidden_guest">Пользователь скрыл свой список и историю. Возможно, они видны после входа.</string>
     <string name="profile_statistic">Расширенная статистика</string>
     <string name="profile_anime_hint">Формируется по спискам «Смотрю», «Пересматриваю» и «Просмотрено».</string>
     <string name="profile_manga_hint">Формируется по спискам «Читаю», «Перечитываю» и «Прочитано».</string>

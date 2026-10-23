@@ -4,6 +4,7 @@ import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
+import com.gnoemes.shikimori.utils.hiddenListOnForbidden
 import com.gnoemes.shikimori.utils.network.AuthHolder
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -32,7 +33,10 @@ class UserInteractorImpl @Inject constructor(
 
     override fun getClubs(id: Long): Single<List<Club>> = repository.getClubs(id).applyErrorHandlerAndSchedulers()
 
-    override fun getHistory(id: Long, page: Int, limit: Int): Single<List<UserHistory>> = repository.getHistory(id, page, limit).applyErrorHandlerAndSchedulers()
+    override fun getHistory(id: Long, page: Int, limit: Int): Single<List<UserHistory>> =
+            repository.getHistory(id, page, limit)
+                    .applyErrorHandlerAndSchedulers()
+                    .hiddenListOnForbidden { getUserStatus() == UserStatus.GUEST }
 
     override fun ignore(id: Long): Completable = repository.ignore(id).applyErrorHandlerAndSchedulers()
 
