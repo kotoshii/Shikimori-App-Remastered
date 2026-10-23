@@ -31,10 +31,7 @@ open class FilterPresenter @Inject constructor(
     }
 
     private fun loadSortFilters() {
-        (when (type) {
-            Type.MANGA -> interactor.getMangaSortFilters()
-            else -> interactor.getAnimeSortFilters()
-        })
+        sortsOfThisType()
                 .doOnSuccess { sortItems.clearAndAddAll(it) }
                 .subscribe(this::setSortFilters, this::processErrors)
                 .addToDisposables()
@@ -50,6 +47,13 @@ open class FilterPresenter @Inject constructor(
     private fun setData(it: List<Any>) {
         items.clearAndAddAll(it)
         viewState.showData(it)
+    }
+
+    //ranobe sorts as manga does: it has chapters and volumes, not episodes, and the api answers an
+    //episodes sort for it with 422 (BUGS #10)
+    private fun sortsOfThisType() = when (type) {
+        Type.MANGA, Type.RANOBE -> interactor.getMangaSortFilters()
+        else -> interactor.getAnimeSortFilters()
     }
 
     fun onSortClicked() {
