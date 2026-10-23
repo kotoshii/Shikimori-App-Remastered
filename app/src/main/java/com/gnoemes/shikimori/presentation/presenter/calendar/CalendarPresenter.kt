@@ -27,9 +27,9 @@ class CalendarPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() {
+    private fun loadData(refresh: Boolean = false) {
         interactor.getCalendarData()
-                .appendLoadingLogic(viewState)
+                .appendLoadingLogic(viewState, refresh)
                 .doOnSuccess { items.clearAndAddAll(it) }
                 .subscribe(this::convertAndSet, this::processErrors)
                 .addToDisposables()
@@ -49,7 +49,7 @@ class CalendarPresenter @Inject constructor(
     }
 
     fun onRefresh() {
-        loadData()
+        loadData(refresh = true)
     }
 
     fun onQueryChanged(newText: String?) {

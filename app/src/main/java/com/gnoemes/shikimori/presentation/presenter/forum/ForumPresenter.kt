@@ -21,9 +21,9 @@ class ForumPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() =
+    private fun loadData(refresh: Boolean = false) =
             interactor.getForums()
-                    .appendLoadingLogic(viewState)
+                    .appendLoadingLogic(viewState, refresh)
                     .map(converter)
                     .subscribe(this::showData, this::processErrors)
 
@@ -36,6 +36,6 @@ class ForumPresenter @Inject constructor(
     }
 
     fun onRefresh() {
-        loadData()
+        loadData(refresh = true)
     }
 }

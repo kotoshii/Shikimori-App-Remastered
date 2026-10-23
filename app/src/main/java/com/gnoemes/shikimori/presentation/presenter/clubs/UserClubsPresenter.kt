@@ -23,9 +23,9 @@ class UserClubsPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() =
+    private fun loadData(refresh: Boolean = false) =
             interactor.getClubs(id)
-                    .appendLoadingLogic(viewState)
+                    .appendLoadingLogic(viewState, refresh)
                     .map(converter)
                     .subscribe(this::showData, this::processErrors)
                     .addToDisposables()
@@ -36,6 +36,6 @@ class UserClubsPresenter @Inject constructor(
     }
 
     fun onRefresh() {
-        loadData()
+        loadData(refresh = true)
     }
 }
