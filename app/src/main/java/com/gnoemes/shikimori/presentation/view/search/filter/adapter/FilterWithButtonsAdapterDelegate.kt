@@ -2,14 +2,12 @@ package com.gnoemes.shikimori.presentation.view.search.filter.adapter
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterAction
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.entity.search.presentation.FilterWithButtonsViewModel
-import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
@@ -39,8 +37,6 @@ class FilterWithButtonsAdapterDelegate(
 
         private lateinit var item: FilterWithButtonsViewModel
 
-        private val bigMargin by lazy { itemView.context.dp(26) }
-        private val defaultMargin by lazy { itemView.context.dp(16) }
 
         init {
             with(itemView) {
@@ -68,14 +64,9 @@ class FilterWithButtonsAdapterDelegate(
 
                 val filtersApplied = item.filters.find { it.state != FilterViewModel.STATE.DEFAULT } != null
 
-                clearBtn.visibleIf { item.hasDelete && filtersApplied }
+                clearBtn.visibleIf { filtersApplied }
                 invertBtn.visibleIf { item.hasInvert && filtersApplied }
                 checkAllBtn.visibleIf { item.hasSelectAll }
-
-                val margin = if (item.hasDelete || item.hasSelectAll || item.hasInvert) bigMargin
-                else defaultMargin
-
-                dynamicSpace.layoutParams = (dynamicSpace.layoutParams as ConstraintLayout.LayoutParams).apply { height = margin }
             }
         }
 

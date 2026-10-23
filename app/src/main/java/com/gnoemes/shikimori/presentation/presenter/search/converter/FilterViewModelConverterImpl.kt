@@ -27,9 +27,8 @@ class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConver
         return when (category.filterType) {
             FilterType.GENRE -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             FilterType.SEASON -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
-            FilterType.RATE -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = true, hasInvert = true, hasSelectAll = true)
-            FilterType.KIND -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = true, hasInvert = false, hasSelectAll = false)
-            else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = false, hasInvert = false, hasSelectAll = false)
+            FilterType.RATE -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = true, hasSelectAll = true)
+            else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = false, hasSelectAll = false)
         }
     }
 
