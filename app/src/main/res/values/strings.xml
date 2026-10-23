@@ -246,11 +246,9 @@
 
     <!--the site's words for the kinds, as on its cards - utils/TypeExtensions.kt-->
     <string name="type_tv_translatable">TV Сериал</string>
-    <string name="type_tv_long_translatable">Сериал</string>
     <string name="type_tv_short_translatable">TV</string>
     <string name="type_movie_translatable">Фильм</string>
     <string name="type_special_full_translatable">Спецвыпуск</string>
-    <string name="type_special_translatable">Спешл</string>
     <string name="type_tv_special_full_translatable">TV Спецвыпуск</string>
     <string name="type_music_translatable">Клип</string>
     <string name="type_pv_translatable">Проморолик</string>
