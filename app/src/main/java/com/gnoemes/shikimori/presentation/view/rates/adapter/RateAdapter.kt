@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.view.rates.adapter
 
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
+import com.gnoemes.shikimori.entity.common.presentation.ListDividerItem
 import com.gnoemes.shikimori.entity.common.presentation.ProgressItem
 import com.gnoemes.shikimori.entity.common.presentation.SortAction
 import com.gnoemes.shikimori.entity.rates.domain.RateListAction
@@ -9,6 +10,7 @@ import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
 import com.gnoemes.shikimori.entity.rates.presentation.RateSortViewModel
 import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
 import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
+import com.gnoemes.shikimori.presentation.view.common.adapter.ListDividerAdapterDelegate
 import com.gnoemes.shikimori.presentation.view.series.episodes.adapter.SeriesPlaceholderAdapterDelegate
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.ItemTouchHelperAdapter
@@ -27,18 +29,21 @@ class RateAdapter(
             addDelegate(RateAdapterDelegate(imageLoader, navigationCallback, callback, listActionCallback))
             addDelegate(RateSortAdapterDelegate(sortCallback))
             addDelegate(SeriesPlaceholderAdapterDelegate())
+            addDelegate(ListDividerAdapterDelegate())
         }
     }
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
         newItem is RateViewModel && oldItem is RateViewModel -> newItem.id == oldItem.id
         newItem is RateSortViewModel && oldItem is RateSortViewModel -> newItem.currentSort == oldItem.currentSort
+        newItem is ListDividerItem && oldItem is ListDividerItem -> true
         else -> newItem is ProgressItem && oldItem is ProgressItem
     }
 
     override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean = when {
         newItem is RateViewModel && oldItem is RateViewModel -> newItem == oldItem
         newItem is RateSortViewModel && oldItem is RateSortViewModel -> newItem == oldItem
+        newItem is ListDividerItem && oldItem is ListDividerItem -> true
         else -> false
     }
 

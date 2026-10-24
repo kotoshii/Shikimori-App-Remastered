@@ -31,6 +31,10 @@ interface RateView : BasePaginationView {
     @StateStrategyType(SkipStrategy::class)
     fun showPinLimitMessage()
 
+    /** An entry was just pinned (with how to unpin it) or unpinned. */
+    @StateStrategyType(SkipStrategy::class)
+    fun showPinChangedMessage(pinned: Boolean)
+
     fun showEmptyRatesView(show : Boolean, isAnime: Boolean? = null)
 
     fun showNeedAuthView(show : Boolean)

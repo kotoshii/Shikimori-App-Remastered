@@ -128,6 +128,9 @@
     <string name="rate_search_empty_title">В этом списке ничего не найдено</string>
     <string name="rate_search_empty_message">Измените запрос или воспользуйтесь разделом поиска.</string>
     <string name="rate_pin_max_message">Закрепить можно до трех элементов</string>
+    <string name="rate_pinned">Закреплено</string>
+    <string name="rate_pinned_message">Закреплено. Чтобы открепить, удерживайте постер</string>
+    <string name="rate_unpinned_message">Откреплено</string>
     <string name="rate_swipe_increment">+1</string>
     <string name="rate_swipe_change">Изменить список</string>
     <string name="rate_swipe_hold">Отложить</string>

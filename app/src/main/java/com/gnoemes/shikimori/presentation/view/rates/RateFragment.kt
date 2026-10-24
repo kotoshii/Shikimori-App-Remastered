@@ -368,6 +368,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         Toast.makeText(context!!, R.string.rate_pin_max_message, Toast.LENGTH_SHORT).show()
     }
 
+    //the pinned one is longer, so it stays longer
+    override fun showPinChangedMessage(pinned: Boolean) {
+        if (pinned) Toast.makeText(context!!, R.string.rate_pinned_message, Toast.LENGTH_LONG).show()
+        else Toast.makeText(context!!, R.string.rate_unpinned_message, Toast.LENGTH_SHORT).show()
+    }
+
     override fun showEmptyRatesView(show: Boolean, isAnime: Boolean?) {
         if (isAnime != null) {
             actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)

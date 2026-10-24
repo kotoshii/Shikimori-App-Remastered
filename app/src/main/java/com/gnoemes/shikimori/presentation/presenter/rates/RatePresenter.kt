@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.entity.auth.AuthType
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
+import com.gnoemes.shikimori.entity.common.presentation.ListDividerItem
 import com.gnoemes.shikimori.entity.common.presentation.RateSort
 import com.gnoemes.shikimori.entity.common.presentation.SortAction
 import com.gnoemes.shikimori.entity.main.BottomScreens
@@ -322,12 +323,12 @@ class RatePresenter @Inject constructor(
 
     private fun onPinRate(rate: RateViewModel) {
         if (rate.isPinned) pinInteractor.removePinnedRate(rate.contentId)
-                .subscribe(this::showRates, this::processErrors)
+                .subscribe({ showRates(); viewState.showPinChangedMessage(false) }, this::processErrors)
                 .addToDisposables()
         else {
             if (pinnedRates >= Constants.MAX_PINNED_RATES) viewState.showPinLimitMessage()
             else pinInteractor.addPinnedRate(PinnedRate(rate.contentId, type, rateStatus!!, if (pinnedRates == 0) 0 else pinnedRates - 1))
-                    .subscribe(this::showRates, this::processErrors)
+                    .subscribe({ showRates(); viewState.showPinChangedMessage(true) }, this::processErrors)
                     .addToDisposables()
         }
     }
@@ -456,7 +457,15 @@ class RatePresenter @Inject constructor(
     private fun setData(sortBar: RateSortViewModel, items: List<RateViewModel>, isSearch: Boolean) {
         if (!isSearch) pinnedRates = items.count { it.isPinned }
         if (isSearch && items.isEmpty()) viewState.showEmptySearchView(listOf(sortBar))
-        else viewState.showData(listOf(sortBar) + items)
+        else viewState.showData(listOf(sortBar) + withPinnedGroup(items))
+    }
+
+    //the pinned entries come first, with a line under them: with the pin on each, it shows why they
+    //are on top (BUGS #49)
+    private fun withPinnedGroup(items: List<RateViewModel>): List<Any> {
+        val (pinned, others) = items.partition { it.isPinned }
+        return if (pinned.isEmpty() || others.isEmpty()) items
+        else pinned + ListDividerItem + others
     }
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)
