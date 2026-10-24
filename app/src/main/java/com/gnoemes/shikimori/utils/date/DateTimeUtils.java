@@ -20,8 +20,9 @@ public interface DateTimeUtils {
 
     boolean isSameYear(DateTime firstDate, DateTime secondDate);
 
-    boolean isSameDay(DateTime firstDate);
-
+    /**
+     * The same calendar date: the one compare {@link #isToday} and {@link #isTomorrow} are built on.
+     */
     boolean isSameDay(DateTime firstDate, DateTime secondDate);
 
 }

@@ -52,7 +52,7 @@ class DateTimeConverterImpl @Inject constructor(
     override fun convertDateAgoToString(actionDate: DateTime): String {
         val gap = Gap(dateUtils.nowDateTime, actionDate)
         return when {
-            dateUtils.isSameDay(actionDate) ->
+            dateUtils.isToday(actionDate) ->
                 if (gap.hours == 0) resourceProvider.getMinutesAgoString(gap.minutes)
                 else resourceProvider.getHoursAgoString(gap.hours)
             gap.months == 0 -> resourceProvider.getDaysAgoString(gap.days)
