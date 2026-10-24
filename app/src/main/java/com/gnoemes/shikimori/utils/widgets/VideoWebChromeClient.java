@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.utils.widgets;
 
 
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
@@ -24,7 +23,6 @@ public class VideoWebChromeClient extends WebChromeClient {
 
     @Override
     public void onShowCustomView(View view, CustomViewCallback callback) {
-        Log.i("DEVE", "ENTER FULLSCREEN");
         videoCallback = callback;
         videoViewContainer = view;
         windowCallback.onFullscreenMode();
@@ -38,7 +36,6 @@ public class VideoWebChromeClient extends WebChromeClient {
         if (!isVideoFullscreen) {
             return;
         }
-        Log.i("DEVE", "EXIT FULLSCREEN");
         activityVideoView.setVisibility(View.VISIBLE);
         activityVideoView.removeView(videoViewContainer);
         windowCallback.onNormalMode();

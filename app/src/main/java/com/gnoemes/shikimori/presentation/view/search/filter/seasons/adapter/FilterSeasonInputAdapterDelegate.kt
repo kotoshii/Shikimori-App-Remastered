@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.search.filter.seasons.adapter
 
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +29,6 @@ class FilterSeasonInputAdapterDelegate(
 
         private val listener = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                Log.i("DEVE", s?.toString())
                 if (s?.toString()?.contains(" ") == true) wrapText(s.toString())
             }
 
