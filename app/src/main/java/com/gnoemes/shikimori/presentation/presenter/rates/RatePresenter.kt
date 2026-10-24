@@ -380,7 +380,7 @@ class RatePresenter @Inject constructor(
                 .map { it.episodes ?: 0 }
                 .subscribe({ watched ->
                     val data = SeriesNavigationData.of(anime.id, anime.image, name, anime.status, anime.episodes,
-                            anime.episodesAired, rate.id, watched, watched + 1)
+                            anime.episodesAired, rate.id, watched)
                     router.navigateTo(Screens.SERIES, data)
                 }, this::processErrors)
                 .addToDisposables()

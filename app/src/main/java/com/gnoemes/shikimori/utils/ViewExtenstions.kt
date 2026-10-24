@@ -37,6 +37,12 @@ inline fun View.visibleIf(block: () -> Boolean) {
     if (block()) visible() else gone()
 }
 
+/** A control that cannot be used now stays in its place, greyed out, rather than going away. */
+fun View.setUsable(usable: Boolean) {
+    isEnabled = usable
+    alpha = if (usable) 1f else 0.3f
+}
+
 inline fun View.onClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL, crossinline l: (v: View) -> Unit) {
     setOnClickListener(object : DebouncedOnClickListener(mills) {
         override fun onDebouncedClick(v: View?) {

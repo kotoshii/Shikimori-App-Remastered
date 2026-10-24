@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
@@ -101,8 +102,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     //the toolbar as the presenter last set it (SeriesView.showControls), and the picker open over it
     private var isSourceShown = false
     private var shownType: TranslationType? = null
-    private var shownEpisode: Int? = null
-    private var isNextShown = false
+    private var episodeControls: EpisodeControls? = null
     private var openPicker: Picker? = null
 
     private enum class Picker { SOURCES, TYPES }
@@ -186,6 +186,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         actionBtn.onClick { onSourceSelected(true) }
         fab.onClick { getPresenter().onDiscussionClicked() }
         nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
+        previousEpisodeBtn.onClick { getPresenter().onPreviousEpisode() }
     }
 
     private fun onTypeSelected(newType: TranslationType) {
@@ -209,8 +210,15 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         TransitionManager.beginDelayedTransition(motionLayout, transition)
         val sources = openPicker == Picker.SOURCES
         val types = openPicker == Picker.TYPES
-        episodeChip.visibleIf { shownEpisode != null && !sources }
-        nextEpisodeBtn.visibleIf { isNextShown && !sources }
+        val episodes = episodeControls
+        episodeChip.visibleIf { episodes != null && !sources }
+        previousEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        nextEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        if (episodes != null) {
+            episodeChip.setUsable(episodes.isEnabled)
+            previousEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoBack)
+            nextEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoForward)
+        }
         sourceChangeBtn.visibleIf { isSourceShown && !sources }
         mainSource.visibleIf { sources }
         altSource.visibleIf { sources }
@@ -273,11 +281,19 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean) {
-        authorsLayout.visibleIf { show }
-        titleView.setText(R.string.series_empty_authors_title)
-        descriptionView.setText(R.string.series_empty_authors_description)
-        if (isAlternative) actionBtn.gone()
-        else actionBtn.visible()
+        if (show) showEmptyState(R.string.series_empty_authors_title, R.string.series_empty_authors_description, !isAlternative)
+        else authorsLayout.gone()
+    }
+
+    override fun showEpisodeNotFoundView(isAlternative: Boolean) =
+            showEmptyState(R.string.series_empty_episode_title, R.string.series_empty_episode_description, !isAlternative)
+
+    //the place under the toolbar for a list with nothing to show; its button switches to the other source
+    private fun showEmptyState(@StringRes title: Int, @StringRes description: Int, isSourceButtonShown: Boolean) {
+        authorsLayout.visible()
+        titleView.setText(title)
+        descriptionView.setText(description)
+        actionBtn.visibleIf { isSourceButtonShown }
     }
 
     override fun showEmptySearchView() {
@@ -285,11 +301,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         adapter.bindItems(mutableListOf(emptyItem))
     }
 
-    override fun showControls(isSourceShown: Boolean, type: TranslationType?, episode: Int?, isNextShown: Boolean) {
+    override fun showControls(isSourceShown: Boolean, type: TranslationType?, episodes: EpisodeControls?) {
         this.isSourceShown = isSourceShown
         shownType = type
-        shownEpisode = episode
-        this.isNextShown = isNextShown
+        episodeControls = episodes
         //a picker whose button went away closes with it
         if (openPicker == Picker.SOURCES && !isSourceShown || openPicker == Picker.TYPES && type == null) openPicker = null
 
@@ -304,7 +319,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         //«#» lighter than the number, at Material's 60% for secondary text. It was the chip's own
         //background colour, and could hardly be seen (BUGS #74)
         val hashColor = ColorUtils.setAlphaComponent(context!!.colorAttr(R.attr.colorSecondary), 153)
-        if (episode != null) episodeChip.text = "# ".colorSpan(hashColor).append("$episode")
+        if (episodes != null) episodeChip.text = "# ".colorSpan(hashColor).append("${episodes.episode}")
 
         showToolbar(Fade())
     }
@@ -382,12 +397,9 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         dialog.show(childFragmentManager, "QualityDialog")
     }
 
-    override fun showEmptyView() {
-        authorsLayout.visible()
-        actionBtn.gone()
-        titleView.setText(R.string.series_empty_episode_title)
-        descriptionView.setText(R.string.series_empty_episode_description)
-    }
+    //nothing is out at all: no source can help
+    override fun showEmptyView() =
+            showEmptyState(R.string.series_empty_episode_title, R.string.series_empty_episode_description, false)
 
     override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
     override fun hideEmptyView() = emptyContentView.gone()

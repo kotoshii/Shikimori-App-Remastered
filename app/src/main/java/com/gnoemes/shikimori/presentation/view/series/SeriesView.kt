@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
+import com.gnoemes.shikimori.entity.series.presentation.EpisodeControls
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -21,11 +22,11 @@ interface SeriesView : BaseFragmentView {
     fun showData(newItems: List<TranslationViewModel>)
 
     /**
-     * The toolbar's own controls: the source button, the type button showing [type], the episode chip
-     * showing [episode] and ›. A null [type] or [episode] hides its button.
+     * The toolbar's own controls: the source button, the type button showing [type], and ‹ «# N» ›. A
+     * null [type] or [episodes] hides its buttons.
      */
     @StateStrategyType(AddToEndSingleStrategy::class)
-    fun showControls(isSourceShown: Boolean, type: TranslationType?, episode: Int?, isNextShown: Boolean)
+    fun showControls(isSourceShown: Boolean, type: TranslationType?, episodes: EpisodeControls?)
 
     fun changeSource(isAlternative : Boolean)
 
@@ -68,6 +69,9 @@ interface SeriesView : BaseFragmentView {
     fun setBackground(image: Image)
 
     fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean = false)
+
+    /** The source does not list the episode; hidden with [showEmptyAuthorsView] (false), which shares its place. */
+    fun showEpisodeNotFoundView(isAlternative: Boolean)
 
     fun showEmptySearchView()
 

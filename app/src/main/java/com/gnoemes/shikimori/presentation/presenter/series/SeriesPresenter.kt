@@ -77,12 +77,12 @@ class SeriesPresenter @Inject constructor(
         type = restored?.type ?: settingsSource.translationType
         isTypeKnown = restored?.type != null || !settingsSource.useLocalTranslationSettings
         if (restored != null) {
-            episode = restored.episode
+            episode = restored.episode ?: navigationData.episode
             episodeId = restored.episodeId
             isAlternative = restored.isAlternative
         } else {
-            episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
-            episodeId = episode?.toLong()
+            //not cut to shikimori's count: the episode list tells whether it is out (BUGS #50)
+            episode = navigationData.episode
         }
         //the episode list and the player read the count from here, and add what they write to it
         progressInteractor.remember(navigationData.animeId, navigationData.rateId, navigationData.watchedEpisodes)
@@ -90,7 +90,10 @@ class SeriesPresenter @Inject constructor(
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
         viewState.changeSource(isAlternative)
-        if (episode == null) viewState.showFab(false)
+        //shikimori counts nothing out: so until the episode list says otherwise, as nothing out. The
+        //controls showed during the load and went once it came (Test 72f)
+        isNothingOut = navigationData.episodesAired <= 0
+        viewState.showFab(!isNothingOut)
 
         loadWithEpisode()
     }
@@ -109,29 +112,26 @@ class SeriesPresenter @Inject constructor(
     private fun loadWithEpisode() {
         val id = episodeId
         if (id != null) load(translations(id))
-        //with no episode asked for: the first one not watched, else the last watched
-        else loadEpisodes { items ->
-            if (episode == null) episode = items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index
-            episode ?: 1
-        }
+        //an episode not looked up yet: the episode list first, which tells whether the source has it
+        else loadEpisodes()
     }
 
-    //the next episode when the source has it, else the current one again. When the source has
-    //neither, the next one, as having no translations yet
-    fun onNextEpisode() = loadEpisodes { items ->
-        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
-        (episode ?: 0) + 1
-    }
+    //the next or the previous episode: its translations when the source has it, else that the source
+    //does not have it. › reloaded the same episode when the source had no next one (BUGS #50)
+    fun onNextEpisode() = loadEpisodes { episode = (episode ?: navigationData.episode) + 1 }
+
+    fun onPreviousEpisode() = loadEpisodes { episode = ((episode ?: navigationData.episode) - 1).coerceAtLeast(1) }
 
     /**
-     * The episode list, then the episode [pick] sets: [pick] returns the one shown as having no
-     * translations yet when the source lacks it (see [showEpisode]).
+     * The episode list, then [episode] from it (see [showEpisode]). [choose] changes [episode] once the
+     * list has come, so a load that fails leaves the episode shown as it was.
      */
-    private fun loadEpisodes(pick: (List<Episode>) -> Int) = load(
+    private fun loadEpisodes(choose: () -> Unit = {}) = load(
             loadSettingsIfNeed()
+                    //all the source has: shikimori's count can lag behind it (BUGS #50)
                     .flatMap { interactor.getEpisodes(navigationData.animeId, isAlternative) }
-                    .map { it.take(navigationData.episodesAired) }
-                    .flatMap { showEpisode(it, pick(it)) },
+                    .doOnSuccess { choose() }
+                    .flatMap { showEpisode(it) },
             loadsEpisodes = true)
 
     private fun translations(episodeId: Long): Single<Loaded> =
@@ -176,30 +176,29 @@ class SeriesPresenter @Inject constructor(
 
     /**
      * The chosen [episode]: its translations when the source has it. If not, while anything is out,
-     * episode [notFound] as having no translations yet; else that nothing is out.
+     * that the source does not have it; else that nothing is out.
      */
-    private fun showEpisode(items: List<Episode>, notFound: Int): Single<Loaded> {
+    private fun showEpisode(items: List<Episode>): Single<Loaded> {
         val id = items.firstOrNull { it.index == episode }?.id
         episodeId = id
         isLoadingEpisodes = false
         isNothingOut = id == null && navigationData.episodesAired <= 0
-        if (id == null && !isNothingOut) episode = notFound
         showControls()
         viewState.showFab(!isNothingOut)
 
         return when {
             id != null -> translations(id)
             isNothingOut -> Single.just(Loaded.NothingOut)
-            else -> Single.just(Loaded.NoTranslations)
+            else -> Single.just(Loaded.NotInSource)
         }
     }
 
     private fun onLoaded(loaded: Loaded) {
         when (loaded) {
             is Loaded.Translations -> setData(loaded.items)
-            Loaded.NoTranslations -> {
+            Loaded.NotInSource -> {
                 viewState.hideEmptyView()
-                viewState.showEmptyAuthorsView(true, isAlternative)
+                viewState.showEpisodeNotFoundView(isAlternative)
                 viewState.showContent(false)
             }
             Loaded.NothingOut -> viewState.showEmptyView()
@@ -209,22 +208,25 @@ class SeriesPresenter @Inject constructor(
     //whatever failed, the source can still be switched and «Повторить» tries again (BUGS #53)
     private fun onLoadFailed(throwable: Throwable) {
         isLoadingEpisodes = false
+        //not known after all: the source button back, so the other source can be tried
+        isNothingOut = false
         showControls()
         processErrors(throwable)
     }
 
     /**
      * Which toolbar controls show (BUGS #53): the source and the type whenever they can change
-     * anything; the episode chip and › only for a known episode of a title with more than one, and
-     * not while the episode list loads - a tap there needs the episode.
+     * anything; ‹ «# N» › whenever an episode is out, a film too - the chip is the way to whatever the
+     * source has beyond shikimori's count, such as a special uploaded as episode 25 of 24. The arrows
+     * go by shikimori's count (P7-T5 Q117/Q118). While the episode list loads they stay, greyed out:
+     * a tap there needs the episode, and hiding them moved the source button (Test 70f).
      */
     private fun showControls() {
-        val shownEpisode = episode.takeIf { !isLoadingEpisodes && !isNothingOut && navigationData.episodesAired != 1 }
-        viewState.showControls(
-                !isNothingOut,
-                type.takeIf { isTypeKnown && !isNothingOut },
-                shownEpisode,
-                shownEpisode != null && shownEpisode != navigationData.episodesAired)
+        val last = navigationData.lastEpisode
+        val controls = episode.takeIf { !isNothingOut }?.let {
+            EpisodeControls(it, !isLoadingEpisodes, last > 1 || it > 1, it > 1, it < last)
+        }
+        viewState.showControls(!isNothingOut, type.takeIf { isTypeKnown && !isNothingOut }, controls)
     }
 
     private fun setData(data: List<TranslationViewModel>) {
@@ -517,8 +519,8 @@ class SeriesPresenter @Inject constructor(
     private sealed class Loaded {
         class Translations(val items: List<TranslationViewModel>) : Loaded()
 
-        /** The episode is out, but the source has nothing for it yet. */
-        object NoTranslations : Loaded()
+        /** The source does not list the episode: not out yet, or not uploaded there. */
+        object NotInSource : Loaded()
 
         /** No episode is out at all. */
         object NothingOut : Loaded()

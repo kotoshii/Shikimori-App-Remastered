@@ -68,7 +68,7 @@ open class AnimePresenter @Inject constructor(
         val anime = details ?: return
 
         val data = SeriesNavigationData.of(id, anime.image, title, anime.status, anime.episodes, anime.episodesAired,
-                anime.userRate?.id, anime.userRate?.episodes ?: 0, null)
+                anime.userRate?.id, anime.userRate?.episodes ?: 0)
         router.navigateTo(Screens.SERIES, data)
     }
 

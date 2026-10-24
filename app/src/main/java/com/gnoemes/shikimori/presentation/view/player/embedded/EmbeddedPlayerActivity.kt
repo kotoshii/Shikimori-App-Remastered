@@ -342,21 +342,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         val isVisible
             get() = controlsVisibility == View.VISIBLE
 
-        fun enableNextButton(enable: Boolean) {
-            val alpha =
-                    if (!enable) 0.3f
-                    else 1f
-            next.alpha = alpha
-            next.isEnabled = enable
-        }
+        fun enableNextButton(enable: Boolean) = next.setUsable(enable)
 
-        fun enablePrevButton(enable: Boolean) {
-            val alpha =
-                    if (!enable) 0.3f
-                    else 1f
-            prev.alpha = alpha
-            prev.isEnabled = enable
-        }
+        fun enablePrevButton(enable: Boolean) = prev.setUsable(enable)
 
         fun selectTrack(position: Int) {
             resolutionSpinnerView.setSelection(position, false)
