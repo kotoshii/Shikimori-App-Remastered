@@ -25,10 +25,16 @@ import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import io.reactivex.Single
+import okhttp3.HttpUrl
 
-fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String {
-    return if (this.contains("http")) this else host + this
-}
+/**
+ * An address the api sends, made whole: its `url` is a path from the site's root («/animes/1-…»), and
+ * it is resolved against the site the way a browser resolves a link. The two strings used to be glued,
+ * so the site address's last "/" and the path's first one gave «shikimori.io//animes/…», 404 for every
+ * web and share link (API_COVERAGE.md §6.1). A whole address stays as it is.
+ */
+fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String =
+        HttpUrl.parse(host)?.resolve(this)?.toString() ?: this
 
 fun String.firstUpperCase(): String? {
     return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).toUpperCase() + this.substring(1)
