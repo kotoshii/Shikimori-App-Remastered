@@ -5,7 +5,7 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:' + versions.gradlePlugin
@@ -17,9 +17,10 @@ buildscript {
 
 allprojects {
     repositories {
+        //libraries no public repository serves any more, kept here unchanged (vendor/maven/README.md)
+        maven { url "$rootDir/vendor/maven" }
         google()
-        jcenter()
-        maven { url "https://jitpack.io" }
+        mavenCentral()
     }
 }
 
