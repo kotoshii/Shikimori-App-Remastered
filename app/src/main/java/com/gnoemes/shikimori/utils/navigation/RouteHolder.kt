@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.auth.AuthType
+import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
@@ -64,7 +65,7 @@ object RouteHolder {
             Screens.USER_HISTORY -> UserHistoryFragment.newInstance(data as UserHistoryNavigationData)
             Screens.USER_FAVORITES -> FavoritesFragment.newInstance(data as Long)
             Screens.SIMILAR -> SimilarFragment.newInstance(data as CommonNavigationData)
-            Screens.CHRONOLOGY -> ChronologyFragment.newInstance(data as CommonNavigationData)
+            Screens.CHRONOLOGY -> ChronologyFragment.newInstance(data as ChronologyNavigationData)
             else -> null
         }
     }

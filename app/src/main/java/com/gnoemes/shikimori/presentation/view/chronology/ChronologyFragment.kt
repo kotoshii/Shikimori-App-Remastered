@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
-import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.presentation.presenter.chronology.ChronologyPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseRateButtonListFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
@@ -35,7 +35,7 @@ class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, Chron
     }
 
     companion object {
-        fun newInstance(data: CommonNavigationData) = ChronologyFragment().withArgs { putParcelable(DATA_KEY, data) }
+        fun newInstance(data: ChronologyNavigationData) = ChronologyFragment().withArgs { putParcelable(DATA_KEY, data) }
         private const val DATA_KEY = "DATA_KEY"
     }
 

@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -227,8 +228,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         router.navigateTo(Screens.SIMILAR, CommonNavigationData(id, type))
     }
 
-    private fun onChronology() {
-        router.navigateTo(Screens.CHRONOLOGY, CommonNavigationData(id, type))
+    //with the title's own address, for the franchise page's web link
+    private fun onChronology() = withDetails {
+        router.navigateTo(Screens.CHRONOLOGY, ChronologyNavigationData(id, type, it.url))
     }
 
     private fun onLinks() {

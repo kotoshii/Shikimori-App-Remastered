@@ -1,16 +1,14 @@
 package com.gnoemes.shikimori.presentation.presenter.chronology
 
 import com.arellomobile.mvp.InjectViewState
-import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.chronology.ChronologyInteractor
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
+import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
-import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
-import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.presentation.presenter.base.BaseRateButtonListPresenter
 import com.gnoemes.shikimori.presentation.presenter.chronology.converter.ChronologyViewModelConverter
 import com.gnoemes.shikimori.presentation.view.chronology.ChronologyView
@@ -26,7 +24,7 @@ class ChronologyPresenter @Inject constructor(
         userInteractor: UserInteractor
 ) : BaseRateButtonListPresenter<ChronologyView, ChronologyViewModel>(ratesInteractor, userInteractor) {
 
-    lateinit var data: CommonNavigationData
+    lateinit var data: ChronologyNavigationData
 
     private var chronologyType = ChronologyType.LINKED_DIRECTLY
 
@@ -65,20 +63,15 @@ class ChronologyPresenter @Inject constructor(
     }
 
     fun onWebClicked() {
-        onOpenWeb(getUrl())
+        onOpenWeb(franchiseUrl)
     }
 
     fun onShareClicked() {
-        router.navigateTo(Screens.SHARE, getUrl())
+        router.navigateTo(Screens.SHARE, franchiseUrl)
     }
 
-    private fun getUrl(): String? {
-        val path = (when (data.type) {
-            Type.ANIME -> "animes"
-            Type.MANGA -> "mangas"
-            Type.RANOBE -> "ranobes"
-            else -> return null
-        }).plus("/${data.id}/franchise")
-        return BuildConfig.ShikimoriBaseUrl + path
-    }
+    //the site's franchise page, under the title's own address: one built from the type and id was 404
+    //for ranobe («ranobes») and for the titles whose address has a "z" before the id
+    private val franchiseUrl: String
+        get() = "${data.titleUrl}/franchise"
 }
