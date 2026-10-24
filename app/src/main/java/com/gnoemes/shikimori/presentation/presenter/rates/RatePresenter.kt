@@ -263,6 +263,12 @@ class RatePresenter @Inject constructor(
         }
     }
 
+    //signed out while a later page loaded: «Войти», as for every other request of the tab
+    override fun showPageError(show: Boolean, throwable: Throwable?) {
+        if (throwable != null && isSignedOutOfMyList) processErrors(throwable)
+        else super.showPageError(show, throwable)
+    }
+
     fun onQueryChanged(newText: String?) {
         query = newText
         showRates()

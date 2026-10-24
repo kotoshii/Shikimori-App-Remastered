@@ -37,6 +37,13 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
         else Log.e("Error", throwable.toString())
     }
 
+    /** The error as a message only, for a request that does not own the screen; one with no text is logged. */
+    protected fun showErrorText(throwable: Throwable) {
+        val message = errorMessage(throwable)
+        if (message != null) viewState.showErrorMessage(message)
+        else Log.e("Error", throwable.toString())
+    }
+
     /** What the user reads when a request did not get through or the server refused it; null for any other error. */
     protected fun errorMessage(throwable: Throwable): String? = when (throwable) {
         is NetworkException -> commonResources.networkError(throwable.kind)

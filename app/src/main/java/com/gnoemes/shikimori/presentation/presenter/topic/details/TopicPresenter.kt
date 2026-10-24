@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.presenter.topic.details
 
-import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.comment.CommentInteractor
 import com.gnoemes.shikimori.domain.topic.TopicInteractor
@@ -131,10 +130,11 @@ class TopicPresenter @Inject constructor(
         if (show && throwable != null) showError(throwable)
     }
 
-    override fun showError(throwable: Throwable) {
-        val message = errorMessage(throwable)
-        if (message != null) viewState.showErrorMessage(message)
-        else Log.e("Error", throwable.toString())
+    override fun showError(throwable: Throwable) = showErrorText(throwable)
+
+    //«Загрузить еще…» stays the way to ask for the page again
+    override fun showPageError(show: Boolean, throwable: Throwable?) {
+        throwable?.let { showError(it) }
     }
 
     override fun showEmptyProgress(show: Boolean) {

@@ -29,10 +29,6 @@ class PageOffsetPaginator<T>(
                 )
     }
 
-    private fun increasePage() {
-        currentPage += 1
-    }
-
 
     private inner class EMPTY : State<T> {
 
@@ -115,11 +111,11 @@ class PageOffsetPaginator<T>(
             loadPage(defaultPage)
         }
 
+        //the page number moves on only once its page has come: a failed page was skipped for good (BUGS #34)
         override fun loadNewPage() {
             currentState = PAGE_PROGRESS()
             viewController.showPageProgress(true)
-            increasePage()
-            loadPage(currentPage)
+            loadPage(currentPage + 1)
         }
 
         override fun release() {
@@ -165,6 +161,7 @@ class PageOffsetPaginator<T>(
             if (data.isNotEmpty()) {
                 currentState = DATA()
                 currentData.addAll(data)
+                currentPage += 1
                 viewController.showPageProgress(false)
                 viewController.showData(true, currentData)
             } else {
@@ -182,14 +179,44 @@ class PageOffsetPaginator<T>(
         }
 
         override fun error(error: Throwable) {
-            currentState = DATA()
+            currentState = PAGE_ERROR()
             viewController.showPageProgress(false)
-            viewController.showError(error)
+            viewController.showPageError(true, error)
+        }
+
+        //the spinner row would outlive the list: a screen that drops its paginator shows another one
+        override fun release() {
+            currentState = RELEASED()
+            disposable?.dispose()
+            viewController.showPageProgress(false)
+        }
+    }
+
+    /**
+     * A later page failed: the pages loaded stay, and the list ends with «Повторить» instead of hiding
+     * behind the error view (BUGS #55). [loadNewPage] asks for the failed page again; only the user
+     * calls it here - the list's own end-of-list loading waits while «Повторить» shows, or it would ask
+     * in a loop (BasePaginationFragment).
+     */
+    private inner class PAGE_ERROR : State<T> {
+
+        override fun loadNewPage() {
+            currentState = PAGE_PROGRESS()
+            viewController.showPageError(false)
+            viewController.showPageProgress(true)
+            loadPage(currentPage + 1)
+        }
+
+        override fun refresh() {
+            currentState = REFRESH()
+            viewController.showPageError(false)
+            viewController.showRefreshProgress(true)
+            loadPage(defaultPage)
         }
 
         override fun release() {
             currentState = RELEASED()
-            disposable?.dispose()
+            viewController.showPageError(false)
         }
     }
 

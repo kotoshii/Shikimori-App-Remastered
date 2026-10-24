@@ -26,7 +26,9 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
             val visibleItemPosition = manager.findLastCompletelyVisibleItemPosition() + Constants.DEFAULT_LIMIT / 2
             val itemCount = manager.itemCount
 
-            if (!adapter.isProgress() && visibleItemPosition >= itemCount) {
+            //not while «Повторить» ends the list: RecyclerView calls this after a layout too, with no
+            //scroll, so a failed page would be asked for again and again
+            if (!adapter.isProgress() && !adapter.isPageError() && visibleItemPosition >= itemCount) {
                 getPresenter().loadNextPage()
             }
         }
@@ -36,6 +38,7 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
         super.onViewCreated(view, savedInstanceState)
 
         refreshLayout?.setOnRefreshListener { getPresenter().onRefresh() }
+        adapter.onRetryPage = { getPresenter().loadNextPage() }
     }
 
     override fun onDestroyView() {
@@ -52,6 +55,9 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     override fun onHideLoading() = refreshLayout?.hideRefresh() ?: Unit
     override fun showPageLoading() = postViewAction { adapter.showProgress(true) }
     override fun hidePageLoading() = postViewAction { adapter.showProgress(false) }
+    //posted as the spinner is, so the two keep their order
+    override fun showPageError() = postViewAction { adapter.showPageError(true) }
+    override fun hidePageError() = postViewAction { adapter.showPageError(false) }
     override fun onAllData() = Unit
 
     override fun showHiddenListView(guest: Boolean) {

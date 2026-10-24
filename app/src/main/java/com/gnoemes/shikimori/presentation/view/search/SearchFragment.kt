@@ -115,7 +115,14 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         with(recyclerView) {
             val spanCount = context.calculateColumns(R.dimen.image_search_width)
             adapter = this@SearchFragment.adapter
-            layoutManager = GridLayoutManager(context, spanCount)
+            layoutManager = GridLayoutManager(context, spanCount).apply {
+                //the spinner and «Повторить» take the whole row: in one cell the spinner sat on the
+                //left, and «Повторить»'s text did not fit
+                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                    override fun getSpanSize(position: Int): Int =
+                            if (searchAdapter.isEndRowAt(position)) spanCount else 1
+                }
+            }
             setHasFixedSize(true)
             addItemDecoration(GridItemDecorator(context.dimen(R.dimen.margin_small).toInt()))
             addOnScrollListener(nextPageListener)

@@ -82,6 +82,16 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
         processErrors(throwable)
     }
 
+    //a later page: the pages shown stay, «Повторить» ends the list, and the error is a message (BUGS #55).
+    //A list its owner hid in the meantime takes the screen, as on the first page
+    override fun showPageError(show: Boolean, throwable: Throwable?) {
+        if (throwable is HiddenListException) processErrors(throwable)
+        else {
+            if (show) viewState.showPageError() else viewState.hidePageError()
+            throwable?.let { showErrorText(it) }
+        }
+    }
+
     override fun showEmptyError(show: Boolean, throwable: Throwable?) {
         if ((throwable as? BaseException)?.tag != NetworkException.TAG
                 && (throwable as? BaseException)?.tag != ServiceCodeException.TAG

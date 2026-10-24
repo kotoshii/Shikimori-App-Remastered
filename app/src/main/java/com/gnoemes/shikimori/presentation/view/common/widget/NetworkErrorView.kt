@@ -6,6 +6,7 @@ import android.view.View
 import androidx.annotation.StringRes
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.base.widget.BaseView
+import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.visible
 import kotlinx.android.synthetic.main.view_network_error.view.*
 
@@ -39,5 +40,10 @@ class NetworkErrorView @JvmOverloads constructor(context: Context,
 
     fun showButton() {
         btnView.visible()
+    }
+
+    //for a row inside a list, where the big picture would take half the screen
+    fun hideImage() {
+        imageView.gone()
     }
 }
