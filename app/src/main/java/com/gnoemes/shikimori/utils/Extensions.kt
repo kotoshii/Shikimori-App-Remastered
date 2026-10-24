@@ -148,9 +148,10 @@ fun Context.dp(dp: Int): Int {
     return (resources.displayMetrics.density * dp).toInt()
 }
 
+//its own copy first: a tint set before mutate() could reach every other use of the same icon (T5-25)
 fun Drawable.tint(@ColorInt color: Int) {
-    DrawableCompat.setTint(this, color)
     mutate()
+    DrawableCompat.setTint(this, color)
 }
 
 fun ViewGroup.inflate(@LayoutRes layoutResId: Int, attachToRoot: Boolean = false): View =
