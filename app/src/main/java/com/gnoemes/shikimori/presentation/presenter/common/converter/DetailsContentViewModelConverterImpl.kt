@@ -142,12 +142,13 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         )
     }
 
+    //the kind and year line too, as the anime cards have it: it was left out (T5-34)
     private fun convertManga(it: Manga): ContentItem {
         val name = settings.titleName(it.name, it.nameRu)
         return ContentItem(
                 name,
                 it.image,
-                null,
+                typeAndYear(getLocalizedType(it.type), it.dateAired),
                 it
         )
     }
