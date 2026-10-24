@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Amoled's popup menus: black with a thin border, as its cards, sheets and dialogs. The 9-patch it
+replaced, dialog_surface_black, was dark grey with a shadow, which black does not show (BUGS #17)-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="?attr/colorDialogSurface" />
+    <corners android:radius="8dp" />
+    <stroke
+        android:width="?attr/themeStrokeWidth"
+        android:color="?attr/colorDivider" />
+    <padding
+        android:bottom="8dp"
+        android:top="8dp" />
+</shape>

@@ -6,7 +6,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
-import com.afollestad.materialdialogs.MaterialDialog
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.user.presentation.UserProfileAction
@@ -46,7 +45,7 @@ class UserRateViewHolder(
         view.scoreLayout.headerView.apply { layoutParams = (layoutParams as ConstraintLayout.LayoutParams).apply { topMargin = context.dp(16) } }
         view.statisticLabel.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_mini_info, 0)
         view.statisticLabel.onClick {
-            MaterialDialog(view.context).show {
+            view.context.materialDialog().show {
                 message(res = if (isAnime) R.string.profile_anime_hint else R.string.profile_manga_hint)
                 positiveButton(R.string.common_ok)
             }

@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.presentation.view.search.filter.seasons
 import android.os.Bundle
 import android.text.Html
 import android.view.View
-import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
@@ -63,7 +62,7 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
         clearBtn.onClick { presenter.onResetClicked() }
         acceptBtn.onClick { presenter.onAcceptClicked() }
         helpBtn.onClick {
-            MaterialDialog(context!!).show {
+            context!!.materialDialog().show {
                 title(R.string.filter_custom)
                 message(text = Html.fromHtml(getString(R.string.filter_custom_seasons_hint)))
                 positiveButton(R.string.common_understand)

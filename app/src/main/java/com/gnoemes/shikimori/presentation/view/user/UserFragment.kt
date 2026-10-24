@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.ColorUtils
-import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
@@ -200,7 +199,7 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
     }
 
     override fun showSignOutDialog() {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             message(R.string.user_sign_out_confirm)
             positiveButton(R.string.user_sign_out) { getPresenter().onSignOutConfirmed() }
             negativeButton(R.string.common_cancel)

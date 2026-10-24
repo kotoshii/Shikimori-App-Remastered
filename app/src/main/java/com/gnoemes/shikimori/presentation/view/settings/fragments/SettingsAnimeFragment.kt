@@ -177,7 +177,7 @@ class SettingsAnimeFragment : BaseSettingsFragment() {
     }
 
     private fun showNumberEditTextDialog(message: String, prefill: String, callback: InputCallback): Boolean {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             message(text = message)
             input(prefill = prefill, inputType = InputType.TYPE_CLASS_NUMBER, waitForPositiveButton = false, callback = callback)
             positiveButton(R.string.common_accept)

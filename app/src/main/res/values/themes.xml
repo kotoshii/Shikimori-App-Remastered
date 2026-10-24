@@ -170,7 +170,8 @@
         <item name="colorPrimaryDark">@color/amoled_colorPrimaryVariant</item>
         <item name="colorControlHighlight">@color/amoled_colorRipple</item>
 
-        <item name="dialogCustomBackground">@drawable/dialog_surface_black</item>
+        <item name="dialogCustomBackground">@drawable/bg_popup_amoled</item>
+        <item name="actionOverflowMenuStyle">@style/AmoledOverflowMenu</item>
 
         <item name="android:listDivider">@drawable/list_divider_amoled</item>
 

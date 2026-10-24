@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.series
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
 import com.afollestad.materialdialogs.checkbox.isCheckPromptChecked
 import com.afollestad.materialdialogs.list.listItems
@@ -11,6 +10,7 @@ import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
 import com.gnoemes.shikimori.presentation.view.base.fragment.MvpDialogFragment
 import com.gnoemes.shikimori.utils.withArgs
+import com.gnoemes.shikimori.utils.materialDialog
 
 /**
  * Which player opens a video. It carries the video and what the built-in player needs, as the download
@@ -28,7 +28,7 @@ class PlayerSelectDialog : MvpDialogFragment() {
         val playing = arguments?.getParcelable<EmbeddedPlayerNavigationData>(PLAYING_KEY)!!
         val callback = parentFragment as? Callback
 
-        return MaterialDialog(context!!).show {
+        return context!!.materialDialog().show {
             //R.array.players lists them in PlayerType's order
             listItems(res = R.array.players) { dialog, index, _ ->
                 callback?.onPlayerSelected(playing, PlayerType.values()[index], dialog.isCheckPromptChecked())

@@ -10,8 +10,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.utils.colorAttr
+import com.gnoemes.shikimori.utils.dimen
+import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.drawable
 import com.gnoemes.shikimori.utils.getCurrentAscentTheme
+import com.gnoemes.shikimori.utils.widgets.TopEdgeBorderDrawable
 import com.gnoemes.shikimori.utils.wrapTheme
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -51,6 +55,11 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
                         }
 
                         bottomSheet.background = context.drawable(windowBackground)
+                        //Amoled's sheets are black like the screen: a line along the top sets them
+                        //apart. Over the content, which the full-height sheets paint black (BUGS #17)
+                        val border = context.dimenAttr(R.attr.themeStrokeWidth)
+                        if (border > 0) bottomSheet.foreground = TopEdgeBorderDrawable(context.colorAttr(R.attr.colorDivider),
+                                border.toFloat(), context.dimen(R.dimen.sheet_corner_radius))
 
                         if (peekHeight == -1) bottomSheet.layoutParams = bottomSheet.layoutParams.apply { height = ViewGroup.LayoutParams.MATCH_PARENT }
                         else BottomSheetBehavior.from(bottomSheet).peekHeight = peekHeight

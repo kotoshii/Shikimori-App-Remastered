@@ -2,13 +2,13 @@ package com.gnoemes.shikimori.presentation.view.series
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.presentation.view.base.fragment.MvpDialogFragment
 import com.gnoemes.shikimori.utils.withArgs
+import com.gnoemes.shikimori.utils.materialDialog
 
 /**
  * The quality to open in a player that takes one url («Внешний плеер», or «Веб-плеер» for a video with
@@ -35,7 +35,7 @@ class QualitySelectDialog : MvpDialogFragment() {
         val tracks = arguments?.getParcelableArray(TRACKS_KEY)?.map { it as Track }.orEmpty()
         val callback = parentFragment as? Callback
 
-        return MaterialDialog(context!!).show {
+        return context!!.materialDialog().show {
             listItems(items = tracks.map { it.quality }) { _, index, _ ->
                 callback?.onQualitySelected(video, playerType, tracks[index].url)
             }

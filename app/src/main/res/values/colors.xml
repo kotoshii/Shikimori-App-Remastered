@@ -57,10 +57,11 @@
     <color name="amoled_colorRipple">#0FFFFFFF</color>
     <color name="amoled_colorTransparentBackground">#99000000</color>
     <color name="amoled_colorOnTransparentBackground">#99ffffff</color>
-    <color name="amoled_colorDialogSurface">#212121</color>
+    <!--black like the screen, not dark grey: a thin border sets these apart instead (BUGS #17)-->
+    <color name="amoled_colorDialogSurface">#000000</color>
     <color name="amoled_colorRateMenuBackground">#0d0d0d</color>
-    <color name="amoled_colorRateDialog">#212121</color>
-    <color name="amoled_colorSnackBar">#212121</color>
+    <color name="amoled_colorRateDialog">#000000</color>
+    <color name="amoled_colorSnackBar">#000000</color>
     <color name="amoled_colorStatusBar">#de000000</color>
 
     <color name="colorTextProtector">#96000000</color>

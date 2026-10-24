@@ -3,4 +3,8 @@
     android:shape="rectangle">
     <solid android:color="?attr/colorSnackbarSurface" />
     <corners android:radius="4dp" />
+    <!--Amoled only: the other themes' width is 0, which draws nothing-->
+    <stroke
+        android:width="?attr/themeStrokeWidth"
+        android:color="?attr/colorDivider" />
 </shape>

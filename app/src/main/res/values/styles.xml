@@ -6,6 +6,13 @@
         <item name="android:colorBackground">?attr/colorDialogSurface</item>
     </style>
 
+    <!--Amoled's ⋮ menus: black with a thin border like its other surfaces (BUGS #17). A toolbar's ⋮
+    takes its background from this style, not from PopupMenuTheme's android:popupBackground: the
+    platform's popup style sets its own, and a style wins over a theme value-->
+    <style name="AmoledOverflowMenu" parent="Widget.MaterialComponents.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/bg_popup_amoled</item>
+    </style>
+
     <style name="ToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Primary">
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
