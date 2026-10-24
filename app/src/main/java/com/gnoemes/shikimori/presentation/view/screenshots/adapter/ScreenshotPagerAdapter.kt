@@ -6,6 +6,7 @@ import androidx.viewpager.widget.PagerAdapter
 import com.github.ybq.android.spinkit.SpinKitView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.anime.domain.Screenshot
+import com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView
 import com.gnoemes.shikimori.presentation.view.common.widget.TouchImageView
 import com.gnoemes.shikimori.utils.images.GlideApp
 import com.gnoemes.shikimori.utils.images.TouchImageTargetView
@@ -24,12 +25,20 @@ class ScreenshotPagerAdapter(
         val view = LayoutInflater.from(container.context).inflate(R.layout.item_screenshot_page, null)
         val photoView = view.findViewById<TouchImageView>(R.id.imageView)
         val progressBar = view.findViewById<SpinKitView>(R.id.progressBar)
+        val errorView = view.findViewById<NetworkErrorView>(R.id.networkErrorView)
 
         val item = items[position]
-        GlideApp.with(photoView)
-                .asBitmap()
-                .load(item.original)
-                .into(TouchImageTargetView(photoView, progressBar))
+        fun load() {
+            val target = TouchImageTargetView(photoView, progressBar, errorView)
+            GlideApp.with(photoView)
+                    .asBitmap()
+                    .load(item.original)
+                    .listener(target)
+                    .into(target)
+        }
+        errorView.showButton()
+        errorView.callback = { load() }
+        load()
 
         photoView.setOnDoubleTapListener(tapListener)
         photoView.setOnTouchImageViewListener(swipeListener)
