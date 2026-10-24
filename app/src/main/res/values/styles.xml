@@ -6,6 +6,14 @@
         <item name="android:colorBackground">?attr/colorDialogSurface</item>
     </style>
 
+    <!--The clock face a faint circle on every theme, in the dividers' colour: its numbers take the
+    theme's text colour, white on dark and Amoled. Set in ShikimoriAppTheme.Base, so every Android
+    version gets it: values-v23/v27 replaced the v21 theme that set it, and Android 6+ drew a light
+    grey face under white numbers (P7-T5 Test 75h)-->
+    <style name="TimePickerStyle" parent="@android:style/Widget.Material.Light.TimePicker">
+        <item name="android:numbersBackgroundColor">?attr/colorDivider</item>
+    </style>
+
     <!--Amoled's ⋮ menus: black with a thin border like its other surfaces (BUGS #17). A toolbar's ⋮
     takes its background from this style, not from PopupMenuTheme's android:popupBackground: the
     platform's popup style sets its own, and a style wins over a theme value-->

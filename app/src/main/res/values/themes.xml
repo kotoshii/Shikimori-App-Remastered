@@ -15,6 +15,11 @@
         <item name="actionOverflowButtonStyle">@style/Toolbar.Button.Overflow.Tinted</item>
         <item name="android:listDivider">@drawable/list_divider</item>
         <item name="textInputStyle">@style/TextInputStyle</item>
+        <item name="android:timePickerStyle">@style/TimePickerStyle</item>
+        <!--the hints' colour on every theme: the colour the app gives the hints it styles itself. The
+        dark themes never set it and got the light one, dark grey: the time picker's typed-in fields,
+        which show the time as a hint, could not be read (P7-T5 Test 77)-->
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
 
         <item name="themeStrokeWidth">0dp</item>
     </style>
