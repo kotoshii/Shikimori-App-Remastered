@@ -38,28 +38,32 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             if (withSpace) builder.append(space)
         }
 
-        val hasBd = translations.find { it.quality == TranslationQuality.BD || it.quality == TranslationQuality.DVD } != null
+        //the best disc the card's rows come from: Blu-ray before DVD, which said «Blu-ray» too (BUGS #69 B15)
+        val disc = when {
+            translations.any { it.quality == TranslationQuality.BD } -> R.string.translation_blue_ray
+            translations.any { it.quality == TranslationQuality.DVD } -> R.string.translation_dvd
+            else -> null
+        }
         val isSameAuthor = author.isNotEmpty() && author == setting?.lastAuthor
         val canBeDownloaded = translations.find { parsers.isSupported(it.hosting) } != null
 
 
         if (isSameAuthor) {
             builder.append("  ")
-            if (!hasBd) {
+            if (disc == null) {
                 val lastAuthor = context.getString(R.string.translation_last_author)
                 builder.append(lastAuthor)
             }
         }
-        if (hasBd) {
+        if (disc != null) {
             if (builder.isNotEmpty()) {
                 builder.replace(0, 2, "")
                 appendDot(true)
             }
-            val blueRay = context.getString(R.string.translation_blue_ray)
-            builder.append(blueRay)
+            builder.append(context.getString(disc))
         }
 
-        if (!hasBd && !isSameAuthor) {
+        if (disc == null && !isSameAuthor) {
             if (builder.isNotEmpty()) appendDot(true)
             val text = context.getString(R.string.translation_sources)
             builder.append(text)
