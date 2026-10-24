@@ -17,15 +17,20 @@ class ForumPresenter @Inject constructor(
         private val converter: ForumConverter
 ) : BaseNetworkPresenter<ForumView>() {
 
+    //one load at a time, closed with the screen: it was never disposed, and a refresh did not cancel
+    //the load before it (T5-17)
+    private val forumsLoad = loadSlot()
+
     override fun initData() {
         loadData()
     }
 
-    private fun loadData(refresh: Boolean = false) =
-            interactor.getForums()
-                    .appendLoadingLogic(viewState, refresh)
-                    .map(converter)
-                    .subscribe(this::showData, this::processErrors)
+    private fun loadData(refresh: Boolean = false) = forumsLoad.start {
+        interactor.getForums()
+                .appendLoadingLogic(viewState, refresh)
+                .map(converter)
+                .subscribe(this::showData, this::processErrors)
+    }
 
     private fun showData(items: List<Forum>) {
         viewState.showData(items)
