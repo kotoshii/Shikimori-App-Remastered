@@ -43,14 +43,14 @@
     <string name="common_season">Сезон</string>
     <string name="common_duration">Продолжительность эпизода</string>
     <string name="common_yesterday">Вчера</string>
-    <string name="common_error_message">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.\n Потяните, что бы обновить</string>
+    <string name="common_error_message">Похоже, что у Вас отсутствует интернет-соединение или произошла ошибка.\n Потяните, чтобы обновить</string>
     <string name="common_error_no_connection">Не удалось подключиться к серверу</string>
     <string name="common_error_secure_connection">Не удалось установить защищённое соединение</string>
     <string name="common_error_timeout">Сервер не ответил вовремя</string>
     <string name="common_error_server">Сервер вернул ошибку %d</string>
     <string name="common_error_signed_out">Сессия истекла, войдите снова</string>
     <string name="common_no_app_to_open">Нет приложения, чтобы открыть это</string>
-    <string name="common_error_message_without_pull">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.</string>
+    <string name="common_error_message_without_pull">Похоже, что у Вас отсутствует интернет-соединение или произошла ошибка.</string>
     <string name="common_description">Описание</string>
     <string name="common_cancel">Отмена</string>
     <string name="common_cancel_variant">Отменить</string>
@@ -123,7 +123,7 @@
     <string name="rate_dropped">Брошено</string>
     <string name="rate_comment_hint">Добавить комментарий к списку</string>
     <string name="rate_status">Список</string>
-    <string name="rates_need_auth">Для измения статуса необходимо авторизоваться в приложении</string>
+    <string name="rates_need_auth">Для изменения статуса необходимо авторизоваться в приложении</string>
     <string name="rate_switch_list">Переключить список</string>
     <string name="rate_search_empty_title">В этом списке ничего не найдено</string>
     <string name="rate_search_empty_message">Измените запрос или воспользуйтесь разделом поиска.</string>
@@ -166,12 +166,13 @@
     <string name="rating_awful">Ужасно</string>
     <string name="rating_very_bad">Очень плохо</string>
     <string name="rating_bad">Плохо</string>
-    <string name="rating_not_bad">Не плохо</string>
+    <!--the site's words for scores 5 and 10 (the app had «Не плохо» and «Шедевр!»)-->
+    <string name="rating_not_bad">Более-менее</string>
     <string name="rating_normal">Нормально</string>
     <string name="rating_good">Хорошо</string>
     <string name="rating_fine">Отлично</string>
     <string name="rating_nuts">Великолепно</string>
-    <string name="rating_perfect">Шедевр!</string>
+    <string name="rating_perfect">Эпик вин!</string>
 
     <string name="search_nothing">Ничего не найдено.\n Попробуйте поискать что-нибудь другое</string>
 
@@ -281,8 +282,9 @@
     <string name="sort_score">По оценке</string>
     <string name="sort_popularity">По популярности</string>
     <string name="sort_name">По названию</string>
-    <string name="rate_drawer_open">rate_drawer_open</string>
-    <string name="rate_drawer_close">rate_drawer_close</string>
+    <!--what a screen reader says for the «Списки» menu button-->
+    <string name="rate_drawer_open">Открыть список статусов</string>
+    <string name="rate_drawer_close">Закрыть список статусов</string>
     <string name="search_need_query">Введите имя для поиска</string>
 
     <string name="duration_small">&lt; 10 мин.</string>
@@ -343,7 +345,7 @@
     <string name="forum_cosplay">Косплей</string>
     <string name="forum_news">Новости</string>
     <string name="forum_collection">Коллекции</string>
-    <string name="forum_all">Все в подряд</string>
+    <string name="forum_all">Всё подряд</string>
     <string name="forum_my_clubs">Мои клубы</string>
     <string name="forum_contests">Турниры</string>
     <string name="forum_reviews">Отзывы</string>
@@ -375,7 +377,7 @@
     <string name="translation_authors">Авторы</string>
     <string name="translation_sources">Источники</string>
     <string name="translation_last_author">Последний автор</string>
-    <string name="translation_blue_ray">Blue-ray</string>
+    <string name="translation_blue_ray">Blu-ray</string>
     <string name="translation_voice">Озвучка</string>
     <string name="translation_subtitles">Субтитры</string>
     <string name="translation_original">Оригинал</string>
