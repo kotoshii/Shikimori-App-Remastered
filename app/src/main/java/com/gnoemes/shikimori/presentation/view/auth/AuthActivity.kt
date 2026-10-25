@@ -129,6 +129,11 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
         onBackPressed()
     }
 
+    override fun onSignInFailed(message: String?) {
+        Toast.makeText(applicationContext, message ?: getString(R.string.auth_sign_in_failed), Toast.LENGTH_LONG).show()
+        onBackPressed()
+    }
+
     override fun setTitle(title: String) {}
 
     private inner class ShikimoriAuthClient : WebViewClient() {

@@ -92,9 +92,18 @@ class AuthHolder @Inject constructor(
     /** Forgets the login on the phone, and the site's session in the in-app browser (BUGS #4). */
     @Synchronized
     fun signOut() {
+        forgetLogin()
+        siteCookies.forget()
+    }
+
+    /**
+     * Forgets the login on the phone only - the user and the tokens. A sign-in that fails half way
+     * undoes just this: the site session it opened in the in-app browser stays (BUGS #22).
+     */
+    @Synchronized
+    fun forgetLogin() {
         userRepository.clearUser()
         tokenRepository.saveToken(null).blockingAwait()
-        siteCookies.forget()
     }
 
 }

@@ -55,6 +55,7 @@
     <string name="common_cancel">Отмена</string>
     <string name="common_cancel_variant">Отменить</string>
     <string name="common_sign_in">Войти</string>
+    <string name="auth_sign_in_failed">Не удалось войти. Попробуйте ещё раз</string>
     <string name="common_characters">Персонажи</string>
     <string name="common_character">Персонаж</string>
     <string name="common_chronology">Хронология</string>
