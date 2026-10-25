@@ -4,7 +4,6 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.search.filter.FilterInteractor
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
-import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterAction
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
@@ -13,6 +12,7 @@ import com.gnoemes.shikimori.presentation.presenter.base.BaseFilterPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.FilterViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterView
 import com.gnoemes.shikimori.utils.clearAndAddAll
+import io.reactivex.Single
 import javax.inject.Inject
 
 @InjectViewState
@@ -24,21 +24,33 @@ open class FilterPresenter @Inject constructor(
     private val items = mutableListOf<Any>()
 
     private val sortItems = mutableListOf<FilterItem>()
+    /** The sorts, when the catalog had them loaded already. */
+    var handedSorts: List<FilterItem>? = null
 
     override fun initData() {
         loadSortFilters()
+        val handed = categories != null
         onFiltersChanged()
+        if (handed) refreshCategories()
+    }
+
+    //the catalog read them ahead, maybe before a setting that changes them (the 18+ ratings): shown at
+    //once, then read again, and the rows redrawn
+    private fun refreshCategories() {
+        loadCategories()
+                .subscribe({ categories = it; loadData() }, this::processErrors)
+                .addToDisposables()
     }
 
     private fun loadSortFilters() {
-        sortsOfThisType()
+        (handedSorts?.let { Single.just(it) } ?: interactor.getSortFilters(type))
                 .doOnSuccess { sortItems.clearAndAddAll(it) }
                 .subscribe({ showSort() }, this::processErrors)
                 .addToDisposables()
     }
 
     override fun loadData() {
-        loadCategories()
+        categories()
                 .map { converter.convert(it, appliedFilters) }
                 .subscribe(this::setData, this::processErrors)
                 .addToDisposables()
@@ -47,13 +59,6 @@ open class FilterPresenter @Inject constructor(
     private fun setData(it: List<Any>) {
         items.clearAndAddAll(it)
         viewState.showData(it)
-    }
-
-    //ranobe sorts as manga does: it has chapters and volumes, not episodes, and the api answers an
-    //episodes sort for it with 422 (BUGS #10)
-    private fun sortsOfThisType() = when (type) {
-        Type.MANGA, Type.RANOBE -> interactor.getMangaSortFilters()
-        else -> interactor.getAnimeSortFilters()
     }
 
     fun onSortClicked() {
@@ -97,9 +102,10 @@ open class FilterPresenter @Inject constructor(
     private fun showNested(type: FilterType) {
         val own = HashMap<String, MutableList<FilterItem>>()
         appliedFilters[type.value]?.let { own[type.value] = it }
+        //the panel gets the categories too, so it opens with its content (P7-T5 Test 80)
         when (type) {
-            FilterType.GENRE -> viewState.showGenresDialog(super.type, own)
-            FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own)
+            FilterType.GENRE -> viewState.showGenresDialog(super.type, own, categories)
+            FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own, categories)
             else -> Unit
         }
     }

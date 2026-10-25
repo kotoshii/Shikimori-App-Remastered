@@ -4,6 +4,7 @@ import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
 
 interface SearchView : BasePaginationView {
@@ -15,7 +16,7 @@ interface SearchView : BasePaginationView {
     fun setDefaultEmptyText()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>)
+    fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?)
 
     fun showFilterButton()
 

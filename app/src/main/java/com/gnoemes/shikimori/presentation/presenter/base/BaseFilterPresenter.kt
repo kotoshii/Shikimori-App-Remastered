@@ -15,6 +15,8 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
 
     lateinit var type: Type
     lateinit var appliedFilters: HashMap<String, MutableList<FilterItem>>
+    /** The filter categories, when whoever opened this sheet or panel had them loaded already. */
+    var categories: List<FilterCategory>? = null
 
     override fun initData() {
         onFiltersChanged()
@@ -22,12 +24,17 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
 
     abstract fun loadData()
 
-    /** The filter categories of this [type]: anime, manga or ranobe each have their own. */
-    protected fun loadCategories(): Single<List<FilterCategory>> = when (type) {
-        Type.MANGA -> filterInteractor.getMangaFilters()
-        Type.RANOBE -> filterInteractor.getRanobeFilters()
-        else -> filterInteractor.getAnimeFilters()
-    }
+    protected fun loadCategories(): Single<List<FilterCategory>> = filterInteractor.getFilters(type)
+
+    /**
+     * The categories handed over, at once: a sheet slid in empty and filled a few frames later, waiting
+     * for a load on another thread (P7-T5 Tests 80, 81). Else loaded, and kept for the next change.
+     */
+    protected fun categories(): Single<List<FilterCategory>> =
+            categories?.let { Single.just(it) } ?: loadCategories().doOnSuccess { categories = it }
+
+    protected fun panelCategory(type: FilterType): Single<FilterCategory> =
+            categories().map { list -> list.first { it.filterType == type } }
 
     protected open fun onFiltersChanged() {
         viewState.setResetEnabled(appliedFilters.size > 0)

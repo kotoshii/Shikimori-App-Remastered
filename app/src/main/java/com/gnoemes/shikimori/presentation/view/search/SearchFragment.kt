@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.entity.search.presentation.SearchItem
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.presentation.presenter.search.SearchPresenter
@@ -165,11 +166,11 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     // MVP
     ///////////////////////////////////////////////////////////////////////////
 
-    override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+    override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?) {
         val tag = "filterDialog"
         val fragment = fragmentManager?.findFragmentByTag(tag)
         if (fragment == null) {
-            val filter = FilterFragment.newInstance(type, filters)
+            val filter = FilterFragment.newInstance(type, filters, categories, sorts)
             filter.setTargetFragment(this, 42)
             postViewAction { filter.show(fragmentManager!!, tag) }
         }

@@ -19,8 +19,7 @@ class FilterSeasonsPresenter @Inject constructor(
 ) : BaseFilterPresenter<FilterSeasonsView>(interactor) {
 
     override fun loadData() =
-            loadCategories()
-                    .map { list -> list.first { it.filterType == FilterType.SEASON } }
+            panelCategory(FilterType.SEASON)
                     .map { converter.convertSeasons(it, appliedFilters) }
                     .doOnSuccess { loadCustomFilters() }
                     .subscribe(this::setData, this::processErrors)

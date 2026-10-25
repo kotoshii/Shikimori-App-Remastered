@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
 import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
@@ -29,12 +30,20 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
 
     @ProvidePresenter
     fun providePresenter(): FilterPresenter = presenterProvider.get().withArguments()
+            .apply { handedSorts = arguments?.getParcelableArrayList(SORTS_KEY) }
 
     companion object {
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterFragment(), type, filters)
+        private const val SORTS_KEY = "SORTS_KEY"
+
+        /** The sheet; with the [categories] and [sorts] when the catalog has them, so it opens filled. */
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?,
+                        categories: List<FilterCategory>?, sorts: List<FilterItem>?) =
+                withFilters(FilterFragment(), type, filters, categories).apply {
+                    arguments?.putParcelableArrayList(SORTS_KEY, sorts?.let { ArrayList(it) })
+                }
     }
 
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
@@ -97,19 +106,19 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         adapter.bindItems(items)
     }
 
-    override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+    override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
         val fragment = fragmentManager?.findFragmentByTag(GENRES_TAG)
         if (fragment == null) {
-            val filter = FilterGenresFragment.newInstance(type, filters)
+            val filter = FilterGenresFragment.newInstance(type, filters, categories)
             filter.setTargetFragment(this, 43)
             postViewAction { filter.show(fragmentManager!!, GENRES_TAG) }
         }
     }
 
-    override fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+    override fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
         val fragment = fragmentManager?.findFragmentByTag(SEASONS_TAG)
         if (fragment == null) {
-            val filter = FilterSeasonsFragment.newInstance(type, filters)
+            val filter = FilterSeasonsFragment.newInstance(type, filters, categories)
             filter.setTargetFragment(this, 44)
             postViewAction { filter.show(fragmentManager!!, SEASONS_TAG) }
         }

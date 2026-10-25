@@ -9,6 +9,7 @@ import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.search.FilterGenresPresenter
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.adapter.FilterGenreAdapter
@@ -25,7 +26,8 @@ class FilterGenresFragment : BaseFilterDialogFragment<FilterGenresPresenter, Fil
     fun providePresenter(): FilterGenresPresenter = presenterProvider.get().withArguments()
 
     companion object {
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterGenresFragment(), type, filters)
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?, categories: List<FilterCategory>?) =
+                withFilters(FilterGenresFragment(), type, filters, categories)
     }
 
     private val adapter by lazy { FilterGenreAdapter(presenter::onFilterInverted, presenter::onFilterSelected) }
