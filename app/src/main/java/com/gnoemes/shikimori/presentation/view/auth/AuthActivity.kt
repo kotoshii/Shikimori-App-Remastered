@@ -52,8 +52,6 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
 
     companion object {
-        private const val SHIKIMORI_PATTERN_OLD =
-            "https?://(?:www\\.)?shikimori\\.io/oauth/authorize/(?:.*)"
         private const val SHIKIMORI_PATTERN =
             "https?://(?:www\\.)?shikimori\\.io/oauth/authorize/(?:.*)"
         private const val SHIKIMORI_SIGN_UP_URL = "https://shikimori.io/users/sign_up"
@@ -164,14 +162,10 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
         }
 
         private fun interceptCode(url: String?) {
-            val matcherFixed = Pattern.compile(SHIKIMORI_PATTERN).matcher(url)
-            val matcherOld = Pattern.compile(SHIKIMORI_PATTERN_OLD).matcher(url)
-            val matcher = when {
-                matcherFixed.find() -> matcherFixed
-                matcherOld.find() -> matcherOld
-                else -> null
-            }
-            if (matcher != null) {
+            //one pattern: an "old" one for the previous domain stayed, the same string, after both moved
+            //to .io (BUGS #26.4)
+            val matcher = Pattern.compile(SHIKIMORI_PATTERN).matcher(url)
+            if (matcher.find()) {
                 val authCode =
                     if (matcher.group().isNullOrEmpty()) ""
                     else url!!.substring(
