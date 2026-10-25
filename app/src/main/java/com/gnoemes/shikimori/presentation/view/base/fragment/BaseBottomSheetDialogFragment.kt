@@ -46,6 +46,10 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return BottomSheetDialog(context!!.wrapTheme(R.style.Theme_MaterialComponents_BottomSheetDialog), context!!.getCurrentAscentTheme)
                 .apply {
+                    //Material's slide up and down: wrapTheme lays the app theme over the sheet theme, and
+                    //its window animation, a fade in place, won - a short sheet seemed to snap open
+                    //(P7-T5 Test 79b)
+                    window?.setWindowAnimations(R.style.Animation_MaterialComponents_BottomSheetDialog)
                     isCancelable = true
                     setCanceledOnTouchOutside(true)
                     setOnShowListener {
