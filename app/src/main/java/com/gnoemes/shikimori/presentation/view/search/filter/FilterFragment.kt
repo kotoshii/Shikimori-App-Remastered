@@ -13,17 +13,16 @@ import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
+import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_filter.*
 import kotlinx.android.synthetic.main.layout_filter_bottom.*
 
-class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
+class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, SortDialog.SortCallback {
 
     @InjectPresenter
     lateinit var filterPresenter: FilterPresenter
@@ -79,9 +78,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         presenter.onNestedFilterCallback(key, appliedFilters)
     }
 
-    override fun dialogItemCallback(tag: String?, url: String) {
-        presenter.onSortChanged(Gson().fromJson(url, FilterItem::class.java))
-    }
+    override fun onSortClicked(key: String) = presenter.onSortPicked(key)
 
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS
@@ -122,12 +119,10 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         resetBtn.isEnabled = show
     }
 
-    override fun showSortFilters(items: List<FilterItem>) {
-        val gson = Gson()
-        val dialog = ListDialogFragment.newInstance()
-        dialog.apply {
-            setItems(items.map { Pair(it.localizedText!!, gson.toJson(it)) })
-        }.show(childFragmentManager, "SortsTag")
+    //the sort sheet «Списки» uses: titled, the current sort marked (BUGS #16b)
+    override fun showSortFilters(items: List<FilterItem>, chosen: String) {
+        SortDialog.newInstance(items.map { SortDialog.Sort(it.value!!, it.localizedText!!, it.value == chosen) })
+                .show(childFragmentManager, "SortsTag")
     }
 
     override fun setSortFilterText(text: String) {

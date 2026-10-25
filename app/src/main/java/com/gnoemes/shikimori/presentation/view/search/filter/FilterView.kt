@@ -9,7 +9,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFilterView
 interface FilterView : BaseFilterView {
 
     @StateStrategyType(SkipStrategy::class)
-    fun showSortFilters(items: List<FilterItem>)
+    fun showSortFilters(items: List<FilterItem>, chosen: String)
 
     fun setSortFilterText(text : String)
 

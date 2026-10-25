@@ -35,7 +35,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateAdapter
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateItemTouchHelperCallback
-import com.gnoemes.shikimori.presentation.view.rates.sort.RateSortDialog
+import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
@@ -52,7 +52,7 @@ import kotlinx.android.synthetic.main.layout_rates_placeholder.*
 import kotlinx.android.synthetic.main.layout_toolbar.toolbar
 import javax.inject.Inject
 
-class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, RateSortDialog.RateSortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
+class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, SortDialog.SortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -264,8 +264,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         super.onDestroyView()
     }
 
-    override fun onSortClicked(sort: RateSort) {
-        getPresenter().onSortChanged(sort)
+    //a sort's key in the sort sheet is its order number
+    override fun onSortClicked(key: String) {
+        RateSort.values().find { it.order.toString() == key }?.let { getPresenter().onSortChanged(it) }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -302,7 +303,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showSortDialog(sorts: List<Triple<RateSort, String, Boolean>>) {
         hideSoftInput()
-        val dialog = RateSortDialog.newInstance(sorts)
+        val dialog = SortDialog.newInstance(sorts.map { (sort, text, isSelected) -> SortDialog.Sort(sort.order.toString(), text, isSelected) })
         dialog.show(childFragmentManager, "SortDialog")
     }
 

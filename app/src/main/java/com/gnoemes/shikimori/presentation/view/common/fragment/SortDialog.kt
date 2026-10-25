@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.view.rates.sort
+package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.content.Context
 import android.graphics.Point
@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import com.gnoemes.shikimori.R
-import com.gnoemes.shikimori.entity.common.presentation.RateSort
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
@@ -14,15 +13,17 @@ import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.dialog_menu.*
 
-class RateSortDialog : BaseBottomSheetDialogFragment() {
+/**
+ * A sort picker: «Сортировка», the sorts, the current one marked. «Списки» and the catalog's filter
+ * sheet both open it; it takes plain items, so each keeps its own sort type (BUGS #16b: the catalog's
+ * list had no title and did not mark the current sort).
+ */
+class SortDialog : BaseBottomSheetDialogFragment() {
 
     companion object {
         private const val SORTS_KEY = "SORTS_KEY"
-        fun newInstance(sorts: List<Triple<RateSort, String, Boolean>>) = RateSortDialog()
-                .withArgs {
-                    val parcelableSorts = sorts.map { Sort(it.first, it.second, it.third) }.toTypedArray()
-                    putParcelableArray(SORTS_KEY, parcelableSorts)
-                }
+        fun newInstance(sorts: List<Sort>) = SortDialog()
+                .withArgs { putParcelableArray(SORTS_KEY, sorts.toTypedArray()) }
     }
 
     override fun onAttach(context: Context) {
@@ -44,16 +45,16 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
         navView.apply {
             setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
             itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
+            //an item's id is its place in the list
             setNavigationItemSelectedListener { menu ->
-                (parentFragment as? RateSortCallback)?.onSortClicked(sorts.first { it.type.order == menu.itemId }.type)
+                (parentFragment as? SortCallback)?.onSortClicked(sorts[menu.itemId].key)
                 dismiss()
                 true
             }
             menu.apply {
-                val checkedId = sorts.find { it.isSelected }?.type?.order ?: 0
-                sorts.forEachIndexed { index, sort -> add(0, sort.type.order, index, sort.text) }
+                sorts.forEachIndexed { index, sort -> add(0, index, index, sort.text) }
                 setGroupCheckable(0, true, true)
-                setCheckedItem(checkedId)
+                setCheckedItem(sorts.indexOfFirst { it.isSelected }.coerceAtLeast(0))
             }
         }
     }
@@ -64,14 +65,15 @@ class RateSortDialog : BaseBottomSheetDialogFragment() {
 
     override fun getDialogLayout(): Int = R.layout.dialog_menu
 
+    /** A sort: the [key] the caller knows it by, the [text] shown, and whether it is the current one. */
     @Parcelize
-    private data class Sort(
-            val type: RateSort,
+    data class Sort(
+            val key: String,
             val text: String,
             val isSelected: Boolean
     ) : Parcelable
 
-    interface RateSortCallback {
-        fun onSortClicked(sort: RateSort)
+    interface SortCallback {
+        fun onSortClicked(key: String)
     }
 }

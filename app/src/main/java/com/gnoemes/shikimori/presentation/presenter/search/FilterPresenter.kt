@@ -57,13 +57,20 @@ open class FilterPresenter @Inject constructor(
     }
 
     fun onSortClicked() {
-        viewState.showSortFilters(sortItems)
+        viewState.showSortFilters(sortItems, chosenSort())
+    }
+
+    fun onSortPicked(value: String) {
+        sortItems.find { it.value == value }?.let { onSortChanged(it) }
     }
 
     //the sort chosen, else the default. Only a chosen sort is in the filters: the default stored there
     //counted as a filter for «Сбросить» and the catalog's filter button (BUGS #16a)
+    private fun chosenSort(): String =
+            appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value ?: SearchConstants.DEFAULT_ORDER.toString()
+
     private fun showSort() {
-        val chosen = appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value ?: SearchConstants.DEFAULT_ORDER.toString()
+        val chosen = chosenSort()
         val item = sortItems.find { it.value == chosen } ?: sortItems.firstOrNull() ?: return
         viewState.setSortFilterText(item.localizedText!!)
     }
