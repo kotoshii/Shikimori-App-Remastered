@@ -7,5 +7,6 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class SearchPayload(
         val genre: GenreV2? = null,
-        val studioId: Long?= null
+        val studioId: Long?= null,
+        val studioName: String? = null
 ) : Parcelable

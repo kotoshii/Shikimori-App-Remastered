@@ -200,7 +200,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(action.newStatus)
             is DetailsAction.Screenshots -> onScreenshotsClicked(action.pos)
             is DetailsAction.Discussion -> onOpenDiscussion()
-            is DetailsAction.StudioClicked -> onStudioClicked(action.id)
+            is DetailsAction.StudioClicked -> onStudioClicked(action.id, action.name)
             is DetailsAction.RateStatusDialog -> onStatusDialog()
             is DetailsAction.Similar -> onSimilarClicked()
             is DetailsAction.Statistic -> onStatisticClicked()
@@ -237,8 +237,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         loadLinks()
     }
 
-    private fun onStudioClicked(id: Long) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id), Type.ANIME))
+    //the name goes along, so the filter sheet can show which studio the list is limited to (BUGS #13)
+    private fun onStudioClicked(id: Long, name: String) {
+        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id, studioName = name), Type.ANIME))
     }
 
     open fun onChangeRateStatus(newStatus: RateStatus) {

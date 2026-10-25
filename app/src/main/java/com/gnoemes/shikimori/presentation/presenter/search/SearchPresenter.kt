@@ -144,7 +144,7 @@ class SearchPresenter @Inject constructor(
     private fun onPayloadSearch() {
         searchPayload?.let {
             if (it.genre != null) onGenreSearch(it.genre)
-            else if (it.studioId != null) onStudioSearch(it.studioId)
+            else if (it.studioId != null) onStudioSearch(it.studioId, it.studioName)
         }
         viewState.addBackButton()
         showFilterIcon()
@@ -157,8 +157,8 @@ class SearchPresenter @Inject constructor(
         showFilterIcon()
     }
 
-    private fun onStudioSearch(studioId: Long) {
-        val filterItem = FilterItem(SearchConstants.STUDIO, studioId.toString(), null)
+    private fun onStudioSearch(studioId: Long, name: String?) {
+        val filterItem = FilterItem(SearchConstants.STUDIO, studioId.toString(), name)
         putFilter(filterItem)
     }
 
