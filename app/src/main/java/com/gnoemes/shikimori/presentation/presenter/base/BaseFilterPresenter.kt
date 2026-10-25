@@ -43,9 +43,10 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         viewState.onFiltersAccepted(appliedFilters)
     }
 
+    //a long press excludes a chip, and on an excluded one makes it a normal pick again - it did nothing
     open fun onFilterInverted(type: FilterType, item: FilterViewModel) {
         when (item.state) {
-            FilterViewModel.STATE.INVERTED -> Unit
+            FilterViewModel.STATE.INVERTED -> includeAgain(type.value, FilterItem(type.value, item.value, item.text))
             else -> invertOrAddNew(type.value, FilterItem(type.value, item.value, item.text))
         }
         onFiltersChanged()
@@ -66,6 +67,12 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
     protected open fun invertOrAddNew(key: String, value: FilterItem) {
         val item = getAppliedFilter(key, value.value)
         item?.let { removeFromSelected(key, it); addInverted(key, it) } ?: addInverted(key, value)
+    }
+
+    private fun includeAgain(key: String, inverted: FilterItem) {
+        val item = getAppliedFilter(key, inverted.value) ?: inverted
+        removeFromSelected(key, item)
+        addToSelected(key, item.copy(value = item.value?.invertValue()))
     }
 
     protected open fun addInverted(key: String, item: FilterItem) {
