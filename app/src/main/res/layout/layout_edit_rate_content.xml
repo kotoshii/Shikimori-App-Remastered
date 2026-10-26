@@ -106,7 +106,7 @@
         android:background="@android:color/transparent"
         android:gravity="start"
         android:hint="@string/rate_comment_hint"
-        android:inputType="textNoSuggestions|textVisiblePassword|textMultiLine"
+        android:inputType="textCapSentences|textMultiLine"
         android:minHeight="96dp"
         android:textColor="?attr/colorOnSurface"
         android:textColorHint="?attr/colorOnPrimarySecondary"
