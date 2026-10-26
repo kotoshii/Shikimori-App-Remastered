@@ -54,6 +54,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     /** The title's details, once loaded. */
     protected var details: D? = null
 
+    //✏'s read of the entry: a second tap replaces the first, so one sheet opens
+    private val rateSheetLoad = loadSlot()
+
     protected val characters = mutableListOf<Character>()
     protected val creators = mutableListOf<Pair<Person, List<String>>>()
 
@@ -271,8 +274,19 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         onOpenWeb(it.url)
     }
 
-    private fun onEditRate() = withDetails {
-        viewState.showRateDialog(title, it.userRate, type == Type.ANIME)
+    //the title is read again first, so the sheet gets the entry as shikimori has it now - the page can
+    //be older: an entry added since (by «Автоматическое добавление», on the site) was then overwritten
+    //with the empty sheet's zeros (BUGS #83, #84). The head is drawn again with it
+    private fun onEditRate() {
+        if (details == null) return
+        rateSheetLoad.start {
+            loadDetails()
+                    .appendLightLoadingLogic(viewState)
+                    .subscribe({ head ->
+                        viewState.setHeadItem(head)
+                        withDetails { viewState.showRateDialog(title, it.userRate, type == Type.ANIME) }
+                    }, this::showErrorText)
+        }
     }
 
     private fun onStatusDialog() = withDetails {

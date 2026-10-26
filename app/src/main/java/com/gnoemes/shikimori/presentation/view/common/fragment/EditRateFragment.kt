@@ -21,28 +21,39 @@ import kotlinx.android.synthetic.main.layout_edit_rate_progress.*
 import kotlinx.android.synthetic.main.layout_edit_rate_status.*
 import kotlin.math.roundToInt
 
+/**
+ * The list entry's sheet. It edits the entry its caller read from shikimori just before opening it
+ * (null for a title not in the list), and ✓ sends only what the user changed: a field sent unchanged
+ * would put back a value changed elsewhere since - on the site, or by the watch screen's count
+ * (BUGS #83).
+ */
 class EditRateFragment : BaseBottomSheetDialogFragment() {
 
     private var callback: RateDialogCallback? = null
     private var isAnime: Boolean = true
-    private var rate: UserRate? = null
+
+    /** The entry as the sheet opened with it, never changed: what [changes] compares with. */
+    private val original: UserRate? by lazy { arguments?.getParcelable<UserRate>(RATE_KEY) }
+
+    private var status: RateStatus? = null
 
     private val ratingResourceProvider: RatingResourceProvider by lazy { RatingResourceProviderImpl(context!!) }
 
     private val chips by lazy {
         mutableListOf(
-                ChipRate(R.id.progressBtn, RateStatus.WATCHING, RateStatus.WATCHING == rate?.status),
-                ChipRate(R.id.plannedBtn, RateStatus.PLANNED, RateStatus.PLANNED == rate?.status),
-                ChipRate(R.id.reProgressBtn, RateStatus.REWATCHING, RateStatus.REWATCHING == rate?.status),
-                ChipRate(R.id.completedBtn, RateStatus.COMPLETED, RateStatus.COMPLETED == rate?.status),
-                ChipRate(R.id.onHoldBtn, RateStatus.ON_HOLD, RateStatus.ON_HOLD == rate?.status),
-                ChipRate(R.id.droppedBtn, RateStatus.DROPPED, RateStatus.DROPPED == rate?.status)
+                ChipRate(R.id.progressBtn, RateStatus.WATCHING, RateStatus.WATCHING == status),
+                ChipRate(R.id.plannedBtn, RateStatus.PLANNED, RateStatus.PLANNED == status),
+                ChipRate(R.id.reProgressBtn, RateStatus.REWATCHING, RateStatus.REWATCHING == status),
+                ChipRate(R.id.completedBtn, RateStatus.COMPLETED, RateStatus.COMPLETED == status),
+                ChipRate(R.id.onHoldBtn, RateStatus.ON_HOLD, RateStatus.ON_HOLD == status),
+                ChipRate(R.id.droppedBtn, RateStatus.DROPPED, RateStatus.DROPPED == status)
         )
     }
 
     companion object {
         private const val IS_ANIME_KEY = "IS_ANIME_KEY"
         private const val RATE_KEY = "RATE_KEY"
+        private const val STATUS_KEY = "STATUS_KEY"
         private const val TITLE = "TITLE"
         fun newInstance(title: String, isAnime: Boolean = true, rate: UserRate?) = EditRateFragment()
                 .withArgs {
@@ -62,20 +73,22 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        arguments?.apply {
-            isAnime = getBoolean(IS_ANIME_KEY, true)
-            rate = savedInstanceState?.getParcelable(RATE_KEY) ?: getParcelable(RATE_KEY)
-        }
+        isAnime = arguments?.getBoolean(IS_ANIME_KEY, true) ?: true
+        status = if (savedInstanceState != null) savedInstanceState.getSerializable(STATUS_KEY) as? RateStatus
+        else original?.status
         callback = parentFragment as? RateDialogCallback
 
         toolbar.title = arguments?.getString(TITLE)
 
-        //need rate from arguments
-        deleteBtn.visibleIf { arguments?.getParcelable<UserRate>(RATE_KEY)?.status != null }
+        val rate = original
+
+        deleteBtn.visibleIf { rate?.id != null }
         deleteBtn.onClick { callback?.onDeleteRate(rate?.id ?: Constants.NO_ID); dismiss() }
 
         acceptBtn.onClick {
-            callback?.onUpdateRate(createRate())
+            val changes = changes()
+            //nothing to send for an entry that is there already; a new one is added even unchanged
+            if (rate?.id == null || !changes.isEmpty()) callback?.onUpdateRate(changes)
             dismiss()
         }
 
@@ -140,14 +153,13 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
 
         val checkedItem = chips.firstOrNull { it.isSelected }
         if (checkedItem != null) (rateInclude as? ConstraintLayout)?.findViewById<MaterialButton>(checkedItem.id)?.isSelected = true
-
-        if (rate == null) rate = createRate()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putParcelable(RATE_KEY, rate)
+        //the fields keep their own text; the status lives only here
+        outState.putSerializable(STATUS_KEY, status)
     }
 
     private fun onStatusChanged(id: Int) {
@@ -157,22 +169,37 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
                 btn.isSelected = false
                 if (btn.id == id && item != null) {
                     btn.isSelected = true
-                    rate = rate?.copy(status = item.status)
+                    status = item.status
                 }
             }
         }
     }
 
-    private fun createRate(): UserRate =
-            UserRate(
-                    id = rate?.id ?: Constants.NO_ID,
-                    score = Math.round(ratingBar.rating * 2).toDouble(),
-                    status = rate?.status,
-                    rewatches = rewatchesView?.text?.toString()?.toIntOrNull(),
-                    episodes = if (isAnime) progressView.text?.toString()?.toIntOrNull() else null,
-                    chapters = if (isAnime) null else progressView.text?.toString()?.toIntOrNull(),
-                    text = commentView.text?.toString()
-            )
+    /**
+     * The fields the user changed, the rest null - left out of the request. A new entry is compared
+     * with an empty one, so it sends only what was set. An empty number field is not sent, as before;
+     * an emptied comment is sent as "".
+     */
+    private fun changes(): UserRate {
+        val before = original ?: UserRate()
+        val score = (ratingBar.rating * 2).roundToInt()
+        val progress = progressView.text?.toString()?.toIntOrNull()
+        val rewatches = rewatchesView.text?.toString()?.toIntOrNull()
+        val text = commentView.text?.toString().orEmpty()
+
+        return UserRate(
+                id = before.id ?: Constants.NO_ID,
+                score = score.takeIf { it != (before.score?.roundToInt() ?: 0) }?.toDouble(),
+                status = status.takeIf { it != before.status },
+                rewatches = rewatches.takeIf { it != (before.rewatches ?: 0) },
+                episodes = if (isAnime) progress.takeIf { it != (before.episodes ?: 0) } else null,
+                chapters = if (isAnime) null else progress.takeIf { it != (before.chapters ?: 0) },
+                text = text.takeIf { it != before.text.orEmpty() }
+        )
+    }
+
+    private fun UserRate.isEmpty(): Boolean =
+            listOf(score, status, rewatches, episodes, chapters, text).all { it == null }
 
     private fun countRating(rating: Int) {
         ratingValueView.text = rating.toString()

@@ -89,6 +89,8 @@ class RatePresenter @Inject constructor(
     //the sort and search in progress: a newer one replaces it, so an older result never shows last
     private val shownRates = loadSlot()
 
+    private val rateSheetLoad = loadSlot()
+
     override fun onViewReattached() {
         loadUserOrCategories()
         if (rateStatus != null) onRefresh()
@@ -352,22 +354,13 @@ class RatePresenter @Inject constructor(
         } else router.showSystemMessage(resourceProvider.emptyMessage)
     }
 
-    private fun onEditRate(rate: RateViewModel) {
-        val userRate = getUserRate(rate.rawRate)
-        viewState.showRateDialog(rate.name, userRate)
+    //the sheet gets the entry as shikimori has it now: the list can be older, and a copy built from
+    //its row lost the rewatch count, which ✓ then saved as 0 (BUGS #82, #83). A second tap replaces
+    //the first, so one sheet opens
+    private fun onEditRate(rate: RateViewModel) = rateSheetLoad.start {
+        ratesInteractor.getRate(rate.rawRate.id)
+                .subscribe({ viewState.showRateDialog(rate.name, it) }, this::showErrorText)
     }
-
-    private fun getUserRate(rate: Rate?) = UserRate(
-            id = rate?.id,
-            targetId = rate?.anime?.id ?: rate?.manga?.id,
-            targetType = type,
-            score = rate?.score?.toDouble(),
-            status = rateStatus,
-            userId = userId,
-            episodes = rate?.episodes,
-            chapters = rate?.chapters,
-            text = rate?.text
-    )
 
     //the list can be older than the count - it may have changed on the site since - so the entry is
     //read again. The series screen opens on the episode after the last watched one
