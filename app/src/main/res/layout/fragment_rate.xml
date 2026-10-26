@@ -80,6 +80,43 @@
                 </androidx.appcompat.widget.Toolbar>
             </com.google.android.material.card.MaterialCardView>
 
+            <!--another user's list: whose it is. No scroll flags, so it stays at the top when the bar
+            above slides away (P7-T5 Q149)-->
+            <LinearLayout
+                android:id="@+id/ownerStrip"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:background="?attr/colorSurface"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingLeft="16dp"
+                android:paddingEnd="16dp"
+                android:paddingRight="16dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/ownerAvatarView"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:importantForAccessibility="no" />
+
+                <TextView
+                    android:id="@+id/ownerNameView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="?attr/colorOnPrimarySecondary"
+                    android:textSize="14sp"
+                    tools:text="Список Aleks" />
+
+            </LinearLayout>
+
         </com.google.android.material.appbar.AppBarLayout>
 
 

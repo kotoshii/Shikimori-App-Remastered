@@ -129,7 +129,10 @@ class RatePresenter @Inject constructor(
             return
         }
         userInteractor.getDetails(userId)
-                .doOnSuccess { isMyList = it.isMe }
+                .doOnSuccess {
+                    isMyList = it.isMe
+                    viewState.showListOwner(if (it.isMe) null else it.nickname, it.image.x48)
+                }
                 .map {
                     if (isAnime) rateCountConverter.countAnimeRates(it)
                     else rateCountConverter.countMangaRates(it)

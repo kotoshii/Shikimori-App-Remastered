@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.rates
 
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -38,6 +39,10 @@ interface RateView : BasePaginationView {
     fun showEmptyRatesView(show : Boolean, isAnime: Boolean? = null)
 
     fun showNeedAuthView(show : Boolean)
+
+    /** Whose list it is, on another user's; [nickname] is null on the user's own, which shows no line. */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showListOwner(nickname: String?, avatar: String?)
 
     @StateStrategyType(SkipStrategy::class)
     fun showRateMessage(message: String, rateId: Long)

@@ -11,6 +11,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -72,6 +73,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             priorityStatus = it.status
         }
     }
+
+    //where the first row starts: under the floating top bar, which the rows scroll under
+    private val firstRowTop by lazy { context!!.dp(68) }
 
     private val _adapter by lazy { RateAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onListAction, getPresenter()::onAction, getPresenter()::onSortAction) }
 
@@ -135,8 +139,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             adapter = this@RateFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 5 }
             itemAnimator = DefaultItemAnimator()
-            val customSpacing = context.dp(68)
-            addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, firstCustomSpacing = customSpacing, lastCustomSpacing = context!!.dp(16)))
+            addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, firstCustomSpacing = firstRowTop, lastCustomSpacing = context!!.dp(16)))
+            //the rows scroll on under the top bar and the owner's strip
+            clipToPadding = false
             addOnScrollListener(nextPageListener)
             val touchHelper = ItemTouchHelper(RateItemTouchHelperCallback(this@RateFragment._adapter, settingsSource))
             touchHelper.attachToRecyclerView(this)
@@ -387,6 +392,18 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showNeedAuthView(show: Boolean) {
         authLayout.visibleIf { show }
+    }
+
+    override fun showListOwner(nickname: String?, avatar: String?) {
+        ownerStrip.visibleIf { nickname != null }
+        if (nickname != null) {
+            ownerNameView.text = getString(R.string.rate_list_owner, nickname)
+            imageLoader.setCircleImage(ownerAvatarView, avatar)
+        }
+        //the first row starts below the strip: it sits right under the top bar otherwise
+        ownerStrip.post {
+            recyclerView?.updatePadding(top = if (nickname != null) ownerStrip.bottom - firstRowTop else 0)
+        }
     }
 
     override fun showRateMessage(message: String, rateId: Long) =
