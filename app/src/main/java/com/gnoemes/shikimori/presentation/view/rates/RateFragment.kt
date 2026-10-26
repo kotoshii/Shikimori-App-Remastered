@@ -42,7 +42,6 @@ import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.google.android.material.internal.NavigationMenuView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_rate.*
 import kotlinx.android.synthetic.main.layout_default_list.*
 import kotlinx.android.synthetic.main.layout_default_placeholders.*
@@ -390,13 +389,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         authLayout.visibleIf { show }
     }
 
-    override fun showRateMessage(message: String, rateId: Long) {
-        Snackbar.make(coordinator, message, Snackbar.LENGTH_LONG)
-                .floatingStyle(context!!)
-                .setActionTextColor(context!!.colorAttr(R.attr.colorSecondary))
-                .setAction(R.string.common_cancel_variant) { getPresenter().onChangeCanceled(rateId) }
-                .show()
-    }
+    override fun showRateMessage(message: String, rateId: Long) =
+            coordinator.showUndoMessage(message) { getPresenter().onChangeCanceled(rateId) }
 
     override fun showNetworkView() = networkErrorView.visible()
 

@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
+import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.details.BaseDetailsPresenter
 import com.gnoemes.shikimori.presentation.presenter.manga.converter.MangaDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.manga.MangaView
@@ -25,8 +26,9 @@ class MangaPresenter @Inject constructor(
         ratesInteractor: RatesInteractor,
         userInteractor: UserInteractor,
         resourceProvider: CommonResourceProvider,
-        contentConverter: DetailsContentViewModelConverter
-) : BaseDetailsPresenter<MangaView, MangaDetails>(ratesInteractor, userInteractor, resourceProvider, contentConverter, settingsSource) {
+        contentConverter: DetailsContentViewModelConverter,
+        rateResourceProvider: RateResourceProvider
+) : BaseDetailsPresenter<MangaView, MangaDetails>(ratesInteractor, userInteractor, resourceProvider, contentConverter, settingsSource, rateResourceProvider) {
 
     //MANGA or RANOBE: first what the screen was opened with, then what the loaded title says
     override var type: Type = Type.MANGA

@@ -27,6 +27,10 @@ interface BaseDetailsView : BaseFragmentView {
     @StateStrategyType(SkipStrategy::class)
     fun showStatusDialog(id : Long, name : String, currentStatus: RateStatus?, isAnime : Boolean)
 
+    /** The deleted entry's message, with «Отменить» while the delete waits. */
+    @StateStrategyType(SkipStrategy::class)
+    fun showRateMessage(message: String, rateId: Long)
+
     @StateStrategyType(SkipStrategy::class)
     fun showLinks(it: List<Link>)
 

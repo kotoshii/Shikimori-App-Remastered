@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
 import com.gnoemes.shikimori.presentation.presenter.anime.converter.AnimeDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
+import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.details.BaseDetailsPresenter
 import com.gnoemes.shikimori.presentation.view.anime.AnimeView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLightLoadingLogic
@@ -31,8 +32,9 @@ open class AnimePresenter @Inject constructor(
         ratesInteractor: RatesInteractor,
         userInteractor: UserInteractor,
         resourceProvider: CommonResourceProvider,
-        contentConverter: DetailsContentViewModelConverter
-) : BaseDetailsPresenter<AnimeView, AnimeDetails>(ratesInteractor, userInteractor, resourceProvider, contentConverter, settingsSource) {
+        contentConverter: DetailsContentViewModelConverter,
+        rateResourceProvider: RateResourceProvider
+) : BaseDetailsPresenter<AnimeView, AnimeDetails>(ratesInteractor, userInteractor, resourceProvider, contentConverter, settingsSource, rateResourceProvider) {
 
     private val screenshots = mutableListOf<Screenshot>()
 

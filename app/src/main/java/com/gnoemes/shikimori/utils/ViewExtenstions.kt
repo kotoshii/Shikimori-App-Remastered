@@ -129,6 +129,15 @@ fun Snackbar.floatingStyle(context: Context, @DimenRes margins: Int = R.dimen.sn
     return this
 }
 
+/** A message with «Отменить», for a list entry's change that waits before it is sent (`PendingRateChanges`). */
+fun View.showUndoMessage(message: String, onUndo: () -> Unit) {
+    Snackbar.make(this, message, Snackbar.LENGTH_LONG)
+            .floatingStyle(context)
+            .setActionTextColor(context.colorAttr(R.attr.colorSecondary))
+            .setAction(R.string.common_cancel_variant) { onUndo() }
+            .show()
+}
+
 fun View.dp(dp: Int): Int = context.dp(dp)
 
 @ColorInt

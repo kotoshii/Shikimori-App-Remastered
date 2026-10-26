@@ -24,6 +24,7 @@ import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
+import com.gnoemes.shikimori.presentation.presenter.base.PendingRateChanges
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.ViewController
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.common.provider.SortResourceProvider

@@ -20,8 +20,10 @@ import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
+import com.gnoemes.shikimori.presentation.presenter.base.PendingRateChanges
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
+import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLightLoadingLogic
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
@@ -40,7 +42,8 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         protected val userInteractor: UserInteractor,
         protected val resourceProvider: CommonResourceProvider,
         protected val contentConverter: DetailsContentViewModelConverter,
-        private val settingsSource: SettingsSource
+        private val settingsSource: SettingsSource,
+        private val rateResourceProvider: RateResourceProvider
 ) : BaseNetworkPresenter<View>() {
 
     var id: Long = Constants.NO_ID
@@ -56,6 +59,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
 
     //✏'s read of the entry: a second tap replaces the first, so one sheet opens
     private val rateSheetLoad = loadSlot()
+
+    //🗑 waits behind «Отменить», as in «Списки» (BUGS #85)
+    private val pendingChanges = PendingRateChanges()
 
     protected val characters = mutableListOf<Character>()
     protected val creators = mutableListOf<Pair<Person, List<String>>>()
@@ -185,9 +191,26 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
+    //the page shows the entry until the delete is sent; then it reloads, as after any other change -
+    //unless the page has closed, when the delete is sent at once and nothing else runs
     open fun onDeleteRate(id: Long) = whenSignedIn {
-        ratesInteractor.deleteRate(id)
-                .updateContentData()
+        pendingChanges.add(id, ratesInteractor.deleteRate(id), this::reloadContent, this::processErrors)
+        viewState.showRateMessage(rateResourceProvider.getDeleteRateMessage(type), id)
+    }
+
+    private fun reloadContent() {
+        loadContent(false)
+                .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
+                .addToDisposables()
+    }
+
+    fun onDeleteCanceled(id: Long) {
+        pendingChanges.cancel(id)
+    }
+
+    override fun onDestroy() {
+        pendingChanges.sendAll()
+        super.onDestroy()
     }
 
     open fun onAction(action: DetailsAction) {

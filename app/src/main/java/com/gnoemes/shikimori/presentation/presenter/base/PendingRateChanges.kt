@@ -1,4 +1,4 @@
-package com.gnoemes.shikimori.presentation.presenter.rates
+package com.gnoemes.shikimori.presentation.presenter.base
 
 import android.util.Log
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -9,11 +9,11 @@ import io.reactivex.subjects.CompletableSubject
 import java.util.concurrent.TimeUnit
 
 /**
- * «Отменить» in the list: a status change or a delete waits a few seconds before it is sent, and can
- * be cancelled until then. Each one waits under its own entry's id, so two quick ones never mix
- * (BUGS #20). When the list closes, the «Отменить» message goes with it, so [sendAll] sends what
- * still waits instead of dropping it. Owned by the list's presenter; everything here runs on the
- * main thread.
+ * «Отменить» for a list entry: a status change or a delete waits a few seconds before it is sent, and
+ * can be cancelled until then. Each one waits under its own entry's id, so two quick ones never mix
+ * (BUGS #20). When the screen closes, the «Отменить» message goes with it, so [sendAll] sends what
+ * still waits instead of dropping it. Owned by a screen's presenter - «Списки», and the title page's
+ * 🗑 (BUGS #85); everything here runs on the main thread. The message is `View.showUndoMessage`.
  */
 class PendingRateChanges(private val delayMillis: Long = Constants.TASK_LONG_DELAY) {
 

@@ -199,6 +199,9 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         dialog.show(childFragmentManager, "RateTag")
     }
 
+    override fun showRateMessage(message: String, rateId: Long) =
+            coordinator.showUndoMessage(message) { getPresenter().onDeleteCanceled(rateId) }
+
     override fun setHeadItem(item: DetailsHeadItem) {
         detailsName = item.name
         headHolder.bind(item)
