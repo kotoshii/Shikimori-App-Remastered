@@ -450,8 +450,12 @@ class RatePresenter @Inject constructor(
         val sorts = if (isAnime) sortResourceProvider.getAnimeRateSorts() else sortResourceProvider.getMangaRateSorts()
         val sortBar = RateSortViewModel(status, currentSort, sorts, descending, isAnime)
 
+        //the pins are the user's own, kept by title: on another user's list they would reorder it by
+        //the viewer's pins (P7-T5 Q146)
+        val pins = if (canEdit) pinInteractor.getPinnedRates(type, status) else Single.just(emptyList<PinnedRate>())
+
         shownRates.start {
-            pinInteractor.getPinnedRates(type, status)
+            pins
                     .observeOn(Schedulers.computation())
                     .map { pinned ->
                         val shown = sortAndSearchRates(entries, currentSort, descending, search) { name, nameRu -> settingsSource.titleName(name, nameRu) }
