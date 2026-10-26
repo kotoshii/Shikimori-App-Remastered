@@ -15,5 +15,7 @@ data class RateViewModel(
         val progress: String,
         val rawRate: Rate,
         val isPinned : Boolean,
-        val pinOrder : Int
+        val pinOrder : Int,
+        /** False on another user's list: shikimori refuses every change to it (BUGS #85). */
+        val canEdit : Boolean
 )

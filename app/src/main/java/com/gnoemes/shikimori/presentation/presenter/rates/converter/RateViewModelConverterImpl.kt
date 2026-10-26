@@ -15,11 +15,11 @@ class RateViewModelConverterImpl @Inject constructor(
         private val titleText: TitleTextConverter
 ) : RateViewModelConverter {
 
-    override fun apply(rates: List<Rate>, pinned: List<PinnedRate>): List<RateViewModel> =
-            rates.map { convertRate(it, pinned) }
+    override fun apply(rates: List<Rate>, pinned: List<PinnedRate>, canEdit: Boolean): List<RateViewModel> =
+            rates.map { convertRate(it, pinned, canEdit) }
                     .sortedBy { !it.isPinned }
 
-    private fun convertRate(it: Rate, pinned: List<PinnedRate>): RateViewModel {
+    private fun convertRate(it: Rate, pinned: List<PinnedRate>, canEdit: Boolean): RateViewModel {
         val type = if (it.manga == null) Type.ANIME else Type.MANGA
 
         fun isAnime(): Boolean = type == Type.ANIME
@@ -46,7 +46,8 @@ class RateViewModelConverterImpl @Inject constructor(
                 progress,
                 it,
                 isPinned,
-                pinnedRate?.order ?: Constants.MAX_PINNED_RATES + 1
+                pinnedRate?.order ?: Constants.MAX_PINNED_RATES + 1,
+                canEdit
         )
     }
 

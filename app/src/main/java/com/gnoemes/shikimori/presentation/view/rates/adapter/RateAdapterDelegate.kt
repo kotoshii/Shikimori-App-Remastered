@@ -57,6 +57,8 @@ class RateAdapterDelegate(
                 descriptionView.text = item.description
 
                 pinView.visibleIf { item.isPinned }
+                //invisible, not gone: ▶ is lined up with it
+                rateEditBtn.visibility = if (item.canEdit) View.VISIBLE else View.INVISIBLE
                 playBtn.visibleIf { item.type == Type.ANIME }
                 ratingView.visibleIf { item.rating != "-" }
             }

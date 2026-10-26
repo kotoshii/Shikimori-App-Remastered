@@ -67,6 +67,10 @@ class RatePresenter @Inject constructor(
     private val isUserExist: Boolean
         get() = userId != Constants.NO_ID
 
+    //whether the lists shown are the signed-in user's own - from a profile they can be someone else's,
+    //which shikimori lets no one change (BUGS #85). Set with the lists' counts, before any entry shows
+    private var isMyList = false
+
     private val isSignedOutOfMyList: Boolean
         get() = ownerId == null && userInteractor.getUserStatus() == UserStatus.GUEST
 
@@ -124,6 +128,7 @@ class RatePresenter @Inject constructor(
             return
         }
         userInteractor.getDetails(userId)
+                .doOnSuccess { isMyList = it.isMe }
                 .map {
                     if (isAnime) rateCountConverter.countAnimeRates(it)
                     else rateCountConverter.countMangaRates(it)
@@ -432,6 +437,7 @@ class RatePresenter @Inject constructor(
         val currentSort = sort
         val descending = isDescendingSort
         val search = query?.takeIf { it.isNotBlank() }
+        val canEdit = isMyList
         val sorts = if (isAnime) sortResourceProvider.getAnimeRateSorts() else sortResourceProvider.getMangaRateSorts()
         val sortBar = RateSortViewModel(status, currentSort, sorts, descending, isAnime)
 
@@ -440,7 +446,7 @@ class RatePresenter @Inject constructor(
                     .observeOn(Schedulers.computation())
                     .map { pinned ->
                         val shown = sortAndSearchRates(entries, currentSort, descending, search) { name, nameRu -> settingsSource.titleName(name, nameRu) }
-                        converter.apply(shown, pinned)
+                        converter.apply(shown, pinned, canEdit)
                     }
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ setData(sortBar, it, search != null) }, this::processErrors)

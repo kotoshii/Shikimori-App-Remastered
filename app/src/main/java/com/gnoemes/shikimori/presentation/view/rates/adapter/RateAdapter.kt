@@ -49,9 +49,10 @@ class RateAdapter(
 
     override fun canDragItem(position: Int): Boolean = false
 
+    //not on another user's list: every swipe action is a change shikimori refuses there
     override fun canSwipeItem(position: Int): Boolean {
         val item = items.getOrNull(position)
-        return !(item == null || item !is RateViewModel)
+        return item is RateViewModel && item.canEdit
     }
 
     override fun onItemMove(oldPosition: Int, newPosition: Int): Boolean {
