@@ -169,7 +169,9 @@ class UserPresenter @Inject constructor(
     }
 
     private fun onRateClicked(anime: Boolean, status: RateStatus) {
-        val data = RateNavigationData(id, if (anime) Type.ANIME else Type.MANGA, status)
+        //the rows are shown once the user is read, so currentUser is set
+        val owner = currentUser.takeUnless { it.isMe }
+        val data = RateNavigationData(id, if (anime) Type.ANIME else Type.MANGA, status, owner?.nickname, owner?.image?.x48)
         router.navigateTo(BottomScreens.RATES, data)
     }
 

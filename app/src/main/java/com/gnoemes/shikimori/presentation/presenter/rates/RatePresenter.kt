@@ -55,6 +55,9 @@ class RatePresenter @Inject constructor(
     var type: Type = Type.ANIME
     /** The user these lists were opened for, from a profile; null for the «Списки» tab, the signed-in user's own. */
     var ownerId: Long? = null
+    /** The owner as the profile had them, shown at once; the lists' own read of the user follows. */
+    var ownerNickname: String? = null
+    var ownerAvatar: String? = null
     var rateStatus: RateStatus? = null
     var priorityStatus: RateStatus? = null
 
@@ -102,6 +105,8 @@ class RatePresenter @Inject constructor(
     override fun initData() {
         viewState.setNavigationItems(emptyList())
         viewState.selectType(type)
+        //with the bar: it waited for the read of the user, a moment after the screen opened (P7-T5 Test 91)
+        ownerNickname?.let { viewState.showListOwner(it, ownerAvatar) }
         loadUserOrCategories()
     }
 

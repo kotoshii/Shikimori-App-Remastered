@@ -70,6 +70,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         val data = arguments?.getParcelable<RateNavigationData>(AppExtras.ARGUMENT_RATE_DATA)
         data?.let {
             ownerId = it.userId
+            ownerNickname = it.nickname
+            ownerAvatar = it.avatar
             type = it.type
             priorityStatus = it.status
         }
