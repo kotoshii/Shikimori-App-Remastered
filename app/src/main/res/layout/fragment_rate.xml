@@ -103,25 +103,18 @@
                 tools:visibility="visible">
 
                 <!--clickable to take the taps: the list lies behind the strip, and a tap on it opened
-                the title under it (P7-T5 Test 90)-->
+                the title under it (P7-T5 Test 90). A label, no back button: it read as a button to open
+                the list (Q154); the phone's back goes back-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clickable="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingLeft="12dp"
                     android:paddingEnd="12dp"
                     android:paddingRight="12dp">
-
-                    <!--the bar's own navigation button: the same ripple and width, so the arrow sits
-                    under the bar's ☰-->
-                    <ImageButton
-                        android:id="@+id/ownerBackBtn"
-                        style="?attr/toolbarNavigationButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        app:srcCompat="@drawable/ic_arrow_back"
-                        tools:ignore="ContentDescription" />
 
                     <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/ownerAvatarView"

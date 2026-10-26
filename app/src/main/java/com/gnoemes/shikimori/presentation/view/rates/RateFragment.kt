@@ -99,8 +99,6 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         initDrawer()
         initNav()
 
-        ownerBackBtn.onClick { getPresenter().onBackPressed() }
-
         with(toolbar) {
             title = null
             setNavigationOnClickListener { toggleDrawer() }
