@@ -187,6 +187,8 @@ class RatePresenter @Inject constructor(
             viewState.showEmptyRatesView(true, isAnime)
             viewState.hideNetworkView()
             viewState.showContent(false)
+            //a pull on the empty list: no list load follows to hide the spinner
+            viewState.onHideLoading()
         }
     }
 
@@ -236,9 +238,20 @@ class RatePresenter @Inject constructor(
     // Rate list logic
     ///////////////////////////////////////////////////////////////////////////
 
+    //nothing to load before a status is chosen: the categories' load picks one, then loads it. A
+    //paginator made earlier kept its request for no status - an error each time - and the list stayed
+    //blank: a change sent from a sheet restored after Android closed the app refreshed before the
+    //categories came (P7-T5 Test 87i)
     override fun loadData() {
         if (isSignedOutOfMyList) showSignedOut()
-        else super.loadData()
+        else if (rateStatus != null) super.loadData()
+    }
+
+    //with no status chosen - an empty list, or one still loading - a pull asks for the categories
+    //again: a list filled on the site since then shows up
+    override fun onRefresh() {
+        if (rateStatus == null) loadUserOrCategories()
+        else super.onRefresh()
     }
 
     override fun getPaginatorRequestFactory(): (Int) -> Single<List<Rate>> {
@@ -425,7 +438,8 @@ class RatePresenter @Inject constructor(
     //the tab counts change too
     private fun onRateChanged() {
         loadUserOrCategories()
-        onRefresh()
+        //with no status chosen yet, the categories' load above picks one and loads it
+        if (rateStatus != null) onRefresh()
     }
 
     fun onSortChanged(sort: RateSort) {
