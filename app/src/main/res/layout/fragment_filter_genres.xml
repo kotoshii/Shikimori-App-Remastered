@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!--the bar, then the list under it. A CoordinatorLayout here took its height from its tallest child
+alone, so the panel came out one bar too short and the list's end stayed under its edge; its 48dp
+bottom margin made up for most of it (P7-T5 Test 88d). 16dp now, as on «Сезон»-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <include layout="@layout/layout_filter_nested_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="48dp"
-        app:layout_behavior="@string/appBarFixScrollingFooterBehavior" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+</LinearLayout>
