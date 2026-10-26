@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import com.gnoemes.shikimori.R
@@ -50,6 +51,10 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
                     //its window animation, a fade in place, won - a short sheet seemed to snap open
                     //(P7-T5 Test 79b)
                     window?.setWindowAnimations(R.style.Animation_MaterialComponents_BottomSheetDialog)
+                    //the sheet sits above the keyboard and its content scrolls. The window panned, as
+                    //the main screen does, and showed only the line with the cursor: the rest of a field
+                    //low in the sheet stayed under the keyboard (P7-T5 Test 87h)
+                    window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                     isCancelable = true
                     setCanceledOnTouchOutside(true)
                 }

@@ -125,6 +125,7 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
         }
 
         commentView.setText(rate?.text)
+        keepCommentInView()
 
         if (isAnime) {
             progressLabelView.text = context!!.getString(R.string.profile_rate_watched)
@@ -160,6 +161,19 @@ class EditRateFragment : BaseBottomSheetDialogFragment() {
 
         //the fields keep their own text; the status lives only here
         outState.putSerializable(STATUS_KEY, status)
+    }
+
+    /**
+     * The comment is the sheet's last field. While it has the keyboard, the sheet scrolls to its end -
+     * when it gets focus, and when the sheet shrinks for the keyboard - so the whole field shows, not
+     * only the line with the cursor.
+     */
+    private fun keepCommentInView() {
+        val scrollToEnd = { nestedScroll.post { nestedScroll.smoothScrollTo(0, nestedScroll.getChildAt(0).bottom) } }
+        commentView.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) scrollToEnd() }
+        nestedScroll.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (commentView.hasFocus() && bottom - top != oldBottom - oldTop) scrollToEnd()
+        }
     }
 
     private fun onStatusChanged(id: Int) {
