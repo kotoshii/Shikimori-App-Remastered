@@ -154,7 +154,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         refreshLayout.layoutParams = (refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        placeRefreshCircle()
 
         emptyContentView.setText(R.string.rate_empty)
         networkErrorView.apply {
@@ -218,6 +218,19 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     private fun closeDrawer() {
         drawer?.closeDrawer(GravityCompat.START)
+    }
+
+    //the pull's circle starts hidden behind the top bar and stops below it; [below] is how far the
+    //owner's strip reaches past the bar, so the circle comes out from under the strip instead
+    private fun placeRefreshCircle(below: Int = 0) {
+        with(refreshLayout) {
+            val start = context.dp(24) + below
+            if (progressViewStartOffset == start) return
+            //moving the circle hides it and drops a refresh under way: that one is shown again
+            val refreshing = isRefreshing
+            setProgressViewOffset(false, start, context.dp(96) + below)
+            if (refreshing) showRefresh()
+        }
     }
 
     private fun getRateTextColor(ordinal: Int): Int = when (ordinal) {
@@ -409,9 +422,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             ownerNameView.text = getString(R.string.rate_list_owner, nickname)
             imageLoader.setCircleImage(ownerAvatarView, avatar)
         }
-        //the rows start below the strip, as far down as the strip reaches past the bar
+        //the rows and the pull's circle start below the strip, as far down as it reaches past the bar
         ownerStrip.post {
-            recyclerView?.updatePadding(top = if (nickname != null) ownerStrip.bottom - toolbarCard.bottom else 0)
+            if (view == null) return@post
+            val below = if (nickname != null) ownerStrip.bottom - toolbarCard.bottom else 0
+            recyclerView.updatePadding(top = below)
+            placeRefreshCircle(below)
         }
     }
 
