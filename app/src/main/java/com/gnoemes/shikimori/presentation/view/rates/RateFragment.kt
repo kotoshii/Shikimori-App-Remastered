@@ -11,6 +11,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -74,9 +75,6 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
     }
 
-    //where the first row starts: under the floating top bar, which the rows scroll under
-    private val firstRowTop by lazy { context!!.dp(68) }
-
     private val _adapter by lazy { RateAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()::onListAction, getPresenter()::onAction, getPresenter()::onSortAction) }
 
     override val adapter: BasePaginationAdapter
@@ -98,6 +96,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
         initDrawer()
         initNav()
+
+        ownerBackBtn.onClick { getPresenter().onBackPressed() }
 
         with(toolbar) {
             title = null
@@ -139,7 +139,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             adapter = this@RateFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 5 }
             itemAnimator = DefaultItemAnimator()
-            addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, firstCustomSpacing = firstRowTop, lastCustomSpacing = context!!.dp(16)))
+            val customSpacing = context.dp(68)
+            addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, firstCustomSpacing = customSpacing, lastCustomSpacing = context!!.dp(16)))
             //the rows scroll on under the top bar and the owner's strip
             clipToPadding = false
             addOnScrollListener(nextPageListener)
@@ -396,13 +397,19 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showListOwner(nickname: String?, avatar: String?) {
         ownerStrip.visibleIf { nickname != null }
+        //the gap under the bar goes above the strip: the bar slides away with the gaps around it, and
+        //the strip would sit flush against the screen's top. Without the strip, the bar has the same
+        //gap below it as above
+        toolbarCard.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            bottomMargin = if (nickname != null) 0 else topMargin
+        }
         if (nickname != null) {
             ownerNameView.text = getString(R.string.rate_list_owner, nickname)
             imageLoader.setCircleImage(ownerAvatarView, avatar)
         }
-        //the first row starts below the strip: it sits right under the top bar otherwise
+        //the rows start below the strip, as far down as the strip reaches past the bar
         ownerStrip.post {
-            recyclerView?.updatePadding(top = if (nickname != null) ownerStrip.bottom - firstRowTop else 0)
+            recyclerView?.updatePadding(top = if (nickname != null) ownerStrip.bottom - toolbarCard.bottom else 0)
         }
     }
 

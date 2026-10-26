@@ -39,6 +39,7 @@
             app:layout_collapseMode="pin">
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/toolbarCard"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginStart="16dp"
@@ -81,41 +82,69 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!--another user's list: whose it is. No scroll flags, so it stays at the top when the bar
-            above slides away (P7-T5 Q149)-->
-            <LinearLayout
+            above slides away (P7-T5 Q149). A card like the bar, the list scrolling on behind both
+            (Q151); its top margin is the gap below the bar, and above the card once the bar is away-->
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/ownerStrip"
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
-                android:background="?attr/colorSurface"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingLeft="16dp"
-                android:paddingEnd="16dp"
-                android:paddingRight="16dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
                 android:visibility="gone"
+                app:cardBackgroundColor="?attr/colorPrimary"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="3dp"
+                app:cardPreventCornerOverlap="false"
+                app:strokeColor="?attr/colorDivider"
+                app:strokeWidth="?attr/themeStrokeWidth"
                 tools:visibility="visible">
 
-                <ImageView
-                    android:id="@+id/ownerAvatarView"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:importantForAccessibility="no" />
+                <!--clickable to take the taps: the list lies behind the strip, and a tap on it opened
+                the title under it (P7-T5 Test 90)-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingEnd="12dp"
+                    android:paddingRight="12dp">
 
-                <TextView
-                    android:id="@+id/ownerNameView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="?attr/colorOnPrimarySecondary"
-                    android:textSize="14sp"
-                    tools:text="Список Aleks" />
+                    <!--the bar's own navigation button: the same ripple and width, so the arrow sits
+                    under the bar's ☰-->
+                    <ImageButton
+                        android:id="@+id/ownerBackBtn"
+                        style="?attr/toolbarNavigationButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        app:srcCompat="@drawable/ic_arrow_back"
+                        tools:ignore="ContentDescription" />
 
-            </LinearLayout>
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/ownerAvatarView"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/ownerNameView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginLeft="8dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="?attr/colorOnPrimarySecondary"
+                        android:textSize="14sp"
+                        tools:text="Список Aleks" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </com.google.android.material.appbar.AppBarLayout>
 
