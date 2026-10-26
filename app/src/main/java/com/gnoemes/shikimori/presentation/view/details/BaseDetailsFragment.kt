@@ -7,7 +7,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.widget.SearchView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.updateLayoutParams
+import androidx.core.widget.NestedScrollView
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
@@ -29,9 +30,7 @@ import com.gnoemes.shikimori.presentation.view.common.holders.*
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
@@ -43,15 +42,29 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
 
     private var detailsName: String? = null
 
-    protected open val onOffsetChangedListener = AppBarLayout.OnOffsetChangedListener { appbar, verticalOffset ->
+    //the blurred poster's height from the layout, its least
+    private var backgroundHeight = 0
+    private var toolbarShown = false
 
-        fun isCollapsed(): Boolean {
-            return Math.abs(verticalOffset) >= appbar.totalScrollRange
-        }
-        appbar.post {
-            if (isCollapsed()) showToolbar()
-            else hideToolbar()
-        }
+    //the title on the toolbar's own background once the head has scrolled up under the toolbar, as when
+    //the collapsing header the head was part of had collapsed (P7-T5 13.1)
+    private fun updateToolbar() {
+        val shown = nestedScroll.scrollY >= headContainer.height - toolbar.height
+        if (shown == toolbarShown) return
+        toolbarShown = shown
+        if (shown) showToolbar() else hideToolbar()
+    }
+
+    //run after the layout pass: the page restores its scroll position while the screen is laid out, and
+    //a title added to the toolbar then is never measured and does not show (P7-T5 Test 96g)
+    private val toolbarCheck = Runnable { if (view != null) updateToolbar() }
+
+    //the blurred poster reaches the bottom of a head taller than it, so no edge shows across a long
+    //name (BUGS #80); and the head's height decides the toolbar too
+    private fun fitHead() {
+        val height = maxOf(backgroundHeight, headContainer.height)
+        if (backgroundImage.layoutParams.height != height) backgroundImage.updateLayoutParams { this.height = height }
+        updateToolbar()
     }
 
     protected open fun showToolbar() {
@@ -100,16 +113,16 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
             }
         }
 
-        val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
-        params.behavior = AppBarLayout.Behavior().apply {
-            setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
-                override fun canDrag(appBarLayout: AppBarLayout): Boolean {
-                    return false
-                }
-            })
-
+        toolbarShown = false
+        backgroundHeight = backgroundImage.layoutParams.height
+        nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
+            v.removeCallbacks(toolbarCheck)
+            v.post(toolbarCheck)
+        })
+        //after the layout that changed the head: the poster's height is set outside a layout pass
+        headContainer.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (bottom - top != oldBottom - oldTop) headContainer.post { if (this@BaseDetailsFragment.view != null) fitHead() }
         }
-        appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
 
         headHolder = DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
         infoHolder = DetailsInfoViewHolder(infoLayout, tagAdapter, infoAdapter)
@@ -173,11 +186,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
 
     override fun onLinkAction(action: DetailsAction.Link) {
         getPresenter().onAction(action)
-    }
-
-    override fun onDestroyView() {
-        appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener)
-        super.onDestroyView()
     }
 
     ///////////////////////////////////////////////////////////////////////////
