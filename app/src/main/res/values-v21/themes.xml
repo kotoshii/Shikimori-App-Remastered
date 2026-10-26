@@ -41,6 +41,7 @@
         <item name="android:textColor">@color/dark_colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
         <item name="android:windowBackground">@color/dark_colorBackground</item>
 
         <item name="md_background_color">@color/dark_colorDialogSurface</item>
@@ -90,6 +91,7 @@
         <item name="android:textColor">@color/amoled_colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
         <item name="android:windowBackground">@color/amoled_colorBackground</item>
 
         <item name="md_background_color">@color/amoled_colorDialogSurface</item>
