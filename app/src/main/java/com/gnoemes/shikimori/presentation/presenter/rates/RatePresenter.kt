@@ -385,7 +385,7 @@ class RatePresenter @Inject constructor(
     }
 
     fun onChangeRateStatus(id: Long, newStatus: RateStatus) {
-        val item = rates.find { it.id == id } ?: return
+        val item = rates.find { it.id == id } ?: return sendNow(ratesInteractor.changeRateStatus(id, newStatus))
         if (item.status == newStatus) {
             showRates()
             return
@@ -395,8 +395,16 @@ class RatePresenter @Inject constructor(
     }
 
     fun onDeleteRate(id: Long) {
-        val item = rates.find { it.id == id } ?: return
+        val item = rates.find { it.id == id } ?: return sendNow(ratesInteractor.deleteRate(id))
         waitAndSend(item, ratesInteractor.deleteRate(id), rateResourceProvider.getDeleteRateMessage(item.type))
+    }
+
+    //the sheet and the status dialog can outlive the list: when Android closed the app in the
+    //background, they come back before the list has loaded, and their change used to do nothing. With
+    //no row to hide and bring back, it is sent at once (BUGS #85)
+    private fun sendNow(change: Completable) {
+        change.subscribe(this::onRateChanged, this::showErrorText)
+                .addToDisposables()
     }
 
     //the entry leaves the list at once; the change is sent after the «Отменить» wait. A change that
