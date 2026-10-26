@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 
 interface RatesRepository {
@@ -21,6 +22,9 @@ interface RatesRepository {
      * them on the server. Used to put the user's statuses on lists of titles.
      */
     fun getMyRates(type: Type, statuses: List<RateStatus>? = null): Single<Map<Long, UserRate>>
+
+    /** The signed-in user's entry for one title, as shikimori has it now; none when it is not in the list. */
+    fun getMyRate(targetId: Long, type: Type): Maybe<UserRate>
 
     fun deleteRate(id: Long): Completable
 

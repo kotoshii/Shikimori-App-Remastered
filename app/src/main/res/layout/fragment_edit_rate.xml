@@ -71,7 +71,22 @@
         android:fillViewport="true"
         app:layout_behavior="@string/appBarFixScrollingFooterBehavior">
 
-        <include layout="@layout/layout_edit_rate_content" />
+        <!--the placeholders lie over the content until the entry is read: the content is laid out
+        already, invisible, so the sheet keeps its size-->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/rateContent"
+                layout="@layout/layout_edit_rate_content"
+                android:visibility="invisible" />
+
+            <include
+                android:id="@+id/ratePlaceholder"
+                layout="@layout/layout_edit_rate_placeholder" />
+
+        </FrameLayout>
 
     </androidx.core.widget.NestedScrollView>
 

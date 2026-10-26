@@ -94,8 +94,6 @@ class RatePresenter @Inject constructor(
     //the sort and search in progress: a newer one replaces it, so an older result never shows last
     private val shownRates = loadSlot()
 
-    private val rateSheetLoad = loadSlot()
-
     override fun onViewReattached() {
         loadUserOrCategories()
         if (rateStatus != null) onRefresh()
@@ -376,12 +374,10 @@ class RatePresenter @Inject constructor(
         } else router.showSystemMessage(resourceProvider.emptyMessage)
     }
 
-    //the sheet gets the entry as shikimori has it now: the list can be older, and a copy built from
-    //its row lost the rewatch count, which ✓ then saved as 0 (BUGS #82, #83). A second tap replaces
-    //the first, so one sheet opens
-    private fun onEditRate(rate: RateViewModel) = rateSheetLoad.start {
-        ratesInteractor.getRate(rate.rawRate.id)
-                .subscribe({ viewState.showRateDialog(rate.name, it) }, this::showErrorText)
+    //the sheet reads the entry itself, as shikimori has it now: the list can be older, and a copy built
+    //from its row lost the rewatch count, which ✓ then saved as 0 (BUGS #82, #83)
+    private fun onEditRate(rate: RateViewModel) {
+        viewState.showRateDialog(rate.name, rate.contentId, rate.type)
     }
 
     //the list can be older than the count - it may have changed on the site since - so the entry is

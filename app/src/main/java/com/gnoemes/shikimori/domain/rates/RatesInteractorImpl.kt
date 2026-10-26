@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import com.gnoemes.shikimori.utils.hiddenListOnForbidden
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -31,6 +32,9 @@ class RatesInteractorImpl @Inject constructor(
     private fun isGuest(): Boolean = userRepository.getUserStatus() == UserStatus.GUEST
 
     override fun getRate(id: Long): Single<UserRate> = repository.getRate(id).applyErrorHandlerAndSchedulers()
+
+    override fun getMyRate(targetId: Long, type: Type): Maybe<UserRate> =
+            repository.getMyRate(targetId, type).applyErrorHandlerAndSchedulers()
 
     override fun deleteRate(id: Long): Completable = repository.deleteRate(id).applyErrorHandlerAndSchedulers()
 

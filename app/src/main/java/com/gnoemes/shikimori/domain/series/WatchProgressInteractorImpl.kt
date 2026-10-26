@@ -98,9 +98,9 @@ class WatchProgressInteractorImpl @Inject constructor(
     }
 
     private fun lookUp(animeId: Long): Single<WatchProgress> =
-            userRepository.getMyUserId()
-                    .flatMap { ratesRepository.getUserRates(it, animeId, Type.ANIME) }
-                    .map { rates -> rates.firstOrNull()?.let { WatchProgress(it.id, it.episodes ?: 0) } ?: WatchProgress.NOT_IN_LIST }
+            ratesRepository.getMyRate(animeId, Type.ANIME)
+                    .map { WatchProgress(it.id, it.episodes ?: 0) }
+                    .toSingle(WatchProgress.NOT_IN_LIST)
 
     private fun create(animeId: Long, episodes: Int): Completable =
             userRepository.getMyUserId()

@@ -12,6 +12,7 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Link
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
@@ -194,8 +195,8 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     // MVP
     ///////////////////////////////////////////////////////////////////////////
 
-    override fun showRateDialog(title: String, userRate: UserRate?, isAnime: Boolean) {
-        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = isAnime, title = title)
+    override fun showRateDialog(title: String, targetId: Long, type: Type) {
+        val dialog = EditRateFragment.newInstance(title, targetId, type)
         dialog.show(childFragmentManager, "RateTag")
     }
 

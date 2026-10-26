@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.dropExtraPageItem
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -43,6 +44,11 @@ class RatesRepositoryImpl @Inject constructor(
                         .flatMap { getUserRates(it, target = type, statuses = statuses?.joinToString(",") { status -> status.status }) }
                         .map { rates -> rates.filter { it.targetId != null }.associateBy { it.targetId!! } }
             }
+
+    override fun getMyRate(targetId: Long, type: Type): Maybe<UserRate> =
+            userRepository.getMyUserId()
+                    .flatMap { getUserRates(it, targetId, type) }
+                    .flatMapMaybe { rates -> rates.firstOrNull()?.let { Maybe.just(it) } ?: Maybe.empty() }
 
     //the api knows only Anime and Manga: a ranobe is a manga to it, and "Ranobe" gets nothing back
     private fun targetType(type: Type): String = if (type == Type.ANIME) "Anime" else "Manga"

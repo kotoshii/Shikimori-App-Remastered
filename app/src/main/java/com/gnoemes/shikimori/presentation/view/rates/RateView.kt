@@ -6,14 +6,14 @@ import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.RateSort
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
-import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.rates.presentation.RateCategory
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
 
 interface RateView : BasePaginationView {
 
+    /** The list entry's sheet for title [targetId]; it reads the entry itself. */
     @StateStrategyType(SkipStrategy::class)
-    fun showRateDialog(title : String, userRate: UserRate)
+    fun showRateDialog(title : String, targetId: Long, type: Type)
 
     @StateStrategyType(SkipStrategy::class)
     fun showSortDialog(sorts: List<Triple<RateSort, String, Boolean>>)

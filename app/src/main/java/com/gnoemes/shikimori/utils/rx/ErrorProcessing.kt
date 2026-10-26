@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.utils.network.SignedOutException
 import com.google.gson.JsonSyntaxException
 import com.google.gson.stream.MalformedJsonException
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.Single
 import retrofit2.HttpException
@@ -26,6 +27,10 @@ class ErrorProcessing<T> {
 
     fun getCompletableErrors(throwable: Throwable): Completable {
         return Completable.error { throwProcessException(throwable) }
+    }
+
+    fun getMaybeErrors(throwable: Throwable): Maybe<T> {
+        return Maybe.error { throwProcessException(throwable) }
     }
 
     @Throws(TitleException::class, NetworkException::class, ServiceCodeException::class, ContentException::class)

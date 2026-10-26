@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 
 interface RatesInteractor {
@@ -14,6 +15,9 @@ interface RatesInteractor {
     fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>>
 
     fun getRate(id : Long) : Single<UserRate>
+
+    /** The signed-in user's entry for one title, as shikimori has it now; none when it is not in the list. */
+    fun getMyRate(targetId: Long, type: Type): Maybe<UserRate>
 
     fun deleteRate(id: Long): Completable
 

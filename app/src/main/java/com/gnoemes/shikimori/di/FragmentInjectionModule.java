@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.di.friends.FriendsModule;
 import com.gnoemes.shikimori.di.manga.MangaModule;
 import com.gnoemes.shikimori.di.person.PersonModule;
 import com.gnoemes.shikimori.di.rate.RateModule;
+import com.gnoemes.shikimori.di.rate.SeriesAndRatesModule;
 import com.gnoemes.shikimori.di.search.FilterModule;
 import com.gnoemes.shikimori.di.search.SearchModule;
 import com.gnoemes.shikimori.di.series.EpisodeModule;
@@ -37,6 +38,7 @@ import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenres
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment;
 import com.gnoemes.shikimori.presentation.view.series.SeriesFragment;
 import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment;
+import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment;
 import com.gnoemes.shikimori.presentation.view.shikimorimain.ShikimoriMainFragment;
 import com.gnoemes.shikimori.presentation.view.similar.SimilarFragment;
 import com.gnoemes.shikimori.presentation.view.topic.details.TopicFragment;
@@ -89,6 +91,11 @@ public interface FragmentInjectionModule {
     @BottomChildScope
     @ContributesAndroidInjector(modules = EpisodeModule.class)
     EpisodesFragment episodeFragment();
+
+    //the list entry's sheet reads the entry itself (BUGS #83)
+    @BottomChildScope
+    @ContributesAndroidInjector(modules = SeriesAndRatesModule.class)
+    EditRateFragment editRateFragment();
 
     @BottomChildScope
     @ContributesAndroidInjector(modules = MangaModule.class)

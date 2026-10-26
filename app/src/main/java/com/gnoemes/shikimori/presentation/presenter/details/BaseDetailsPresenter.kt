@@ -57,9 +57,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     /** The title's details, once loaded. */
     protected var details: D? = null
 
-    //✏'s read of the entry: a second tap replaces the first, so one sheet opens
-    private val rateSheetLoad = loadSlot()
-
     //🗑 waits behind «Отменить», as in «Списки» (BUGS #85)
     private val pendingChanges = PendingRateChanges()
 
@@ -297,19 +294,11 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         onOpenWeb(it.url)
     }
 
-    //the title is read again first, so the sheet gets the entry as shikimori has it now - the page can
-    //be older: an entry added since (by «Автоматическое добавление», on the site) was then overwritten
-    //with the empty sheet's zeros (BUGS #83, #84). The head is drawn again with it
-    private fun onEditRate() {
-        if (details == null) return
-        rateSheetLoad.start {
-            loadDetails()
-                    .appendLightLoadingLogic(viewState)
-                    .subscribe({ head ->
-                        viewState.setHeadItem(head)
-                        withDetails { viewState.showRateDialog(title, it.userRate, type == Type.ANIME) }
-                    }, this::showErrorText)
-        }
+    //the sheet reads the entry itself, as shikimori has it now: the page can be older - an entry added
+    //since (by «Автоматическое добавление», on the site) was overwritten with the empty sheet's zeros
+    //(BUGS #83, #84)
+    private fun onEditRate() = withDetails {
+        viewState.showRateDialog(title, id, type)
     }
 
     private fun onStatusDialog() = withDetails {

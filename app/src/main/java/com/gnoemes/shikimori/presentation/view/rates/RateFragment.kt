@@ -299,9 +299,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         recyclerView.scrollToPosition(0)
     }
 
-    override fun showRateDialog(title: String, userRate: UserRate) {
+    override fun showRateDialog(title: String, targetId: Long, type: Type) {
         hideSoftInput()
-        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = userRate.targetType == Type.ANIME, title = title)
+        val dialog = EditRateFragment.newInstance(title, targetId, type)
         dialog.show(childFragmentManager, "RateTag")
     }
 
