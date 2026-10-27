@@ -107,7 +107,10 @@ sealed class VideoHosting : Parcelable {
         /** The hosting a translation names. Anything not listed keeps its raw name as [UNKNOWN]. */
         fun fromName(raw: String?): VideoHosting {
             return when (raw) {
-                "vk.com", "vk" -> VK()
+                //vkvideo.ru is vk's newer domain, the same service on the same servers (checked live
+                //2026-10-26), so it reads and filters as vk.com (BUGS #3, P7-T5 Q143 a); VkParser
+                //reads its page from vk.com
+                "vk.com", "vk", "vkvideo.ru" -> VK()
                 "ok.ru", "ok" -> OK()
                 "csst.online", "www.csst.online", "fsst.online", "www.fsst.online", "secvideo1.online", "www.secvideo1.online", "dsst.online" -> ALLVIDEO()
                 //the same PlayerJS links on every one of them (BUGS #2)

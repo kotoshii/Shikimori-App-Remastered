@@ -15,7 +15,15 @@ class VkParser @Inject constructor(
     override val hosting = VideoHosting.VK::class.java
 
     override fun parse(playerUrl: String): Single<ParsedVideo> =
-            api.getPlayerHtml(playerUrl).map { ParsedVideo(tracks(it.string())) }
+            api.getPlayerHtml(onVkCom(playerUrl)).map { ParsedVideo(tracks(it.string())) }
+
+    /**
+     * The page is read from vk.com whatever domain the row names. vkvideo.ru, vk's newer one, sends a
+     * client with no cookies round its login page and back for ever - the app's has none, and OkHttp
+     * gave up after 20 redirects - while vk.com answers the same `video_ext.php` query with the player
+     * page at once (live 2026-10-27; P7-T5 Q158).
+     */
+    private fun onVkCom(playerUrl: String) = playerUrl.replaceFirst("//vkvideo.ru/", "//vk.com/")
 
     private fun tracks(html: String?): List<Track> {
         if (html.isNullOrEmpty()) return emptyList()
