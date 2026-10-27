@@ -14,7 +14,8 @@ class UserAgentInterceptor : Interceptor {
         val original = chain.request()
 
         val requestBuilder = original.newBuilder()
-        requestBuilder.addHeader(USER_AGENT_HEADER, USER_AGENT_CLIENT)
+        //set, not added: one name, never a second User-Agent next to another (BUGS #79)
+        requestBuilder.header(USER_AGENT_HEADER, USER_AGENT_CLIENT)
 
         val request = requestBuilder.build()
         return chain.proceed(request)
