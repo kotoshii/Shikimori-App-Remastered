@@ -66,7 +66,7 @@ class SearchPresenter @Inject constructor(
         } else {
             getSimpleRequestFactory()
                     .appendLoadingLogic(viewState, refresh)
-                    .subscribe({ showData(true, it) }, this::processErrors)
+                    .subscribe({ showData(true, it) }, loadErrors(overContent = refresh))
                     .addToDisposables()
         }
     }

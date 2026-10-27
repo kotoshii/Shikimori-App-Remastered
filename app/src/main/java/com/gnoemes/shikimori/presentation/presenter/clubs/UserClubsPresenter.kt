@@ -27,7 +27,7 @@ class UserClubsPresenter @Inject constructor(
             interactor.getClubs(id)
                     .appendLoadingLogic(viewState, refresh)
                     .map(converter)
-                    .subscribe(this::showData, this::processErrors)
+                    .subscribe(this::showData, loadErrors(overContent = refresh))
                     .addToDisposables()
 
     private fun showData(items : List<UserClubViewModel>) {

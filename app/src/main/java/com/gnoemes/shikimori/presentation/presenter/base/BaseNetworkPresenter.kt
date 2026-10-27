@@ -44,6 +44,22 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
         else Log.e("Error", throwable.toString())
     }
 
+    /**
+     * An error while the screen shows its content - a pull-to-refresh, a reload - is a message, and the
+     * content stays: a failed refresh hid it all behind the error view (BUGS #78, P7-T5 Q165). One that
+     * [takesScreen] replaces the content all the same.
+     */
+    protected fun showErrorOverContent(throwable: Throwable) {
+        if (takesScreen(throwable)) processErrors(throwable) else showErrorText(throwable)
+    }
+
+    /** For a load that may be a refresh: [showErrorOverContent] while the content is on screen, else [processErrors]. */
+    protected fun loadErrors(overContent: Boolean): (Throwable) -> Unit =
+            if (overContent) this::showErrorOverContent else this::processErrors
+
+    /** Whether an error replaces the content on screen rather than being a message over it. */
+    protected open fun takesScreen(throwable: Throwable): Boolean = false
+
     /** What the user reads when a request did not get through or the server refused it; null for any other error. */
     protected fun errorMessage(throwable: Throwable): String? = when (throwable) {
         is NetworkException -> commonResources.networkError(throwable.kind)

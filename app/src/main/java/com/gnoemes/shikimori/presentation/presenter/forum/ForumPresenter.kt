@@ -29,7 +29,7 @@ class ForumPresenter @Inject constructor(
         interactor.getForums()
                 .appendLoadingLogic(viewState, refresh)
                 .map(converter)
-                .subscribe(this::showData, this::processErrors)
+                .subscribe(this::showData, loadErrors(overContent = refresh))
     }
 
     private fun showData(items: List<Forum>) {

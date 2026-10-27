@@ -52,16 +52,16 @@ abstract class BaseRateButtonListPresenter<View : RateButtonListView, Item : Rat
         val guest = isGuest
         loadItems(guest)
                 .appendLoadingLogic(viewState, refresh)
-                .subscribe({ setData(it, guest) }, this::processErrors)
+                .subscribe({ setData(it, guest) }, loadErrors(overContent = refresh))
                 .addToDisposables()
     }
 
-    //after a status change: the list stays on screen while it reloads
+    //after a status change: the list stays on screen while it reloads, and when the reload fails
     private fun reloadData() {
         val guest = isGuest
         loadItems(guest)
                 .appendLightLoadingLogic(viewState)
-                .subscribe({ setData(it, guest) }, this::processErrors)
+                .subscribe({ setData(it, guest) }, this::showErrorOverContent)
                 .addToDisposables()
     }
 

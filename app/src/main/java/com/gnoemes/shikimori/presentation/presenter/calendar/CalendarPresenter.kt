@@ -31,7 +31,7 @@ class CalendarPresenter @Inject constructor(
         interactor.getCalendarData()
                 .appendLoadingLogic(viewState, refresh)
                 .doOnSuccess { items.clearAndAddAll(it) }
-                .subscribe({ showItems() }, this::processErrors)
+                .subscribe({ showItems() }, loadErrors(overContent = refresh))
                 .addToDisposables()
     }
 
