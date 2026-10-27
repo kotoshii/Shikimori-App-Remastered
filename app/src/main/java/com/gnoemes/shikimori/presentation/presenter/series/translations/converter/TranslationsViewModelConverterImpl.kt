@@ -63,12 +63,8 @@ class TranslationsViewModelConverterImpl @Inject constructor(
             builder.append(context.getString(disc))
         }
 
-        if (disc == null && !isSameAuthor) {
-            if (builder.isNotEmpty()) appendDot(true)
-            val text = context.getString(R.string.translation_sources)
-            builder.append(text)
-        }
-
+        //nothing to say leaves the line out: a card used to read «Источники» here, a word over the
+        //hosting chips that told nothing (P7-T5 Q163)
         val description: CharSequence? = if (builder.isNotEmpty()) builder else null
         //one chip per video: Shikicinema lists one video several times in a card (P7-T5 Q29)
         val videos = translations.map { t -> convertVideo(t) }.distinctBy { sameVideoKey(it) }
