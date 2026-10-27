@@ -3,9 +3,12 @@ package com.gnoemes.shikimori.presentation.view.details
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Selection
+import android.text.Spannable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.NestedScrollView
@@ -186,6 +189,19 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
 
     override fun onLinkAction(action: DetailsAction.Link) {
         getPresenter().onAction(action)
+    }
+
+    /**
+     * A text selection left open - the name and the second name can be selected - is brought back into
+     * view when the app returns, which since the head scrolls with the page (13.1) moved the page up
+     * to it from wherever it was (P7-T5 Q161). The selection ends when the page leaves the screen.
+     */
+    override fun onStop() {
+        (view?.findFocus() as? TextView)?.let {
+            (it.text as? Spannable)?.let(Selection::removeSelection)
+            it.clearFocus()
+        }
+        super.onStop()
     }
 
     ///////////////////////////////////////////////////////////////////////////
