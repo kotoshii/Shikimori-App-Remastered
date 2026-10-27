@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.user.domain.UserDetails
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.entity.user.presentation.UserContentType
+import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryNavigationData
 import com.gnoemes.shikimori.entity.user.presentation.UserProfileAction
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
@@ -120,7 +121,7 @@ class UserPresenter @Inject constructor(
                     .map { converter.convertFavorites(it) }
                     .doOnSuccess { viewState.setFavorites(currentUser.isMe, it) }
                     .ignoreElement()
-                    .reportedAlone()
+                    .reportedAlone { viewState.setFavorites(currentUser.isMe, nothingIn(UserContentType.FAVORITES)) }
 
     //the first 100, the api's most: the row shows a few, and «ещё N+» when there may be more (BUGS #30)
     private fun loadFriends(): Completable =
@@ -128,18 +129,31 @@ class UserPresenter @Inject constructor(
                     .map { converter.convertFriends(it, mayHaveMore = it.size == Constants.MAX_FRIENDS_LIMIT) }
                     .doOnSuccess { viewState.setFriends(currentUser.isMe, it) }
                     .ignoreElement()
-                    .reportedAlone()
+                    .reportedAlone { viewState.setFriends(currentUser.isMe, nothingIn(UserContentType.FRIENDS)) }
 
     private fun loadClubs(): Completable =
             interactor.getClubs(id)
                     .map { converter.convertClubs(it) }
                     .doOnSuccess { viewState.setClubs(currentUser.isMe, it) }
                     .ignoreElement()
-                    .reportedAlone()
+                    .reportedAlone { viewState.setClubs(currentUser.isMe, nothingIn(UserContentType.CLUBS)) }
 
-    //a row that fails says so and lets the others finish, as when each was loaded on its own
-    private fun Completable.reportedAlone(): Completable =
-            doOnError(this@UserPresenter::processErrors).onErrorComplete()
+    /**
+     * A row that fails is left out - [leaveOut] puts it where its spinner was - and says why in a
+     * message, and the others finish: the profile stays. The error view hid it all, for one row's
+     * 429 (BUGS #71). A sign-out of the tab's own profile still turns it into «Войти».
+     */
+    private fun Completable.reportedAlone(leaveOut: () -> Unit): Completable =
+            doOnError {
+                if (isMe && isGuest()) processErrors(it)
+                else {
+                    leaveOut()
+                    showErrorText(it)
+                }
+            }.onErrorComplete()
+
+    //a row with nothing in it hides itself, as a user with no friends has no friends row
+    private fun nothingIn(type: UserContentType) = UserContentViewModel(type, emptyList(), false, 0)
 
     fun onAction(action: UserProfileAction) {
         when (action) {
