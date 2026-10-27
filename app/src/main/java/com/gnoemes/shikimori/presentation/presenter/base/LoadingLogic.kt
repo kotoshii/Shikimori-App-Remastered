@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
+import com.gnoemes.shikimori.entity.app.domain.exceptions.NetworkException
+import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import io.reactivex.Single
 
@@ -19,9 +21,11 @@ fun <T> Single<T>.appendLoadingLogic(viewState: BaseView, refresh: Boolean = fal
                 .doOnEvent { _, _ -> viewState.onHideLoading() }
                 .doOnSuccess { viewState.showContent(true) }
                 //content was hidden on subscribe, so a failure that nobody recognises used to leave
-                //the screen blank for good. Errors that do have a view of their own - network and
-                //http codes - hide it again in BaseNetworkPresenter.processErrors.
-                .doOnError { viewState.showContent(true) }
+                //the screen blank for good: it comes back for those. Errors with a view of their own -
+                //network and http codes, BaseNetworkPresenter.processErrors - leave it hidden: it came
+                //back first and then went again, and an animated list flashed its old items before the
+                //error view (P7-T5 15.8). A caller that keeps its content on such an error shows it itself.
+                .doOnError { if (it !is NetworkException && it !is ServiceCodeException) viewState.showContent(true) }
 
 fun <T> Single<T>.appendLightLoadingLogic(viewState: BaseView): Single<T> =
         this.doOnSubscribe { viewState.onShowLightLoading() }

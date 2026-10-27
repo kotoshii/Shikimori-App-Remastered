@@ -475,6 +475,8 @@ class SeriesPresenter @Inject constructor(
      * unreadable hosting page does.
      */
     private fun processVideoErrors(throwable: Throwable) {
+        //the list stays: the loading step hid it, and brings it back only for an error with no view
+        viewState.showContent(true)
         val message = errorMessage(throwable)
         when {
             throwable is HostingChallengeException -> viewState.showHostingChallengeError()
