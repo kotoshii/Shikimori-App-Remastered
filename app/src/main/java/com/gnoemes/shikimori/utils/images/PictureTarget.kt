@@ -80,9 +80,12 @@ class PictureTarget(view: ImageView) : BitmapImageViewTarget(view), RequestListe
         super.onLoadCleared(placeholder)
     }
 
+    //a round view draws a copy of the picture taken as it is set, so it cannot play the app's default
+    //cross-fade (ShikimoriGlideModule): the copy was taken as the fade began, empty, and a picture
+    //that came from the network stayed an empty circle until it came again from memory (P7-T5 16.2)
     override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
         restore()
-        super.onResourceReady(resource, transition)
+        super.onResourceReady(resource, transition.takeIf { round == null })
     }
 
     override fun onLoadFailed(errorDrawable: Drawable?) {
