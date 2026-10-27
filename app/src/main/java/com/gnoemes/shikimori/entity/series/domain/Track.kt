@@ -19,9 +19,19 @@ data class Track(
     val displayQuality: String?
         get() = if (isQualityKnown) "${quality}p" else null
 
+    /** An HLS playlist rather than a file. */
+    val isHls: Boolean
+        get() = isHls(url)
+
     companion object {
         /** A parser's quality for a hosting that does not say it. */
         const val UNKNOWN_QUALITY = "unknown"
+
+        /**
+         * Whether [url] is an HLS playlist rather than a file: the one rule for the built-in player, the
+         * downloads and outside players, which had three of their own (P7-T5 14.1).
+         */
+        fun isHls(url: String): Boolean = url.contains("m3u8", ignoreCase = true)
     }
 }
 

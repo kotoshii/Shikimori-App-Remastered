@@ -254,7 +254,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         val source = MediaSourceHelper
                 .withFactory(factory)
                 .apply {
-                    if (it.url.contains("m3u8")) withFormat(VideoFormat.HLS)
+                    if (it.isHls) withFormat(VideoFormat.HLS)
                     else withFormat(VideoFormat.MP4)
                 }
                 .withVideoUrl(it.url)

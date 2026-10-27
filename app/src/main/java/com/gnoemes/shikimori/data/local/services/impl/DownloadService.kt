@@ -17,6 +17,7 @@ import com.gnoemes.shikimori.App
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.entity.download.DownloadVideoData
+import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.utils.VideoMuxer
 import com.gnoemes.shikimori.utils.appFolder
 import com.gnoemes.shikimori.utils.notificationManager
@@ -269,7 +270,7 @@ class DownloadService : Service() {
         }
 
         //a playlist is downloaded as mpeg-ts first, because that is what the segments are
-        val isStream = link.contains(".m3u8", ignoreCase = true)
+        val isStream = Track.isHls(link)
         val target = if (isStream) File(directory, title + STREAM_EXTENSION) else output
 
         if (!downloader.download(link, data.requestHeaders, target, progress(title, 0, 100))) {
