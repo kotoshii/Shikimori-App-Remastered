@@ -166,9 +166,6 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
 
         emptyContentView.setText(R.string.episodes_not_found)
-        networkErrorView.callback = { getPresenter().onRefresh() }
-        networkErrorView.showButton()
-
         authorsLayout.gone()
         translationBtn.gone()
         progress.visible()

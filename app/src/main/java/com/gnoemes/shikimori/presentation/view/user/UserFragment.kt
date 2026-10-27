@@ -82,9 +82,6 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
 
         appBarLayout.addOnOffsetChangedListener(appbarOffsetListener)
 
-        networkErrorView.callback = { getPresenter().onRefresh() }
-        networkErrorView.showButton()
-
         signUpBtn.onClick { getPresenter().onSignUp() }
         signInBtn.onClick { getPresenter().onSignIn() }
         authLayout.gone()

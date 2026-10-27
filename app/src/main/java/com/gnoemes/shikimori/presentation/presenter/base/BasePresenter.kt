@@ -14,6 +14,9 @@ abstract class BasePresenter<View : BaseView> : MvpPresenter<View>() {
 
     abstract fun initData()
 
+    /** «Повторить» on the screen's error view: its first load again, unless the screen retries otherwise. */
+    open fun onRetry() = initData()
+
     protected open fun onViewReattached() = Unit
 
     override fun onFirstViewAttach() {

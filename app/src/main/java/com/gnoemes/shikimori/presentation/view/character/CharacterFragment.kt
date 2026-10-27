@@ -114,4 +114,6 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
     }
 
     override fun showContent(show: Boolean) = Unit
+
+    override val pageView: View? get() = nestedScroll
 }

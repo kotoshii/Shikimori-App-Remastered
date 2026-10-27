@@ -54,6 +54,10 @@ class SearchPresenter @Inject constructor(
         else loadSimple()
     }
 
+    //the list again: the first load also applied the search it was opened with, which would reset the
+    //filters chosen since
+    override fun onRetry() = loadData()
+
     //characters and people keep the list shown under the spinner, as the paged kinds do (BUGS #66)
     override fun onRefresh() {
         if (isPagination()) super.onRefresh()

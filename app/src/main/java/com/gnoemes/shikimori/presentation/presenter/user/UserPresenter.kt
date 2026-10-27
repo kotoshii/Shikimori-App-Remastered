@@ -249,6 +249,8 @@ class UserPresenter @Inject constructor(
         else loadData()
     }
 
+    override fun onRetry() = onRefresh()
+
     private fun checkUserStatus(): Boolean {
         return if (isGuest()) {
             router.showSystemMessage(resourceProvider.needAuth)

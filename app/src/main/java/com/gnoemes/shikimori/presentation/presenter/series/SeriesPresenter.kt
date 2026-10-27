@@ -174,6 +174,8 @@ class SeriesPresenter @Inject constructor(
 
     fun onRefresh() = loadWithEpisode()
 
+    override fun onRetry() = onRefresh()
+
     /**
      * The chosen [episode]: its translations when the source has it. If not, while anything is out,
      * that the source does not have it; else that nothing is out.

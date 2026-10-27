@@ -65,11 +65,6 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         }
         refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
-        networkErrorView.apply {
-            setText(R.string.common_error_message_without_pull)
-            callback = { getPresenter().initData() }
-            showButton()
-        }
 
         with(searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {

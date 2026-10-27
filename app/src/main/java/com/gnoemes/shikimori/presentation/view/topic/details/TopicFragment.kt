@@ -91,11 +91,6 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
         commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
 
-        networkErrorView.apply {
-            setText(R.string.common_error_message_without_pull)
-            callback = { getPresenter().initData() }
-            showButton()
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

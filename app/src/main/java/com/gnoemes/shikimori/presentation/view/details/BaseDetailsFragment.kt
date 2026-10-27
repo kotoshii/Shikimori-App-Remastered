@@ -34,7 +34,6 @@ import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
@@ -126,12 +125,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         //after the layout that changed the head: the poster's height is set outside a layout pass
         headContainer.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
             if (bottom - top != oldBottom - oldTop) headContainer.post { if (this@BaseDetailsFragment.view != null) fitHead() }
-        }
-
-        //«Повторить» loads the page again (P7-T5 Q166)
-        networkErrorView.apply {
-            callback = { getPresenter().initData() }
-            showButton()
         }
 
         headHolder =DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
@@ -276,15 +269,5 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         dialog.show(childFragmentManager, "StatisticDialog")
     }
 
-    //the error view stands in for the page, whose shimmer would show around it; a new load hides it
-    //and brings the page back, shimmer first
-    override fun showNetworkView() {
-        super<BaseFragment>.showNetworkView()
-        nestedScroll.gone()
-    }
-
-    override fun hideNetworkView() {
-        super<BaseFragment>.hideNetworkView()
-        nestedScroll.visible()
-    }
+    override val pageView: android.view.View? get() = nestedScroll
 }

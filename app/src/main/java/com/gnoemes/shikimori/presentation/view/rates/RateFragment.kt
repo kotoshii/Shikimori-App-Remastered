@@ -155,11 +155,6 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         placeRefreshCircle()
 
         emptyContentView.setText(R.string.rate_empty)
-        networkErrorView.apply {
-            setText(R.string.common_error_message_without_pull)
-            callback = { getPresenter().initData() }
-            showButton()
-        }
         rateEmptyView.gone()
         progressBar?.gone()
 
