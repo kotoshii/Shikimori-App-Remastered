@@ -390,6 +390,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     //opened here, not through the router: only here is it known whether an app took it
     override fun openExternalPlayer(video: TranslationVideo, data: ExternalPlayerData) {
         val intent = RouteHolder.createActivityIntent(context, Screens.EXTERNAL_PLAYER, data) ?: return
+        //said first, so it also explains «Нет приложения…» when no app takes a DASH manifest (BUGS #56)
+        if (data.isDash) Toast.makeText(requireContext(), R.string.series_external_dash_hint, Toast.LENGTH_LONG).show()
         if (requireContext().startOutsideActivity(intent)) getPresenter().onExternalPlayerOpened(video)
     }
 

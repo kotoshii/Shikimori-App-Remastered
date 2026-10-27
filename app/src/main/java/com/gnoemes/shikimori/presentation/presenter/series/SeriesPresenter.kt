@@ -276,11 +276,15 @@ class SeriesPresenter @Inject constructor(
         //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
         //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
         //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
-        val videoUrl = item.track.url
+        //A video whose sound is its own file is shared as its manifest, so the link plays with sound;
+        //the manifest holds every quality, so the text names none (BUGS #56)
+        val manifestUrl = item.track.manifestUrl
+        val videoUrl = manifestUrl ?: item.track.url
+        val quality = if (manifestUrl != null) "" else item.quality
 
         //the same four things the downloaded file is named after, so a shared link and a saved file
         //describe the episode alike. Blanks drop out rather than leaving separators behind
-        val details = listOf(item.author, item.kind, item.quality, item.hosting).filter { it.isNotBlank() }
+        val details = listOf(item.author, item.kind, quality, item.hosting).filter { it.isNotBlank() }
 
         //the video's own episode, not the screen's (BUGS #69 B8)
         val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, item.video.episodeId.toInt(), videoUrl, details)
@@ -414,7 +418,10 @@ class SeriesPresenter @Inject constructor(
             viewState.showTracksNotFoundError()
             return
         }
-        if (tracks.size == 1 || settingsSource.isExternalBestQuality) onQualitySelected(video, playerType, parsed, tracks.first())
+        //an outside player gets a manifest when the sound is its own file, and the manifest holds every
+        //quality: there is nothing to choose (BUGS #56)
+        val oneChoice = tracks.size == 1 || playerType == PlayerType.EXTERNAL && tracks.first().manifestUrl != null
+        if (oneChoice || settingsSource.isExternalBestQuality) onQualitySelected(video, playerType, parsed, tracks.first())
         else viewState.showQualityChooser(video, playerType, parsed)
     }
 

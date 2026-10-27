@@ -8,7 +8,10 @@ data class Track(
         val quality : String,
         val url : String,
         //set when the hosting serves sound as its own file, see CdaParser
-        val audioUrl : String? = null
+        val audioUrl : String? = null,
+        //set with audioUrl: the DASH manifest that lists every quality and the sound, the one url an
+        //outside player can play this video with sound from (BUGS #56)
+        val manifestUrl : String? = null
 ) : Parcelable {
 
     /** False when the hosting did not tell the quality: blank, or [UNKNOWN_QUALITY]. */

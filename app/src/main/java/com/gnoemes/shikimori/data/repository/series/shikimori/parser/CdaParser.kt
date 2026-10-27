@@ -81,7 +81,7 @@ class CdaParser @Inject constructor(
     /**
      * The manifest lists a separate mp4 per quality, which is what the quality menu needs. Those files
      * carry video only - the sound sits in its own representation - so every track also points at the
-     * audio file and the player merges the two.
+     * audio file and the player merges the two; and at the manifest, for an outside player (BUGS #56).
      */
     private fun manifestTracks(manifestXml: String?, manifestUrl: String?): List<Track> {
         if (manifestXml.isNullOrEmpty() || manifestUrl == null) return emptyList()
@@ -99,7 +99,7 @@ class CdaParser @Inject constructor(
                     val quality = representation.attr("height").nullIfEmpty() ?: return@mapNotNull null
                     val file = representation.select("BaseURL").first()?.text() ?: return@mapNotNull null
 
-                    Track(quality, "$base/$file", audioUrl)
+                    Track(quality, "$base/$file", audioUrl, manifestUrl)
                 }
                 .sortedByQuality()
     }
