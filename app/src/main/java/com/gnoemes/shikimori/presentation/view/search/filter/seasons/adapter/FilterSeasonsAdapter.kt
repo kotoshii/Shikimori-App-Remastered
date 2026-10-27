@@ -5,7 +5,7 @@ import com.gnoemes.shikimori.entity.search.presentation.FilterEntryViewModel
 import com.gnoemes.shikimori.presentation.view.common.adapter.BaseAdapter
 
 class FilterSeasonsAdapter(
-        private val inputCallback: (String) -> Unit,
+        private val inputCallback: (String) -> Boolean,
         private val closeCallback: (FilterEntryViewModel) -> Unit
 ) : BaseAdapter<Any>() {
 

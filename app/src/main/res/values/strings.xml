@@ -313,6 +313,7 @@
     <string name="filter_custom">Кастомный фильтр</string>
     <string name="filter_custom_seasons">Кастомный фильтр сезонов</string>
     <string name="filter_custom_input_hint">Нажмите сюда, чтобы начать ввод. Чтобы добавить, нажмите Enter или пробел</string>
+    <string name="filter_season_invalid">Не похоже на сезон. Например: summer_2027, 2027, 2016_2024, 201x</string>
     <string name="filter_seasons">Сезоны</string>
     <string name="filter_studio">Студия</string>
     <!--<string name="filter_custom_seasons_hint"><![CDATA[<p>Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение. Примеры:</p><br><p><b>1983</b> - 1983 год</p><br><p><b>winter_2016</b> - Зима 2016 года</p><br><p><b>2003_2015</b> - с 2003 по 2015 год</p><br><p><b>!2013</b> - кроме 2013 года</p><br><p><b>!summer_2001</b> - кроме Лета 2001 года</p>]]></string>-->
