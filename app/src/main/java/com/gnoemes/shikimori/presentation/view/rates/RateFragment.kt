@@ -219,14 +219,15 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     //the pull's circle starts hidden behind the top bar and stops below it; [below] is how far the
-    //owner's strip reaches past the bar, so the circle comes out from under the strip instead
+    //owner's strip reaches past the bar, so the circle stops below the strip. It still starts behind
+    //the bar: the strip is a pill as wide as its text, which may not cover the circle (P7-T5 Q162)
     private fun placeRefreshCircle(below: Int = 0) {
         with(refreshLayout) {
-            val start = context.dp(24) + below
-            if (progressViewStartOffset == start) return
+            val end = context.dp(96) + below
+            if (progressViewEndOffset == end) return
             //moving the circle hides it and drops a refresh under way: that one is shown again
             val refreshing = isRefreshing
-            setProgressViewOffset(false, start, context.dp(96) + below)
+            setProgressViewOffset(false, context.dp(24), end)
             if (refreshing) showRefresh()
         }
     }
