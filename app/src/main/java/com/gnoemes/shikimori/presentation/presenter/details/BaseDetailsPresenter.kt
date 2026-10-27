@@ -87,8 +87,19 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         loadData()
     }
 
+    //a page whose first load failed loads in full: the head alone would land under the error view
     override fun onViewReattached() {
-        redrawHead()
+        if (details == null) loadData() else redrawHead()
+    }
+
+    /**
+     * The page's error view takes the screen only while the page has nothing - its first load and
+     * «Повторить». Once the title is shown, an error is a message and the page stays, as it always was:
+     * the page had no error view at all, and its first load's failure left the shimmer for good (P7-T5
+     * Q166).
+     */
+    override fun processErrors(throwable: Throwable) {
+        if (details != null) showErrorText(throwable) else super.processErrors(throwable)
     }
 
     //the head again: its rate buttons follow the sign-in as it is now

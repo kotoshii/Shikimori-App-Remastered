@@ -92,6 +92,10 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <!--the error view, in place of the page when its first load fails; under the toolbar, whose back
+    button still works (P7-T5 Q166). The page had none, and a failed load left the shimmer for good-->
+    <include layout="@layout/layout_default_placeholders" />
+
     <!--over the page: see-through over the head, the title on its own background once the head has
     scrolled up under it (BaseDetailsFragment.updateToolbar). No shadow, as in the collapsing header,
     where it fell outside the header and was cut-->

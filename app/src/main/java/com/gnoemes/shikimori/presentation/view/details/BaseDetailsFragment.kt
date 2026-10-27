@@ -34,6 +34,7 @@ import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import kotlinx.android.synthetic.main.fragment_details.*
+import kotlinx.android.synthetic.main.layout_default_placeholders.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
@@ -127,7 +128,13 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
             if (bottom - top != oldBottom - oldTop) headContainer.post { if (this@BaseDetailsFragment.view != null) fitHead() }
         }
 
-        headHolder = DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
+        //«Повторить» loads the page again (P7-T5 Q166)
+        networkErrorView.apply {
+            callback = { getPresenter().initData() }
+            showButton()
+        }
+
+        headHolder =DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
         infoHolder = DetailsInfoViewHolder(infoLayout, tagAdapter, infoAdapter)
         actionHolder = DetailsActionViewHolder(actionLayout, actionAdapter)
         descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
@@ -267,5 +274,17 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         hideSoftInput()
         val dialog = StatisticDialogFragment.newInstance(title, scores, rates)
         dialog.show(childFragmentManager, "StatisticDialog")
+    }
+
+    //the error view stands in for the page, whose shimmer would show around it; a new load hides it
+    //and brings the page back, shimmer first
+    override fun showNetworkView() {
+        super<BaseFragment>.showNetworkView()
+        nestedScroll.gone()
+    }
+
+    override fun hideNetworkView() {
+        super<BaseFragment>.hideNetworkView()
+        nestedScroll.visible()
     }
 }
