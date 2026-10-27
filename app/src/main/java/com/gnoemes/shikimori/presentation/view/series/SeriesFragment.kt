@@ -26,6 +26,7 @@ import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadDialog
@@ -250,8 +251,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) =
             getPresenter().onPlayerSelected(playing, playerType, remember)
 
-    override fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, url: String) =
-            getPresenter().onQualitySelected(video, playerType, url)
+    override fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, parsed: Video, track: Track) =
+            getPresenter().onQualitySelected(video, playerType, parsed, track)
 
     override fun onDownload(item: SeriesDownloadItem) = getPresenter().onTrackForDownloadSelected(item)
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
@@ -387,13 +388,13 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun showFolderChooserDialog() = context!!.chooseDownloadFolder(onPositive = { getPresenter().onStoragePermissionsAccepted() })
 
     //opened here, not through the router: only here is it known whether an app took it
-    override fun openExternalPlayer(video: TranslationVideo, url: String?) {
-        val intent = RouteHolder.createActivityIntent(context, Screens.EXTERNAL_PLAYER, url) ?: return
+    override fun openExternalPlayer(video: TranslationVideo, data: ExternalPlayerData) {
+        val intent = RouteHolder.createActivityIntent(context, Screens.EXTERNAL_PLAYER, data) ?: return
         if (requireContext().startOutsideActivity(intent)) getPresenter().onExternalPlayerOpened(video)
     }
 
-    override fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>) {
-        val dialog = QualitySelectDialog.newInstance(video, playerType, tracks)
+    override fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video) {
+        val dialog = QualitySelectDialog.newInstance(video, playerType, parsed)
         dialog.show(childFragmentManager, "QualityDialog")
     }
 

@@ -6,10 +6,11 @@ import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
-import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeControls
+import com.gnoemes.shikimori.entity.series.presentation.ExternalPlayerData
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -58,11 +59,11 @@ interface SeriesView : BaseFragmentView {
     fun showFolderChooserDialog()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>)
+    fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video)
 
-    /** Opens [url] in another app, and tells the presenter when one opened: [video]'s episode counts then. */
+    /** Opens [data] in another app, and tells the presenter when one opened: [video]'s episode counts then. */
     @StateStrategyType(OneExecutionStateStrategy::class)
-    fun openExternalPlayer(video: TranslationVideo, url: String?)
+    fun openExternalPlayer(video: TranslationVideo, data: ExternalPlayerData)
 
     fun showFab(show : Boolean)
 

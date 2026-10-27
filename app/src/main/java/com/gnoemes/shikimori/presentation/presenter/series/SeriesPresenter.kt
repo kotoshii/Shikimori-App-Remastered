@@ -401,32 +401,33 @@ class SeriesPresenter @Inject constructor(
 
         if (playerType == PlayerType.EMBEDDED) play(video, playerType, playing)
         else if (playerType == PlayerType.WEB && video.webPlayerUrl != null) play(video, playerType, video.webPlayerUrl)
-        else getVideoAndExecute(video) { showQualityChooser(video, playerType, it.tracks) }
+        else getVideoAndExecute(video) { showQualityChooser(video, playerType, it) }
     }
 
     /** Anime365 needs a paid account, and without the token nothing it hands back has tracks. */
     private fun needsAnime365Login(video: TranslationVideo): Boolean =
             video.videoHosting is VideoHosting.SMOTRET_ANIME && tokenSource.getToken() == null
 
-    private fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, tracks: List<Track>) {
+    private fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video) {
+        val tracks = parsed.tracks
         if (tracks.isEmpty()) {
             viewState.showTracksNotFoundError()
             return
         }
-        if (tracks.size == 1 || settingsSource.isExternalBestQuality) play(video, playerType, tracks.first().url)
-        else viewState.showQualityChooser(video, playerType, tracks)
+        if (tracks.size == 1 || settingsSource.isExternalBestQuality) onQualitySelected(video, playerType, parsed, tracks.first())
+        else viewState.showQualityChooser(video, playerType, parsed)
     }
 
-    fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, url: String) = play(video, playerType, url)
-
-    /** Opens [video] in [playerType]: [payload] is the built-in player's data, else the url to play. */
-    private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {
+    fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, parsed: Video, track: Track) {
         //another app may not be there to open it: the screen tries, and says when one did
-        if (playerType == PlayerType.EXTERNAL) viewState.openExternalPlayer(video, payload?.toString())
-        else {
-            openPlayer(playerType, payload)
-            onPlayerOpened(video, playerType)
-        }
+        if (playerType == PlayerType.EXTERNAL) viewState.openExternalPlayer(video, ExternalPlayerData.of(track, parsers.playerHeaders(parsed)))
+        else play(video, playerType, track.url)
+    }
+
+    /** Opens [video] in the built-in or the web player: [payload] is the built-in player's data, else the url to play. */
+    private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {
+        openPlayer(playerType, payload)
+        onPlayerOpened(video, playerType)
     }
 
     //«Внешний плеер» counts the episode only once an app has opened it (BUGS #63)

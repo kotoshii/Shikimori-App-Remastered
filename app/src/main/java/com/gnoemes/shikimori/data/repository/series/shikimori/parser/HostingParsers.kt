@@ -12,6 +12,8 @@ import javax.inject.Inject
 
 private const val TAG = "HostingParser"
 private const val HTTP_NOT_FOUND = 404
+private const val USER_AGENT = "User-Agent"
+private const val DEFAULT_USER_AGENT = "sap"
 
 /** Every registered [HostingParser], looked up by the hosting it handles. */
 class HostingParsers @Inject constructor(
@@ -50,6 +52,12 @@ class HostingParsers @Inject constructor(
 
     fun headers(video: Video?): Map<String, String> =
             video?.let { byHosting[it.hosting.javaClass]?.headers(it) }.orEmpty()
+
+    /**
+     * What a player sends, the built-in one and an outside one alike: the parser's [headers], and
+     * upstream's "sap" as the user agent when they name none. The outside player had "sap" alone (BUGS #29).
+     */
+    fun playerHeaders(video: Video): Map<String, String> = mapOf(USER_AGENT to DEFAULT_USER_AGENT) + headers(video)
 
     /**
      * A page that is not what a parser expects used to fail as a NullPointerException, which the

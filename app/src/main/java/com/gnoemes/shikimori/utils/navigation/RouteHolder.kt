@@ -16,6 +16,7 @@ import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
+import com.gnoemes.shikimori.entity.series.presentation.ExternalPlayerData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryNavigationData
 import com.gnoemes.shikimori.presentation.view.anime.AnimeFragment
@@ -78,10 +79,11 @@ object RouteHolder {
             Screens.SETTINGS -> Intent(context, SettingsActivity::class.java)
             Screens.WEB_PLAYER -> Intent(context, WebPlayerActivity::class.java).apply { putExtra(AppExtras.ARGUMENT_URL, data as? String) }
             Screens.EMBEDDED_PLAYER -> Intent(context, EmbeddedPlayerActivity::class.java).apply { putExtra(AppExtras.ARGUMENT_PLAYER_DATA, data as EmbeddedPlayerNavigationData) }
-            Screens.EXTERNAL_PLAYER -> {
-                Intent(Intent.ACTION_VIEW, data?.toString()?.toUri()).apply {
-                    setDataAndType(data?.toString()?.toUri(), "video/mp4")
-                    putExtra("headers", arrayOf("User-Agent", "sap"))
+            Screens.EXTERNAL_PLAYER -> (data as? ExternalPlayerData)?.let { video ->
+                Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(video.url.toUri(), video.mimeType)
+                    //MX Player's extra: each name followed by its value
+                    putExtra("headers", video.headers.flatMap { listOf(it.key, it.value) }.toTypedArray())
                 }
             }
             Screens.SHARE -> Intent.createChooser(Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, data?.toString()) }, context!!.getString(R.string.common_share))
