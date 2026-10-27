@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.view.series
 import android.app.Dialog
 import android.os.Bundle
 import com.afollestad.materialdialogs.list.listItems
+import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.Video
@@ -37,8 +38,11 @@ class QualitySelectDialog : MvpDialogFragment() {
         val parsed = arguments?.getParcelable<Video>(PARSED_KEY)!!
         val callback = parentFragment as? Callback
 
+        //«720p», as the download list says it; this list showed «720» and «unknown» (BUGS #69 B5)
+        val qualities = parsed.tracks.map { it.displayQuality ?: getString(R.string.download_quality_unknown) }
+
         return context!!.materialDialog().show {
-            listItems(items = parsed.tracks.map { it.quality }) { _, index, _ ->
+            listItems(items = qualities) { _, index, _ ->
                 callback?.onQualitySelected(video, playerType, parsed, parsed.tracks[index])
             }
         }
