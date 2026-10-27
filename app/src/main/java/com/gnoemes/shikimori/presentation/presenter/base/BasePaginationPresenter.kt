@@ -78,19 +78,27 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
         else viewState.hidePageLoading()
     }
 
-    override fun showError(throwable: Throwable) {
-        processErrors(throwable)
+    //a refresh of a list on screen: the entries stay and the error is a message, as for a later page; it
+    //hid them all behind the error view (BUGS #78)
+    override fun showError(throwable: Throwable) = reportOverList(throwable)
+
+    //a later page: the pages shown stay, «Повторить» ends the list, and the error is a message (BUGS #55)
+    override fun showPageError(show: Boolean, throwable: Throwable?) {
+        if (throwable == null || !takesScreen(throwable)) {
+            if (show) viewState.showPageError() else viewState.hidePageError()
+        }
+        throwable?.let(this::reportOverList)
     }
 
-    //a later page: the pages shown stay, «Повторить» ends the list, and the error is a message (BUGS #55).
-    //A list its owner hid in the meantime takes the screen, as on the first page
-    override fun showPageError(show: Boolean, throwable: Throwable?) {
-        if (throwable is HiddenListException) processErrors(throwable)
-        else {
-            if (show) viewState.showPageError() else viewState.hidePageError()
-            throwable?.let { showErrorText(it) }
-        }
+    private fun reportOverList(throwable: Throwable) {
+        if (takesScreen(throwable)) processErrors(throwable) else showErrorText(throwable)
     }
+
+    /**
+     * Whether an error while entries are shown replaces them, as on the first page, rather than being
+     * a message over them: a list its owner hid in the meantime.
+     */
+    protected open fun takesScreen(throwable: Throwable): Boolean = throwable is HiddenListException
 
     override fun showEmptyError(show: Boolean, throwable: Throwable?) {
         if ((throwable as? BaseException)?.tag != NetworkException.TAG
