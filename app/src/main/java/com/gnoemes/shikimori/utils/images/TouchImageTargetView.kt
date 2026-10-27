@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ProgressBar
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.HttpException
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.CustomViewTarget
@@ -15,7 +14,6 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.presentation.view.common.widget.TouchImageView
-import java.net.HttpURLConnection.HTTP_NOT_FOUND
 
 /**
  * A screenshot in the viewer. Pass it to the request as its listener too: the listener learns why a
@@ -34,7 +32,7 @@ class TouchImageTargetView(
 
     //called before the target's own onLoadFailed below
     override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap>?, isFirstResource: Boolean): Boolean {
-        notFound = model == null || e?.rootCauses?.any { (it as? HttpException)?.statusCode == HTTP_NOT_FOUND } == true
+        notFound = isNotFound(e, model)
         return false
     }
 

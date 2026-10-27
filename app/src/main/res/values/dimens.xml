@@ -35,6 +35,8 @@
 
     <dimen name="image_content_frame_height">80dp</dimen>
     <dimen name="image_content_frame_width">128dp</dimen>
+    <!--the line around a picture that could not be loaded (PictureTarget): the list cards' own-->
+    <dimen name="picture_outline_width">1dp</dimen>
 
     <dimen name="margin_normal">8dp</dimen>
     <dimen name="margin_small">4dp</dimen>
