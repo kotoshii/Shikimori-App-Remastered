@@ -22,8 +22,9 @@ interface MangaApi {
         fun kind(type: Type): String = if (type == Type.RANOBE) "ranobe" else "mangas"
     }
 
+    //values encoded by Retrofit, as for AnimeApi.getList
     @GET("/api/{kind}")
-    fun getList(@Path("kind") kind: String, @QueryMap(encoded = true) filter: Map<String, String>): Single<List<MangaResponse>>
+    fun getList(@Path("kind") kind: String, @QueryMap filter: Map<String, String>): Single<List<MangaResponse>>
 
     @GET("/api/{kind}/{id}")
     fun getDetails(@Path("kind") kind: String, @Path("id") id: Long): Single<MangaDetailsResponse>
