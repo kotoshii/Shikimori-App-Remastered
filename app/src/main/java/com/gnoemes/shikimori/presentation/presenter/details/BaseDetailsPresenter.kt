@@ -283,7 +283,11 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
+    //nothing to search before the characters have come (a title without any shows no search): a restored
+    //page's search field reports its empty text at once, and that empty list replaced the loading
+    //section (P7-T5 17.5, BUGS #89)
     open fun onCharacterSearch(newText: String?) {
+        if (characters.isEmpty()) return
         if (newText.isNullOrBlank()) viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(characters))
         else {
             val searchItems: MutableList<Any> = characters.filter { it.name.contains(newText, true) || it.nameRu?.contains(newText, true) ?: false }.toMutableList()

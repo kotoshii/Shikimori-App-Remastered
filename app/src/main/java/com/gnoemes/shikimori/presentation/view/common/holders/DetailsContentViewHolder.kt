@@ -54,6 +54,8 @@ class DetailsContentViewHolder(
             DetailsContentType.SCREENSHOTS -> R.string.details_screenshots
         }
 
+        //back after an empty list hid it: one empty list hid the section for good (P7-T5 17.5, BUGS #89)
+        view.visible()
         with(view) {
             contentLabelView.setText(stringRes)
             adapter.bindItems(item.items)
