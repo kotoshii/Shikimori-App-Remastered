@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.presentation.presenter.base
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
-import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import ru.terrakok.cicerone.Router
 
@@ -68,24 +67,6 @@ abstract class BaseNavigationPresenter<View : BaseView> : BasePresenter<View>() 
             Type.CLUB -> onClubClicked(id)
             else -> Unit
         }
-    }
-
-    open fun openPlayer(playerType: PlayerType, payload: Any?) = when (playerType) {
-        PlayerType.EMBEDDED -> openEmbeddedPlayer(payload)
-        PlayerType.WEB -> openWebPlayer(payload)
-        PlayerType.EXTERNAL -> openExternalPlayer(payload)
-    }
-
-    open fun openEmbeddedPlayer(payload: Any?) {
-        router.navigateTo(Screens.EMBEDDED_PLAYER, payload)
-    }
-
-    open fun openWebPlayer(payload: Any?) {
-        router.navigateTo(Screens.WEB_PLAYER, payload)
-    }
-
-    open fun openExternalPlayer(payload: Any?) {
-        router.navigateTo(Screens.EXTERNAL_PLAYER, payload)
     }
 
 }

@@ -433,9 +433,12 @@ class SeriesPresenter @Inject constructor(
         else play(video, playerType, track.url)
     }
 
-    /** Opens [video] in the built-in or the web player: [payload] is the built-in player's data, else the url to play. */
+    /**
+     * Opens [video] in the built-in or the web player: [payload] is the built-in player's data, else the url to
+     * play. An outside app is opened by the screen itself, which learns whether one did ([onQualitySelected]).
+     */
     private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {
-        openPlayer(playerType, payload)
+        router.navigateTo(if (playerType == PlayerType.EMBEDDED) Screens.EMBEDDED_PLAYER else Screens.WEB_PLAYER, payload)
         onPlayerOpened(video, playerType)
     }
 
