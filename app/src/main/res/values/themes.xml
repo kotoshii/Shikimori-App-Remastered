@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 
@@ -45,6 +45,10 @@
 
         <item name="colorOnPrimary">@color/amoled_colorOnPrimary</item>
         <item name="colorControlHighlight">@color/amoled_colorRipple</item>
+        <item name="android:statusBarColor">@color/player_surface</item>
+        <item name="android:navigationBarColor">@color/player_surface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
     </style>
 
     <style name="ShikimoriAppTheme.Default" parent="ShikimoriAppTheme.Base">
@@ -143,6 +147,9 @@
         <item name="colorStatusBar">@color/dark_colorStatusBar</item>
         <item name="colorNavigationBar">@color/dark_colorStatusBar</item>
         <item name="lightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">?attr/colorNavigationBar</item>
+        <item name="android:statusBarColor">?attr/colorStatusBar</item>
     </style>
 
     <style name="ShikimoriAppTheme.Amoled" parent="ShikimoriAppTheme.Base">
@@ -193,6 +200,9 @@
         <item name="colorStatusBar">@color/amoled_colorStatusBar</item>
         <item name="colorNavigationBar">@color/amoled_colorPrimary</item>
         <item name="lightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">?attr/colorNavigationBar</item>
+        <item name="android:statusBarColor">?attr/colorStatusBar</item>
     </style>
 
     <style name="AscentStyle" />
