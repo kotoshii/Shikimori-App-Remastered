@@ -9,7 +9,7 @@ import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.user.domain.UserStatus
-import com.gnoemes.shikimori.utils.dropExtraPageItem
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -21,17 +21,17 @@ class RatesRepositoryImpl @Inject constructor(
         private val userRepository: UserRepository
 ) : RatesRepository {
 
-    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
+    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>> =
             rates(api.getUserAnimeRates(id, page, limit, rateStatus.status), limit)
 
-    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
+    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>> =
             rates(api.getUserMangaRates(id, page, limit, rateStatus.status), limit)
 
-    private fun rates(request: Single<List<RateResponse>>, limit: Int): Single<List<Rate>> =
+    private fun rates(request: Single<List<RateResponse>>, limit: Int): Single<Page<Rate>> =
             request
-                    .map { it.dropExtraPageItem(limit) }
-                    .map(converter)
-                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
+                    .map { Page.withExtraRow(it, limit) }
+                    .map { it.map(converter::apply) }
+                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(Page(emptyList<Rate>(), true)) else Single.error(it) }
 
     override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int): Single<List<UserRate>> =
             api.getUserRates(id, targetId, target?.let { targetType(it) }, statuses, page, limit)

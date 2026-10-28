@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.domain.user
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Single
 
@@ -11,13 +12,13 @@ interface UserInteractor {
 
     fun getDetails(id: Long): Single<UserDetails>
 
-    fun getFriends(id: Long, page: Int, limit: Int = Constants.MAX_FRIENDS_LIMIT): Single<List<UserBrief>>
+    fun getFriends(id: Long, page: Int, limit: Int = Constants.MAX_FRIENDS_LIMIT): Single<Page<UserBrief>>
 
     fun getFavorites(id: Long): Single<FavoriteList>
 
     fun getClubs(id: Long): Single<List<Club>>
 
-    fun getHistory(id: Long, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<UserHistory>>
+    fun getHistory(id: Long, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<Page<UserHistory>>
 
     fun ignore(id: Long): Completable
 

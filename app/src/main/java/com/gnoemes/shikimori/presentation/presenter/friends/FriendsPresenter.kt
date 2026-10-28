@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.friends.converter.FriendsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.friends.FriendsView
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -19,6 +20,6 @@ class FriendsPresenter @Inject constructor(
     var id : Long = Constants.NO_ID
 
     //every friend, a page at a time: the api sends at most 100 a request and no total (BUGS #30)
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<FriendViewModel>> =
-            { page -> interactor.getFriends(id, page).map(converter) }
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<FriendViewModel>> =
+            { page -> interactor.getFriends(id, page).map { it.map(converter::apply) } }
 }

@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.presentation.presenter.topic.provider.TopicResource
 import com.gnoemes.shikimori.presentation.view.topic.details.TopicView
 import com.gnoemes.shikimori.presentation.presenter.topic.converter.CommentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -74,10 +75,10 @@ class TopicPresenter @Inject constructor(
         }
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<CommentViewModel>> {
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<CommentViewModel>> {
         return { page: Int ->
             commentInteractor.getList(id, CommentableType.TOPIC, page)
-                    .map(commentConverter)
+                    .map { it.map(commentConverter::apply) }
                     .doOnSuccess { countComments(page, Constants.DEFAULT_LIMIT) }
                     .doOnSuccess { lastPage = page }
         }

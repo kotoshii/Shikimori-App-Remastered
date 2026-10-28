@@ -4,15 +4,16 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 
 interface RatesInteractor {
 
-    fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>>
+    fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>>
 
-    fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>>
+    fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>>
 
     fun getRate(id : Long) : Single<UserRate>
 

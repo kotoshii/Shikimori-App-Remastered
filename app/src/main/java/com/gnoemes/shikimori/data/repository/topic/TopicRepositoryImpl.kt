@@ -6,7 +6,7 @@ import com.gnoemes.shikimori.data.repository.topic.converter.TopicResponseConver
 import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.topic.domain.Topic
-import com.gnoemes.shikimori.utils.dropExtraPageItem
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -16,10 +16,10 @@ class TopicRepositoryImpl @Inject constructor(
         private val forumConverter: ForumResponseConverter
 ) : TopicRepository {
 
-    override fun getList(page: Int, limit: Int, type: ForumType): Single<List<Topic>> =
+    override fun getList(page: Int, limit: Int, type: ForumType): Single<Page<Topic>> =
             api.getList(page, limit, type.type)
-                    .map { it.dropExtraPageItem(limit) }
-                    .map(converter)
+                    .map { Page.endsWhenEmpty(it, limit) }
+                    .map { it.map(converter::apply) }
 
     override fun getDetails(id: Long): Single<Topic> = api.getDetails(id).map { converter.convertResponse(it) }
 

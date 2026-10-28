@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.userhistory.conveter.UserHistoryViewModelConverter
 import com.gnoemes.shikimori.presentation.view.userhistory.UserHistoryView
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -25,8 +26,8 @@ class UserHistoryPresenter @Inject constructor(
         if (name.isNotBlank()) viewState.setTitle(name)
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<UserHistoryViewModel>> =
-            { page -> interactor.getHistory(id, page).map(converter) }
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<UserHistoryViewModel>> =
+            { page -> interactor.getHistory(id, page).map { it.map(converter::apply) } }
 
     override fun showData(show: Boolean, data: List<UserHistoryViewModel>) {
         if (show) viewState.showData(converter.groupItems(data))

@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.entity.user.domain.*
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import com.gnoemes.shikimori.utils.hiddenListOnForbidden
 import com.gnoemes.shikimori.utils.network.AuthHolder
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -27,13 +28,13 @@ class UserInteractorImpl @Inject constructor(
                     }
                     .applyErrorHandlerAndSchedulers()
 
-    override fun getFriends(id: Long, page: Int, limit: Int): Single<List<UserBrief>> = repository.getFriends(id, page, limit).applyErrorHandlerAndSchedulers()
+    override fun getFriends(id: Long, page: Int, limit: Int): Single<Page<UserBrief>> = repository.getFriends(id, page, limit).applyErrorHandlerAndSchedulers()
 
     override fun getFavorites(id: Long): Single<FavoriteList> = repository.getFavorites(id).applyErrorHandlerAndSchedulers()
 
     override fun getClubs(id: Long): Single<List<Club>> = repository.getClubs(id).applyErrorHandlerAndSchedulers()
 
-    override fun getHistory(id: Long, page: Int, limit: Int): Single<List<UserHistory>> =
+    override fun getHistory(id: Long, page: Int, limit: Int): Single<Page<UserHistory>> =
             repository.getHistory(id, page, limit)
                     .applyErrorHandlerAndSchedulers()
                     .hiddenListOnForbidden { getUserStatus() == UserStatus.GUEST }

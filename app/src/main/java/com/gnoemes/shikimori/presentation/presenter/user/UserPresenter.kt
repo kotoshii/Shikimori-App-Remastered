@@ -126,7 +126,7 @@ class UserPresenter @Inject constructor(
     //the first 100, the api's most: the row shows a few, and «ещё N+» when there may be more (BUGS #30)
     private fun loadFriends(): Completable =
             interactor.getFriends(id, 1)
-                    .map { converter.convertFriends(it, mayHaveMore = it.size == Constants.MAX_FRIENDS_LIMIT) }
+                    .map { converter.convertFriends(it.items, mayHaveMore = !it.isLast) }
                     .doOnSuccess { viewState.setFriends(currentUser.isMe, it) }
                     .ignoreElement()
                     .reportedAlone { viewState.setFriends(currentUser.isMe, nothingIn(UserContentType.FRIENDS)) }

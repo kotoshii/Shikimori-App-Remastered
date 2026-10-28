@@ -15,6 +15,7 @@ import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.SearchViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.SearchView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import io.reactivex.functions.BiFunction
 import javax.inject.Inject
@@ -104,10 +105,10 @@ class SearchPresenter @Inject constructor(
         if (isPagination()) super.loadNextPage()
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<SearchItem>> {
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<SearchItem>> {
         return when (type) {
-            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(filters, page).map(converter) }
-            else -> { page: Int -> interactor.loadMangaListWithFilters(filters, type, page).map(converter) }
+            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(filters, page).map { it.map(converter::apply) } }
+            else -> { page: Int -> interactor.loadMangaListWithFilters(filters, type, page).map { it.map(converter::apply) } }
         }
     }
 

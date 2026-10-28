@@ -1,10 +1,11 @@
 package com.gnoemes.shikimori.presentation.presenter.common.paginator
 
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 
 class PageOffsetPaginator<T>(
-        private val requestFactory: (page: Int) -> Single<List<T>>,
+        private val requestFactory: (page: Int) -> Single<Page<T>>,
         private val viewController: ViewController<T>
 ) : Paginator {
 
@@ -19,6 +20,10 @@ class PageOffsetPaginator<T>(
     override fun refresh() = currentState.refresh()
     override fun loadNewPage() = currentState.loadNewPage()
     override fun release() = currentState.release()
+
+    //a page that says it is the last ends the list: an empty page was the only end, one request more
+    //than the list needed (P7-T5 17.4)
+    private fun stateAfter(page: Page<T>): State<T> = if (page.isLast) ALL_DATA() else DATA()
 
     private fun loadPage(page: Int) {
         disposable?.dispose()
@@ -46,14 +51,15 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_PROGRESS : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
                 currentData.clear()
-                currentData.addAll(data)
+                currentData.addAll(page.items)
                 currentPage = defaultPage
                 viewController.showData(true, currentData)
                 viewController.showEmptyProgress(false)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = EMPTY_DATA()
                 viewController.showEmptyProgress(false)
@@ -126,14 +132,15 @@ class PageOffsetPaginator<T>(
 
     private inner class REFRESH : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
                 currentData.clear()
-                currentData.addAll(data)
+                currentData.addAll(page.items)
                 currentPage = defaultPage
                 viewController.showRefreshProgress(false)
                 viewController.showData(true, currentData)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = EMPTY_DATA()
                 currentData.clear()
@@ -157,13 +164,14 @@ class PageOffsetPaginator<T>(
 
     private inner class PAGE_PROGRESS : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
-                currentData.addAll(data)
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
+                currentData.addAll(page.items)
                 currentPage += 1
                 viewController.showPageProgress(false)
                 viewController.showData(true, currentData)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = ALL_DATA()
                 viewController.showPageProgress(false)

@@ -32,6 +32,7 @@ import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateCountCon
 import com.gnoemes.shikimori.presentation.presenter.rates.converter.RateViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.view.rates.RateView
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -260,7 +261,7 @@ class RatePresenter @Inject constructor(
         else super.onRefresh()
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<Rate>> {
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<Rate>> {
         return if (rateStatus == null) { page: Int -> Single.error(IllegalStateException()) }
         else if (isAnime) { page: Int -> ratesInteractor.getAnimeRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }
         else { page: Int -> ratesInteractor.getMangaRates(userId, page, Constants.MAX_LIMIT, rateStatus!!) }

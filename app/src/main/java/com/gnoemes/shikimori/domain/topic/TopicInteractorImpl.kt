@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.topic.domain.Topic
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -12,7 +13,7 @@ class TopicInteractorImpl @Inject constructor(
         private val repository: TopicRepository
 ) : TopicInteractor {
 
-    override fun getList(type: ForumType, page: Int, limit: Int): Single<List<Topic>> =
+    override fun getList(type: ForumType, page: Int, limit: Int): Single<Page<Topic>> =
             repository.getList(page, limit, type)
                     .applyErrorHandlerAndSchedulers()
 

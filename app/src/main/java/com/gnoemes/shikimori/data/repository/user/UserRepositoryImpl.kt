@@ -7,7 +7,7 @@ import com.gnoemes.shikimori.data.repository.user.converter.*
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.user.domain.*
-import com.gnoemes.shikimori.utils.dropExtraPageItem
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -42,9 +42,10 @@ class UserRepositoryImpl @Inject constructor(
             api.getUserProfile(id)
                     .map(detailsConverter::convertResponse)
 
-    override fun getFriends(id: Long, page: Int, limit: Int): Single<List<UserBrief>> =
+    override fun getFriends(id: Long, page: Int, limit: Int): Single<Page<UserBrief>> =
             api.getUserFriends(id, page, limit)
-                    .map(converter)
+                    .map { Page.exact(it, limit) }
+                    .map { it.map(converter::apply) }
 
     override fun getFavorites(id: Long): Single<FavoriteList> =
             api.getUserFavourites(id)
@@ -54,10 +55,10 @@ class UserRepositoryImpl @Inject constructor(
             api.getUserClubs(id)
                     .map(clubConverter)
 
-    override fun getHistory(id: Long, page: Int, limit: Int): Single<List<UserHistory>> =
+    override fun getHistory(id: Long, page: Int, limit: Int): Single<Page<UserHistory>> =
             api.getUserHistory(id, page, limit)
-                    .map { it.dropExtraPageItem(limit) }
-                    .map(historyConverter)
+                    .map { Page.withExtraRow(it, limit) }
+                    .map { it.map(historyConverter::apply) }
 
     override fun ignore(id: Long): Completable = api.ignoreUser(id)
 

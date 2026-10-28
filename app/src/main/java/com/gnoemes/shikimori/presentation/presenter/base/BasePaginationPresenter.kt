@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.PageOffsetPaginator
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.ViewController
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 
 //TODO rename presenter or add more abstractions to paginator based on type (pageOffset, dateOffset etc.)
@@ -14,7 +15,7 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
 
     private var paginator: PageOffsetPaginator<Items>? = null
 
-    protected abstract fun getPaginatorRequestFactory(): (Int) -> Single<List<Items>>
+    protected abstract fun getPaginatorRequestFactory(): (Int) -> Single<Page<Items>>
 
     override fun initData() {
         super.initData()
