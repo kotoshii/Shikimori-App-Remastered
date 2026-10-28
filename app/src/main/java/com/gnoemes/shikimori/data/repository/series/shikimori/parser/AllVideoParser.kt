@@ -22,21 +22,7 @@ class AllVideoParser @Inject constructor(
         val doc = Jsoup.parse(html)
         val scriptData = doc.select("script:containsData(isMobile):containsData(file:)").first()?.data()
 
-        return scriptData
-                ?.substringAfter("file:\"")
-                ?.substringBefore('"')
-                ?.split(",")
-                .orEmpty()
-                .map {
-                    val match = Regex("\\[(\\d+)p\\](.+)").find(it)
-
-                    if (match == null) {
-                        Track(Track.UNKNOWN_QUALITY, it)
-                    } else {
-                        val (quality, url) = match.destructured
-                        Track(quality, url)
-                    }
-                }
-                .sortedByDescending { it.quality.toInt() }
+        //the same PlayerJS list as AnimeJoy's
+        return playerJsTracks(scriptData?.substringAfter("file:\"")?.substringBefore('"'))
     }
 }

@@ -3,8 +3,6 @@ package com.gnoemes.shikimori.utils.images
 import android.content.Context
 import android.widget.ImageView
 import com.bumptech.glide.Priority
-import com.bumptech.glide.request.target.BitmapImageViewTarget
-import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.utils.images.blur.BlurTransformation
 import javax.inject.Inject
 
@@ -15,31 +13,35 @@ class GlideImageLoader @Inject constructor(
     val glide = GlideApp.with(context)
 
     override fun setCircleImage(image: ImageView, url: String?) {
+        val target = PictureTarget(image)
         GlideApp.with(image)
-                .asDrawable()
+                .asBitmap()
                 .load(url)
                 .dontAnimate()
-                .into(image)
+                .listener(target)
+                .into(target)
     }
 
     override fun setImageWithPlaceHolder(image: ImageView, url: String?) {
+        val target = PictureTarget(image)
         GlideApp.with(image)
                 .asBitmap()
                 .load(url)
-                .error(missingPoster(image))
+                .listener(target)
                 .centerCrop()
-                .into(image)
+                .into(target)
     }
 
     override fun setImageListItem(image: ImageView, url: String?) {
+        val target = PictureTarget(image).apply { waitForLayout() }
         GlideApp.with(image)
                 .asBitmap()
                 .dontAnimate()
-                .error(missingPoster(image))
                 .centerCrop()
                 .load(url)
                 .override(image.measuredWidth / 2, image.measuredHeight / 2)
-                .into(BitmapImageViewTarget(image).apply { waitForLayout() })
+                .listener(target)
+                .into(target)
     }
 
     override fun setBlurredImage(image: ImageView, url: String?, radius : Int, sampling : Int) {
@@ -64,12 +66,4 @@ class GlideImageLoader @Inject constructor(
     override fun clearImage(image: ImageView) {
         glide.clear(image)
     }
-
-    //the request's centerCrop does not reach a plain .error drawable, which was then drawn with the
-    //ImageView's default fitCenter - fit by height, with gaps on both sides of a poster card
-    private fun missingPoster(image: ImageView) =
-            GlideApp.with(image)
-                    .asBitmap()
-                    .load(R.drawable.missing_original)
-                    .centerCrop()
 }

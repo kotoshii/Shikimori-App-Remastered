@@ -105,10 +105,10 @@
             android:layout_marginLeft="12dp"
             app:backgroundTint="@color/colorShimmer"
             app:layout_constraintStart_toStartOf="@+id/guideline"
-            app:layout_constraintTop_toTopOf="@+id/bansFab" />
+            app:layout_constraintTop_toTopOf="@+id/historyFab" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/bansFab"
+            android:id="@+id/historyFab"
             style="@style/CircleButtonStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -160,17 +160,17 @@
             app:layout_constraintTop_toBottomOf="@+id/ignoreFab" />
 
         <TextView
-            android:id="@+id/bansLabel"
+            android:id="@+id/historyLabel"
             style="@style/PlaceholderLabelStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/profile_bans"
+            android:text="@string/profile_history"
             android:textAllCaps="true"
             android:textSize="10sp"
-            app:layout_constraintEnd_toEndOf="@+id/bansFab"
-            app:layout_constraintStart_toStartOf="@+id/bansFab"
-            app:layout_constraintTop_toBottomOf="@+id/bansFab" />
+            app:layout_constraintEnd_toEndOf="@+id/historyFab"
+            app:layout_constraintStart_toStartOf="@+id/historyFab"
+            app:layout_constraintTop_toBottomOf="@+id/historyFab" />
 
         <View
             android:id="@+id/about"

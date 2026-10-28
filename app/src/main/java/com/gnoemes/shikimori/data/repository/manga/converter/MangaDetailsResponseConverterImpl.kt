@@ -35,7 +35,7 @@ class MangaDetailsResponseConverterImpl @Inject constructor(
             t.topicId,
             //v2 genres are fetched from graphql and filled in by MangaRepositoryImpl (manga and
             //ranobe). This rest response only carries the v1 list, which is empty for recent
-            //titles - see docs/_internal/GENRES_V2_SPIKE.md
+            //titles - see GENRES_V2_SPIKE.md
             emptyList(),
             rateConverter.convertUserRateResponse(t.id, t.userRate),
             t.rateScoresStats.map { convertStatistic(it) },

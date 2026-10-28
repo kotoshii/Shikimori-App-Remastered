@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.entity.topic.domain.TopicType
 import javax.inject.Inject
 
 class TopicResponseConverterImpl @Inject constructor(
-        private val forumConverter: ForumResponseConverter,
         private val userConverter: UserBriefResponseConverter,
         private val linkedConverter: LinkedContentResponseConverter
 ) : TopicResponseConverter {
@@ -20,8 +19,6 @@ class TopicResponseConverterImpl @Inject constructor(
             return null
         }
 
-        val forum = forumConverter.convertResponse(it.forum) ?: return null
-
         return Topic(
                 it.id,
                 it.title.orEmpty(),
@@ -30,7 +27,7 @@ class TopicResponseConverterImpl @Inject constructor(
                 it.footer,
                 it.dateCreated,
                 it.commentsCount,
-                forum,
+                it.forum.name,
                 userConverter.convertResponse(it.user)!!,
                 convertType(it.type, it.description, it.descriptionHtml),
                 it.linkedType,

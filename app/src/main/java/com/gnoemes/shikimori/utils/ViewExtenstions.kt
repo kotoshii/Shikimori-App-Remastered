@@ -15,6 +15,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.iterator
+import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -34,6 +35,12 @@ fun View.isVisible(): Boolean = visibility == View.VISIBLE
 
 inline fun View.visibleIf(block: () -> Boolean) {
     if (block()) visible() else gone()
+}
+
+/** A control that cannot be used now stays in its place, greyed out, rather than going away. */
+fun View.setUsable(usable: Boolean) {
+    isEnabled = usable
+    alpha = if (usable) 1f else 0.3f
 }
 
 inline fun View.onClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL, crossinline l: (v: View) -> Unit) {
@@ -76,6 +83,15 @@ fun Toolbar.showMenu() {
 }
 
 /**
+ * A number at the toolbar's end, such as how many clubs: one menu item, its title replaced each time.
+ * Each screen added another item on every load, so a refresh piled them up (BUGS #45).
+ */
+fun Toolbar.showCount(count: Int) {
+    if (menu.findItem(R.id.item_count) == null) inflateMenu(R.menu.menu_count)
+    menu.findItem(R.id.item_count)?.title = count.toString()
+}
+
+/**
  * The app's look for a search field in a toolbar: no gap before the text, the hint in the faint
  * text colour and, with [closeButton], a padded close button in the toolbar's text colour.
  */
@@ -113,10 +129,29 @@ fun Snackbar.floatingStyle(context: Context, @DimenRes margins: Int = R.dimen.sn
     return this
 }
 
+/** A message with «Отменить», for a list entry's change that waits before it is sent (`PendingRateChanges`). */
+fun View.showUndoMessage(message: String, onUndo: () -> Unit) {
+    Snackbar.make(this, message, Snackbar.LENGTH_LONG)
+            .floatingStyle(context)
+            .setActionTextColor(context.colorAttr(R.attr.colorSecondary))
+            .setAction(R.string.common_cancel_variant) { onUndo() }
+            .show()
+}
+
 fun View.dp(dp: Int): Int = context.dp(dp)
 
 @ColorInt
 fun View.color(@ColorRes colorRes: Int): Int = context.color(colorRes)
+
+/**
+ * Hides the keyboard when it types into this fragment. Found by the fragment's own view, so a screen
+ * and a bottom sheet work alike: a sheet is a window of its own, and the activity's focus is not in it
+ * (BUGS #27).
+ */
+fun Fragment.hideSoftInput() {
+    val window = view?.windowToken ?: return
+    context?.inputMethodManager()?.hideSoftInputFromWindow(window, 0)
+}
 
 
 

@@ -8,7 +8,7 @@ sealed class DetailsAction {
     data class ChangeRateStatus(val newStatus: RateStatus, val id: Long = Constants.NO_ID) : DetailsAction()
     data class GenreClicked(val genre: GenreV2) : DetailsAction()
     data class Video(val url: String) : DetailsAction()
-    data class StudioClicked(val id: Long) : DetailsAction()
+    data class StudioClicked(val id: Long, val name: String) : DetailsAction()
     data class WatchOnline(val id: Long? = null) : DetailsAction()
     data class Screenshots(val pos: Int) : DetailsAction()
     data class Link(val url: String, val share: Boolean) : DetailsAction()

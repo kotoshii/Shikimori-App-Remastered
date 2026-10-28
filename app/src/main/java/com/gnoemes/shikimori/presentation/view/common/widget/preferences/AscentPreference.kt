@@ -35,8 +35,13 @@ class AscentPreference @JvmOverloads constructor(context: Context,
             var id = getIdFromStyle(ascentStyle)
             chipGroup.check(id)
             chipGroup.setOnCheckedChangeListener { group, checkedId ->
-                if (checkedId == -1) group.check(id)
-                else id = checkedId
+                //a tap on the chosen accent unchecks it: check it again and keep its style. The style
+                //of "none" was stored after the re-check, and saved as orange (BUGS #44)
+                if (checkedId == -1) {
+                    group.check(id)
+                    return@setOnCheckedChangeListener
+                }
+                id = checkedId
                 ascentStyle = getStyleFromId(checkedId)
             }
         }

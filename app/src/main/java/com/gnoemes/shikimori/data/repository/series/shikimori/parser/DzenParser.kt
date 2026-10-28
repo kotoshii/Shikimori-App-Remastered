@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.entity.series.data.DzenPlayerData
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
@@ -50,7 +51,7 @@ class DzenParser @Inject constructor(
 
                     Track(quality, url)
                 }
-                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
+                .sortedByQuality()
     }
 
     /**

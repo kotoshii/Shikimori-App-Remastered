@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.clubs
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
@@ -74,11 +73,7 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     }
 
     override fun showClubsCount(count: Int) {
-        toolbar?.menu?.add("$count")
-        toolbar?.menu?.getItem(0)?.apply {
-            isEnabled = false
-            setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
+        toolbar?.showCount(count)
     }
 
     override fun showContent(show: Boolean) {

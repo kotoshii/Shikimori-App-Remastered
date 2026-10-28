@@ -41,7 +41,8 @@ class RateAdapterDelegate(
                 playBtn.onClick { callback.invoke(DetailsAction.WatchOnline(item.id)) }
                 container.onClick { navigationCallback.invoke(item.type, item.contentId) }
                 imageView.onClick { navigationCallback.invoke(item.type, item.contentId) }
-                imageView.setOnLongClickListener { listActionCallback.invoke(RateListAction.Pin(item)); true }
+                //the pins are the user's own: on another user's list the long-press does nothing (P7-T5 Q146)
+                imageView.setOnLongClickListener { if (item.canEdit) listActionCallback.invoke(RateListAction.Pin(item)); true }
                 rateEditBtn.onClick { listActionCallback.invoke(RateListAction.EditRate(item)) }
             }
         }
@@ -57,6 +58,8 @@ class RateAdapterDelegate(
                 descriptionView.text = item.description
 
                 pinView.visibleIf { item.isPinned }
+                //invisible, not gone: ▶ is lined up with it
+                rateEditBtn.visibility = if (item.canEdit) View.VISIBLE else View.INVISIBLE
                 playBtn.visibleIf { item.type == Type.ANIME }
                 ratingView.visibleIf { item.rating != "-" }
             }

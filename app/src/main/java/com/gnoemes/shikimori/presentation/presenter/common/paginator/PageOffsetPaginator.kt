@@ -1,10 +1,11 @@
 package com.gnoemes.shikimori.presentation.presenter.common.paginator
 
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 
 class PageOffsetPaginator<T>(
-        private val requestFactory: (page: Int) -> Single<List<T>>,
+        private val requestFactory: (page: Int) -> Single<Page<T>>,
         private val viewController: ViewController<T>
 ) : Paginator {
 
@@ -20,6 +21,10 @@ class PageOffsetPaginator<T>(
     override fun loadNewPage() = currentState.loadNewPage()
     override fun release() = currentState.release()
 
+    //a page that says it is the last ends the list: an empty page was the only end, one request more
+    //than the list needed (P7-T5 17.4)
+    private fun stateAfter(page: Page<T>): State<T> = if (page.isLast) ALL_DATA() else DATA()
+
     private fun loadPage(page: Int) {
         disposable?.dispose()
         disposable = requestFactory.invoke(page)
@@ -27,10 +32,6 @@ class PageOffsetPaginator<T>(
                         { currentState.newData(it) },
                         { currentState.error(it) }
                 )
-    }
-
-    private fun increasePage() {
-        currentPage += 1
     }
 
 
@@ -50,14 +51,15 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_PROGRESS : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
                 currentData.clear()
-                currentData.addAll(data)
+                currentData.addAll(page.items)
                 currentPage = defaultPage
                 viewController.showData(true, currentData)
                 viewController.showEmptyProgress(false)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = EMPTY_DATA()
                 viewController.showEmptyProgress(false)
@@ -115,11 +117,11 @@ class PageOffsetPaginator<T>(
             loadPage(defaultPage)
         }
 
+        //the page number moves on only once its page has come: a failed page was skipped for good (BUGS #34)
         override fun loadNewPage() {
             currentState = PAGE_PROGRESS()
             viewController.showPageProgress(true)
-            increasePage()
-            loadPage(currentPage)
+            loadPage(currentPage + 1)
         }
 
         override fun release() {
@@ -130,14 +132,15 @@ class PageOffsetPaginator<T>(
 
     private inner class REFRESH : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
                 currentData.clear()
-                currentData.addAll(data)
+                currentData.addAll(page.items)
                 currentPage = defaultPage
                 viewController.showRefreshProgress(false)
                 viewController.showData(true, currentData)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = EMPTY_DATA()
                 currentData.clear()
@@ -161,12 +164,14 @@ class PageOffsetPaginator<T>(
 
     private inner class PAGE_PROGRESS : State<T> {
 
-        override fun newData(data: List<T>) {
-            if (data.isNotEmpty()) {
-                currentState = DATA()
-                currentData.addAll(data)
+        override fun newData(page: Page<T>) {
+            if (page.items.isNotEmpty()) {
+                currentState = stateAfter(page)
+                currentData.addAll(page.items)
+                currentPage += 1
                 viewController.showPageProgress(false)
                 viewController.showData(true, currentData)
+                if (page.isLast) viewController.onAllData()
             } else {
                 currentState = ALL_DATA()
                 viewController.showPageProgress(false)
@@ -182,14 +187,44 @@ class PageOffsetPaginator<T>(
         }
 
         override fun error(error: Throwable) {
-            currentState = DATA()
+            currentState = PAGE_ERROR()
             viewController.showPageProgress(false)
-            viewController.showError(error)
+            viewController.showPageError(true, error)
+        }
+
+        //the spinner row would outlive the list: a screen that drops its paginator shows another one
+        override fun release() {
+            currentState = RELEASED()
+            disposable?.dispose()
+            viewController.showPageProgress(false)
+        }
+    }
+
+    /**
+     * A later page failed: the pages loaded stay, and the list ends with «Повторить» instead of hiding
+     * behind the error view (BUGS #55). [loadNewPage] asks for the failed page again; only the user
+     * calls it here - the list's own end-of-list loading waits while «Повторить» shows, or it would ask
+     * in a loop (BasePaginationFragment).
+     */
+    private inner class PAGE_ERROR : State<T> {
+
+        override fun loadNewPage() {
+            currentState = PAGE_PROGRESS()
+            viewController.showPageError(false)
+            viewController.showPageProgress(true)
+            loadPage(currentPage + 1)
+        }
+
+        override fun refresh() {
+            currentState = REFRESH()
+            viewController.showPageError(false)
+            viewController.showRefreshProgress(true)
+            loadPage(defaultPage)
         }
 
         override fun release() {
             currentState = RELEASED()
-            disposable?.dispose()
+            viewController.showPageError(false)
         }
     }
 

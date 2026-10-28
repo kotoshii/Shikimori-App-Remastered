@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--a picture view's own look, noted by PictureTarget-->
+    <item name="picture_original" type="id" />
+</resources>

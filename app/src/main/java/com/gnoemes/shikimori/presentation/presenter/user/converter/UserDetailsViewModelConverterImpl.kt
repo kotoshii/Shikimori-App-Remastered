@@ -1,7 +1,5 @@
 package com.gnoemes.shikimori.presentation.presenter.user.converter
 
-import android.content.Context
-import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.club.domain.Club
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -11,9 +9,7 @@ import java.math.MathContext
 import java.math.RoundingMode
 import javax.inject.Inject
 
-class UserDetailsViewModelConverterImpl @Inject constructor(
-        private val context: Context
-) : UserDetailsViewModelConverter {
+class UserDetailsViewModelConverterImpl @Inject constructor() : UserDetailsViewModelConverter {
 
     companion object {
         const val FRIENDS_INITIAL = 5
@@ -36,9 +32,9 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
                     t.isMe
             )
 
-    override fun convertFriends(t: List<UserBrief>): UserContentViewModel {
+    override fun convertFriends(t: List<UserBrief>, mayHaveMore: Boolean): UserContentViewModel {
         val friends = t.map { UserContentItem(it.id, Type.USER, it.image.x160) }
-        return convertContentViewModel(UserContentType.FRIENDS, friends)
+        return convertContentViewModel(UserContentType.FRIENDS, friends, mayHaveMore)
     }
 
     override fun convertFavorites(t: FavoriteList): UserContentViewModel {
@@ -58,7 +54,7 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
             convertRate(stats.animeStatuses),
             countAvgScore(stats.scores.anime),
             convertScores(stats.scores.anime),
-            convertTypes(true, stats.types.anime),
+            convertTypes(stats.types.anime),
             convertRatings(stats.ratings.anime)
     )
 
@@ -67,7 +63,7 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
             convertRate(stats.mangaStatuses),
             countAvgScore(stats.scores.manga ?: emptyList()),
             convertScores(stats.scores.manga ?: emptyList()),
-            convertTypes(false, stats.types.manga ?: emptyList()),
+            convertTypes(stats.types.manga ?: emptyList()),
             emptyList()
     )
 
@@ -101,30 +97,11 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
                 }
     }
 
-    private fun convertTypes(isAnime: Boolean, types: List<Statistic>): List<UserStatisticItem> {
-        val items = if (isAnime) mutableListOf(
-                Pair("TV Series|Сериал", UserStatisticItem(context.getString(R.string.type_tv_long_translatable), 0, 0f)),
-                Pair("Movie|Фильм", UserStatisticItem(context.getString(R.string.type_movie_translatable), 0, 0f)),
-                Pair("OVA", UserStatisticItem(context.getString(R.string.type_ova), 0, 0f)),
-                Pair("ONA", UserStatisticItem(context.getString(R.string.type_ona), 0, 0f)),
-                Pair("Special|Спешл", UserStatisticItem(context.getString(R.string.type_special_translatable), 0, 0f)),
-                Pair("Music|Клип", UserStatisticItem(context.getString(R.string.type_music_translatable), 0, 0f))
-        ) else mutableListOf(
-                Pair("Manga|Манга", UserStatisticItem(context.getString(R.string.type_manga_translatable), 0, 0f)),
-                Pair("Manhwa|Манхва", UserStatisticItem(context.getString(R.string.type_manhwa_translatable), 0, 0f)),
-                Pair("Manhua|Маньхуа", UserStatisticItem(context.getString(R.string.type_manhua_translatable), 0, 0f)),
-                Pair("Light Novel|Ранобэ", UserStatisticItem(context.getString(R.string.type_novel_translatable), 0, 0f)),
-                Pair("One Shot|Ваншот", UserStatisticItem(context.getString(R.string.type_one_shot_translatable), 0, 0f)),
-                Pair("Doujin|Додзинси", UserStatisticItem(context.getString(R.string.type_doujin_translatable), 0, 0f))
-        )
-
+    //every kind the api counts, in its own words and order, as the site's profile shows them: a list of
+    //the app's own dropped the kinds it had no word for («TV Спешл»), though they counted in the total (BUGS #76)
+    private fun convertTypes(types: List<Statistic>): List<UserStatisticItem> {
         val sum = types.sumBy { it.value }
-
-        return types
-                .mapNotNull { statistic ->
-                    val item = items.find { it.first.split("|").contains(statistic.name) }
-                    item?.second?.copy(count = statistic.value, progress = statistic.value / sum.toFloat())
-                }
+        return types.map { UserStatisticItem(it.name, it.value, if (sum > 0) it.value / sum.toFloat() else 0f) }
     }
 
 
@@ -151,7 +128,7 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
 
     private inline fun List<Status>.countRate(crossinline block: (Status) -> Boolean): Int = sumBy { if (block.invoke(it)) it.size else 0 }
 
-    private fun convertContentViewModel(type: UserContentType, items: List<UserContentItem>): UserContentViewModel {
+    private fun convertContentViewModel(type: UserContentType, items: List<UserContentItem>, mayHaveMore: Boolean = false): UserContentViewModel {
         val initialCount = getInitial(type)
 
         val isNeedMore = isNeedMoreItem(type, items.size)
@@ -160,7 +137,8 @@ class UserDetailsViewModelConverterImpl @Inject constructor(
                 type,
                 if (isNeedMore) items.take(initialCount) else items,
                 isNeedMore,
-                items.size - initialCount
+                items.size - initialCount,
+                mayHaveMore
         )
     }
 

@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.data.local.services.impl
 
 import android.util.Log
+import com.gnoemes.shikimori.entity.series.domain.Track
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -52,7 +53,7 @@ class VideoFileDownloader(baseClient: OkHttpClient) {
         target.parentFile?.mkdirs()
 
         return try {
-            if (isPlaylist(url)) downloadPlaylist(url, headers, target, progress)
+            if (Track.isHls(url)) downloadPlaylist(url, headers, target, progress)
             else downloadFile(url, headers, target, progress)
         } catch (e: Exception) {
             //anything at all means the download failed - including SecurityException, which is how
@@ -61,8 +62,6 @@ class VideoFileDownloader(baseClient: OkHttpClient) {
             false
         }.also { finished -> if (!finished) target.delete() }
     }
-
-    private fun isPlaylist(url: String) = url.contains(".m3u8", ignoreCase = true)
 
     private fun downloadFile(url: String, headers: Map<String, String>, target: File, progress: Progress): Boolean {
         target.outputStream().use { out ->
@@ -84,7 +83,7 @@ class VideoFileDownloader(baseClient: OkHttpClient) {
         if (playlist.contains(VARIANT_MARKER)) {
             val variant = entries(playlist, url).firstOrNull() ?: return false
             //only one level - a variant pointing at another master is not a real playlist
-            return if (isPlaylist(variant)) downloadPlaylist(variant, headers, target, NoRecursionProgress(progress))
+            return if (Track.isHls(variant)) downloadPlaylist(variant, headers, target, NoRecursionProgress(progress))
             else downloadFile(variant, headers, target, progress)
         }
 

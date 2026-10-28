@@ -29,7 +29,7 @@ data class TranslationResponse(
             response.hosting,
             response.author ?: "",
             episodesSize,
-            response.url
+            response.playerUrl
     )
 
     val hosting: VideoHosting

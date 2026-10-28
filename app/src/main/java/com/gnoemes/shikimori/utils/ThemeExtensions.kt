@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Handler
-import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.annotation.StyleRes
 import androidx.appcompat.view.ContextThemeWrapper
@@ -15,7 +14,6 @@ import com.gnoemes.shikimori.entity.app.domain.AscentTheme
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
-import org.joda.time.Duration
 import org.joda.time.LocalTime
 
 /** Each theme's style - the one map; the theme settings read it backwards to save a choice. */
@@ -121,7 +119,6 @@ fun Activity.scheduleNightTheme(runnable: Runnable?) {
                 if (startTime.isBefore(now)) lastDayTime.millisOfDay - now.millisOfDay + startTime.millisOfDay
                 else startTime.millisOfDay - now.millisOfDay
             }
-    Log.i("NIGHT_THEME_KEY", "mills: $delayMills human: ${Duration.millis(delayMills.toLong())}")
     themeHandler.postDelayed(runnable, delayMills.toLong())
 }
 

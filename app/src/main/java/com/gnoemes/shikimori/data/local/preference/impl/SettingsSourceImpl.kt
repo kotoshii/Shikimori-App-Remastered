@@ -9,7 +9,9 @@ import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.utils.putBoolean
 import com.gnoemes.shikimori.utils.putInt
+import com.gnoemes.shikimori.utils.putString
 import com.gnoemes.shikimori.utils.putStringSet
 import javax.inject.Inject
 
@@ -45,8 +47,9 @@ class SettingsSourceImpl @Inject constructor(
     override val altSourceByDefault: Boolean
         get() = prefs.getBoolean(SettingsExtras.ALT_SOURCE_BY_DEFAULT, false)
 
-    override val isAskForPlayer: Boolean
+    override var isAskForPlayer: Boolean
         get() = prefs.getBoolean(SettingsExtras.IS_REMEMBER_PLAYER, true)
+        set(value) = prefs.putBoolean(SettingsExtras.IS_REMEMBER_PLAYER, value)
 
     override val translationType: TranslationType
         get() {
@@ -55,11 +58,12 @@ class SettingsSourceImpl @Inject constructor(
                     ?: TranslationType.VOICE_RU
         }
 
-    override val playerType: PlayerType
+    override var playerType: PlayerType
         get() {
             val type = prefs.getString(SettingsExtras.PLAYER_TYPE, PlayerType.EMBEDDED.name)!!
             return PlayerType.valueOf(type)
         }
+        set(value) = prefs.putString(SettingsExtras.PLAYER_TYPE, value.name)
 
     override val useLocalTranslationSettings: Boolean
         get() = prefs.getBoolean(SettingsExtras.IS_USE_LOCAL_TRANSLATION_SETTINGS, true)

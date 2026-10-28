@@ -18,6 +18,7 @@ import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_web_player.*
@@ -85,7 +86,7 @@ class WebPlayerActivity : BaseThemedActivity() {
 
                 val useIFrame = needsIFrame(url)
 
-                if (url.contains(ANIME_365_REGEX) && !token.isNullOrBlank()) webView.loadUrl("$url?access_token=$token")
+                if (url.contains(ANIME_365_REGEX) && !token.isNullOrBlank()) webView.loadUrl(anime365Url(url, token))
                 else if (useIFrame) {
                     val iframe = "<html><body style='margin:0;padding:0;'><iframe src='$url' width='100%' height='100%'  frameborder='0' allowfullscreen></iframe></body></html>"
                     webView.loadData(iframe, "text/html", "utf-8")
@@ -154,7 +155,7 @@ class WebPlayerActivity : BaseThemedActivity() {
                 if (Pattern.compile("https?://vk\\.com/").matcher(url).find()) {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(intent)
+                    startOutsideActivity(intent)
                     true
                 } else false
 
@@ -177,3 +178,8 @@ class WebPlayerActivity : BaseThemedActivity() {
 
 //aparat's page breaks inside an iframe; every other hosting's player is wrapped in one
 private fun needsIFrame(url: String): Boolean = !url.contains("aparat")
+
+//the token as a query parameter, and over https: a third of the links are http:// (the token went out
+//unencrypted on the first request), and a link with a query got a second "?" (BUGS #26.3)
+private fun anime365Url(url: String, token: String): String =
+        Uri.parse(url).buildUpon().scheme("https").appendQueryParameter("access_token", token).build().toString()

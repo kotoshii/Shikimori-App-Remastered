@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.os.Environment
 import androidx.fragment.app.FragmentActivity
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.folderChooser
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -46,7 +45,7 @@ fun Context.chooseDownloadFolder(onChosen: () -> Unit = {}, onPositive: (() -> U
         Environment.getExternalStorageDirectory()
     }
 
-    MaterialDialog(this).show {
+    materialDialog().show {
         folderChooser(
                 initialDirectory = initialDirectory,
                 allowFolderCreation = true,

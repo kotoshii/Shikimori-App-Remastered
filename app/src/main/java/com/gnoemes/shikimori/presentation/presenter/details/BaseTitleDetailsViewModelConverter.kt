@@ -14,9 +14,10 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.user.domain.Statistic
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
-import com.gnoemes.shikimori.presentation.presenter.common.converter.labelRes
 import com.gnoemes.shikimori.utils.color
+import com.gnoemes.shikimori.utils.colorRes
 import com.gnoemes.shikimori.utils.colorSpan
+import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import org.joda.time.DateTime
 
@@ -85,12 +86,10 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
                     .sortedBy { genre -> genre.kind.ordinal }
                     .map { genre -> DetailsTagItem(genre.id, DetailsTagItem.TagType.GENRE, genre.russianName, genre) }
 
-    /** «Анонс» or «Онгоинг» in its colour; null for any other status. */
-    protected fun statusItem(status: Status): InfoItem? {
-        if (status != Status.ANONS && status != Status.ONGOING) return null
-
-        val color = if (status == Status.ONGOING) R.color.status_ongoing else R.color.status_anons
-        val description = context.getString(status.labelRes).colorSpan(context.color(color))
+    /** The «Статус» row: a status shown in colour, in the words of this type; null for any other. */
+    protected fun statusItem(status: Status, isAnime: Boolean): InfoItem? {
+        val color = status.colorRes ?: return null
+        val description = context.getString(status.labelRes(isAnime)).colorSpan(context.color(color))
         return InfoItem(description, context.getString(R.string.common_status))
     }
 

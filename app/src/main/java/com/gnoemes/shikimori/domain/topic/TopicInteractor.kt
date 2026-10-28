@@ -4,11 +4,12 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.topic.domain.Topic
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 
 interface TopicInteractor {
 
-    fun getList(type: ForumType, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<List<Topic>>
+    fun getList(type: ForumType, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<Page<Topic>>
 
     fun getDetails(id: Long): Single<Topic>
 

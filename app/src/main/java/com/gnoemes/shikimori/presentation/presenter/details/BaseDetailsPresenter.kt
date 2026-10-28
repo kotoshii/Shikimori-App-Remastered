@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.domain.rates.RatesInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
+import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -18,8 +19,10 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
+import com.gnoemes.shikimori.presentation.presenter.base.PendingRateChanges
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
+import com.gnoemes.shikimori.presentation.presenter.rates.provider.RateResourceProvider
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLightLoadingLogic
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
@@ -38,16 +41,23 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         protected val userInteractor: UserInteractor,
         protected val resourceProvider: CommonResourceProvider,
         protected val contentConverter: DetailsContentViewModelConverter,
-        private val settingsSource: SettingsSource
+        private val settingsSource: SettingsSource,
+        private val rateResourceProvider: RateResourceProvider
 ) : BaseNetworkPresenter<View>() {
 
     var id: Long = Constants.NO_ID
 
     protected var rateId: Long = Constants.NO_ID
-    protected var userId: Long = Constants.NO_ID
+
+    /** Read when needed, never kept: the app may sign the user out while the page is open (BUGS #70). */
+    private val isGuest: Boolean
+        get() = !userInteractor.isSignedIn()
 
     /** The title's details, once loaded. */
     protected var details: D? = null
+
+    //🗑 waits behind «Отменить», as in «Списки» (BUGS #85)
+    private val pendingChanges = PendingRateChanges()
 
     protected val characters = mutableListOf<Character>()
     protected val creators = mutableListOf<Pair<Person, List<String>>>()
@@ -73,11 +83,26 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     }
 
     override fun initData() {
-        loadUser()
         loadData()
     }
 
+    //a page whose first load failed loads in full: the head alone would land under the error view
     override fun onViewReattached() {
+        if (details == null) loadData() else redrawHead()
+    }
+
+    /**
+     * The page's error view takes the screen only while the page has nothing - its first load and
+     * «Повторить». Once the title is shown, an error is a message and the page stays, as it always was:
+     * the page had no error view at all, and its first load's failure left the shimmer for good (P7-T5
+     * Q166).
+     */
+    override fun processErrors(throwable: Throwable) {
+        if (details != null) showErrorText(throwable) else super.processErrors(throwable)
+    }
+
+    //the head again: its rate buttons follow the sign-in as it is now
+    private fun redrawHead() {
         loadDetails()
                 .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
                 .addToDisposables()
@@ -86,7 +111,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     private fun loadDetails(): Single<DetailsHeadItem> =
             fetchDetails()
                     .doOnSuccess { details = it; rateId = it.userRate?.id ?: Constants.NO_ID }
-                    .map { detailsConverter.convertHead(it, userId == Constants.NO_ID) }
+                    .map { detailsConverter.convertHead(it, isGuest) }
 
     private fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem> =
             loadDetails()
@@ -135,35 +160,35 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
                     }, this::processErrors)
                     .addToDisposables()
 
-    protected open fun loadUser() =
-            userInteractor.getMyUserId()
-                    .doOnSuccess { userId = it }
-                    .subscribe({}, this::processUserErrors)
-                    .addToDisposables()
-
     //the creators are rows of the info block, so it is drawn again with them
     private fun setCreators(creators: List<Pair<Person, List<String>>>) {
         this.creators.clearAndAddAll(creators)
         withDetails { viewState.setInfoItem(detailsConverter.convertInfo(it, this.creators)) }
     }
 
-    protected open fun createRate(rate: UserRate?, newStatus: RateStatus? = null) {
-        if (userId != Constants.NO_ID) {
-            ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus), userId)
-                    .updateContentData()
-        } else {
-            router.showSystemMessage(resourceProvider.needAuth)
-        }
+    protected open fun createRate(rate: UserRate?, newStatus: RateStatus? = null) = whenSignedIn {
+        ratesInteractor.createRate(id, type, rate ?: UserRate(status = newStatus))
+                .updateContentData()
     }
 
-    protected open fun updateRate(rate: UserRate) {
+    protected open fun updateRate(rate: UserRate) = whenSignedIn {
         ratesInteractor.updateRate(rate)
                 .updateContentData()
     }
 
-    protected open fun changeRateStatus(newStatus: RateStatus) {
+    protected open fun changeRateStatus(newStatus: RateStatus) = whenSignedIn {
         ratesInteractor.changeRateStatus(rateId, newStatus)
                 .updateContentData()
+    }
+
+    //a page drawn before an automatic sign-out still shows its rate buttons: tell the user, and draw
+    //the head again without them
+    private inline fun whenSignedIn(action: () -> Unit) {
+        if (!isGuest) action()
+        else {
+            router.showSystemMessage(resourceProvider.needAuth)
+            redrawHead()
+        }
     }
 
     open fun onUpdateOrCreateRate(rate: UserRate) {
@@ -173,9 +198,26 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
-    open fun onDeleteRate(id: Long) {
-        ratesInteractor.deleteRate(id)
-                .updateContentData()
+    //the page shows the entry until the delete is sent; then it reloads, as after any other change -
+    //unless the page has closed, when the delete is sent at once and nothing else runs
+    open fun onDeleteRate(id: Long) = whenSignedIn {
+        pendingChanges.add(id, ratesInteractor.deleteRate(id), this::reloadContent, this::processErrors)
+        viewState.showRateMessage(rateResourceProvider.getDeleteRateMessage(type), id)
+    }
+
+    private fun reloadContent() {
+        loadContent(false)
+                .subscribe({ viewState.setHeadItem(it) }, this::processErrors)
+                .addToDisposables()
+    }
+
+    fun onDeleteCanceled(id: Long) {
+        pendingChanges.cancel(id)
+    }
+
+    override fun onDestroy() {
+        pendingChanges.sendAll()
+        super.onDestroy()
     }
 
     open fun onAction(action: DetailsAction) {
@@ -191,7 +233,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(action.newStatus)
             is DetailsAction.Screenshots -> onScreenshotsClicked(action.pos)
             is DetailsAction.Discussion -> onOpenDiscussion()
-            is DetailsAction.StudioClicked -> onStudioClicked(action.id)
+            is DetailsAction.StudioClicked -> onStudioClicked(action.id, action.name)
             is DetailsAction.RateStatusDialog -> onStatusDialog()
             is DetailsAction.Similar -> onSimilarClicked()
             is DetailsAction.Statistic -> onStatisticClicked()
@@ -219,16 +261,18 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         router.navigateTo(Screens.SIMILAR, CommonNavigationData(id, type))
     }
 
-    private fun onChronology() {
-        router.navigateTo(Screens.CHRONOLOGY, CommonNavigationData(id, type))
+    //with the title's own address, for the franchise page's web link
+    private fun onChronology() = withDetails {
+        router.navigateTo(Screens.CHRONOLOGY, ChronologyNavigationData(id, type, it.url))
     }
 
     private fun onLinks() {
         loadLinks()
     }
 
-    private fun onStudioClicked(id: Long) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id), Type.ANIME))
+    //the name goes along, so the filter sheet can show which studio the list is limited to (BUGS #13)
+    private fun onStudioClicked(id: Long, name: String) {
+        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id, studioName = name), Type.ANIME))
     }
 
     open fun onChangeRateStatus(newStatus: RateStatus) {
@@ -238,7 +282,11 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
+    //nothing to search before the characters have come (a title without any shows no search): a restored
+    //page's search field reports its empty text at once, and that empty list replaced the loading
+    //section (P7-T5 17.5, BUGS #89)
     open fun onCharacterSearch(newText: String?) {
+        if (characters.isEmpty()) return
         if (newText.isNullOrBlank()) viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(characters))
         else {
             val searchItems: MutableList<Any> = characters.filter { it.name.contains(newText, true) || it.nameRu?.contains(newText, true) ?: false }.toMutableList()
@@ -260,8 +308,11 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         onOpenWeb(it.url)
     }
 
+    //the sheet reads the entry itself, as shikimori has it now: the page can be older - an entry added
+    //since (by «Автоматическое добавление», on the site) was overwritten with the empty sheet's zeros
+    //(BUGS #83, #84)
     private fun onEditRate() = withDetails {
-        viewState.showRateDialog(title, it.userRate, type == Type.ANIME)
+        viewState.showRateDialog(title, id, type)
     }
 
     private fun onStatusDialog() = withDetails {
@@ -274,10 +325,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
 
     /** Only the anime page can be watched. */
     protected open fun onWatchOnline() {
-    }
-
-    protected open fun processUserErrors(throwable: Throwable) {
-        throwable.printStackTrace()
     }
 
     protected open fun Completable.updateContentData() {

@@ -10,8 +10,8 @@ import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.user.domain.UserDetails
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.entity.user.presentation.UserContentType
+import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryNavigationData
 import com.gnoemes.shikimori.entity.user.presentation.UserProfileAction
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
@@ -19,7 +19,6 @@ import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResour
 import com.gnoemes.shikimori.presentation.presenter.user.converter.UserDetailsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.user.UserView
 import com.gnoemes.shikimori.utils.appendHostIfNeed
-import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import io.reactivex.Completable
 import io.reactivex.Single
 import java.net.URLEncoder
@@ -33,7 +32,9 @@ class UserPresenter @Inject constructor(
 ) : BaseNetworkPresenter<UserView>() {
 
     var id: Long = Constants.NO_ID
-    private var wasGuest = false
+
+    //the «Профиль» tab: it shows whoever is signed in now, looked up again each time, as the app may
+    //have signed out or another account signed in since (BUGS #70)
     private var isMe = false
 
     private var animeExpanded = false
@@ -41,66 +42,117 @@ class UserPresenter @Inject constructor(
 
     private lateinit var currentUser: UserDetails
 
+    //one profile load at a time: «Повторить» tapped again, or a sign-in, starts it anew (T5-19)
+    private val profileLoad = loadSlot()
+
     override fun initData() {
         if (id == Constants.NO_ID) {
+            isMe = true
             viewState.addSettings()
-            if (isGuest()) {
-                wasGuest = true
-                viewState.showContent(false)
-                viewState.showAuthView(true)
-            } else loadMyUser()
+            showMyProfile(reload = true)
         } else loadData()
     }
 
     override fun onViewReattached() {
-        if (wasGuest) loadMyUser()
+        if (isMe) showMyProfile(reload = false)
     }
 
-    private fun loadMyUser() = interactor.getMyUserId()
-            .doOnSuccess { id = it }
-            .doOnSubscribe { isMe = true }
-            .doOnSuccess { wasGuest = false }
-            .doOnSuccess { viewState.showAuthView(false) }
-            .subscribe({ loadData() }, this::processErrors)
-            .addToDisposables()
-
-    private fun loadData() =
-            loadUser()
-                    .doOnSuccess { loadFavorites() }
-                    .doOnSuccess { loadFriends() }
-                    .doOnSuccess { loadClubs() }
-                    .subscribe({}, this::processErrors)
-                    .addToDisposables()
-
-    private fun loadUser(showLoading: Boolean = true): Single<UserDetails> =
-            interactor.getDetails(id)
-                    .flatMap {
-                        if (showLoading) Single.just(it).appendLoadingLogic(viewState)
-                        else Single.just(it)
+    /** The signed-in user's profile, or «Войти»; [reload] loads the profile even when it is the one shown. */
+    private fun showMyProfile(reload: Boolean) {
+        viewState.showSignOut(!isGuest())
+        if (isGuest()) showSignedOut()
+        else interactor.getMyUserId()
+                .subscribe({
+                    if (reload || it != id) {
+                        if (id != Constants.NO_ID && it != id) forgetShownProfile()
+                        id = it
+                        viewState.showAuthView(false)
+                        loadData()
                     }
+                }, this::processErrors)
+                .addToDisposables()
+    }
+
+    private fun showSignedOut() {
+        profileLoad.cancel()
+        if (id != Constants.NO_ID) forgetShownProfile()
+        id = Constants.NO_ID
+        viewState.hideNetworkView()
+        viewState.showContent(false)
+        viewState.showAuthView(true)
+    }
+
+    /**
+     * The profile shown goes back to the start when its account goes: a header left scrolled kept the
+     * old name and avatar after «Выйти», and the next account's load showed the old data until its own.
+     */
+    private fun forgetShownProfile() {
+        animeExpanded = false
+        mangaExpanded = false
+        viewState.resetProfile()
+    }
+
+    /**
+     * The user, then its three rows side by side. It starts by hiding the error view and showing the
+     * profile with its placeholders: «Повторить» gave no sign of a new load before (T5-19). Not the
+     * shared loading logic - the profile has no screen spinner, and it hid the first row's.
+     */
+    private fun loadData() = profileLoad.start {
+        loadUser()
+                .flatMapCompletable { Completable.merge(listOf(loadFavorites(), loadFriends(), loadClubs())) }
+                .doOnSubscribe {
+                    viewState.hideNetworkView()
+                    viewState.showContent(true)
+                }
+                .subscribe({}, this::processErrors)
+    }
+
+    private fun loadUser(): Single<UserDetails> =
+            interactor.getDetails(id)
                     .doOnSuccess { currentUser = it }
                     .doOnSuccess { viewState.setInfo(converter.convertInfo(it)) }
                     .doOnSuccess { viewState.setHead(converter.convertHead(it)) }
                     .doOnSuccess { viewState.setAnimeRate(converter.convertAnimeRate(it.stats)) }
                     .doOnSuccess { viewState.setMangaRate(converter.convertMangaRate(it.stats)) }
 
-    private fun loadFavorites() =
+    private fun loadFavorites(): Completable =
             interactor.getFavorites(id)
                     .map { converter.convertFavorites(it) }
-                    .subscribe({ viewState.setFavorites(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+                    .doOnSuccess { viewState.setFavorites(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone { viewState.setFavorites(currentUser.isMe, nothingIn(UserContentType.FAVORITES)) }
 
-    private fun loadFriends() =
-            interactor.getFriends(id)
-                    .map { converter.convertFriends(it) }
-                    .subscribe({ viewState.setFriends(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+    //the first 100, the api's most: the row shows a few, and «ещё N+» when there may be more (BUGS #30)
+    private fun loadFriends(): Completable =
+            interactor.getFriends(id, 1)
+                    .map { converter.convertFriends(it.items, mayHaveMore = !it.isLast) }
+                    .doOnSuccess { viewState.setFriends(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone { viewState.setFriends(currentUser.isMe, nothingIn(UserContentType.FRIENDS)) }
 
-    private fun loadClubs() =
+    private fun loadClubs(): Completable =
             interactor.getClubs(id)
                     .map { converter.convertClubs(it) }
-                    .subscribe({ viewState.setClubs(currentUser.isMe, it) }, this::processErrors)
-                    .addToDisposables()
+                    .doOnSuccess { viewState.setClubs(currentUser.isMe, it) }
+                    .ignoreElement()
+                    .reportedAlone { viewState.setClubs(currentUser.isMe, nothingIn(UserContentType.CLUBS)) }
+
+    /**
+     * A row that fails is left out - [leaveOut] puts it where its spinner was - and says why in a
+     * message, and the others finish: the profile stays. The error view hid it all, for one row's
+     * 429 (BUGS #71). A sign-out of the tab's own profile still turns it into «Войти».
+     */
+    private fun Completable.reportedAlone(leaveOut: () -> Unit): Completable =
+            doOnError {
+                if (isMe && isGuest()) processErrors(it)
+                else {
+                    leaveOut()
+                    showErrorText(it)
+                }
+            }.onErrorComplete()
+
+    //a row with nothing in it hides itself, as a user with no friends has no friends row
+    private fun nothingIn(type: UserContentType) = UserContentViewModel(type, emptyList(), false, 0)
 
     fun onAction(action: UserProfileAction) {
         when (action) {
@@ -130,15 +182,15 @@ class UserPresenter @Inject constructor(
     }
 
     private fun onRateClicked(anime: Boolean, status: RateStatus) {
-        val data = RateNavigationData(id, if (anime) Type.ANIME else Type.MANGA, status)
+        //the rows are shown once the user is read, so currentUser is set
+        val owner = currentUser.takeUnless { it.isMe }
+        val data = RateNavigationData(id, if (anime) Type.ANIME else Type.MANGA, status, owner?.nickname, owner?.image?.x48)
         router.navigateTo(BottomScreens.RATES, data)
     }
 
     private fun onFriendshipStatusChanged(newStatus: Boolean) {
-        if (checkUserStatus()) {
-            router.showSystemMessage(resourceProvider.needAuth)
-            return
-        }
+        //checkUserStatus shows the message itself; it was shown twice (T5-16)
+        if (checkUserStatus()) return
 
         (if (newStatus) interactor.addToFriends(id)
         else interactor.removeFriend(id))
@@ -186,14 +238,17 @@ class UserPresenter @Inject constructor(
     }
 
     private fun Completable.updateUserData() {
-        andThen(loadUser(false))
+        andThen(loadUser())
                 .subscribe({ }, this@UserPresenter::processErrors)
                 .addToDisposables()
     }
 
     fun onRefresh() {
-        loadData()
+        if (isMe) showMyProfile(reload = true)
+        else loadData()
     }
+
+    override fun onRetry() = onRefresh()
 
     private fun checkUserStatus(): Boolean {
         return if (isGuest()) {
@@ -202,7 +257,25 @@ class UserPresenter @Inject constructor(
         } else false
     }
 
-    private fun isGuest(): Boolean = interactor.getUserStatus() == UserStatus.GUEST
+    private fun isGuest(): Boolean = !interactor.isSignedIn()
+
+    //the tab's own profile shows «Войти» after a sign-out, whatever failed
+    override fun processErrors(throwable: Throwable) {
+        if (isMe && isGuest()) {
+            //once, while the profile is still shown: several requests can fail on one sign-out
+            if (id != Constants.NO_ID) showSignedOutMessage(throwable)
+            showSignedOut()
+        } else super.processErrors(throwable)
+    }
+
+    //asked first: a sign-out also ends the site's session in the in-app browser
+    fun onSignOutClicked() = viewState.showSignOutDialog()
+
+    fun onSignOutConfirmed() {
+        interactor.signOut()
+                .subscribe({ showMyProfile(reload = true) }, this::processErrors)
+                .addToDisposables()
+    }
 
     fun onSignIn() = openAuth(AuthType.SIGN_IN)
     fun onSignUp() = openAuth(AuthType.SIGN_UP)

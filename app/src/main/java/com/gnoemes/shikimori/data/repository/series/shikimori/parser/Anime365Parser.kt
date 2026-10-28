@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSo
 import com.gnoemes.shikimori.entity.series.data.anime365.Anime365VideoResponse
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -71,7 +72,7 @@ class Anime365Parser @Inject constructor(
 
                     Track(quality, url)
                 }
-                .sortedByDescending { it.quality.toIntOrNull() ?: 0 }
+                .sortedByQuality()
     }
 
     /**

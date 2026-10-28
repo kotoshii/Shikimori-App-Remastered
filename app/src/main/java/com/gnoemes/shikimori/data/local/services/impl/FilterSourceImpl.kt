@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.data.local.services.impl
 import android.content.Context
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
+import com.gnoemes.shikimori.data.local.preference.UserSource
 import com.gnoemes.shikimori.data.local.services.FilterSource
 import com.gnoemes.shikimori.data.repository.common.GenreVocabularySource
 import com.gnoemes.shikimori.entity.common.data.graphql.GenreEntryType
@@ -13,6 +14,7 @@ import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
+import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.nameRes
 import org.joda.time.DateTime
 import javax.inject.Inject
@@ -20,6 +22,7 @@ import javax.inject.Inject
 class FilterSourceImpl @Inject constructor(
         private val context: Context,
         private val settingsSource: SettingsSource,
+        private val userSource: UserSource,
         private val genreVocabulary: GenreVocabularySource,
         private val dateTimeConverter: DateTimeConverter
 ) : FilterSource {
@@ -27,36 +30,41 @@ class FilterSourceImpl @Inject constructor(
     companion object {
         /**
          * Adult genres per vocabulary, hidden unless adult content is on. Erotica is 17+ rather
-         * than adult and stays visible, as it always has - see docs/_internal/GENRES_V2_SPIKE.md.
+         * than adult and stays visible, as it always has - see GENRES_V2_SPIKE.md.
          */
         private val R18_ANIME = setOf(12L, 33L, 34L)    //Хентай, Яой, Юри
         private val R18_MANGA = setOf(602L, 65L, 75L)   //the same three, manga ids
     }
 
-    override fun getAnimeFilters(): List<FilterCategory> = listOf(
+    override fun getAnimeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, true)),
-            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, true)),
+            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, true)),
+            rateCategory(true),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, true)),
             FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION)),
             FilterCategory(FilterType.AGE_RATING, getAgeRatingString(), getFilters(FilterType.AGE_RATING))
     )
 
-    override fun getMangaFilters(): List<FilterCategory> = listOf(
+    override fun getMangaFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE)),
+            rateCategory(false),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND))
     )
 
-    override fun getRanobeFilters(): List<FilterCategory> = listOf(
+    override fun getRanobeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE))
+            rateCategory(false)
     )
+
+    //«Список» filters by the signed-in user's own list; a guest has none to filter by (BUGS #15)
+    private fun rateCategory(anime: Boolean): FilterCategory? =
+            if (userSource.isSignedIn()) FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, anime))
+            else null
 
     override fun getAnimeSortFilters(): List<FilterItem> =
             getList(R.array.anime_search_sort)
@@ -72,7 +80,7 @@ class FilterSourceImpl @Inject constructor(
         return when (type) {
             FilterType.GENRE -> getGenres(isAnime)
             FilterType.SEASON -> getSeasons(isAnime)
-            FilterType.STATUS -> getStatuses()
+            FilterType.STATUS -> getStatuses(isAnime)
             FilterType.RATE -> getRates(isAnime)
             FilterType.KIND -> getKinds(isAnime)
             FilterType.DURATION -> getDurations()
@@ -93,16 +101,25 @@ class FilterSourceImpl @Inject constructor(
                     .map { (name, value) -> convert(FilterType.DURATION.value, value, name) }
                     .toMutableList()
 
-    private fun getKinds(anime: Boolean): MutableList<FilterItem> =
-            getList(if (anime) R.array.anime_types else R.array.manga_types)
-                    .zip(getList(if (anime) R.array.anime_types_name else R.array.manga_types_name))
-                    .asSequence()
-                    .mapNotNull { pair ->
-                        if (anime) AnimeType.values().find { it.type == pair.second }?.let { Pair(pair.first, it.type) }
-                        else MangaType.values().find { it.type == pair.second }?.let { Pair(pair.first, it.type) }
-                    }
-                    .map { (name, value) -> convert(FilterType.KIND.value, value, name) }
-                    .toMutableList()
+    /**
+     * The «Тип» chips, in the site's words and order: the same words as the cards. «TV: 12 серий»,
+     * «TV: 24 серии», «TV: 48+ серий» narrow «TV Сериал» by its episode count, as on the site; they are
+     * values of the api's `kind` filter, not kinds of a title.
+     */
+    private fun getKinds(anime: Boolean): MutableList<FilterItem> {
+        val kinds = if (anime) listOf(
+                AnimeType.TV.type to AnimeType.TV.labelRes,
+                AnimeType.TV_13.type to R.string.type_tv_13,
+                AnimeType.TV_24.type to R.string.type_tv_24,
+                AnimeType.TV_48.type to R.string.type_tv_48
+        ) + listOf(AnimeType.MOVIE, AnimeType.OVA, AnimeType.ONA, AnimeType.SPECIAL, AnimeType.TV_SPECIAL, AnimeType.MUSIC, AnimeType.PV, AnimeType.CM)
+                .map { it.type to it.labelRes }
+        else listOf(MangaType.MANGA, MangaType.MANHWA, MangaType.MANHUA, MangaType.ONE_SHOT, MangaType.DOUJIN)
+                .map { it.type to it.labelRes }
+        return kinds
+                .mapNotNull { (value, label) -> label?.let { convert(FilterType.KIND.value, value, context.getString(it)) } }
+                .toMutableList()
+    }
 
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =
@@ -110,11 +127,19 @@ class FilterSourceImpl @Inject constructor(
                     .map { convert(FilterType.RATE.value, it.status.toLowerCase(), context.getString(it.nameRes(anime))) }
                     .toMutableList()
 
-    private fun getStatuses(): MutableList<FilterItem> =
-            getList(R.array.filter_statuses)
-                    .zip(Status.values().map { it.status.toLowerCase() }.toMutableList().apply { set(lastIndex, "latest") })
-                    .map { (name, value) -> convert(FilterType.STATUS.value, value, name) }
-                    .toMutableList()
+    /**
+     * The «Статус» chips, in the site's words and order for the type. Explicit pairs: the list used to
+     * be the labels zipped with `Status.values()` by position, which a new status would have shifted
+     * (BUGS #9). Paused and discontinued are for manga and ranobe only - the api answers anime's with
+     * 422; «Недавно вышло»/«Недавно издано» is the api's `latest`, not a status.
+     */
+    private fun getStatuses(anime: Boolean): MutableList<FilterItem> {
+        val statuses = if (anime) listOf(Status.ANONS, Status.ONGOING, Status.RELEASED)
+        else listOf(Status.ANONS, Status.ONGOING, Status.RELEASED, Status.PAUSED, Status.DISCONTINUED)
+        val items = statuses.map { convert(FilterType.STATUS.value, it.status, context.getString(it.labelRes(anime))) }
+        val latest = convert(FilterType.STATUS.value, "latest", context.getString(if (anime) R.string.filters_latest_anime else R.string.filters_latest_manga))
+        return (items.take(3) + latest + items.drop(3)).toMutableList()
+    }
 
     /**
      * v2 genres, from the accumulated vocabulary. The old hardcoded genre list knew 48 genres where

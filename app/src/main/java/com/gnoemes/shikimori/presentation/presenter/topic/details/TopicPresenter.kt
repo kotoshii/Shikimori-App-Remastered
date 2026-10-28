@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.presentation.presenter.topic.provider.TopicResource
 import com.gnoemes.shikimori.presentation.view.topic.details.TopicView
 import com.gnoemes.shikimori.presentation.presenter.topic.converter.CommentViewModelConverter
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -34,6 +35,9 @@ class TopicPresenter @Inject constructor(
 
     private lateinit var topic: Topic
 
+    //one topic load at a time, closed with the screen: it was never disposed (T5-17)
+    private val topicLoad = loadSlot()
+
     override fun initData() {
         super.initData()
 
@@ -43,15 +47,19 @@ class TopicPresenter @Inject constructor(
 
     //parsing a long post's bbcode can take seconds, so it runs off the main thread, and before the
     //loading logic so the spinner stays up until the text is ready
-    private fun loadTopic() =
-            interactor.getDetails(id)
-                    .observeOn(Schedulers.computation())
-                    .map { it to converter.convertTopic(it) }
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .appendLoadingLogic(viewState)
-                    .doOnSuccess { (loaded, _) -> topic = loaded }
-                    .doOnSuccess { (loaded, _) -> viewState.setTitle(resourceProvider.getTopicName(loaded.forum.type)) }
-                    .subscribe({ (_, item) -> setData(item) }, this::processErrors)
+    private fun loadTopic() = topicLoad.start {
+        interactor.getDetails(id)
+                .observeOn(Schedulers.computation())
+                .map { it to converter.convertTopic(it) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .appendLoadingLogic(viewState)
+                .doOnSuccess { (loaded, _) -> topic = loaded }
+                //the count needs the post's total: comments that came first counted 0 and hid
+                //«Загрузить еще» for good (P7-T5 Q96)
+                .doOnSuccess { if (comments.isNotEmpty()) countComments(lastPage, Constants.DEFAULT_LIMIT) }
+                .doOnSuccess { (loaded, _) -> viewState.setTitle(loaded.forumName) }
+                .subscribe({ (_, item) -> setData(item) }, this::processErrors)
+    }
 
     private fun setData(item: TopicViewModel) {
         viewState.setUserData(item.userData)
@@ -67,10 +75,10 @@ class TopicPresenter @Inject constructor(
         }
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<List<CommentViewModel>> {
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<CommentViewModel>> {
         return { page: Int ->
             commentInteractor.getList(id, CommentableType.TOPIC, page)
-                    .map(commentConverter)
+                    .map { it.map(commentConverter::apply) }
                     .doOnSuccess { countComments(page, Constants.DEFAULT_LIMIT) }
                     .doOnSuccess { lastPage = page }
         }
@@ -104,12 +112,30 @@ class TopicPresenter @Inject constructor(
         viewState.showPreviousComments(page > 1)
     }
 
+    //the post owns the screen: the comments only fill their own list, and their errors are a message.
+    //An empty or failed comments load used to hide the whole post (BUGS #38)
     override fun showData(show: Boolean, data: List<CommentViewModel>) {
-        super.showData(show, data)
+        if (show) viewState.showData(data)
         if (data.isNotEmpty()) {
             comments.clear()
             comments.addAll(data)
         }
+    }
+
+    override fun showEmptyView(show: Boolean) {
+        if (show) viewState.showEmptyView()
+        else viewState.hideEmptyView()
+    }
+
+    override fun showEmptyError(show: Boolean, throwable: Throwable?) {
+        if (show && throwable != null) showError(throwable)
+    }
+
+    override fun showError(throwable: Throwable) = showErrorText(throwable)
+
+    //«Загрузить еще…» stays the way to ask for the page again
+    override fun showPageError(show: Boolean, throwable: Throwable?) {
+        throwable?.let { showError(it) }
     }
 
     override fun showEmptyProgress(show: Boolean) {

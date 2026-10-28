@@ -3,13 +3,13 @@ package com.gnoemes.shikimori.presentation.view.search.filter.seasons
 import android.os.Bundle
 import android.text.Html
 import android.view.View
-import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.presenter.search.FilterSeasonsPresenter
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
@@ -32,7 +32,8 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
     fun providePresenter(): FilterSeasonsPresenter = presenterProvider.get().withArguments()
 
     companion object {
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterSeasonsFragment(), type, filters)
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?, categories: List<FilterCategory>?) =
+                withFilters(FilterSeasonsFragment(), type, filters, categories)
     }
 
     private val simpleAdapter by lazy { FilterChipAdapter(FilterType.SEASON, presenter::onFilterInverted, presenter::onFilterSelected) }
@@ -63,7 +64,7 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
         clearBtn.onClick { presenter.onResetClicked() }
         acceptBtn.onClick { presenter.onAcceptClicked() }
         helpBtn.onClick {
-            MaterialDialog(context!!).show {
+            context!!.materialDialog().show {
                 title(R.string.filter_custom)
                 message(text = Html.fromHtml(getString(R.string.filter_custom_seasons_hint)))
                 positiveButton(R.string.common_understand)

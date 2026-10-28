@@ -4,7 +4,6 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.search.filter.FilterInteractor
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
-import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterAction
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
@@ -13,6 +12,7 @@ import com.gnoemes.shikimori.presentation.presenter.base.BaseFilterPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.FilterViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterView
 import com.gnoemes.shikimori.utils.clearAndAddAll
+import io.reactivex.Single
 import javax.inject.Inject
 
 @InjectViewState
@@ -24,24 +24,33 @@ open class FilterPresenter @Inject constructor(
     private val items = mutableListOf<Any>()
 
     private val sortItems = mutableListOf<FilterItem>()
+    /** The sorts, when the catalog had them loaded already. */
+    var handedSorts: List<FilterItem>? = null
 
     override fun initData() {
         loadSortFilters()
+        val handed = categories != null
         onFiltersChanged()
+        if (handed) refreshCategories()
+    }
+
+    //the catalog read them ahead, maybe before a setting that changes them (the 18+ ratings): shown at
+    //once, then read again, and the rows redrawn
+    private fun refreshCategories() {
+        loadCategories()
+                .subscribe({ categories = it; loadData() }, this::processErrors)
+                .addToDisposables()
     }
 
     private fun loadSortFilters() {
-        (when (type) {
-            Type.MANGA -> interactor.getMangaSortFilters()
-            else -> interactor.getAnimeSortFilters()
-        })
+        (handedSorts?.let { Single.just(it) } ?: interactor.getSortFilters(type))
                 .doOnSuccess { sortItems.clearAndAddAll(it) }
-                .subscribe(this::setSortFilters, this::processErrors)
+                .subscribe({ showSort() }, this::processErrors)
                 .addToDisposables()
     }
 
     override fun loadData() {
-        loadCategories()
+        categories()
                 .map { converter.convert(it, appliedFilters) }
                 .subscribe(this::setData, this::processErrors)
                 .addToDisposables()
@@ -53,19 +62,29 @@ open class FilterPresenter @Inject constructor(
     }
 
     fun onSortClicked() {
-        viewState.showSortFilters(sortItems)
+        viewState.showSortFilters(sortItems, chosenSort())
     }
 
-    private fun setSortFilters(it: List<FilterItem>) {
-        val selectedItem = it.find { it.value == appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value } ?: it.first()
-        clearAndAddToSelected(SearchConstants.ORDER, selectedItem)
-        viewState.setSortFilterText(selectedItem.localizedText!!)
+    fun onSortPicked(value: String) {
+        sortItems.find { it.value == value }?.let { onSortChanged(it) }
+    }
+
+    //the sort chosen, else the default. Only a chosen sort is in the filters: the default stored there
+    //counted as a filter for «Сбросить» and the catalog's filter button (BUGS #16a)
+    private fun chosenSort(): String =
+            appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value ?: SearchConstants.DEFAULT_ORDER.toString()
+
+    private fun showSort() {
+        val chosen = chosenSort()
+        val item = sortItems.find { it.value == chosen } ?: sortItems.firstOrNull() ?: return
+        viewState.setSortFilterText(item.localizedText!!)
     }
 
     fun onSortChanged(newSort: FilterItem) {
-        clearAndAddToSelected(SearchConstants.ORDER, newSort)
-        viewState.setSortFilterText(newSort.localizedText!!)
-        viewState.setResetEnabled(newSort != sortItems.first())
+        if (newSort.value == SearchConstants.DEFAULT_ORDER.toString()) appliedFilters.remove(SearchConstants.ORDER)
+        else appliedFilters[SearchConstants.ORDER] = mutableListOf(newSort)
+        showSort()
+        onFiltersChanged()
     }
 
     fun onFilterAction(type: FilterType, action: FilterAction) {
@@ -77,26 +96,23 @@ open class FilterPresenter @Inject constructor(
         }
     }
 
+    //a panel gets only its own filter and hands back only that: with the whole map, unpicking the last
+    //genre came back as "no genre key" and left the old genres in (BUGS #14), and the panel's «Сбросить»
+    //counted the other filters
     private fun showNested(type: FilterType) {
-        when(type) {
-            FilterType.GENRE -> {
-                viewState.showGenresDialog(super.type, appliedFilters)
-            }
-            FilterType.SEASON -> {
-                viewState.showSeasonsDialog(super.type, appliedFilters)
-            }
+        val own = HashMap<String, MutableList<FilterItem>>()
+        appliedFilters[type.value]?.let { own[type.value] = it }
+        //the panel gets the categories too, so it opens with its content (P7-T5 Test 80)
+        when (type) {
+            FilterType.GENRE -> viewState.showGenresDialog(super.type, own, categories)
+            FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own, categories)
             else -> Unit
         }
     }
 
     override fun onResetClicked() {
         super.onResetClicked()
-        loadSortFilters()
-    }
-
-    private fun clearAndAddToSelected(key: String, filterItem: FilterItem) {
-        clearSection(key)
-        addToSelected(key, filterItem)
+        showSort()
     }
 
     private fun clearSection(key: String) {
@@ -130,8 +146,10 @@ open class FilterPresenter @Inject constructor(
     }
 
     fun onNestedFilterCallback(key: String?, newAppliedFilters: HashMap<String, MutableList<FilterItem>>) {
-        if (newAppliedFilters.isEmpty()) clearSection(key!!)
-        else appliedFilters.putAll(newAppliedFilters)
+        if (key == null) return
+        val chosen = newAppliedFilters[key]
+        if (chosen.isNullOrEmpty()) appliedFilters.remove(key)
+        else appliedFilters[key] = chosen
         onFiltersChanged()
     }
 

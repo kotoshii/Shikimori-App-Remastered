@@ -2,7 +2,6 @@ package com.gnoemes.shikimori.presentation.view.search.filter.seasons.adapter
 
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +12,8 @@ import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import kotlinx.android.synthetic.main.item_entry_input.view.*
 
 class FilterSeasonInputAdapterDelegate(
-        private val callback: (String) -> Unit
+        //whether the text was taken as a season
+        private val callback: (String) -> Boolean
 ) : AbsListItemAdapterDelegate<FilterEntryInput, Any, FilterSeasonInputAdapterDelegate.ViewHolder>() {
 
     override fun isForViewType(item: Any, items: MutableList<Any>, position: Int): Boolean =
@@ -30,7 +30,6 @@ class FilterSeasonInputAdapterDelegate(
 
         private val listener = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                Log.i("DEVE", s?.toString())
                 if (s?.toString()?.contains(" ") == true) wrapText(s.toString())
             }
 
@@ -50,8 +49,15 @@ class FilterSeasonInputAdapterDelegate(
 
         private fun wrapText(value: String?) {
             if (!value.isNullOrBlank()) {
-                callback.invoke(value.replace(Regex(" "), ""))
-                itemView.input.text = null
+                val season = value.replace(Regex(" "), "")
+                if (callback.invoke(season)) itemView.input.text = null
+                else with(itemView.input) {
+                    //kept, to be fixed, with the reason on the field; it goes as soon as the text
+                    //changes (BUGS #75)
+                    setText(season)
+                    setSelection(season.length)
+                    error = context.getString(R.string.filter_season_invalid)
+                }
             }
         }
 

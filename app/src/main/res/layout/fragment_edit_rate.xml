@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--the bar, then the scrolling content under it. A CoordinatorLayout here took its height from its
+tallest child alone, so the sheet came out one bar too short and the content's last 200px - a long
+comment's last lines - stayed under its edge, out of reach (P7-T5 Test 88b)-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/appBarLayout"
@@ -68,11 +72,25 @@
         android:id="@+id/nestedScroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fillViewport="true"
-        app:layout_behavior="@string/appBarFixScrollingFooterBehavior">
+        android:fillViewport="true">
 
-        <include layout="@layout/layout_edit_rate_content" />
+        <!--the placeholders lie over the content until the entry is read: the content is laid out
+        already, invisible, so the sheet keeps its size-->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/rateContent"
+                layout="@layout/layout_edit_rate_content"
+                android:visibility="invisible" />
+
+            <include
+                android:id="@+id/ratePlaceholder"
+                layout="@layout/layout_edit_rate_placeholder" />
+
+        </FrameLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

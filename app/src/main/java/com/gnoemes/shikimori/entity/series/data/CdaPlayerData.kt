@@ -7,11 +7,15 @@ data class CdaPlayerData(
 ) {
     data class Video(
             @SerializedName("id") val id: String,
-            @SerializedName("qualities") val qualities: Qualities,
+            @SerializedName("qualities") val qualities: Qualities?,
             @SerializedName("ts") val ts: Long,
             @SerializedName("hash2") val hash2: String,
-            //cda stopped filling "file" and now ships hls/dash manifests instead
-            @SerializedName("manifest") val manifest: String? = null
+            //an hls playlist of one quality; most videos have no manifest any more (BUGS #19)
+            @SerializedName("file") val file: String? = null,
+            //the dash manifest, for the videos that still have one
+            @SerializedName("manifest") val manifest: String? = null,
+            //the real height of the video: a video with one quality lists it as "480p" whatever it is
+            @SerializedName("height") val height: Int? = null
     ) {
         data class Qualities (
                 @SerializedName("360p")
@@ -27,12 +31,13 @@ data class CdaPlayerData(
                 val q1080: String?
         )
 
-        val cdaQualities: List<String>
+        /** Each listed quality as the app's label («720») and cda's code for it («sd»). */
+        val cdaQualities: List<Pair<String, String>>
             get() = listOfNotNull(
-                    qualities.q360,
-                    qualities.q480,
-                    qualities.q720,
-                    qualities.q1080
+                    qualities?.q360?.let { "360" to it },
+                    qualities?.q480?.let { "480" to it },
+                    qualities?.q720?.let { "720" to it },
+                    qualities?.q1080?.let { "1080" to it }
             )
     }
 }

@@ -13,7 +13,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
 import com.gnoemes.shikimori.utils.gone
-import com.gnoemes.shikimori.utils.inputMethodManager
+import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.visibleIf
 import dagger.android.support.AndroidSupportInjection
@@ -53,8 +53,14 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        networkErrorView?.setText(R.string.common_error_message_without_pull)
-        networkErrorView?.gone()
+        //every screen's error view offers «Повторить»: 11 screens showed the text alone, their list
+        //hidden, so not even a pull could try again (P7-T5 Q167)
+        networkErrorView?.apply {
+            setText(R.string.common_error_message_without_pull)
+            callback = { getPresenter().onRetry() }
+            showButton()
+            gone()
+        }
         emptyContentView?.gone()
     }
 
@@ -91,10 +97,6 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
         return super.onOptionsItemSelected(item)
     }
 
-    fun hideSoftInput() {
-        activity?.inputMethodManager()?.hideSoftInputFromWindow(activity?.currentFocus?.windowToken, 0)
-    }
-
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
@@ -129,8 +131,17 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
         progressBar?.gone()
     }
 
+    /**
+     * The page the error view stands in for, on a screen whose loading look is a shimmer inside the page
+     * and whose [showContent] is therefore off (the title, character and person pages): hidden while the
+     * error view shows, back when a new load starts. The error view lay over the shimmer (P7-T5 Q166,
+     * Test 104d).
+     */
+    protected open val pageView: android.view.View? get() = null
+
     override fun showNetworkView() {
         networkErrorView?.visible()
+        pageView?.gone()
     }
 
     override fun showErrorMessage(message: String) {
@@ -139,6 +150,7 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
 
     override fun hideNetworkView() {
         networkErrorView?.gone()
+        pageView?.visible()
     }
 
     override fun showEmptyView() {

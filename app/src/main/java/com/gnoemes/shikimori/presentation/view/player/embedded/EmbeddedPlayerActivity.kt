@@ -65,7 +65,6 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     lateinit var settingsSource: PlayerSettingsSource
 
     companion object {
-        private const val DEFAULT_USER_AGENT = "sap"
         const val CONTROLLER_HIDE_DELAY = 3500L
         const val UNLOCK_HIDE_DELAY = 2000L
         const val FORWARD_REWIND_HIDE_DELAY = 750L
@@ -246,15 +245,14 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     }
 
     override fun playVideo(it: Track, subtitles: String?, needReset: Boolean, headers: Map<String, String>) {
-        //some hostings sign their links for a specific user agent, so it has to win over the default
-        val userAgent = headers["User-Agent"] ?: DEFAULT_USER_AGENT
-        val factory = DefaultHttpDataSourceFactory(userAgent, DefaultBandwidthMeter(), Constants.LONG_TIMEOUT * 1000, Constants.LONG_TIMEOUT * 1000, true)
+        //some hostings sign their links for a specific user agent: the headers name the one to send
+        val factory = DefaultHttpDataSourceFactory(headers["User-Agent"],DefaultBandwidthMeter(), Constants.LONG_TIMEOUT * 1000, Constants.LONG_TIMEOUT * 1000, true)
         factory.defaultRequestProperties.set(headers)
 
         val source = MediaSourceHelper
                 .withFactory(factory)
                 .apply {
-                    if (it.url.contains("m3u8")) withFormat(VideoFormat.HLS)
+                    if (it.isHls) withFormat(VideoFormat.HLS)
                     else withFormat(VideoFormat.MP4)
                 }
                 .withVideoUrl(it.url)
@@ -342,21 +340,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         val isVisible
             get() = controlsVisibility == View.VISIBLE
 
-        fun enableNextButton(enable: Boolean) {
-            val alpha =
-                    if (!enable) 0.3f
-                    else 1f
-            next.alpha = alpha
-            next.isEnabled = enable
-        }
+        fun enableNextButton(enable: Boolean) = next.setUsable(enable)
 
-        fun enablePrevButton(enable: Boolean) {
-            val alpha =
-                    if (!enable) 0.3f
-                    else 1f
-            prev.alpha = alpha
-            prev.isEnabled = enable
-        }
+        fun enablePrevButton(enable: Boolean) = prev.setUsable(enable)
 
         fun selectTrack(position: Int) {
             resolutionSpinnerView.setSelection(position, false)

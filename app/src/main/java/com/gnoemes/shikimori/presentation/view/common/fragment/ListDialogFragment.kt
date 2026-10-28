@@ -2,10 +2,10 @@ package com.gnoemes.shikimori.presentation.view.common.fragment
 
 import android.app.Dialog
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.view.base.fragment.MvpDialogFragment
+import com.gnoemes.shikimori.utils.materialDialog
 
 class ListDialogFragment : MvpDialogFragment() {
 
@@ -50,7 +50,7 @@ class ListDialogFragment : MvpDialogFragment() {
 
         callback = parentFragment as? DialogCallback
 
-        return MaterialDialog(context!!).show {
+        return context!!.materialDialog().show {
             if (hasTitle()) title(titleRes, title)
             listItems(items = items.map { it.first }) { _, index, _ ->
                 callback?.dialogItemCallback(tag, items[index].second)

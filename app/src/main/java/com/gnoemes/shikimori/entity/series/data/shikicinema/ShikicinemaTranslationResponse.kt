@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.entity.series.data.shikicinema
 
 import com.gnoemes.shikimori.entity.series.domain.TranslationQuality
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.domain.VideoHosting
 import com.google.gson.annotations.SerializedName
 import java.net.URL
 
@@ -32,6 +33,10 @@ data class ShikicinemaTranslationResponse (
         get() = listOf(TranslationType.SUB_RU, TranslationType.VOICE_RU).find { it.shikicinemaKind == _kind }
                 ?: TranslationType.RAW
 
+    /** The player's address, on its current domain if the one Shikicinema names has moved. */
+    val playerUrl: String
+        get() = VideoHosting.currentUrl(url)
+
     val hosting: String
-        get() = URL(url).host
+        get() = URL(playerUrl).host
 }

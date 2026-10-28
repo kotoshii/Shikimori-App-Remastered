@@ -1,40 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--the bar, then the menu under it; the knob lies over the bar. A CoordinatorLayout here took its
+height from its tallest child alone, so the sheet came out one bar too short - a 64dp bottom padding on
+the menu made up for it (P7-T5 Test 88b)-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:fitsSystemWindows="true"
-        app:elevation="0dp">
+        android:orientation="vertical">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:fitsSystemWindows="true"
-            app:buttonGravity="top"
-            app:contentInsetStartWithNavigation="0dp"
-            app:layout_scrollFlags="snap"
-            app:popupTheme="@style/PopupMenuTheme"
-            app:title="@string/app_name"
-            app:titleTextAppearance="@style/ToolbarSmallTextAppearance"
-            tools:navigationIcon="@drawable/ic_close" />
+            app:elevation="0dp">
 
-        <View
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/transparent"
+                android:fitsSystemWindows="true"
+                app:buttonGravity="top"
+                app:contentInsetStartWithNavigation="0dp"
+                app:popupTheme="@style/PopupMenuTheme"
+                app:title="@string/app_name"
+                app:titleTextAppearance="@style/ToolbarSmallTextAppearance"
+                tools:navigationIcon="@drawable/ic_close" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_gravity="bottom"
+                android:background="?attr/colorDivider" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navView"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_gravity="bottom"
-            android:background="?attr/colorDivider" />
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:paddingStart="16dp"
+            android:paddingLeft="16dp"
+            android:paddingEnd="0dp"
+            android:paddingRight="0dp"
+            android:paddingBottom="8dp"
+            android:theme="@style/NavigationDialogMenuStyle"
+            app:elevation="0dp"
+            app:itemIconTint="?attr/colorOnSurface"
+            app:itemTextAppearance="@style/MenuTextAppearance"
+            app:itemTextColor="?attr/colorOnSurface" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+    </LinearLayout>
 
     <ImageView
         android:layout_width="wrap_content"
@@ -43,22 +68,4 @@
         android:layout_marginTop="4dp"
         app:srcCompat="@drawable/ic_knob" />
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:paddingStart="16dp"
-        android:paddingLeft="16dp"
-        android:paddingEnd="0dp"
-        android:paddingRight="0dp"
-        android:paddingBottom="64dp"
-        android:theme="@style/NavigationDialogMenuStyle"
-        app:elevation="0dp"
-        app:itemIconTint="?attr/colorOnSurface"
-        app:itemTextAppearance="@style/MenuTextAppearance"
-        app:itemTextColor="?attr/colorOnSurface"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+</FrameLayout>

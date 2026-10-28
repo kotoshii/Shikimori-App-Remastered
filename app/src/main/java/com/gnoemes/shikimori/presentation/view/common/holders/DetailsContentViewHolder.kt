@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.presentation.view.common.adapter.StartSnapHelper
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.gone
+import com.gnoemes.shikimori.utils.isVisible
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.widgets.HorizontalSpaceItemDecorator
 import kotlinx.android.synthetic.main.layout_details_content.view.contentLabelView
@@ -54,10 +55,13 @@ class DetailsContentViewHolder(
             DetailsContentType.SCREENSHOTS -> R.string.details_screenshots
         }
 
+        //back after an empty list hid it: one empty list hid the section for good (P7-T5 17.5, BUGS #89)
+        view.visible()
         with(view) {
             contentLabelView.setText(stringRes)
             adapter.bindItems(item.items)
-            if (withSearch) searchBtn.visible()
+            //not while the search is open: each result put 🔍 back beside the field (P7-T5 17.6)
+            if (withSearch && !searchView.isVisible()) searchBtn.visible()
             progressBar.gone()
             contentRecyclerView.visible()
         }

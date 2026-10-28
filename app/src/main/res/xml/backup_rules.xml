@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--What Android's own backup keeps: the Google backup, a phone-to-phone transfer, and adb backup before
+Android 12. The settings, the theme, and the database: pinned entries and translation choices. Not the login, the
+Anime365 token or the in-app browser's data (the site session, «Веб-плеер» logins): restored on
+another phone, a login would share its refresh token with this one (BUGS #68).
+A list of what to keep, not of what to leave out, so a file added later stays out until it is added
+here on purpose. Android adds a database's -journal and -wal files by itself.
+Since Android 12 these rules cover the Google backup and a phone-to-phone transfer only: adb backup
+copies everything (FullBackup.getConfigSectionForBackupDestination has no section for it).
+With targetSdk 31 or higher, Android 12+ reads android:dataExtractionRules instead: it needs the same
+list.-->
+<full-backup-content>
+    <include
+        domain="sharedpref"
+        path="com.gnoemes.shikimori_preferences.xml" />
+    <include
+        domain="sharedpref"
+        path="com.gnoemes.shikimori_themepreferences.xml" />
+    <include
+        domain="database"
+        path="shikimori_database" />
+</full-backup-content>

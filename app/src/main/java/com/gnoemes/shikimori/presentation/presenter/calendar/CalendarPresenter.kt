@@ -27,12 +27,20 @@ class CalendarPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() {
+    private fun loadData(refresh: Boolean = false) {
         interactor.getCalendarData()
-                .appendLoadingLogic(viewState)
+                .appendLoadingLogic(viewState, refresh)
                 .doOnSuccess { items.clearAndAddAll(it) }
-                .subscribe(this::convertAndSet, this::processErrors)
+                .subscribe({ showItems() }, loadErrors(overContent = refresh))
                 .addToDisposables()
+    }
+
+    //the list as the search shows it: a refresh or «Повторить» showed every title while a search was
+    //typed (T5-2)
+    private fun showItems() {
+        val query = query
+        if (query.isNullOrBlank()) convertAndSet(items)
+        else convertAndSet(items.filter { it.anime.name.contains(query, true) || it.anime.nameRu?.contains(query, true) ?: false })
     }
 
     private fun convertAndSet(items: List<CalendarItem>) {
@@ -49,20 +57,12 @@ class CalendarPresenter @Inject constructor(
     }
 
     fun onRefresh() {
-        loadData()
+        loadData(refresh = true)
     }
 
     fun onQueryChanged(newText: String?) {
         this.query = newText
-
-        if (query.isNullOrBlank()) {
-            convertAndSet(items)
-        } else {
-            val searchItems = items.filter {
-                it.anime.name.contains(query ?: "", true) || it.anime.nameRu?.contains(query ?: "", true) ?: false
-            }
-            convertAndSet(searchItems)
-        }
+        showItems()
     }
 }
 

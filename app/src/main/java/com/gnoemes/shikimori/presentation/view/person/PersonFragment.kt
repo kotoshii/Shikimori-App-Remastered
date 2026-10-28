@@ -110,4 +110,6 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
     }
 
     override fun showContent(show: Boolean) = Unit
+
+    override val pageView: View? get() = nestedScroll
 }

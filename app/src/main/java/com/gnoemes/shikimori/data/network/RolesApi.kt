@@ -14,13 +14,14 @@ interface RolesApi {
     @GET("/api/characters/{id}")
     fun getCharacterDetails(@Path("id") characterId: Long): Single<CharacterDetailsResponse>
 
+    //values encoded by Retrofit, as for AnimeApi.getList
     @GET("/api/characters/search")
-    fun getCharacterList(@QueryMap(encoded = true) filter: Map<String, String>): Single<List<CharacterResponse>>
+    fun getCharacterList(@QueryMap filter: Map<String, String>): Single<List<CharacterResponse>>
 
     @GET("/api/people/{id}")
     fun getPersonDetails(@Path("id") peopleId: Long): Single<PersonDetailsResponse>
 
     @GET("/api/people/search")
-    fun getPersonList(@QueryMap(encoded = true) filter: Map<String, String>): Single<List<PersonResponse>>
+    fun getPersonList(@QueryMap filter: Map<String, String>): Single<List<PersonResponse>>
 
 }

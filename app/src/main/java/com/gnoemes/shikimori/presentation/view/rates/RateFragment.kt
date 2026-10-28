@@ -11,6 +11,8 @@ import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.GravityCompat
 import androidx.core.view.iterator
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,14 +37,13 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateAdapter
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateItemTouchHelperCallback
-import com.gnoemes.shikimori.presentation.view.rates.sort.RateSortDialog
+import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.google.android.material.internal.NavigationMenuView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_rate.*
 import kotlinx.android.synthetic.main.layout_default_list.*
 import kotlinx.android.synthetic.main.layout_default_placeholders.*
@@ -52,7 +53,7 @@ import kotlinx.android.synthetic.main.layout_rates_placeholder.*
 import kotlinx.android.synthetic.main.layout_toolbar.toolbar
 import javax.inject.Inject
 
-class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, RateSortDialog.RateSortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
+class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, SortDialog.SortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -68,7 +69,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         localRouter = (parentFragment as RouterProvider).localRouter
         val data = arguments?.getParcelable<RateNavigationData>(AppExtras.ARGUMENT_RATE_DATA)
         data?.let {
-            userId = it.userId
+            ownerId = it.userId
+            ownerNickname = it.nickname
+            ownerAvatar = it.avatar
             type = it.type
             priorityStatus = it.status
         }
@@ -138,6 +141,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             itemAnimator = DefaultItemAnimator()
             val customSpacing = context.dp(68)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, firstCustomSpacing = customSpacing, lastCustomSpacing = context!!.dp(16)))
+            //the rows scroll on under the top bar and the owner's strip
+            clipToPadding = false
             addOnScrollListener(nextPageListener)
             val touchHelper = ItemTouchHelper(RateItemTouchHelperCallback(this@RateFragment._adapter, settingsSource))
             touchHelper.attachToRecyclerView(this)
@@ -147,14 +152,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         refreshLayout.layoutParams = (refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        placeRefreshCircle()
 
         emptyContentView.setText(R.string.rate_empty)
-        networkErrorView.apply {
-            setText(R.string.common_error_message_without_pull)
-            callback = { getPresenter().initData() }
-            showButton()
-        }
         rateEmptyView.gone()
         progressBar?.gone()
 
@@ -213,6 +213,20 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         drawer?.closeDrawer(GravityCompat.START)
     }
 
+    //the pull's circle starts hidden behind the top bar and stops below it; [below] is how far the
+    //owner's strip reaches past the bar, so the circle stops below the strip. It still starts behind
+    //the bar: the strip is a pill as wide as its text, which may not cover the circle (P7-T5 Q162)
+    private fun placeRefreshCircle(below: Int = 0) {
+        with(refreshLayout) {
+            val end = context.dp(96) + below
+            if (progressViewEndOffset == end) return
+            //moving the circle hides it and drops a refresh under way: that one is shown again
+            val refreshing = isRefreshing
+            setProgressViewOffset(false, context.dp(24), end)
+            if (refreshing) showRefresh()
+        }
+    }
+
     private fun getRateTextColor(ordinal: Int): Int = when (ordinal) {
         RateStatus.COMPLETED.ordinal -> R.color.selector_rate_item_menu_text_color_green
         RateStatus.ON_HOLD.ordinal -> R.color.selector_rate_item_menu_text_color_gray
@@ -264,8 +278,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         super.onDestroyView()
     }
 
-    override fun onSortClicked(sort: RateSort) {
-        getPresenter().onSortChanged(sort)
+    //a sort's key in the sort sheet is its order number
+    override fun onSortClicked(key: String) {
+        RateSort.values().find { it.order.toString() == key }?.let { getPresenter().onSortChanged(it) }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -294,15 +309,15 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         recyclerView.scrollToPosition(0)
     }
 
-    override fun showRateDialog(title: String, userRate: UserRate) {
+    override fun showRateDialog(title: String, targetId: Long, type: Type) {
         hideSoftInput()
-        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = userRate.targetType == Type.ANIME, title = title)
+        val dialog = EditRateFragment.newInstance(title, targetId, type)
         dialog.show(childFragmentManager, "RateTag")
     }
 
     override fun showSortDialog(sorts: List<Triple<RateSort, String, Boolean>>) {
         hideSoftInput()
-        val dialog = RateSortDialog.newInstance(sorts)
+        val dialog = SortDialog.newInstance(sorts.map { (sort, text, isSelected) -> SortDialog.Sort(sort.order.toString(), text, isSelected) })
         dialog.show(childFragmentManager, "SortDialog")
     }
 
@@ -368,6 +383,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         Toast.makeText(context!!, R.string.rate_pin_max_message, Toast.LENGTH_SHORT).show()
     }
 
+    //the pinned one is longer, so it stays longer
+    override fun showPinChangedMessage(pinned: Boolean) {
+        if (pinned) Toast.makeText(context!!, R.string.rate_pinned_message, Toast.LENGTH_LONG).show()
+        else Toast.makeText(context!!, R.string.rate_unpinned_message, Toast.LENGTH_SHORT).show()
+    }
+
     override fun showEmptyRatesView(show: Boolean, isAnime: Boolean?) {
         if (isAnime != null) {
             actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)
@@ -383,13 +404,29 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         authLayout.visibleIf { show }
     }
 
-    override fun showRateMessage(message: String, rateId: Long) {
-        Snackbar.make(coordinator, message, Snackbar.LENGTH_LONG)
-                .floatingStyle(context!!)
-                .setActionTextColor(context!!.colorAttr(R.attr.colorSecondary))
-                .setAction(R.string.common_cancel_variant) { getPresenter().onChangeCanceled(rateId) }
-                .show()
+    override fun showListOwner(nickname: String?, avatar: String?) {
+        ownerStrip.visibleIf { nickname != null }
+        //the gap under the bar goes above the strip: the bar slides away with the gaps around it, and
+        //the strip would sit flush against the screen's top. Without the strip, the bar has the same
+        //gap below it as above
+        toolbarCard.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            bottomMargin = if (nickname != null) 0 else topMargin
+        }
+        if (nickname != null) {
+            ownerNameView.text = getString(R.string.rate_list_owner, nickname)
+            imageLoader.setCircleImage(ownerAvatarView, avatar)
+        }
+        //the rows and the pull's circle start below the strip, as far down as it reaches past the bar
+        ownerStrip.post {
+            if (view == null) return@post
+            val below = if (nickname != null) ownerStrip.bottom - toolbarCard.bottom else 0
+            recyclerView.updatePadding(top = below)
+            placeRefreshCircle(below)
+        }
     }
+
+    override fun showRateMessage(message: String, rateId: Long) =
+            coordinator.showUndoMessage(message) { getPresenter().onChangeCanceled(rateId) }
 
     override fun showNetworkView() = networkErrorView.visible()
 

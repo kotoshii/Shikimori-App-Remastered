@@ -14,8 +14,9 @@ interface UserApi {
     @GET("/api/users/whoami")
     fun getCurrentUserBrief(): Single<UserBriefResponse>
 
+    //without a limit the api sends one friend (BUGS #30); at most 100 a page, and no extra row to tell that more follow
     @GET("/api/users/{id}/friends")
-    fun getUserFriends(@Path("id") id: Long): Single<List<UserBriefResponse>>
+    fun getUserFriends(@Path("id") id: Long, @Query("page") page: Int, @Query("limit") limit: Int): Single<List<UserBriefResponse>>
 
     @GET("/api/users/{id}/anime_rates")
     fun getUserAnimeRates(@Path("id") id: Long,

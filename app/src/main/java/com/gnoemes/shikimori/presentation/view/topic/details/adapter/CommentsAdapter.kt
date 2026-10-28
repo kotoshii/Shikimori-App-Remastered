@@ -36,15 +36,15 @@ class CommentsAdapter(
         }
     }
 
+    //a new list each time: bindItems clears its own list before copying from the one it gets, so passing
+    //that same list bound nothing and «Комментарии не найдены.» never showed (BUGS #38)
     fun showEmptyView() {
-        items.clear()
-        items.add(PlaceholderItem())
-        super.bindItems(items)
+        super.bindItems(listOf(PlaceholderItem()))
     }
 
+    //the placeholder only: the topic's own loading calls this too, and must not wipe loaded comments
     fun hideEmptyView() {
-        items.clear()
-        super.bindItems(items)
+        if (items.any { it is PlaceholderItem }) super.bindItems(items.filterNot { it is PlaceholderItem })
     }
 
 }

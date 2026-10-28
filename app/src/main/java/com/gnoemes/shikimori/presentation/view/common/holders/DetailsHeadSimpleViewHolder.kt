@@ -33,7 +33,8 @@ class DetailsHeadSimpleViewHolder(
 
             otherLabelView.visibleIf { !item.othersText.isNullOrBlank() }
             otherView.visibleIf { !item.othersText.isNullOrBlank() }
-            otherView.text = item.othersLabel
+            //the label went into the value view, so a person's «Дата рождения:» read «Прочие:» (BUGS #43)
+            otherLabelView.text = item.othersLabel
             otherView.text = item.othersText
 
             jobView.visibleIf { !item.job.isNullOrBlank() }

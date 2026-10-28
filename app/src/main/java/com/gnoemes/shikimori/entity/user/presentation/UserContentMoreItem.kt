@@ -2,5 +2,6 @@ package com.gnoemes.shikimori.entity.user.presentation
 
 data class UserContentMoreItem(
         val type : UserContentType,
-        val size : Int
+        val size : Int,
+        val isAtLeast : Boolean = false
 )

@@ -44,7 +44,7 @@ class AnimeDetailsResponseConverterImpl @Inject constructor(
             t.topicId,
             //v2 genres are fetched from graphql and filled in by AnimeRepositoryImpl. This
             //rest response only carries the v1 list, which is empty for titles added from
-            //2025 onward - see docs/_internal/GENRES_V2_SPIKE.md
+            //2025 onward - see GENRES_V2_SPIKE.md
             emptyList(),
             rateResponseConverter.convertUserRateResponse(t.id, t.userRate),
             convertVideos(t.videoResponses),

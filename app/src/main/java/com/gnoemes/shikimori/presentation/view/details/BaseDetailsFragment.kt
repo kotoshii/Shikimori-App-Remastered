@@ -3,15 +3,20 @@ package com.gnoemes.shikimori.presentation.view.details
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Selection
+import android.text.Spannable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.updateLayoutParams
+import androidx.core.widget.NestedScrollView
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Link
+import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
@@ -28,9 +33,7 @@ import com.gnoemes.shikimori.presentation.view.common.holders.*
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_collapsing_toolbar.*
 import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
@@ -42,15 +45,29 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
 
     private var detailsName: String? = null
 
-    protected open val onOffsetChangedListener = AppBarLayout.OnOffsetChangedListener { appbar, verticalOffset ->
+    //the blurred poster's height from the layout, its least
+    private var backgroundHeight = 0
+    private var toolbarShown = false
 
-        fun isCollapsed(): Boolean {
-            return Math.abs(verticalOffset) >= appbar.totalScrollRange
-        }
-        appbar.post {
-            if (isCollapsed()) showToolbar()
-            else hideToolbar()
-        }
+    //the title on the toolbar's own background once the head has scrolled up under the toolbar, as when
+    //the collapsing header the head was part of had collapsed (P7-T5 13.1)
+    private fun updateToolbar() {
+        val shown = nestedScroll.scrollY >= headContainer.height - toolbar.height
+        if (shown == toolbarShown) return
+        toolbarShown = shown
+        if (shown) showToolbar() else hideToolbar()
+    }
+
+    //run after the layout pass: the page restores its scroll position while the screen is laid out, and
+    //a title added to the toolbar then is never measured and does not show (P7-T5 Test 96g)
+    private val toolbarCheck = Runnable { if (view != null) updateToolbar() }
+
+    //the blurred poster reaches the bottom of a head taller than it, so no edge shows across a long
+    //name (BUGS #80); and the head's height decides the toolbar too
+    private fun fitHead() {
+        val height = maxOf(backgroundHeight, headContainer.height)
+        if (backgroundImage.layoutParams.height != height) backgroundImage.updateLayoutParams { this.height = height }
+        updateToolbar()
     }
 
     protected open fun showToolbar() {
@@ -99,18 +116,18 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
             }
         }
 
-        val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
-        params.behavior = AppBarLayout.Behavior().apply {
-            setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
-                override fun canDrag(appBarLayout: AppBarLayout): Boolean {
-                    return false
-                }
-            })
-
+        toolbarShown = false
+        backgroundHeight = backgroundImage.layoutParams.height
+        nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
+            v.removeCallbacks(toolbarCheck)
+            v.post(toolbarCheck)
+        })
+        //after the layout that changed the head: the poster's height is set outside a layout pass
+        headContainer.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (bottom - top != oldBottom - oldTop) headContainer.post { if (this@BaseDetailsFragment.view != null) fitHead() }
         }
-        appBarLayout.addOnOffsetChangedListener(onOffsetChangedListener)
 
-        headHolder = DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
+        headHolder =DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
         infoHolder = DetailsInfoViewHolder(infoLayout, tagAdapter, infoAdapter)
         actionHolder = DetailsActionViewHolder(actionLayout, actionAdapter)
         descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
@@ -174,9 +191,17 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         getPresenter().onAction(action)
     }
 
-    override fun onDestroyView() {
-        appBarLayout.removeOnOffsetChangedListener(onOffsetChangedListener)
-        super.onDestroyView()
+    /**
+     * A text selection left open - the name and the second name can be selected - is brought back into
+     * view when the app returns, which since the head scrolls with the page (13.1) moved the page up
+     * to it from wherever it was (P7-T5 Q161). The selection ends when the page leaves the screen.
+     */
+    override fun onStop() {
+        (view?.findFocus() as? TextView)?.let {
+            (it.text as? Spannable)?.let(Selection::removeSelection)
+            it.clearFocus()
+        }
+        super.onStop()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -194,10 +219,13 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     // MVP
     ///////////////////////////////////////////////////////////////////////////
 
-    override fun showRateDialog(title: String, userRate: UserRate?, isAnime: Boolean) {
-        val dialog = EditRateFragment.newInstance(rate = userRate, isAnime = isAnime, title = title)
+    override fun showRateDialog(title: String, targetId: Long, type: Type) {
+        val dialog = EditRateFragment.newInstance(title, targetId, type)
         dialog.show(childFragmentManager, "RateTag")
     }
+
+    override fun showRateMessage(message: String, rateId: Long) =
+            coordinator.showUndoMessage(message) { getPresenter().onDeleteCanceled(rateId) }
 
     override fun setHeadItem(item: DetailsHeadItem) {
         detailsName = item.name
@@ -240,4 +268,6 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         val dialog = StatisticDialogFragment.newInstance(title, scores, rates)
         dialog.show(childFragmentManager, "StatisticDialog")
     }
+
+    override val pageView: android.view.View? get() = nestedScroll
 }

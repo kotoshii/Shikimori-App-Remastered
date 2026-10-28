@@ -46,7 +46,7 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
         val info = mutableListOf<Any>()
 
         //ongoing or anons indicator
-        statusItem(it.status)?.let { item -> info.add(item) }
+        statusItem(it.status, false)?.let { item -> info.add(item) }
 
         //release date
         if (it.status == Status.ANONS && it.dateAired != null) {

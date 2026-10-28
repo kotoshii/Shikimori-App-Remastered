@@ -9,5 +9,10 @@ enum class Status(val status: String) {
     ONGOING("ongoing"),
     @SerializedName("released")
     RELEASED("released"),
+    //manga and ranobe only; an unknown name reads as null, which was NONE for these two (BUGS #9)
+    @SerializedName("paused")
+    PAUSED("paused"),
+    @SerializedName("discontinued")
+    DISCONTINUED("discontinued"),
     NONE("none");
 }

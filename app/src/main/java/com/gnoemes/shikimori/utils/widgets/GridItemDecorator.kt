@@ -14,7 +14,9 @@ class GridItemDecorator(
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         val columns = (parent.layoutManager as? GridLayoutManager)?.spanCount ?: 1
-        val rows = parent.adapter?.itemCount?.div(columns) ?: 1
+        //the last row's index: itemCount / columns was one past it when the items fill that row, so it
+        //got half the gap at the bottom (T5-32)
+        val lastRow = ((parent.adapter?.itemCount ?: 1) - 1).coerceAtLeast(0) / columns
 
         val pos = parent.getChildAdapterPosition(view)
 
@@ -27,7 +29,7 @@ class GridItemDecorator(
         }
 
         fun setBottomSpacing() {
-            if (pos / columns  == rows) {
+            if (pos / columns == lastRow) {
                 outRect.bottom = margin
             } else {
                 outRect.bottom = halfSpacing

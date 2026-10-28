@@ -142,12 +142,13 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         )
     }
 
+    //the kind and year line too, as the anime cards have it: it was left out (T5-34)
     private fun convertManga(it: Manga): ContentItem {
         val name = settings.titleName(it.name, it.nameRu)
         return ContentItem(
                 name,
                 it.image,
-                null,
+                typeAndYear(getLocalizedType(it.type), it.dateAired),
                 it
         )
     }
@@ -162,9 +163,9 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         )
     }
 
-    /** «TV  •  2019»: the type and the start year, as the site's cards show them; no start date, no year. */
+    /** «TV Сериал  •  2019»: the type and the start year, as the site's cards show them; no start date, no year. */
     private fun typeAndYear(type: String, dateAired: DateTime?): CharSequence {
-        val text = SpannableStringBuilder(type.toUpperCase())
+        val text = SpannableStringBuilder(type)
         if (dateAired != null) {
             text.append("  •  ".colorSpan(dividerColor))
             text.append("${dateAired.year}".colorSpan(dividerColor))

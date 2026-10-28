@@ -39,17 +39,29 @@ class ShikimoriRateLimiter @Inject constructor() : Interceptor {
     /** Departure times already handed out inside the current window, oldest first. */
     private val window = ArrayDeque<Long>()
 
+    /**
+     * A 429 still comes now and then: shikimori counts every request from the address, the in-app
+     * browser's sign-in pages too, which this limiter cannot see (BUGS #71). shikimori's limiter turns
+     * the request away before handling it, so it is sent once more, a second later - in the next
+     * one-second window - even a write. A second 429 is the caller's.
+     */
     override fun intercept(chain: Interceptor.Chain): Response {
+        awaitSlot()
+        val response = chain.proceed(chain.request())
+        if (response.code() != HTTP_TOO_MANY_REQUESTS) return response
+
+        response.close()
+        sleep(RETRY_DELAY_NANOS)
         awaitSlot()
         return chain.proceed(chain.request())
     }
 
-    private fun awaitSlot() {
-        val waitNanos = reserveSlot()
+    private fun awaitSlot() = sleep(reserveSlot())
 
-        if (waitNanos > 0) {
+    private fun sleep(nanos: Long) {
+        if (nanos > 0) {
             try {
-                TimeUnit.NANOSECONDS.sleep(waitNanos)
+                TimeUnit.NANOSECONDS.sleep(nanos)
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()
             }
@@ -89,5 +101,10 @@ class ShikimoriRateLimiter @Inject constructor() : Interceptor {
          * The 91st request inside a minute was refused, so 90 is the ceiling.
          */
         private const val MAX_PER_WINDOW = 90
+
+        private const val HTTP_TOO_MANY_REQUESTS = 429
+
+        /** A whole second: past the end of shikimori's one-second window, wherever in it the 429 came. */
+        private val RETRY_DELAY_NANOS = TimeUnit.SECONDS.toNanos(1)
     }
 }

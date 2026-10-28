@@ -43,12 +43,19 @@
     <string name="common_season">Сезон</string>
     <string name="common_duration">Продолжительность эпизода</string>
     <string name="common_yesterday">Вчера</string>
-    <string name="common_error_message">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.\n Потяните, что бы обновить</string>
-    <string name="common_error_message_without_pull">Похоже, что у Вас отсуствует интернет-соединение или произошла ошибка.</string>
+    <string name="common_error_message">Похоже, что у Вас отсутствует интернет-соединение или произошла ошибка.\n Потяните, чтобы обновить</string>
+    <string name="common_error_no_connection">Не удалось подключиться к серверу</string>
+    <string name="common_error_secure_connection">Не удалось установить защищённое соединение</string>
+    <string name="common_error_timeout">Сервер не ответил вовремя</string>
+    <string name="common_error_server">Сервер вернул ошибку %d</string>
+    <string name="common_error_signed_out">Сессия истекла, войдите снова</string>
+    <string name="common_no_app_to_open">Нет приложения, чтобы открыть это</string>
+    <string name="common_error_message_without_pull">Похоже, что у Вас отсутствует интернет-соединение или произошла ошибка.</string>
     <string name="common_description">Описание</string>
     <string name="common_cancel">Отмена</string>
     <string name="common_cancel_variant">Отменить</string>
     <string name="common_sign_in">Войти</string>
+    <string name="auth_sign_in_failed">Не удалось войти. Попробуйте ещё раз</string>
     <string name="common_characters">Персонажи</string>
     <string name="common_character">Персонаж</string>
     <string name="common_chronology">Хронология</string>
@@ -97,7 +104,11 @@
 
     <string name="status_anons">Анонс</string>
     <string name="status_ongoing">Онгоинг</string>
-    <string name="status_released">Завершен</string>
+    <string name="status_released">Вышло</string>
+    <string name="status_publishing">Выходит</string>
+    <string name="status_published">Издано</string>
+    <string name="status_paused">Приостановлено</string>
+    <string name="status_discontinued">Прекращено</string>
 
     <string name="rate_empty">Здесь пока ничего нет</string>
     <string name="rate_watching">Смотрю</string>
@@ -113,17 +124,21 @@
     <string name="rate_dropped">Брошено</string>
     <string name="rate_comment_hint">Добавить комментарий к списку</string>
     <string name="rate_status">Список</string>
-    <string name="rates_need_auth">Для измения статуса необходимо авторизоваться в приложении</string>
+    <string name="rates_need_auth">Для изменения статуса необходимо авторизоваться в приложении</string>
     <string name="rate_switch_list">Переключить список</string>
     <string name="rate_search_empty_title">В этом списке ничего не найдено</string>
     <string name="rate_search_empty_message">Измените запрос или воспользуйтесь разделом поиска.</string>
     <string name="rate_pin_max_message">Закрепить можно до трех элементов</string>
+    <string name="rate_pinned">Закреплено</string>
+    <string name="rate_pinned_message">Закреплено. Чтобы открепить, удерживайте постер</string>
+    <string name="rate_unpinned_message">Откреплено</string>
     <string name="rate_swipe_increment">+1</string>
     <string name="rate_swipe_change">Изменить список</string>
     <string name="rate_swipe_hold">Отложить</string>
     <string name="rate_swipe_drop">Бросить</string>
     <string name="rate_swipe_disabled">Отключено</string>
     <string name="rate_empty_list">Список пуст</string>
+    <string name="rate_list_owner">Список %1$s</string>
     <string name="rate_empty_anime">Поиск аниме</string>
     <string name="rate_empty_manga">Поиск манги</string>
 
@@ -156,12 +171,13 @@
     <string name="rating_awful">Ужасно</string>
     <string name="rating_very_bad">Очень плохо</string>
     <string name="rating_bad">Плохо</string>
-    <string name="rating_not_bad">Не плохо</string>
+    <!--the site's words for scores 5 and 10 (the app had «Не плохо» and «Шедевр!»)-->
+    <string name="rating_not_bad">Более-менее</string>
     <string name="rating_normal">Нормально</string>
     <string name="rating_good">Хорошо</string>
     <string name="rating_fine">Отлично</string>
     <string name="rating_nuts">Великолепно</string>
-    <string name="rating_perfect">Шедевр!</string>
+    <string name="rating_perfect">Эпик вин!</string>
 
     <string name="search_nothing">Ничего не найдено.\n Попробуйте поискать что-нибудь другое</string>
 
@@ -234,20 +250,26 @@
     <string name="person_story">Сюжет</string>
     <string name="person_story_and_art">Сюжет и рисовка</string>
 
-    <string name="type_tv_translatable">TV сериал</string>
-    <string name="type_tv_long_translatable">Сериал</string>
+    <!--the site's words for the kinds, as on its cards - utils/TypeExtensions.kt-->
+    <string name="type_tv_translatable">TV Сериал</string>
     <string name="type_tv_short_translatable">TV</string>
     <string name="type_movie_translatable">Фильм</string>
-    <string name="type_special_translatable">Спешл</string>
+    <string name="type_special_full_translatable">Спецвыпуск</string>
+    <string name="type_tv_special_full_translatable">TV Спецвыпуск</string>
     <string name="type_music_translatable">Клип</string>
-    <string name="type_tv_13" translatable="false">TV 13</string>
-    <string name="type_tv_24" translatable="false">TV 24</string>
-    <string name="type_tv_48" translatable="false">TV 48</string>
+    <string name="type_pv_translatable">Проморолик</string>
+    <string name="type_cm_translatable">Реклама</string>
+    <!--«TV Сериал» by episode count, in the «Тип» filter: the site nests «— 12 серий» under «TV Сериал»,
+        a chip has no nesting, so «TV:» stands for it (Q85). The api: up to 16, 17-28, 29 and more-->
+    <string name="type_tv_13">TV: 12 серий</string>
+    <string name="type_tv_24">TV: 24 серии</string>
+    <string name="type_tv_48">TV: 48+ серий</string>
     <string name="type_ova" translatable="false">OVA</string>
     <string name="type_ona" translatable="false">ONA</string>
 
     <string name="type_manga_translatable">Манга</string>
     <string name="type_novel_translatable">Ранобэ</string>
+    <string name="type_novella_translatable">Новелла</string>
     <string name="type_one_shot_translatable">Ваншот</string>
     <string name="type_doujin_translatable">Додзинси</string>
     <string name="type_manhua_translatable">Маньхуа</string>
@@ -265,8 +287,9 @@
     <string name="sort_score">По оценке</string>
     <string name="sort_popularity">По популярности</string>
     <string name="sort_name">По названию</string>
-    <string name="rate_drawer_open">rate_drawer_open</string>
-    <string name="rate_drawer_close">rate_drawer_close</string>
+    <!--what a screen reader says for the «Списки» menu button-->
+    <string name="rate_drawer_open">Открыть список статусов</string>
+    <string name="rate_drawer_close">Закрыть список статусов</string>
     <string name="search_need_query">Введите имя для поиска</string>
 
     <string name="duration_small">&lt; 10 мин.</string>
@@ -279,7 +302,8 @@
     <string name="filter_decade">%1$s-е</string>
     <string name="filter_drop">Сбросить</string>
     <string name="filters">Фильтры</string>
-    <string name="filters_latest">Недавно вышедшие</string>
+    <string name="filters_latest_anime">Недавно вышло</string>
+    <string name="filters_latest_manga">Недавно издано</string>
     <string name="filters_hint">Долгое нажатие на элемент исключает его.</string>
     <string name="filters_genres">Жанры</string>
     <!-- genres v2 splits one flat list into three kinds; these title the filter sheet sections -->
@@ -288,10 +312,16 @@
     <string name="filter_genres_themes">Темы</string>
     <string name="filter_custom">Кастомный фильтр</string>
     <string name="filter_custom_seasons">Кастомный фильтр сезонов</string>
-    <string name="filter_custom_input_hint">Нажмите сюда, чтобы начать ввод</string>
+    <string name="filter_custom_input_hint">Нажмите сюда, чтобы начать ввод. Чтобы добавить, нажмите Enter или пробел</string>
+    <string name="filter_season_invalid">Не похоже на сезон. Например: summer_2027, 2027, 2016_2024, 201x</string>
     <string name="filter_seasons">Сезоны</string>
+    <string name="filter_studio">Студия</string>
     <!--<string name="filter_custom_seasons_hint"><![CDATA[<p>Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение. Примеры:</p><br><p><b>1983</b> - 1983 год</p><br><p><b>winter_2016</b> - Зима 2016 года</p><br><p><b>2003_2015</b> - с 2003 по 2015 год</p><br><p><b>!2013</b> - кроме 2013 года</p><br><p><b>!summer_2001</b> - кроме Лета 2001 года</p>]]></string>-->
-    <string name="filter_custom_seasons_hint"><![CDATA[Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение. Примеры:
+    <string name="filter_custom_seasons_hint"><![CDATA[Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение.
+    <br>
+    <br>Чтобы добавить значение, нажмите Enter или пробел.
+    <br>
+    <br>Примеры:
     <br>
     <br><b>1983</b> - 1983 год
     <br><b>winter_2016</b> - Зима 2016 года
@@ -300,6 +330,8 @@
     <br><b>!summer_2001</b> - кроме Лета 2001 года]]></string>
 
     <string name="more_settings">Настройки</string>
+    <string name="user_sign_out">Выйти</string>
+    <string name="user_sign_out_confirm">Выйти из аккаунта?</string>
 
     <string name="topic_news">Новости</string>
     <string name="topic_my_feed">Моя лента</string>
@@ -320,10 +352,10 @@
     <string name="forum_cosplay">Косплей</string>
     <string name="forum_news">Новости</string>
     <string name="forum_collection">Коллекции</string>
-    <string name="forum_all">Все в подряд</string>
+    <string name="forum_all">Всё подряд</string>
     <string name="forum_my_clubs">Мои клубы</string>
     <string name="forum_contests">Турниры</string>
-    <string name="forum_reviews">Обзоры</string>
+    <string name="forum_reviews">Отзывы</string>
     <string name="forum_animanga">Аниме и манга</string>
     <string name="forum_vn">Визуальные новеллы</string>
     <string name="forum_off_topic">Оффтопик</string>
@@ -349,10 +381,11 @@
     <string name="episode_opened">Открыт</string>
     <string name="episodes_empty_title">Эпизоды не найдены</string>
     <string name="episodes_empty_description">В основном источнике ничего нет</string>
+    <string name="episodes_empty_description_alternative">В альтернативном источнике ничего нет</string>
     <string name="translation_authors">Авторы</string>
-    <string name="translation_sources">Источники</string>
     <string name="translation_last_author">Последний автор</string>
-    <string name="translation_blue_ray">Blue-ray</string>
+    <string name="translation_blue_ray">Blu-ray</string>
+    <string name="translation_dvd">DVD</string>
     <string name="translation_voice">Озвучка</string>
     <string name="translation_subtitles">Субтитры</string>
     <string name="translation_original">Оригинал</string>
@@ -372,6 +405,7 @@
     <string name="series_tracks_empty">Не удалось найти видео. Похоже, что оно было удалено.</string>
     <string name="series_anime_365_login_required">Для Anime 365 нужен вход. Выполните его в настройках — «Вход в Anime 365».</string>
     <string name="series_hosting_challenge">Хостинг просит пройти капчу. Откройте видео в браузере и попробуйте снова.</string>
+    <string name="series_external_dash_hint">Звук у этого видео идёт отдельным файлом: нужен плеер с поддержкой DASH.</string>
 
     <string name="player_web">Веб-плеер</string>
     <string name="player_embedded">Внутренний плеер (BETA)</string>
@@ -384,7 +418,6 @@
     <string name="profile_message_box">Почта</string>
     <string name="profile_friendship">Дружба</string>
     <string name="profile_ignore">Игнор</string>
-    <string name="profile_bans">Баны</string>
     <string name="profile_history">История</string>
     <string name="profile_about_me">Обо мне</string>
 
@@ -403,6 +436,11 @@
     <string name="profile_types">Типы</string>
     <string name="profile_ratings">Рейтинги</string>
     <string name="profile_history_format">История %s</string>
+    <!--the profile's "more" tile: «ещё 36», or «ещё 95+» when the list was cut at the api's limit-->
+    <string name="profile_more_format">ещё %s</string>
+    <!--a user's history or list that their «Могут видеть мой список» hides: the api answers 403-->
+    <string name="list_hidden">Пользователь скрыл свой список и историю.</string>
+    <string name="list_hidden_guest">Пользователь скрыл свой список и историю. Возможно, они видны после входа.</string>
     <string name="profile_statistic">Расширенная статистика</string>
     <string name="profile_anime_hint">Формируется по спискам «Смотрю», «Пересматриваю» и «Просмотрено».</string>
     <string name="profile_manga_hint">Формируется по спискам «Читаю», «Перечитываю» и «Прочитано».</string>
@@ -417,6 +455,8 @@
     <string name="favorites_other_people">Прочие люди</string>
 
     <string name="download_choose_hosting">Этот перевод есть на нескольких источниках. Выберите один — список качеств откроется следующим шагом.</string>
+    <string name="download_choose_quality">Нажмите на качество, чтобы скачать видео, или на стрелку, чтобы поделиться ссылкой.</string>
+    <string name="download_quality_unknown">Качество неизвестно</string>
     <string name="download_choose_hosting_unsupported">Часть источников этого перевода не поддерживается приложением, поэтому их нет в списке.</string>
     <string name="download_will_be_merged">Видео и звук у этого источника скачиваются отдельно и будут объединены автоматически. Дождитесь окончания обеих загрузок.</string>
     <string name="download_new_folder">Новая папка</string>
@@ -502,37 +542,6 @@
         <item>name</item>
     </string-array>
 
-    <string-array name="filter_statuses">
-        <item>@string/status_anons</item>
-        <item>@string/status_ongoing</item>
-        <item>@string/status_released</item>
-        <item>@string/filters_latest</item>
-    </string-array>
-
-    <string-array name="anime_types">
-        <item>@string/type_tv_translatable</item>
-        <item>@string/type_movie_translatable</item>
-        <item>@string/type_special_translatable</item>
-        <item>@string/type_music_translatable</item>
-        <item>@string/type_ova</item>
-        <item>@string/type_ona</item>
-        <item>@string/type_tv_13</item>
-        <item>@string/type_tv_24</item>
-        <item>@string/type_tv_48</item>
-    </string-array>
-
-    <string-array name="anime_types_name">
-        <item>tv</item>
-        <item>movie</item>
-        <item>special</item>
-        <item>music</item>
-        <item>ova</item>
-        <item>ona</item>
-        <item>tv_13</item>
-        <item>tv_24</item>
-        <item>tv_48</item>
-    </string-array>
-
     <string-array name="duration">
         <item>@string/duration_small</item>
         <item>@string/duration_medium</item>
@@ -543,22 +552,6 @@
         <item>S</item>
         <item>D</item>
         <item>F</item>
-    </string-array>
-
-    <string-array name="manga_types">
-        <item>@string/type_manga_translatable</item>
-        <item>@string/type_manhwa_translatable</item>
-        <item>@string/type_manhua_translatable</item>
-        <item>@string/type_one_shot_translatable</item>
-        <item>@string/type_doujin_translatable</item>
-    </string-array>
-
-    <string-array name="manga_types_name">
-        <item>manga</item>
-        <item>manhwa</item>
-        <item>manhua</item>
-        <item>one_shot</item>
-        <item>doujin</item>
     </string-array>
 
     <string-array name="age_ratings">

@@ -29,11 +29,10 @@
             android:layout_height="wrap_content"
             android:background="@drawable/background_protector_right"
             android:padding="4dp"
-            android:textAllCaps="true"
             android:textColor="@color/colorOnProtector"
             app:layout_constraintStart_toStartOf="@+id/imageView"
             app:layout_constraintTop_toTopOf="@+id/imageView"
-            tools:text="TV" />
+            tools:text="TV Сериал" />
 
         <TextView
             android:id="@+id/nameView"

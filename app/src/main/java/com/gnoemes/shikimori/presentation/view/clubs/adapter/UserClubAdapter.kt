@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.clubs.adapter
 
+import com.gnoemes.shikimori.entity.club.presentation.UserClubViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
-import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
 import com.gnoemes.shikimori.presentation.view.common.adapter.BaseAdapter
 import com.gnoemes.shikimori.utils.images.ImageLoader
 
@@ -15,12 +15,13 @@ class UserClubAdapter(
     }
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
-        oldItem is FriendViewModel && newItem is FriendViewModel -> oldItem.id == newItem.id
+        //its own rows: a copy of the friends adapter compared friends, so every refresh redrew every club (BUGS #45)
+        oldItem is UserClubViewModel && newItem is UserClubViewModel -> oldItem.id == newItem.id
         else -> false
     }
 
     override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean = when {
-        oldItem is FriendViewModel && newItem is FriendViewModel -> oldItem == newItem
+        oldItem is UserClubViewModel && newItem is UserClubViewModel -> oldItem == newItem
         else -> false
     }
 }

@@ -10,4 +10,7 @@ import com.gnoemes.shikimori.entity.series.presentation.TranslationViewModel
 interface TranslationsViewModelConverter {
     fun convertTranslations(translations: List<Translation>, setting: TranslationSetting?): List<TranslationViewModel>
     fun convertTrack(video: Video, track: Track): SeriesDownloadItem
+
+    /** A translation's author as the screens show it: «Неизвестный автор» when it has none. */
+    fun authorLabel(author: String): String
 }

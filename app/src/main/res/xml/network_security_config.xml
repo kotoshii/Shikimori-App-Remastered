@@ -2,8 +2,12 @@
 <!--
     Android 8.1 cannot reach vk.com without this.
 
-    vk.com serves "CN=*.vk.com" signed by "Google Trust Services, CN=WR1" and sends nothing else,
-    so the chain has to be completed with GTS Root R1 - which Android only ships from API 29.
+    vk.com now serves "CN=*.vk.com" signed by "SSL.com TLS Issuing RSA CA R1", under "SSL.com TLS
+    RSA Root CA 2022" (since some time before 2026-10-27), and 8.1 has no SSL.com root at all: every
+    player page request failed again with SECURE_CONNECTION (BUGS #86).
+
+    Before that, vk.com served "CN=*.vk.com" signed by "Google Trust Services, CN=WR1" and nothing
+    else, so the chain had to be completed with GTS Root R1 - which Android only ships from API 29.
     On 8.1 every player page request dies with
 
         SSLHandshakeException: CertPathValidatorException: Trust anchor for certification path
@@ -21,16 +25,22 @@
       GTS Root R4                     34:9D:FA:40:58:C5:E2:63:12:3B:39:8A:E7:95:57:3C:4E:13:13:C8:3F:E6:8F:93:55:6C:D5:E8:03:1B:3C:7D
       HARICA TLS ECC Root CA 2021     3F:99:CC:47:4A:CF:CE:4D:FE:D5:87:94:66:5E:47:8D:15:47:73:9F:2E:78:0F:1B:B4:CA:9B:13:30:97:D4:01
       HARICA TLS RSA Root CA 2021     D9:5D:0E:8E:DA:79:52:5B:F9:BE:B1:1B:14:D2:10:0D:32:94:98:5F:0C:62:D9:FA:BD:9C:D9:99:EC:CB:7B:1D
+      SSL.com TLS RSA Root CA 2022    8F:AF:7D:2E:2C:B4:70:9B:B8:E0:B3:36:66:BF:75:A5:DD:45:B5:DE:48:0F:8E:A8:D4:BF:E6:BE:BC:17:F2:ED
+      SSL.com TLS ECC Root CA 2022    C3:2F:FD:9F:46:F9:36:D1:6C:36:73:99:09:59:43:4B:9A:D6:0A:AF:BB:9E:7C:F3:36:54:F1:44:CC:1B:A1:43
 
-    Only GTS Root R1 is needed today. R2-R4 are its siblings, kept so a rotation on vk.com's side
-    does not break 8.1 again. The two HARICA roots belong to vkvd*.okcdn.ru, which serves the video
-    file itself - that host validates on 8.1 right now only because its 2021 root is cross-signed by
+    vk.com needs SSL.com TLS RSA Root CA 2022 today; the ECC one is its sibling, kept so a switch to
+    an ECC certificate does not break 8.1 again. GTS Root R1 was vk.com's until then, and R2-R4 are
+    its siblings - kept, as vk.com may move back.
+
+    The two HARICA roots belong to vkvd*.okcdn.ru, which serves the video file itself (and to
+    vkvideo.ru, the RSA one) - that host validates on 8.1 right now only because its 2021 root is cross-signed by
     "Hellenic Academic and Research Institutions ECC RootCA 2015", which 8.1 does have, and the
     server still sends the cross-signed copy. The vk.com breakage is exactly what happens when a
     server stops sending a cross-sign, so the real roots are carried here too.
 
-    All six were taken from the Mozilla root bundle, not downloaded from the CAs, and the chains
-    were checked against them with `openssl verify` before being added.
+    All eight were taken from the Mozilla root bundle, not downloaded from the CAs, and the chains
+    were checked against them with `openssl verify` before being added (the SSL.com two from curl's
+    extract of it, "as of Oct 20 2026", fingerprints matching its own).
 
     "system" must stay listed: naming a certificates source replaces the default set rather than
     adding to it. cleartextTrafficPermitted must stay true as well - android:usesCleartextTraffic on

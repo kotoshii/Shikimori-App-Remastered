@@ -50,6 +50,17 @@
                 tools:ignore="SmallSp"
                 tools:text="10" />
 
+            <!--pinned: in the poster's other corner, a badge like the score's-->
+            <ImageView
+                android:id="@+id/pinView"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/background_protector_left_variant"
+                android:contentDescription="@string/rate_pinned"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_push_pin" />
+
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -125,16 +136,6 @@
             app:layout_constraintBottom_toBottomOf="@+id/rateEditBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/rateEditBtn" />
-
-        <ImageView
-            android:id="@+id/pinView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginRight="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_pin_badge" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -8,7 +8,6 @@ import android.os.Environment
 import android.view.View
 import android.widget.Toast
 import androidx.core.content.FileProvider
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.files.fileChooser
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.SettingsBackup
@@ -148,7 +147,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun Context.fileFoundDialog(onAccepted: () -> Unit, onCancel: () -> Unit) {
-        MaterialDialog(this).show {
+        materialDialog().show {
             title(res = R.string.backup_found_title)
             message(res = R.string.backup_found_message)
             positiveButton(res = R.string.common_apply) { onAccepted.invoke() }
@@ -157,7 +156,7 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     }
 
     private fun showFolderChooserDialog(onFileChosen: (File) -> Unit) {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             fileChooser(
                     allowFolderCreation = false,
                     emptyTextRes = R.string.download_folder_empty)

@@ -13,7 +13,6 @@ import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.view.player.embedded.EmbeddedPlayerView
 import com.gnoemes.shikimori.presentation.view.player.embedded.provider.EmbeddedPlayerResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
-import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
 @InjectViewState
@@ -33,7 +32,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
     //the episode prev/next is loading, if any. A further tap counts from it, so two fast taps skip two
     //episodes ahead instead of loading the same one twice. Back to null once the load ends, either way
     private var pendingEpisode: Int? = null
-    private var episodeDisposable: Disposable? = null
+    private val episodeLoad = loadSlot()
 
     private val videos = hashSetOf<Video>()
 
@@ -63,7 +62,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
         track?.let {
             viewState.apply {
                 setEpisodeSubtitle(currentEpisode)
-                playVideo(it, video.subAss, needReset, parsers.headers(video))
+                playVideo(it, video.subAss, needReset, parsers.playerHeaders(video))
                 val resolutions = video.tracks.filter { track -> track.isQualityKnown }.map { track -> track.quality }
                 setResolutions(resolutions)
                 //the menu lists the known qualities only, so its position is not the track's
@@ -100,7 +99,7 @@ class EmbeddedPlayerPresenter @Inject constructor(
 
         //a tap replaces whatever was loading, the episode the player opened on included - otherwise a
         //slow load lands on top of the episode the user has since switched to
-        episodeDisposable?.dispose()
+        episodeLoad.cancel()
         pendingEpisode = episode
 
         val video = videos.find { it.episodeId.toInt() == episode }
@@ -112,24 +111,25 @@ class EmbeddedPlayerPresenter @Inject constructor(
             return
         }
 
-        episodeDisposable = loadTranslations(navigationData.payload.type, episode.toLong())
-                .subscribe({ translations ->
-                    val translation = translations.find {
-                        if (payload.author.isNotEmpty()) it.author == payload.author && it.hosting == payload.videoHosting
-                        else it.author.isEmpty() && it.hosting == payload.videoHosting
-                    }
+        episodeLoad.start {
+            loadTranslations(navigationData.payload.type, episode.toLong())
+                    .subscribe({ translations ->
+                        val translation = translations.find {
+                            if (payload.author.isNotEmpty()) it.author == payload.author && it.hosting == payload.videoHosting
+                            else it.author.isEmpty() && it.hosting == payload.videoHosting
+                        }
 
-                    if (translation != null) loadEpisodeVideo(episode, payload.copy(videoId = translation.videoId, episodeIndex = episode, webPlayerUrl = translation.webPlayerUrl))
-                    else {
-                        pendingEpisode = null
-                        viewState.showMessage(resourceProvider.translationNotFound)
-                    }
-                }, { processVideoErrors(episode, it) })
-                .also { it.addToDisposables() }
+                        if (translation != null) loadEpisodeVideo(episode, payload.copy(videoId = translation.videoId, episodeIndex = episode, webPlayerUrl = translation.webPlayerUrl))
+                        else {
+                            pendingEpisode = null
+                            viewState.showMessage(resourceProvider.translationNotFound)
+                        }
+                    }, { processVideoErrors(episode, it) })
+        }
     }
 
-    private fun loadEpisodeVideo(episode: Int, newPayload: TranslationVideo) {
-        episodeDisposable = interactor.getVideo(newPayload)
+    private fun loadEpisodeVideo(episode: Int, newPayload: TranslationVideo) = episodeLoad.start {
+        interactor.getVideo(newPayload)
                 .appendLoadingLogic(viewState)
                 .subscribe({
                     if (it.tracks.isEmpty()) onNothingToPlay()
@@ -138,7 +138,6 @@ class EmbeddedPlayerPresenter @Inject constructor(
                         showEpisode(episode, it)
                     }
                 }, { processVideoErrors(episode, it) })
-                .also { it.addToDisposables() }
     }
 
     private fun showEpisode(episode: Int, video: Video) {

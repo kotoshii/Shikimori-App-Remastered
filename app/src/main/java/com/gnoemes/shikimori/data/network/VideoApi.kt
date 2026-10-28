@@ -4,6 +4,7 @@ import com.gnoemes.shikimori.entity.series.data.*
 import com.gnoemes.shikimori.entity.series.data.anime365.Anime365VideoResponse
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikLinksResponse
 import com.gnoemes.shikimori.entity.series.data.kodik.KodikSearchResponse
+import com.gnoemes.shikimori.utils.network.UserAgentInterceptor
 import io.reactivex.Single
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -21,6 +22,15 @@ interface VideoApi {
 
     @GET
     fun getMailRuVideoMeta(@Url videoMetaUrl: String) : Single<Response<MailRuVideosResponse>>
+
+    /**
+     * cda.pl's own api, `videoGetLink`: a direct mp4, sound included, for one quality code. It names
+     * the app on purpose: a User-Agent with "Android" in it gets `307 → https://m.cda.pl/`, which OkHttp
+     * does not follow for a POST, and a desktop browser's gets an hls playlist instead of the mp4.
+     */
+    @Headers("User-Agent: ${UserAgentInterceptor.USER_AGENT_CLIENT}")
+    @POST("https://www.cda.pl/")
+    fun getCdaVideoLink(@Body request: CdaApiRequest): Single<CdaApiResponse>
 
     @GET("https://kodik-api.com/search")
     fun getKodikSearch(@Query("token") token: String,

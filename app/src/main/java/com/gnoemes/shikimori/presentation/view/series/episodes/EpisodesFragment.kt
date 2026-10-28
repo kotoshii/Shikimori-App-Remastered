@@ -75,6 +75,8 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         }
 
         emptyContentView.setText(R.string.episodes_not_found)
+        //the sheet has «Повторить», not a pull to refresh
+        networkErrorView.setText(R.string.common_error_message_without_pull)
         networkErrorView.showButton()
         networkErrorView.callback = { presenter.onRefresh() }
         emptyContentView.gone()
@@ -149,7 +151,8 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     override fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean) {
         episodesLayout.visibleIf { show }
         titleView.setText(R.string.episodes_empty_title)
-        descriptionView.setText(R.string.episodes_empty_description)
+        //the source shown: it said «В основном источнике» on the alternative one too
+        descriptionView.setText(if (isAlternative) R.string.episodes_empty_description_alternative else R.string.episodes_empty_description)
         actionBtn.visibleIf { !isAlternative }
     }
 

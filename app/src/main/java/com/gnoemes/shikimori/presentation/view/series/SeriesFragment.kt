@@ -7,20 +7,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.AutoTransition
 import androidx.transition.Fade
+import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.Image
+import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
+import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.presentation.*
 import com.gnoemes.shikimori.presentation.presenter.series.SeriesPresenter
 import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadDialog
@@ -28,11 +34,12 @@ import com.gnoemes.shikimori.presentation.view.series.download.SeriesDownloadHos
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.common.fragment.DescriptionDialogFragment
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
 import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment
 import com.gnoemes.shikimori.presentation.view.series.translations.adapter.TranslationsAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.navigation.RouteHolder
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -47,7 +54,7 @@ import javax.inject.Inject
 class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         SeriesView,
         PlayerSelectDialog.Callback,
-        ListDialogFragment.DialogCallback,
+        QualitySelectDialog.Callback,
         EpisodesFragment.EpisodesCallback,
         SeriesDownloadDialog.SeriesDownloadCallback,
         SeriesDownloadHostingDialog.Callback,
@@ -68,14 +75,38 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     fun providePresenter(): SeriesPresenter = presenterProvider.get().apply {
         localRouter = (parentFragment as RouterProvider).localRouter
         navigationData = arguments?.getParcelable(SERIES_NAVIGATION_DATA)!!
+        restoredState = this@SeriesFragment.restoredState
     }
 
     companion object {
         fun newInstance(data: SeriesNavigationData) = SeriesFragment().withArgs { putParcelable(SERIES_NAVIGATION_DATA, data) }
         private const val SERIES_NAVIGATION_DATA = "SERIES_NAVIGATION_DATA"
+        private const val SERIES_STATE = "SERIES_STATE"
+    }
+
+    //read before the presenter is made, which happens inside super.onCreate. After a rotation Moxy
+    //keeps the presenter, and only after Android killed the app is a new one made from this
+    private var restoredState: SeriesState? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        restoredState = savedInstanceState?.getParcelable(SERIES_STATE)
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        getPresenter().state?.let { outState.putParcelable(SERIES_STATE, it) }
     }
 
     private val defaultCorners by lazy { context!!.dimen(R.dimen.margin_big) }
+
+    //the toolbar as the presenter last set it (SeriesView.showControls), and the picker open over it
+    private var isSourceShown = false
+    private var shownType: TranslationType? = null
+    private var episodeControls: EpisodeControls? = null
+    private var openPicker: Picker? = null
+
+    private enum class Picker { SOURCES, TYPES }
 
     private val adapter by lazy {
         TranslationsAdapter(getPresenter()::onHostingClicked, ::copyHostingUrl, getPresenter()::onMenuClicked)
@@ -135,20 +166,17 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         }
 
         emptyContentView.setText(R.string.episodes_not_found)
-        networkErrorView.callback = { getPresenter().onRefresh() }
-        networkErrorView.showButton()
-
         authorsLayout.gone()
         translationBtn.gone()
         progress.visible()
 
-        translationBtn.onClick { showTypes(true) }
+        translationBtn.onClick { openPicker(Picker.TYPES) }
         voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
         subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
         originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
 
         episodeChip.onClick { getPresenter().showEpisodes() }
-        sourceChangeBtn.onClick { showSources(true) }
+        sourceChangeBtn.onClick { openPicker(Picker.SOURCES) }
 
         mainSource.onClick { onSourceSelected(false) }
         altSource.onClick { onSourceSelected(true) }
@@ -156,35 +184,46 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         actionBtn.onClick { onSourceSelected(true) }
         fab.onClick { getPresenter().onDiscussionClicked() }
         nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
+        previousEpisodeBtn.onClick { getPresenter().onPreviousEpisode() }
     }
 
     private fun onTypeSelected(newType: TranslationType) {
         getPresenter().onTypeChanged(newType)
-        showTypes(false)
+        openPicker(null)
     }
 
     private fun onSourceSelected(isAlternative: Boolean) {
         getPresenter().onSourceChanged(isAlternative)
-        showSources(false)
+        openPicker(null)
     }
 
-    private fun showSources(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, AutoTransition())
-        if (show && !translationBtn.isVisible()) showTypes(false)
-        sourceChangeBtn.visibleIf { !show }
-        if (episodeChip.isEnabled) episodeChip.visibleIf { !show }
-        if (nextEpisodeBtn.isEnabled) nextEpisodeBtn.visibleIf { !show }
-        mainSource.visibleIf { show }
-        altSource.visibleIf { show }
+    private fun openPicker(picker: Picker?) {
+        openPicker = picker
+        showToolbar(AutoTransition())
     }
 
-    private fun showTypes(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, AutoTransition())
-        if (show && !sourceChangeBtn.isVisible()) showSources(false)
-        translationBtn.visibleIf { !show }
-        voiceBtn.visibleIf { show }
-        subtitlesBtn.visibleIf { show }
-        originalBtn.visibleIf { show }
+    //the one place that decides what the toolbar shows: the presenter's controls, with an open
+    //picker in place of the buttons it covers
+    private fun showToolbar(transition: Transition) {
+        TransitionManager.beginDelayedTransition(motionLayout, transition)
+        val sources = openPicker == Picker.SOURCES
+        val types = openPicker == Picker.TYPES
+        val episodes = episodeControls
+        episodeChip.visibleIf { episodes != null && !sources }
+        previousEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        nextEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        if (episodes != null) {
+            episodeChip.setUsable(episodes.isEnabled)
+            previousEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoBack)
+            nextEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoForward)
+        }
+        sourceChangeBtn.visibleIf { isSourceShown && !sources }
+        mainSource.visibleIf { sources }
+        altSource.visibleIf { sources }
+        translationBtn.visibleIf { shownType != null && !types }
+        voiceBtn.visibleIf { types }
+        subtitlesBtn.visibleIf { types }
+        originalBtn.visibleIf { types }
     }
 
     private val shadowScrollListener = object : RecyclerView.OnScrollListener() {
@@ -206,15 +245,11 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         recyclerView.removeOnScrollListener(shadowScrollListener)
     }
 
-    override fun onPlayerSelected(playerType: PlayerType) {
-        getPresenter().onPlayerSelected(playerType)
-    }
+    override fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) =
+            getPresenter().onPlayerSelected(playing, playerType, remember)
 
-    override fun dialogItemCallback(tag: String?, action: String) {
-        if (tag == "QualityDialog") {
-            getPresenter().onQualityChoosed(action)
-        }
-    }
+    override fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, parsed: Video, track: Track) =
+            getPresenter().onQualitySelected(video, playerType, parsed, track)
 
     override fun onDownload(item: SeriesDownloadItem) = getPresenter().onTrackForDownloadSelected(item)
     override fun onShare(item: SeriesDownloadItem) = getPresenter().onShare(item)
@@ -244,11 +279,19 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean) {
-        authorsLayout.visibleIf { show }
-        titleView.setText(R.string.series_empty_authors_title)
-        descriptionView.setText(R.string.series_empty_authors_description)
-        if (isAlternative) actionBtn.gone()
-        else actionBtn.visible()
+        if (show) showEmptyState(R.string.series_empty_authors_title, R.string.series_empty_authors_description, !isAlternative)
+        else authorsLayout.gone()
+    }
+
+    override fun showEpisodeNotFoundView(isAlternative: Boolean) =
+            showEmptyState(R.string.series_empty_episode_title, R.string.series_empty_episode_description, !isAlternative)
+
+    //the place under the toolbar for a list with nothing to show; its button switches to the other source
+    private fun showEmptyState(@StringRes title: Int, @StringRes description: Int, isSourceButtonShown: Boolean) {
+        authorsLayout.visible()
+        titleView.setText(title)
+        descriptionView.setText(description)
+        actionBtn.visibleIf { isSourceButtonShown }
     }
 
     override fun showEmptySearchView() {
@@ -256,46 +299,32 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         adapter.bindItems(mutableListOf(emptyItem))
     }
 
-    override fun setEpisodeName(index: Int) {
-        val text = "# ".colorSpan(context!!.colorAttr(R.attr.colorSecondaryTransparent)).append("$index")
-        episodeChip.text = text
-    }
+    override fun showControls(isSourceShown: Boolean, type: TranslationType?, episodes: EpisodeControls?) {
+        this.isSourceShown = isSourceShown
+        shownType = type
+        episodeControls = episodes
+        //a picker whose button went away closes with it
+        if (openPicker == Picker.SOURCES && !isSourceShown || openPicker == Picker.TYPES && type == null) openPicker = null
 
-    override fun showNextEpisode(show: Boolean) {
-        nextEpisodeBtn.isEnabled = show
-        nextEpisodeBtn.visibleIf { show }
-    }
-
-    override fun hideEpisodeName() {
-        episodeChip.isEnabled = false
-        episodeChip.gone()
-    }
-
-    override fun showEpisodeLoading(show: Boolean) {
-        TransitionManager.beginDelayedTransition(motionLayout, Fade())
-        if (episodeChip.isEnabled) episodeChip.visibleIf { !show }
-        if (nextEpisodeBtn.isEnabled) nextEpisodeBtn.visibleIf { !show }
-        sourceChangeBtn.visibleIf { !show }
-    }
-
-    override fun changeSource(isAlternative: Boolean) {
-        mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
-        altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
-    }
-
-    override fun setTranslationType(type: TranslationType) {
         val icon = when (type) {
             TranslationType.VOICE_RU -> R.drawable.ic_voice
             TranslationType.SUB_RU -> R.drawable.ic_subs
             TranslationType.RAW -> R.drawable.ic_original
             else -> 0
         }
+        if (icon != 0) translationBtn.setIconResource(icon)
 
-        if (icon != 0) {
-            translationBtn.setIconResource(icon)
-        }
+        //«#» lighter than the number, at Material's 60% for secondary text. It was the chip's own
+        //background colour, and could hardly be seen (BUGS #74)
+        val hashColor = ColorUtils.setAlphaComponent(context!!.colorAttr(R.attr.colorSecondary), 153)
+        if (episodes != null) episodeChip.text = "# ".colorSpan(hashColor).append("${episodes.episode}")
 
-        if (!translationBtn.isVisible()) translationBtn.visible()
+        showToolbar(Fade())
+    }
+
+    override fun changeSource(isAlternative: Boolean) {
+        mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
+        altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
     }
 
     override fun showSearchView() {
@@ -314,8 +343,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         backdrop.radius = defaultCorners
     }
 
-    override fun showPlayerDialog() {
-        val dialog = PlayerSelectDialog.newInstance()
+    override fun showPlayerDialog(playing: EmbeddedPlayerNavigationData) {
+        val dialog = PlayerSelectDialog.newInstance(playing)
         dialog.show(childFragmentManager, "PlayerSelect")
     }
 
@@ -355,20 +384,22 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun showFolderChooserDialog() = context!!.chooseDownloadFolder(onPositive = { getPresenter().onStoragePermissionsAccepted() })
 
-    override fun showQualityChooser(items: List<Pair<String, String>>) {
-        val dialog = ListDialogFragment.newInstance()
-        dialog.apply {
-            setItems(items)
-        }.show(childFragmentManager, "QualityDialog")
+    //opened here, not through the router: only here is it known whether an app took it
+    override fun openExternalPlayer(video: TranslationVideo, data: ExternalPlayerData) {
+        val intent = RouteHolder.createActivityIntent(context, Screens.EXTERNAL_PLAYER, data) ?: return
+        //said first, so it also explains «Нет приложения…» when no app takes a DASH manifest (BUGS #56)
+        if (data.isDash) Toast.makeText(requireContext(), R.string.series_external_dash_hint, Toast.LENGTH_LONG).show()
+        if (requireContext().startOutsideActivity(intent)) getPresenter().onExternalPlayerOpened(video)
     }
 
-    override fun showEmptyView() {
-        authorsLayout.visible()
-        actionBtn.gone()
-        titleView.setText(R.string.series_empty_episode_title)
-        descriptionView.setText(R.string.series_empty_episode_description)
-        sourceChangeBtn.gone()
+    override fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video) {
+        val dialog = QualitySelectDialog.newInstance(video, playerType, parsed)
+        dialog.show(childFragmentManager, "QualityDialog")
     }
+
+    //nothing is out at all: no source can help
+    override fun showEmptyView() =
+            showEmptyState(R.string.series_empty_episode_title, R.string.series_empty_episode_description, false)
 
     override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
     override fun hideEmptyView() = emptyContentView.gone()

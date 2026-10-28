@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Point
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.base.BaseFilterPresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetInjectionDialogFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFilterView
@@ -20,12 +21,15 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
     companion object {
         private const val FILTERS_KEY = "FILTERS_KEY"
         private const val TYPE_KEY = "TYPE_KEY"
+        private const val CATEGORIES_KEY = "CATEGORIES_KEY"
 
-        /** [fragment] opened for [type] with the filters applied so far. */
-        fun <F : BaseFilterDialogFragment<*, *>> withFilters(fragment: F, type: Type, filters: HashMap<String, MutableList<FilterItem>>?): F =
+        /** [fragment] opened for [type] with the filters applied so far, and the [categories] when loaded already. */
+        fun <F : BaseFilterDialogFragment<*, *>> withFilters(fragment: F, type: Type, filters: HashMap<String, MutableList<FilterItem>>?,
+                                                            categories: List<FilterCategory>? = null): F =
                 fragment.withArgs {
                     putSerializable(TYPE_KEY, type)
                     putSerializable(FILTERS_KEY, filters)
+                    putParcelableArrayList(CATEGORIES_KEY, categories?.let { ArrayList(it) })
                 }
     }
 
@@ -35,11 +39,18 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
     //each panel brings its own toolbar
     override val useWrapperLayout = false
 
-    /** For the `@ProvidePresenter` of each: the presenter starts with the arguments, on a copy of the filters. */
+    /**
+     * For the `@ProvidePresenter` of each: the presenter starts with the arguments, on a full copy of
+     * the filters - the lists too. The arguments hold the caller's own map until Android rebuilds the
+     * screen, so a shallow copy let a change reach the caller even when the panel was closed with ✕
+     * (BUGS #54, #72); only accepting hands the filters back.
+     */
     @Suppress("UNCHECKED_CAST")
     protected fun P.withArguments(): P = apply {
         type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
-        appliedFilters = HashMap(arguments?.getSerializable(FILTERS_KEY) as HashMap<String, MutableList<FilterItem>>)
+        val filters = arguments?.getSerializable(FILTERS_KEY) as? HashMap<String, MutableList<FilterItem>>
+        appliedFilters = HashMap(filters.orEmpty().mapValues { it.value.toMutableList() })
+        categories = arguments?.getParcelableArrayList(CATEGORIES_KEY)
     }
 
     override fun onAttach(context: Context) {

@@ -14,8 +14,10 @@ import retrofit2.http.QueryMap
 
 interface AnimeApi {
 
+    //Retrofit encodes the values: they went out as already encoded, and nothing encoded them, so a typed `+`
+    //reached shikimori as a space and a `%` made it answer 400 (P7-T5 17.7, BUGS #90)
     @GET("/api/animes")
-    fun getList(@QueryMap(encoded = true) filters: Map<String, String>): Single<MutableList<AnimeResponse>>
+    fun getList(@QueryMap filters: Map<String, String>): Single<MutableList<AnimeResponse>>
 
     @GET("/api/animes/{id}")
     fun getDetails(@Path("id") id : Long) : Single<AnimeDetailsResponse>

@@ -1,9 +1,11 @@
 package com.gnoemes.shikimori.di.app.module.network;
 
+import com.gnoemes.shikimori.BuildConfig;
 import com.gnoemes.shikimori.di.app.annotations.BaseHttpClient;
 import com.gnoemes.shikimori.entity.app.domain.Constants;
 import com.gnoemes.shikimori.utils.network.DateTimeResponseConverter;
 import com.gnoemes.shikimori.utils.network.DateTimeResponseConverterImpl;
+import com.gnoemes.shikimori.utils.network.RedactingHttpLogger;
 import com.gnoemes.shikimori.utils.network.UserAgentInterceptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -49,10 +51,12 @@ public interface RetrofitModule {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
     }
 
+    /** Release builds log no requests; debug builds log them whole, the secrets masked (BUGS #5). */
     @Provides
     @Singleton
     static HttpLoggingInterceptor provideHttpLoggingInterceptor() {
-        return new HttpLoggingInterceptor()
+        if (!BuildConfig.DEBUG) return new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.NONE);
+        return new HttpLoggingInterceptor(new RedactingHttpLogger())
                 .setLevel(HttpLoggingInterceptor.Level.BODY);
     }
 

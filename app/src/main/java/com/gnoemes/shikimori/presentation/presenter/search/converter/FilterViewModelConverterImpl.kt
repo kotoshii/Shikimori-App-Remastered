@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.search.converter
 
+import android.content.Context
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
@@ -7,13 +8,31 @@ import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.*
 import javax.inject.Inject
 
-class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConverter {
+class FilterViewModelConverterImpl @Inject constructor(
+        private val context: Context
+) : FilterViewModelConverter {
 
     override fun convert(filters: List<FilterCategory>, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any> {
         val items = mutableListOf<Any>()
+        studioRow(appliedFilters)?.let { items.add(it) }
         filters.forEach { items.add(convertCategory(it, appliedFilters)) }
 
         return items
+    }
+
+    /**
+     * A studio comes only from a title page's studio tag (picking one here is P10-T1), so its row is
+     * there only while one is on: the sheet showed nothing, and the limit could not be seen or removed
+     * on its own (BUGS #13). Its chips work as any row's: a tap or ✕ removes, a long press excludes.
+     */
+    private fun studioRow(appliedFilters: HashMap<String, MutableList<FilterItem>>): FilterWithButtonsViewModel? {
+        val studios = appliedFilters[FilterType.STUDIO.value]?.takeIf { it.isNotEmpty() } ?: return null
+        val chips = studios.map {
+            val value = it.value!!
+            val state = if (value.startsWith("!")) FilterViewModel.STATE.INVERTED else FilterViewModel.STATE.SELECTED
+            FilterViewModel(state, value, it.localizedText ?: value.removePrefix("!"))
+        }
+        return FilterWithButtonsViewModel(context.getString(R.string.filter_studio), FilterType.STUDIO, chips, hasInvert = false, hasSelectAll = false)
     }
 
     private fun convertCategory(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): Any {
@@ -27,9 +46,8 @@ class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConver
         return when (category.filterType) {
             FilterType.GENRE -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             FilterType.SEASON -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
-            FilterType.RATE -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = true, hasInvert = true, hasSelectAll = true)
-            FilterType.KIND -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = true, hasInvert = false, hasSelectAll = false)
-            else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasDelete = false, hasInvert = false, hasSelectAll = false)
+            FilterType.RATE -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = true, hasSelectAll = true)
+            else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = false, hasSelectAll = false)
         }
     }
 

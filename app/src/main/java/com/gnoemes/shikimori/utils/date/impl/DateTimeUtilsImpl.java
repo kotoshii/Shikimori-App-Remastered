@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.utils.date.impl;
 import com.gnoemes.shikimori.utils.date.DateTimeUtils;
 
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 
 import javax.inject.Inject;
 
@@ -20,12 +19,12 @@ public class DateTimeUtilsImpl implements DateTimeUtils {
 
     @Override
     public boolean isToday(DateTime date) {
-        return getNowDateTime().toLocalDate().equals(new LocalDate(date));
+        return isSameDay(getNowDateTime(), date);
     }
 
     @Override
     public boolean isTomorrow(DateTime date) {
-        return getNowDateTime().toLocalDate().plusDays(1).equals(new LocalDate(date));
+        return isSameDay(getNowDateTime().plusDays(1), date);
     }
 
     @Override
@@ -38,15 +37,12 @@ public class DateTimeUtilsImpl implements DateTimeUtils {
         return firstDate.toLocalDate().getYear() == secondDate.toLocalDate().getYear();
     }
 
-    @Override
-    public boolean isSameDay(DateTime firstDate) {
-        return getNowDateTime().toLocalDate().getDayOfYear() == firstDate.toLocalDate().getDayOfYear();
-    }
-
+    //the whole date: the day of the year alone took a date a year back for today, so it read
+    //"8760 hours ago" (BUGS #26.1)
     @Override
     public boolean isSameDay(DateTime firstDate, DateTime secondDate) {
         return firstDate != null &&
                 secondDate != null &&
-                firstDate.dayOfYear().get() == secondDate.dayOfYear().get();
+                firstDate.toLocalDate().equals(secondDate.toLocalDate());
     }
 }

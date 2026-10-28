@@ -46,7 +46,7 @@ class SearchRepositoryImpl @Inject constructor(
      * even mean something else there. `genre_v2` takes the same comma separated ids with the same
      * `!` exclusion prefix, returns what the graphql catalog did in the same order, and for manga
      * and ranobe filters every v2 genre, where graphql only manages 40 of 81. Verified against the
-     * live api on 2026-10-01. See docs/_internal/GENRES_V2_SPIKE.md.
+     * live api on 2026-10-01. See GENRES_V2_SPIKE.md.
      */
     private fun withGenreV2(queryMap: Map<String, String>): Map<String, String> {
         val genre = queryMap[SearchConstants.GENRE] ?: return queryMap

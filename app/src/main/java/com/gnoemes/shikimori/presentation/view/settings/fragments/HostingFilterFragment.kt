@@ -12,7 +12,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.gnoemes.shikimori.R
@@ -24,6 +23,7 @@ import com.gnoemes.shikimori.utils.getDefaultSharedPreferences
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.putStringSet
 import com.gnoemes.shikimori.utils.visibleIf
+import com.gnoemes.shikimori.utils.materialDialog
 import kotlinx.android.synthetic.main.fragment_hosting_filter.*
 
 /**
@@ -70,7 +70,7 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun showHint() {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             title(R.string.settings_hosting_filter_hint_title)
             message(R.string.settings_hosting_filter_hint_message)
             positiveButton(res = R.string.common_understand)
@@ -115,7 +115,7 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun showAddDialog() {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             title(R.string.settings_hosting_filter_dialog_title)
             customView(R.layout.dialog_add_hosting)
             //the app's own strings: android.R.string.* follows the device locale, so it showed
@@ -157,7 +157,7 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun confirmDelete(domain: String) {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             title(R.string.settings_hosting_filter_delete)
             //the domain is deliberately not named - some are long enough to wreck the dialog, and
             //the row that was just tapped is the answer to "which one"

@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.favorites
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
@@ -16,6 +15,7 @@ import com.gnoemes.shikimori.presentation.view.favorites.adapter.FavoritesAdapte
 import com.gnoemes.shikimori.presentation.view.favorites.holders.FavoriteCategoryViewHolder
 import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.showCount
 import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.android.synthetic.main.fragment_favorites.*
 import kotlinx.android.synthetic.main.layout_toolbar.*
@@ -82,10 +82,6 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
     }
 
     override fun showFavoritesCount(count: Int) {
-        toolbar?.menu?.add("$count")
-        toolbar?.menu?.getItem(0)?.apply {
-            isEnabled = false
-            setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
-        }
+        toolbar?.showCount(count)
     }
 }

@@ -7,5 +7,8 @@ interface SearchQueryBuilder {
 
     fun createQueryFromFilters(filters: Map<String, MutableList<FilterItem>>?, page: Int?, limit: Int?): Single<Map<String, String>>
 
+    /** An anime, manga or ranobe list: [createQueryFromFilters], sorted by the default when no sort is chosen. */
+    fun createTitleListQuery(filters: Map<String, MutableList<FilterItem>>?, page: Int, limit: Int): Single<Map<String, String>>
+
     fun createQueryFromIds(ids: MutableCollection<Long>): Single<Map<String, String>>
 }

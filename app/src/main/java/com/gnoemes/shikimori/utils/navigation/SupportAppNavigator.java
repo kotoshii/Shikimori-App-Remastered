@@ -58,20 +58,18 @@ public abstract class SupportAppNavigator extends SupportFragmentNavigator {
         // Replace activity
         if (activityIntent != null) {
             Bundle options = createStartActivityOptions(command, activityIntent);
-            checkAndStartActivity(command.getScreenKey(), activityIntent, options);
-            activity.finish();
+            //the screen stays when nothing opened in its place
+            if (checkAndStartActivity(command.getScreenKey(), activityIntent, options)) activity.finish();
         } else {
             super.replace(command);
         }
     }
 
-    private void checkAndStartActivity(String screenKey, Intent activityIntent, Bundle options) {
-        // Check if we can start activity
-        if (activityIntent.resolveActivity(activity.getPackageManager()) != null) {
-            activity.startActivity(activityIntent, options);
-        } else {
-            unexistingActivity(screenKey, activityIntent);
-        }
+    /** @return whether the activity started; when no app can open it, the user is told so. */
+    private boolean checkAndStartActivity(String screenKey, Intent activityIntent, Bundle options) {
+        boolean started = OutsideActivityKt.startOutsideActivity(activity, activityIntent, options);
+        if (!started) unexistingActivity(screenKey, activityIntent);
+        return started;
     }
 
     /**

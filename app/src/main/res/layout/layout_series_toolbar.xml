@@ -16,20 +16,40 @@
         android:layout_gravity="end"
         android:background="@android:color/transparent">
 
+        <!--‹ «# N» ›, close together, then the source button. A control that cannot be used is greyed
+        out, not hidden, so nothing moves (SeriesFragment.showToolbar)-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/previousEpisodeBtn"
+            style="@style/CircleButtonStyle"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            app:backgroundTint="?attr/colorSecondaryTransparent"
+            app:elevation="0dp"
+            app:icon="@drawable/ic_chevron_left"
+            app:iconTint="?attr/colorSecondary"
+            app:layout_constraintBottom_toBottomOf="@+id/episodeChip"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/episodeChip"
+            app:strokeWidth="0dp" />
+
         <com.google.android.material.chip.Chip
             android:id="@+id/episodeChip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
             android:fontFamily="sans-serif-medium"
             android:stateListAnimator="@null"
             android:textAppearance="@style/ToolbarSmallTextAppearance"
             android:textColor="?attr/colorSecondary"
             app:chipBackgroundColor="?attr/colorSecondaryTransparent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/previousEpisodeBtn"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_goneMarginLeft="16dp"
+            app:layout_goneMarginStart="16dp"
             app:rippleColor="@color/selector_button_ripple_color"
             tools:targetApi="lollipop"
             tools:text="# 72251" />
@@ -39,8 +59,8 @@
             style="@style/CircleButtonStyle"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
             app:backgroundTint="?attr/colorSecondaryTransparent"
             app:elevation="0dp"
             app:icon="@drawable/ic_chevron_right"

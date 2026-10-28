@@ -12,30 +12,38 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
+import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
-import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragment
+import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.fragment_filter.*
 import kotlinx.android.synthetic.main.layout_filter_bottom.*
 
-class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ListDialogFragment.DialogCallback {
+class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, SortDialog.SortCallback {
 
     @InjectPresenter
     lateinit var filterPresenter: FilterPresenter
 
     @ProvidePresenter
     fun providePresenter(): FilterPresenter = presenterProvider.get().withArguments()
+            .apply { handedSorts = arguments?.getParcelableArrayList(SORTS_KEY) }
 
     companion object {
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?) = withFilters(FilterFragment(), type, filters)
+        private const val SORTS_KEY = "SORTS_KEY"
+
+        /** The sheet; with the [categories] and [sorts] when the catalog has them, so it opens filled. */
+        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?,
+                        categories: List<FilterCategory>?, sorts: List<FilterItem>?) =
+                withFilters(FilterFragment(), type, filters, categories).apply {
+                    arguments?.putParcelableArrayList(SORTS_KEY, sorts?.let { ArrayList(it) })
+                }
     }
 
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
@@ -79,9 +87,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         presenter.onNestedFilterCallback(key, appliedFilters)
     }
 
-    override fun dialogItemCallback(tag: String?, url: String) {
-        presenter.onSortChanged(Gson().fromJson(url, FilterItem::class.java))
-    }
+    override fun onSortClicked(key: String) = presenter.onSortPicked(key)
 
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS
@@ -100,19 +106,19 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         adapter.bindItems(items)
     }
 
-    override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+    override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
         val fragment = fragmentManager?.findFragmentByTag(GENRES_TAG)
         if (fragment == null) {
-            val filter = FilterGenresFragment.newInstance(type, filters)
+            val filter = FilterGenresFragment.newInstance(type, filters, categories)
             filter.setTargetFragment(this, 43)
             postViewAction { filter.show(fragmentManager!!, GENRES_TAG) }
         }
     }
 
-    override fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+    override fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
         val fragment = fragmentManager?.findFragmentByTag(SEASONS_TAG)
         if (fragment == null) {
-            val filter = FilterSeasonsFragment.newInstance(type, filters)
+            val filter = FilterSeasonsFragment.newInstance(type, filters, categories)
             filter.setTargetFragment(this, 44)
             postViewAction { filter.show(fragmentManager!!, SEASONS_TAG) }
         }
@@ -122,12 +128,10 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         resetBtn.isEnabled = show
     }
 
-    override fun showSortFilters(items: List<FilterItem>) {
-        val gson = Gson()
-        val dialog = ListDialogFragment.newInstance()
-        dialog.apply {
-            setItems(items.map { Pair(it.localizedText!!, gson.toJson(it)) })
-        }.show(childFragmentManager, "SortsTag")
+    //the sort sheet «Списки» uses: titled, the current sort marked (BUGS #16b)
+    override fun showSortFilters(items: List<FilterItem>, chosen: String) {
+        SortDialog.newInstance(items.map { SortDialog.Sort(it.value!!, it.localizedText!!, it.value == chosen) })
+                .show(childFragmentManager, "SortsTag")
     }
 
     override fun setSortFilterText(text: String) {

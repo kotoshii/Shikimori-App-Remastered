@@ -4,6 +4,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.app.domain.exceptions.HostingChallengeException
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -14,14 +15,22 @@ class VkParser @Inject constructor(
     override val hosting = VideoHosting.VK::class.java
 
     override fun parse(playerUrl: String): Single<ParsedVideo> =
-            api.getPlayerHtml(playerUrl).map { ParsedVideo(tracks(it.string())) }
+            api.getPlayerHtml(onVkCom(playerUrl)).map { ParsedVideo(tracks(it.string())) }
+
+    /**
+     * The page is read from vk.com whatever domain the row names. vkvideo.ru, vk's newer one, sends a
+     * client with no cookies round its login page and back for ever - the app's has none, and OkHttp
+     * gave up after 20 redirects - while vk.com answers the same `video_ext.php` query with the player
+     * page at once (live 2026-10-27; P7-T5 Q158).
+     */
+    private fun onVkCom(playerUrl: String) = playerUrl.replaceFirst("//vkvideo.ru/", "//vk.com/")
 
     private fun tracks(html: String?): List<Track> {
         if (html.isNullOrEmpty()) return emptyList()
         if (isChallenge(html)) throw HostingChallengeException()
 
         val regex = Regex("\"(mp4_144|mp4_240|mp4_360|mp4_480|mp4_720|mp4_1080)\":\\s?\"(.*?)\"")
-        val matches = regex.findAll(html)
+        val matches = regex.findAll(ownFiles(html) ?: html)
 
         return matches
                 .map { it.destructured.toList() }
@@ -30,7 +39,7 @@ class VkParser @Inject constructor(
                     Track(key.replace("mp4_", ""), unescape(value))
                 }
                 .toList()
-                .sortedByDescending { it.quality.toInt() }
+                .sortedByQuality()
     }
 
     /**
@@ -43,6 +52,20 @@ class VkParser @Inject constructor(
      * windows-1251), and it appears nowhere in a real player page.
      */
     private fun isChallenge(html: String) = html.contains("hash429")
+
+    /**
+     * The video's own `"files":{…}` object; null when the page has none, and then the whole page is
+     * read as before. The page also lists a trailer's files under the same `mp4_*` keys - a short
+     * preview clip - which doubled every quality in the menu, and picked from a quality list opened or
+     * saved the clip (live 2026-10-23: 117 MB against 308 KB at 360p). The object holds only strings,
+     * so its first `}` ends it.
+     */
+    private fun ownFiles(html: String): String? {
+        val start = html.indexOf("\"files\":{")
+        if (start < 0) return null
+        val end = html.indexOf('}', start)
+        return if (end < 0) null else html.substring(start, end + 1)
+    }
 
     /**
      * vk.com embeds the file list as json inside `window.cur`, so the urls arrive escaped:

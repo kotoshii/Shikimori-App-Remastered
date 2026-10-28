@@ -4,37 +4,22 @@ import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
-import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
+import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.friends.converter.FriendsViewModelConverter
 import com.gnoemes.shikimori.presentation.view.friends.FriendsView
-import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
+import com.gnoemes.shikimori.entity.common.domain.Page
+import io.reactivex.Single
 import javax.inject.Inject
 
 @InjectViewState
 class FriendsPresenter @Inject constructor(
         private val interactor : UserInteractor,
         private val converter : FriendsViewModelConverter
-) : BaseNetworkPresenter<FriendsView>(){
+) : BasePaginationPresenter<FriendViewModel, FriendsView>() {
 
     var id : Long = Constants.NO_ID
 
-    override fun initData() {
-        loadData()
-    }
-
-    private fun loadData() =
-            interactor.getFriends(id)
-                    .appendLoadingLogic(viewState)
-                    .map(converter)
-                    .subscribe(this::showData, this::processErrors)
-                    .addToDisposables()
-
-    private fun showData(items : List<FriendViewModel>) {
-        viewState.showFriendsCount(items.size)
-        viewState.showData(items)
-    }
-
-    fun onRefresh() {
-        loadData()
-    }
+    //every friend, a page at a time: the api sends at most 100 a request and no total (BUGS #30)
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<FriendViewModel>> =
+            { page -> interactor.getFriends(id, page).map { it.map(converter::apply) } }
 }

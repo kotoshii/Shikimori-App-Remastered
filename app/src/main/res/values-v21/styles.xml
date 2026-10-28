@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="TimePickerStyle" parent="@android:style/Widget.Material.Light.TimePicker">
-        <item name="android:numbersBackgroundColor">?attr/colorDialogSurface</item>
-    </style>
-
     <style name="NavigationDialogMenuStyle">
         <item name="android:listPreferredItemHeightSmall">56dp</item>
         <item name="listPreferredItemHeightSmall">56dp</item>

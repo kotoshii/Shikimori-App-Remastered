@@ -6,6 +6,21 @@
         <item name="android:colorBackground">?attr/colorDialogSurface</item>
     </style>
 
+    <!--The clock face a faint circle on every theme, in the dividers' colour: its numbers take the
+    theme's text colour, white on dark and Amoled. Set in ShikimoriAppTheme.Base, so every Android
+    version gets it: values-v23/v27 replaced the v21 theme that set it, and Android 6+ drew a light
+    grey face under white numbers (P7-T5 Test 75h)-->
+    <style name="TimePickerStyle" parent="@android:style/Widget.Material.Light.TimePicker">
+        <item name="android:numbersBackgroundColor">?attr/colorDivider</item>
+    </style>
+
+    <!--Amoled's ⋮ menus: black with a thin border like its other surfaces (BUGS #17). A toolbar's ⋮
+    takes its background from this style, not from PopupMenuTheme's android:popupBackground: the
+    platform's popup style sets its own, and a style wins over a theme value-->
+    <style name="AmoledOverflowMenu" parent="Widget.MaterialComponents.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/bg_popup_amoled</item>
+    </style>
+
     <style name="ToolbarStyle" parent="Widget.MaterialComponents.Toolbar.Primary">
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
@@ -227,6 +242,22 @@
         <item name="android:fontFamily">sans-serif</item>
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <!--
+        A text field's line and cursor take colorPrimary, a colour close to a dialog's own: the
+        skip-length field could hardly be seen (BUGS #51). Here they take the accent; the field's
+        states stay Material's. Its filled box is colorSurface laid under the box colour, which
+        material-dialogs leaves empty - black on Amoled's grey dialogs - so the box is made
+        see-through and shows whatever it sits on.
+    -->
+    <style name="TextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="materialThemeOverlay">@style/TextInputThemeOverlay</item>
+    </style>
+
+    <style name="TextInputThemeOverlay" parent="ThemeOverlay.MaterialComponents.TextInputEditText.FilledBox">
+        <item name="colorPrimary">?attr/colorSecondary</item>
+        <item name="colorSurface">@android:color/transparent</item>
     </style>
 
     <!--

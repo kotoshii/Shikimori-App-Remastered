@@ -16,5 +16,8 @@ interface ViewController<T> {
 
     fun showError(throwable: Throwable)
 
+    /** A page after the first failed to load; [throwable] comes with show = true only. */
+    fun showPageError(show: Boolean, throwable: Throwable? = null)
+
     fun onAllData() = Unit
 }

@@ -37,7 +37,8 @@ class SeriesDownloadAdapter(
             this.item = item
             with(itemView) {
                 hostingView.text = item.hosting
-                qualityView.text = item.quality
+                //only on screen: a file name or a shared link leaves an unknown quality out
+                qualityView.text = item.quality.ifEmpty { context.getString(R.string.download_quality_unknown) }
             }
         }
 

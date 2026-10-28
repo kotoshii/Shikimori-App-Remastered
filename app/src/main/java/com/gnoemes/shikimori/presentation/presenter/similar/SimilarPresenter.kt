@@ -23,9 +23,9 @@ class SimilarPresenter @Inject constructor(
 
     lateinit var navigationData: CommonNavigationData
 
-    override fun loadItems(): Single<List<SimilarViewModel>> =
-            if (navigationData.type == Type.ANIME) interactor.getAnimes(navigationData.id).map { converter.apply(it, userId == null) }
-            else interactor.getMangas(navigationData.id, navigationData.type).map { converter.apply(it, userId == null) }
+    override fun loadItems(isGuest: Boolean): Single<List<SimilarViewModel>> =
+            if (navigationData.type == Type.ANIME) interactor.getAnimes(navigationData.id).map { converter.apply(it, isGuest) }
+            else interactor.getMangas(navigationData.id, navigationData.type).map { converter.apply(it, isGuest) }
 
     override fun showItems(loaded: List<SimilarViewModel>, isFirst: Boolean) {
         if (loaded.isEmpty()) viewState.showEmptyView()

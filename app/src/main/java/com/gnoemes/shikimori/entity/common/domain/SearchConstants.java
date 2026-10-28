@@ -20,6 +20,12 @@ public class SearchConstants {
     public static final String CENSORED = "censored";
     public static final String STUDIO = "studio";
 
+    /**
+     * The catalog's sort when none is chosen: what the filter sheet shows as its first choice and what
+     * a title list goes out with. The api answers a list with no sort in no stable order (BUGS #12).
+     */
+    public static final ORDER_BY DEFAULT_ORDER = ORDER_BY.RANKED;
+
     public enum ORDER_BY {
         ORDER("order"),
         ID("id"),

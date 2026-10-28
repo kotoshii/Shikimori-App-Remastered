@@ -6,7 +6,6 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.preference.PreferenceFragmentCompat
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.datetime.timePicker
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AscentTheme
@@ -38,7 +37,7 @@ class SettingsThemeFragment : BaseSettingsFragment(), Toolbar.OnMenuItemClickLis
     }
 
     private fun showTimeDialog(initValue: Int, action: (Int) -> Unit) {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             timePicker(currentTime = LocalTime(initValue.toLong()).toDateTimeToday().toGregorianCalendar()) { _, datetime ->
                 action.invoke(DateTime(datetime).withZone(DateTimeZone.UTC).millisOfDay)
             }

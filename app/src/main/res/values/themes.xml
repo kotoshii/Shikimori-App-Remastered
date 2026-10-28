@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
 
@@ -14,6 +14,8 @@
         <item name="toolbarNavigationButtonStyle">@style/Toolbar.Button.Navigation.Tinted</item>
         <item name="actionOverflowButtonStyle">@style/Toolbar.Button.Overflow.Tinted</item>
         <item name="android:listDivider">@drawable/list_divider</item>
+        <item name="textInputStyle">@style/TextInputStyle</item>
+        <item name="android:timePickerStyle">@style/TimePickerStyle</item>
 
         <item name="themeStrokeWidth">0dp</item>
     </style>
@@ -43,6 +45,10 @@
 
         <item name="colorOnPrimary">@color/amoled_colorOnPrimary</item>
         <item name="colorControlHighlight">@color/amoled_colorRipple</item>
+        <item name="android:statusBarColor">@color/player_surface</item>
+        <item name="android:navigationBarColor">@color/player_surface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
     </style>
 
     <style name="ShikimoriAppTheme.Default" parent="ShikimoriAppTheme.Base">
@@ -69,6 +75,11 @@
         <item name="android:textColor">@color/default_colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
+        <!--the hints' colour: the colour the app gives the hints it styles itself. The dark themes
+        never set it and got the light one, dark grey: the time picker's typed-in fields, which show
+        the time as a hint, could not be read (P7-T5 Test 77). Set here, in Dark and in Amoled, not in
+        Base: the player's theme has no colorOnPrimarySecondary, and every text it built crashed-->
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
         <item name="android:windowBackground">@color/default_colorBackground</item>
 
         <item name="md_background_color">@color/default_colorDialogSurface</item>
@@ -115,6 +126,7 @@
         <item name="android:textColor">@color/dark_colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
         <item name="android:windowBackground">@color/dark_colorBackground</item>
 
         <item name="md_background_color">@color/dark_colorDialogSurface</item>
@@ -135,6 +147,9 @@
         <item name="colorStatusBar">@color/dark_colorStatusBar</item>
         <item name="colorNavigationBar">@color/dark_colorStatusBar</item>
         <item name="lightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">?attr/colorNavigationBar</item>
+        <item name="android:statusBarColor">?attr/colorStatusBar</item>
     </style>
 
     <style name="ShikimoriAppTheme.Amoled" parent="ShikimoriAppTheme.Base">
@@ -161,6 +176,7 @@
         <item name="android:textColor">@color/amoled_colorOnSurface</item>
         <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
         <item name="android:textColorSecondary">?attr/colorOnPrimarySecondary</item>
+        <item name="android:textColorHint">?attr/colorOnPrimarySecondary</item>
         <item name="android:windowBackground">@color/amoled_colorBackground</item>
 
         <item name="md_background_color">@color/amoled_colorDialogSurface</item>
@@ -169,7 +185,8 @@
         <item name="colorPrimaryDark">@color/amoled_colorPrimaryVariant</item>
         <item name="colorControlHighlight">@color/amoled_colorRipple</item>
 
-        <item name="dialogCustomBackground">@drawable/dialog_surface_black</item>
+        <item name="dialogCustomBackground">@drawable/bg_popup_amoled</item>
+        <item name="actionOverflowMenuStyle">@style/AmoledOverflowMenu</item>
 
         <item name="android:listDivider">@drawable/list_divider_amoled</item>
 
@@ -183,6 +200,9 @@
         <item name="colorStatusBar">@color/amoled_colorStatusBar</item>
         <item name="colorNavigationBar">@color/amoled_colorPrimary</item>
         <item name="lightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">?attr/colorNavigationBar</item>
+        <item name="android:statusBarColor">?attr/colorStatusBar</item>
     </style>
 
     <style name="AscentStyle" />

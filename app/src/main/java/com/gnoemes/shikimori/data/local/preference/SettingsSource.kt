@@ -17,11 +17,11 @@ interface SettingsSource {
 
     val altSourceByDefault: Boolean
 
-    val isAskForPlayer : Boolean
+    var isAskForPlayer : Boolean
 
     val translationType : TranslationType
 
-    val playerType : PlayerType
+    var playerType : PlayerType
 
     val useLocalTranslationSettings : Boolean
 

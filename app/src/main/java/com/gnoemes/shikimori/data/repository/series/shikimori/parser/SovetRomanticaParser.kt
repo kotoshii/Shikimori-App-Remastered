@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.data.network.VideoApi
 import com.gnoemes.shikimori.entity.series.domain.Track
 import com.gnoemes.shikimori.entity.series.domain.Video
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
+import com.gnoemes.shikimori.entity.series.domain.sortedByQuality
 import io.lindstrom.m3u8.parser.MasterPlaylistParser
 import io.reactivex.Single
 import org.jsoup.Jsoup
@@ -52,7 +53,7 @@ class SovetRomanticaParser @Inject constructor(
 
                     Track(quality, url)
                 }
-                .sortedByDescending { it.quality.toInt() }
+                .sortedByQuality()
     }
 
     private fun getMasterPlaylistUrl(html: String?): String? {

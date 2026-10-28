@@ -36,7 +36,7 @@
         app:layout_constraintEnd_toStartOf="@+id/guideLine"
         app:layout_constraintStart_toEndOf="@+id/sameAuthorView"
         app:layout_constraintTop_toBottomOf="@+id/authorView"
-        tools:text="  *  Blue-ray" />
+        tools:text="  *  Blu-ray" />
 
     <ImageView
         android:id="@+id/sameAuthorView"

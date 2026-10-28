@@ -16,8 +16,7 @@ class FilterGenresPresenter @Inject constructor(
 ) : BaseFilterPresenter<FilterGenresView>(interactor) {
 
     override fun loadData() =
-            loadCategories()
-                    .map { list -> list.first { it.filterType == FilterType.GENRE } }
+            panelCategory(FilterType.GENRE)
                     .map { converter.convertGenres(it, appliedFilters) }
                     .subscribe(this::setData, this::processErrors)
                     .addToDisposables()

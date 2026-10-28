@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written for this repository: the original pom is no longer published anywhere (see the
+     README.md at the root of vendor/maven). Same coordinates and dependencies as before. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.google.android</groupId>
+    <artifactId>flexbox</artifactId>
+    <version>1.1.0</version>
+    <packaging>aar</packaging>
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+        </license>
+    </licenses>
+</project>

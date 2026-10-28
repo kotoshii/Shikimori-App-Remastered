@@ -1,9 +1,16 @@
 package com.gnoemes.shikimori.presentation.view.series
 
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
+import com.arellomobile.mvp.viewstate.strategy.OneExecutionStateStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Image
+import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
+import com.gnoemes.shikimori.entity.series.domain.Video
+import com.gnoemes.shikimori.entity.series.presentation.EmbeddedPlayerNavigationData
+import com.gnoemes.shikimori.entity.series.presentation.EpisodeControls
+import com.gnoemes.shikimori.entity.series.presentation.ExternalPlayerData
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
@@ -15,11 +22,14 @@ interface SeriesView : BaseFragmentView {
 
     fun showData(newItems: List<TranslationViewModel>)
 
-    fun setEpisodeName(index: Int)
+    /**
+     * The toolbar's own controls: the source button, the type button showing [type], and ‹ «# N» ›. A
+     * null [type] or [episodes] hides its buttons.
+     */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showControls(isSourceShown: Boolean, type: TranslationType?, episodes: EpisodeControls?)
 
     fun changeSource(isAlternative : Boolean)
-
-    fun setTranslationType(type: TranslationType)
 
     @StateStrategyType(AddToEndSingleTagStrategy::class, tag = "search")
     fun showSearchView()
@@ -28,7 +38,7 @@ interface SeriesView : BaseFragmentView {
     fun onSearchClosed()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showPlayerDialog()
+    fun showPlayerDialog(playing: EmbeddedPlayerNavigationData)
 
     @StateStrategyType(SkipStrategy::class)
     fun showDownloadHostingDialog(title : String, videos: List<TranslationVideo>, hasUnsupported: Boolean)
@@ -49,13 +59,20 @@ interface SeriesView : BaseFragmentView {
     fun showFolderChooserDialog()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showQualityChooser(items: List<Pair<String, String>>)
+    fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video)
+
+    /** Opens [data] in another app, and tells the presenter when one opened: [video]'s episode counts then. */
+    @StateStrategyType(OneExecutionStateStrategy::class)
+    fun openExternalPlayer(video: TranslationVideo, data: ExternalPlayerData)
 
     fun showFab(show : Boolean)
 
     fun setBackground(image: Image)
 
     fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean = false)
+
+    /** The source does not list the episode; hidden with [showEmptyAuthorsView] (false), which shares its place. */
+    fun showEpisodeNotFoundView(isAlternative: Boolean)
 
     fun showEmptySearchView()
 
@@ -70,10 +87,4 @@ interface SeriesView : BaseFragmentView {
 
     @StateStrategyType(SkipStrategy::class)
     fun scrollToPosition(position: Int)
-
-    fun showEpisodeLoading(show: Boolean)
-
-    fun hideEpisodeName()
-
-    fun showNextEpisode(show: Boolean)
 }

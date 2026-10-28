@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.series.domain.WatchProgress
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -41,7 +40,7 @@ class WatchProgressInteractorImpl @Inject constructor(
     override fun watchedEpisodes(animeId: Long): Int = store.watchedEpisodes(animeId)
 
     override fun episodePlayed(animeId: Long, episode: Int): Completable {
-        if (!settingsSource.isAutoIncrement || !isSignedIn()) return Completable.complete()
+        if (!settingsSource.isAutoIncrement || !userRepository.isSignedIn()) return Completable.complete()
         if (episode != watchedEpisodes(animeId) + 1) return Completable.complete()
 
         return write(animeId) { current ->
@@ -60,7 +59,7 @@ class WatchProgressInteractorImpl @Inject constructor(
     }
 
     override fun markWatchedUpTo(animeId: Long, episode: Int): Completable {
-        if (!isSignedIn() || episode <= watchedEpisodes(animeId)) return Completable.complete()
+        if (!userRepository.isSignedIn() || episode <= watchedEpisodes(animeId)) return Completable.complete()
 
         return write(animeId) { current ->
             when {
@@ -98,9 +97,9 @@ class WatchProgressInteractorImpl @Inject constructor(
     }
 
     private fun lookUp(animeId: Long): Single<WatchProgress> =
-            userRepository.getMyUserId()
-                    .flatMap { ratesRepository.getUserRates(it, animeId, Type.ANIME) }
-                    .map { rates -> rates.firstOrNull()?.let { WatchProgress(it.id, it.episodes ?: 0) } ?: WatchProgress.NOT_IN_LIST }
+            ratesRepository.getMyRate(animeId, Type.ANIME)
+                    .map { WatchProgress(it.id, it.episodes ?: 0) }
+                    .toSingle(WatchProgress.NOT_IN_LIST)
 
     private fun create(animeId: Long, episodes: Int): Completable =
             userRepository.getMyUserId()
@@ -108,5 +107,4 @@ class WatchProgressInteractorImpl @Inject constructor(
                     .doOnSuccess { store.put(animeId, WatchProgress(it.id, it.episodes ?: episodes)) }
                     .ignoreElement()
 
-    private fun isSignedIn(): Boolean = userRepository.getUserStatus() == UserStatus.AUTHORIZED
 }

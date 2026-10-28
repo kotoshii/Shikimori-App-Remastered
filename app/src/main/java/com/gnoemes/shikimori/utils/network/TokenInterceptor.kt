@@ -1,27 +1,22 @@
 package com.gnoemes.shikimori.utils.network
 
-import com.gnoemes.shikimori.data.repository.app.TokenRepository
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
 
+/**
+ * Adds the user's token to every request of the signed-in client; a guest's go without one. A saved
+ * login that cannot be read fails the request with [SignedOutException] (from [AuthHolder.getToken]).
+ */
 class TokenInterceptor @Inject constructor(
-        private val repository: TokenRepository
+        private val holder: AuthHolder
 ) : Interceptor {
 
-    companion object {
-        private const val ACCESS_TOKEN_HEADER = "Authorization"
-    }
-
     override fun intercept(chain: Interceptor.Chain): Response {
-        val original = chain.request()
+        val token = holder.getToken() ?: return chain.proceed(chain.request())
 
-        val requestBuilder = original.newBuilder()
-        if (repository.isTokenExists()) {
-            requestBuilder.addHeader(ACCESS_TOKEN_HEADER, String.format("Bearer %s", repository.getToken()?.authToken))
-        }
-
-        val request = requestBuilder.build()
-        return chain.proceed(request)
+        return chain.proceed(chain.request().newBuilder()
+                .addHeader(AUTHORIZATION_HEADER, token.authorizationHeader)
+                .build())
     }
 }

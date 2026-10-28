@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.presenter.auth
 
+import android.util.Log
 import com.arellomobile.mvp.InjectViewState
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.domain.auth.AuthInteractor
@@ -26,12 +27,24 @@ class AuthPresenter @Inject constructor(
 
     fun onAuthCodeReceived(authCode: String?) {
         interactor.signIn(authCode ?: "")
-                .subscribe(this::onSuccess, this::processErrors)
+                .subscribe(this::onSuccess, this::onSignInFailed)
                 .addToDisposables()
     }
 
     private fun onSuccess() {
         viewState.onBackPressed()
+    }
+
+    //what the sign-in saved is undone already (AuthInteractor). Every kind of error says so - only the
+    //network ones did, and the screen stayed a spinner, or blank, until Back (BUGS #22)
+    private fun onSignInFailed(throwable: Throwable) {
+        val message = errorMessage(throwable)
+        if (message == null) Log.w(TAG, "sign-in failed", throwable)
+        viewState.onSignInFailed(message)
+    }
+
+    companion object {
+        private const val TAG = "SignIn"
     }
 
     fun onAnime365TokenReceived(token: String) {

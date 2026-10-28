@@ -24,6 +24,4 @@ class TokenRepositoryImpl @Inject constructor(
         }
         return token
     }
-
-    override fun isTokenExists(): Boolean = source.isTokenExists()
 }

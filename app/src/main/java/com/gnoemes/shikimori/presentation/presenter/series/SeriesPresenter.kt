@@ -20,7 +20,6 @@ import com.gnoemes.shikimori.presentation.presenter.series.translations.converte
 import com.gnoemes.shikimori.presentation.view.series.SeriesView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.utils.clearAndAddAll
-import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -40,135 +39,196 @@ class SeriesPresenter @Inject constructor(
     lateinit var navigationData: SeriesNavigationData
     lateinit var type: TranslationType
 
+    //what the screen showed before Android killed the app in the background, if it did: set by the
+    //screen from its saved state
+    var restoredState: SeriesState? = null
+
     private var episode: Int? = null
     private var episodeId: Long? = null
     private var isAlternative: Boolean = settingsSource.altSourceByDefault
     private var setting: TranslationSetting? = null
     private var query: String? = null
 
+    //the type this title was last watched in is read before its first translations; until then the
+    //type button stays hidden, so a type picked by hand is never replaced by the saved one. A type
+    //brought back from the saved state is known from the start
+    private var isTypeKnown = false
+    //the episode list is loading, so which episode will show is not known yet
+    private var isLoadingEpisodes = false
+    //no episode is out at all: neither the source nor the type can change that
+    private var isNothingOut = false
+
     private val items = mutableListOf<TranslationViewModel>()
-    private lateinit var selectedVideo: TranslationVideo
     private var selectedDownload: SeriesDownloadItem? = null
-    private var selectedPlayer: PlayerType? = null
 
     private var isWatchSession = false
 
+    //where the list on screen comes from. A source, type or episode switch, «Повторить» and the
+    //return from a player each replace the load still running, so its late answer can no longer
+    //cover the new one (BUGS #52)
+    private val listLoad = loadSlot()
+    //the hosting's page, looked up for «Внешний плеер» or «Скачать». A list load cancels it too; it
+    //never cancels a list load
+    private val videoLookup = loadSlot()
+
     override fun initData() {
         super.initData()
-        type = settingsSource.translationType
-        episode = if (navigationData.episodesAired < navigationData.episode ?: 0) navigationData.episodesAired else navigationData.episode
-        episodeId = episode?.toLong()
+        val restored = restoredState
+        type = restored?.type ?: settingsSource.translationType
+        isTypeKnown = restored?.type != null || !settingsSource.useLocalTranslationSettings
+        if (restored != null) {
+            episode = restored.episode ?: navigationData.episode
+            episodeId = restored.episodeId
+            isAlternative = restored.isAlternative
+        } else {
+            //not cut to shikimori's count: the episode list tells whether it is out (BUGS #50)
+            episode = navigationData.episode
+        }
         //the episode list and the player read the count from here, and add what they write to it
         progressInteractor.remember(navigationData.animeId, navigationData.rateId, navigationData.watchedEpisodes)
 
         viewState.setBackground(navigationData.image)
         viewState.setTitle(navigationData.name)
         viewState.changeSource(isAlternative)
-
-        val opening = episode
-        if (opening != null) showEpisodeName(opening)
-        else viewState.showFab(false)
-
-        if (navigationData.episodesAired == 1) {
-            viewState.hideEpisodeName()
-            viewState.showNextEpisode(false)
-        }
+        //shikimori counts nothing out: so until the episode list says otherwise, as nothing out. The
+        //controls showed during the load and went once it came (Test 72f)
+        isNothingOut = navigationData.episodesAired <= 0
+        viewState.showFab(!isNothingOut)
 
         loadWithEpisode()
     }
 
+    //back from a player the list loads again - once: every later return to the screen used to reload
+    //it too (BUGS #62)
     override fun onViewReattached() {
         super.onViewReattached()
 
         if (isWatchSession) {
             loadWithEpisode()
+            isWatchSession = false
         }
     }
 
     private fun loadWithEpisode() {
-        if (episodeId != null) loadData(episodeId!!)
+        val id = episodeId
+        if (id != null) load(translations(id))
+        //an episode not looked up yet: the episode list first, which tells whether the source has it
         else loadEpisodes()
     }
 
-    private fun loadData(episodeId: Long) =
-            loadSettingsIfNeed()
-                    .flatMap { loadTranslations(it, episodeId) }
-                    .appendLoadingLogic(viewState)
-                    .doOnSubscribe { viewState.showEmptyAuthorsView(false) }
-                    .subscribe(this::setData, this::processErrors)
-                    .addToDisposables()
+    //the next or the previous episode: its translations when the source has it, else that the source
+    //does not have it. › reloaded the same episode when the source had no next one (BUGS #50)
+    fun onNextEpisode() = loadEpisodes { episode = (episode ?: navigationData.episode) + 1 }
 
-    //with no episode asked for: the first one not watched, else the last watched. Back from watching,
-    //the last watched one
-    private fun loadEpisodes() = loadEpisodeList { items ->
-        if (episode == null) episode = if (!isWatchSession) items.firstOrNull { !it.isWatched }?.index ?: items.lastOrNull { it.isWatched }?.index else items.lastOrNull { it.isWatched }?.index ?: items.firstOrNull()?.index
-        isWatchSession = false
-        showEpisode(items, episode ?: 1)
-    }
-
-    //the next episode when the source has it, else the current one again. When the source has
-    //neither, the next one, as having no translations yet
-    fun onNextEpisode() = loadEpisodeList { items ->
-        episode = items.firstOrNull { it.index == episode?.plus(1) }?.index ?: episode
-        showEpisode(items, (episode ?: 0) + 1)
-    }
-
-    private fun loadEpisodeList(onLoaded: (List<Episode>) -> Unit) = interactor.getEpisodes(navigationData.animeId, isAlternative)
-            .map { it.take(navigationData.episodesAired) }
-            .doOnSubscribe { viewState.showEpisodeLoading(true) }
-            .doOnSuccess { viewState.showEpisodeLoading(false) }
-            .subscribe({ onLoaded(it) }, this::processErrors)
-            .addToDisposables()
-
-    private fun loadTranslations(type: TranslationType, episodeId: Long) = interactor
-            .getTranslations(type, navigationData.animeId, episodeId, isAlternative, true)
-            .doOnSubscribe { viewState.setTranslationType(type) }
-            .map { converter.convertTranslations(it, setting) }
-
-    private fun loadSettingsIfNeed(): Single<TranslationType> = (if (setting == null && settingsSource.useLocalTranslationSettings) loadSettings() else Single.just(type))
-
-    private fun loadSettings() =
-            interactor.getTranslationSettings(navigationData.animeId)
-                    .doOnSuccess { setting = it }
-                    .map { type = it.lastType ?: settingsSource.translationType;type }
-
-    fun onRefresh() = loadWithEpisode()
+    fun onPreviousEpisode() = loadEpisodes { episode = ((episode ?: navigationData.episode) - 1).coerceAtLeast(1) }
 
     /**
-     * The chosen [episode]: its translations when the source has it. If not, while anything is out,
-     * episode [notFound] as having no translations yet; else that nothing is out.
+     * The episode list, then [episode] from it (see [showEpisode]). [choose] changes [episode] once the
+     * list has come, so a load that fails leaves the episode shown as it was.
      */
-    private fun showEpisode(items: List<Episode>, notFound: Int) {
-        val id = items.firstOrNull { it.index == episode }?.id
-        episodeId = id
-        when {
-            id != null -> {
-                showEpisodeName(episode!!)
-                loadData(id)
-                viewState.showFab(true)
-            }
-            navigationData.episodesAired > 0 -> {
-                episode = notFound
-                showEpisodeName(notFound)
-                viewState.onHideLoading()
-                viewState.hideEmptyView()
-                viewState.showEmptyAuthorsView(true, isAlternative)
-                viewState.showContent(false)
-                viewState.showFab(true)
-            }
-            else -> {
-                viewState.onHideLoading()
-                viewState.showEmptyView()
-                viewState.hideEpisodeName()
-                viewState.showNextEpisode(false)
-                viewState.showFab(false)
-            }
+    private fun loadEpisodes(choose: () -> Unit = {}) = load(
+            loadSettingsIfNeed()
+                    //all the source has: shikimori's count can lag behind it (BUGS #50)
+                    .flatMap { interactor.getEpisodes(navigationData.animeId, isAlternative) }
+                    .doOnSuccess { choose() }
+                    .flatMap { showEpisode(it) },
+            loadsEpisodes = true)
+
+    private fun translations(episodeId: Long): Single<Loaded> =
+            loadSettingsIfNeed()
+                    .flatMap { interactor.getTranslations(it, navigationData.animeId, episodeId, isAlternative, true) }
+                    .map { Loaded.Translations(converter.convertTranslations(it, setting)) }
+
+    //this title's saved choice - the type and the author last watched - read once, when that setting
+    //is on. A type already known stays
+    private fun loadSettingsIfNeed(): Single<TranslationType> =
+            if (setting != null || !settingsSource.useLocalTranslationSettings) Single.just(type)
+            else interactor.getTranslationSettings(navigationData.animeId)
+                    .doOnSuccess {
+                        setting = it
+                        if (!isTypeKnown) type = it.lastType ?: settingsSource.translationType
+                        isTypeKnown = true
+                        showControls()
+                    }
+                    .map { type }
+
+    /**
+     * What the screen shows, for its saved state ([SeriesState]). Null before the screen has started:
+     * a screen restored in a tab that was never opened again still keeps what it was given.
+     */
+    val state: SeriesState?
+        get() = if (!::type.isInitialized) restoredState
+        else SeriesState(episode, episodeId, isAlternative, type.takeIf { isTypeKnown })
+
+    /** Replaces whatever the list was loading, and a video lookup, with [single]. */
+    private fun load(single: Single<Loaded>, loadsEpisodes: Boolean = false) {
+        videoLookup.cancel()
+        listLoad.start {
+            isLoadingEpisodes = loadsEpisodes
+            showControls()
+            single.appendLoadingLogic(viewState)
+                    .doOnSubscribe { viewState.showEmptyAuthorsView(false) }
+                    .subscribe(this::onLoaded, this::onLoadFailed)
         }
     }
 
-    private fun showEpisodeName(episode: Int) {
-        viewState.setEpisodeName(episode)
-        viewState.showNextEpisode(episode != navigationData.episodesAired)
+    fun onRefresh() = loadWithEpisode()
+
+    override fun onRetry() = onRefresh()
+
+    /**
+     * The chosen [episode]: its translations when the source has it. If not, while anything is out,
+     * that the source does not have it; else that nothing is out.
+     */
+    private fun showEpisode(items: List<Episode>): Single<Loaded> {
+        val id = items.firstOrNull { it.index == episode }?.id
+        episodeId = id
+        isLoadingEpisodes = false
+        isNothingOut = id == null && navigationData.episodesAired <= 0
+        showControls()
+        viewState.showFab(!isNothingOut)
+
+        return when {
+            id != null -> translations(id)
+            isNothingOut -> Single.just(Loaded.NothingOut)
+            else -> Single.just(Loaded.NotInSource)
+        }
+    }
+
+    private fun onLoaded(loaded: Loaded) {
+        when (loaded) {
+            is Loaded.Translations -> setData(loaded.items)
+            Loaded.NotInSource -> {
+                viewState.hideEmptyView()
+                viewState.showEpisodeNotFoundView(isAlternative)
+                viewState.showContent(false)
+            }
+            Loaded.NothingOut -> viewState.showEmptyView()
+        }
+    }
+
+    //whatever failed, the source can still be switched and «Повторить» tries again (BUGS #53)
+    private fun onLoadFailed(throwable: Throwable) {
+        isLoadingEpisodes = false
+        //not known after all: the source button back, so the other source can be tried
+        isNothingOut = false
+        showControls()
+        processErrors(throwable)
+    }
+
+    /**
+     * Which toolbar controls show (BUGS #53): the source and the type whenever they can change
+     * anything; ‹ «# N» › whenever an episode is out, a film too - the chip is the way to whatever the
+     * source has beyond shikimori's count, such as a special uploaded as episode 25 of 24. The arrows
+     * go by shikimori's count (P7-T5 Q117/Q118). While the episode list loads they stay, greyed out:
+     * a tap there needs the episode, and hiding them moved the source button (Test 70f).
+     */
+    private fun showControls() {
+        val last = navigationData.lastEpisode
+        val controls = episode.takeIf { !isNothingOut }?.let {
+            EpisodeControls(it, !isLoadingEpisodes, last > 1 || it > 1, it > 1, it < last)
+        }
+        viewState.showControls(!isNothingOut, type.takeIf { isTypeKnown && !isNothingOut }, controls)
     }
 
     private fun setData(data: List<TranslationViewModel>) {
@@ -205,8 +265,6 @@ class SeriesPresenter @Inject constructor(
         this.episodeId = episodeId
         this.episode = episode
 
-        showEpisodeName(episode)
-
         if (isAlternative != alternative) {
             viewState.changeSource(alternative)
             isAlternative = alternative
@@ -220,13 +278,18 @@ class SeriesPresenter @Inject constructor(
         //(.../720.mp4:hls:manifest.m3u8) - but that file is gone: verified 2026-09-01, the full
         //playlist answers 200 and the shortened one 500, so sharing it handed people a dead link.
         //It was a no-op everywhere else anyway, since no other hosting puts ".mp4" in an hls url.
-        val videoUrl = item.track.url
+        //A video whose sound is its own file is shared as its manifest, so the link plays with sound;
+        //the manifest holds every quality, so the text names none (BUGS #56)
+        val manifestUrl = item.track.manifestUrl
+        val videoUrl = manifestUrl ?: item.track.url
+        val quality = if (manifestUrl != null) "" else item.quality
 
         //the same four things the downloaded file is named after, so a shared link and a saved file
         //describe the episode alike. Blanks drop out rather than leaving separators behind
-        val details = listOf(item.author, item.kind, item.quality, item.hosting).filter { it.isNotBlank() }
+        val details = listOf(item.author, item.kind, quality, item.hosting).filter { it.isNotBlank() }
 
-        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, episode!!, videoUrl, details)
+        //the video's own episode, not the screen's (BUGS #69 B8)
+        val text = shareResourceProvider.getEpisodeShareFormattedMessage(navigationData.name, item.video.episodeId.toInt(), videoUrl, details)
         router.navigateTo(Screens.SHARE, text)
     }
 
@@ -247,49 +310,30 @@ class SeriesPresenter @Inject constructor(
 
         //asking which hosting first means only that one is resolved. Resolving the whole group up
         //front cost a page fetch per hosting, and all but the chosen one were thrown away
-        if (filteredItems.size == 1) showDownloadQualities(filteredItems)
-        else viewState.showDownloadHostingDialog(filteredItems.first().author, filteredItems, filteredItems.size < videos.size)
+        if (filteredItems.size == 1) showDownloadQualities(filteredItems.first())
+        else viewState.showDownloadHostingDialog(converter.authorLabel(filteredItems.first().author), filteredItems, filteredItems.size < videos.size)
     }
 
-    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(listOf(video))
+    fun onDownloadHostingSelected(video: TranslationVideo) = showDownloadQualities(video)
 
-    private fun showDownloadQualities(videos: List<TranslationVideo>) {
-        if (videos.all(::needsAnime365Login)) {
+    //looked up as for a player, and a failure reads the same: a connection that failed is no longer
+    //taken for a deleted video (BUGS #61)
+    private fun showDownloadQualities(video: TranslationVideo) {
+        if (needsAnime365Login(video)) {
             viewState.showAnime365LoginRequired()
             return
         }
 
-        //remembered rather than thrown, because a failed hosting is dropped from the list instead
-        //of failing it - but if that leaves nothing at all, the reason is worth reporting
-        var challenged = false
-
-        Observable.fromIterable(videos)
-                .flatMapSingle { payload ->
-                    interactor.getVideo(payload)
-                            .map { video -> video.tracks.map { converter.convertTrack(video, it) } }
-                            //a hosting that cannot be resolved is left out rather than failing the
-                            //whole list, which matters when more than one is being resolved
-                            .onErrorReturn {
-                                if (it is HostingChallengeException) challenged = true
-                                emptyList<SeriesDownloadItem>()
-                            }
-                }
-                .flatMapIterable { it }
-                .toList()
-                .appendLoadingLogic(viewState)
-                .subscribe({ items ->
-                    when {
-                        items.isNotEmpty() -> viewState.showDownloadDialog(videos.first().author, items)
-                        challenged -> viewState.showHostingChallengeError()
-                        else -> viewState.showTracksNotFoundError()
-                    }
-                }, this::processErrors)
-                .addToDisposables()
+        getVideoAndExecute(video) { found ->
+            val items = found.tracks.map { converter.convertTrack(found, it) }
+            if (items.isEmpty()) viewState.showTracksNotFoundError()
+            else viewState.showDownloadDialog(converter.authorLabel(video.author), items)
+        }
     }
 
     fun showEpisodes() {
-        val data = EpisodesNavigationData(navigationData.animeId, episode!!, isAlternative)
-        viewState.showEpisodesDialog(data)
+        val episode = episode ?: return
+        viewState.showEpisodesDialog(EpisodesNavigationData(navigationData.animeId, episode, isAlternative))
     }
 
     fun onTypeChanged(newType: TranslationType) {
@@ -328,62 +372,91 @@ class SeriesPresenter @Inject constructor(
         viewState.scrollToPosition(0)
     }
 
-    fun onPlayerSelected(playerType: PlayerType) {
-        openVideo(selectedVideo, playerType)
+    fun onHostingClicked(video: TranslationVideo) {
+        //what the built-in player needs goes into the picker with the video, so a tap there still works
+        //after Android has killed the app and brought the picker back (BUGS #48, T5-35)
+        val episodesSize = items.firstOrNull()?.episodesSize ?: return
+        val playing = EmbeddedPlayerNavigationData(navigationData.name, episodesSize, video, isAlternative)
+
+        if (!parsers.isSupported(video.videoHosting)) openVideo(playing, PlayerType.WEB)
+        else if (!settingsSource.isAskForPlayer) openVideo(playing, settingsSource.playerType)
+        else viewState.showPlayerDialog(playing)
     }
 
-    fun onHostingClicked(video: TranslationVideo) {
-        this.selectedVideo = video
-        if (!parsers.isSupported(video.videoHosting)) openVideo(video, PlayerType.WEB)
-        else if (!settingsSource.isAskForPlayer) openVideo(video, settingsSource.playerType)
-        else viewState.showPlayerDialog()
+    //«Запомнить выбор» keeps the player picked and stops asking (BUGS #33)
+    fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) {
+        if (remember) {
+            settingsSource.playerType = playerType
+            settingsSource.isAskForPlayer = false
+        }
+        openVideo(playing, playerType)
     }
 
     //Only embedded player can process object payload
     //Others o uses urls
-    private fun openVideo(payload: TranslationVideo, playerType: PlayerType) {
+    private fun openVideo(playing: EmbeddedPlayerNavigationData, playerType: PlayerType) {
+        val video = playing.payload
+
         //anime365 resolves nothing without a login, so say so instead of opening a player that will
         //find no tracks. The web player is the exception - it loads anime365's own page, which asks
         //for the login itself
-        if (playerType != PlayerType.WEB && needsAnime365Login(payload)) {
+        if (playerType != PlayerType.WEB && needsAnime365Login(video)) {
             viewState.showAnime365LoginRequired()
             return
         }
 
-        if (playerType == PlayerType.EMBEDDED) openPlayer(playerType, EmbeddedPlayerNavigationData(navigationData.name, items.firstOrNull()!!.episodesSize, payload, isAlternative))
-        else if (playerType == PlayerType.WEB && payload.webPlayerUrl != null) openPlayer(playerType, payload.webPlayerUrl)
-        else getVideoAndExecute(payload) { selectedPlayer = playerType; showQualityChooser(it.tracks) }
+        if (playerType == PlayerType.EMBEDDED) play(video, playerType, playing)
+        else if (playerType == PlayerType.WEB && video.webPlayerUrl != null) play(video, playerType, video.webPlayerUrl)
+        else getVideoAndExecute(video) { showQualityChooser(video, playerType, it) }
     }
 
     /** Anime365 needs a paid account, and without the token nothing it hands back has tracks. */
     private fun needsAnime365Login(video: TranslationVideo): Boolean =
             video.videoHosting is VideoHosting.SMOTRET_ANIME && tokenSource.getToken() == null
 
-    private fun showQualityChooser(tracks: List<Track>) {
+    private fun showQualityChooser(video: TranslationVideo, playerType: PlayerType, parsed: Video) {
+        val tracks = parsed.tracks
         if (tracks.isEmpty()) {
             viewState.showTracksNotFoundError()
             return
         }
-        if (tracks.size == 1 || settingsSource.isExternalBestQuality) openPlayer(selectedPlayer!!, tracks.firstOrNull()?.url)
-        else viewState.showQualityChooser(tracks.map { Pair(it.quality, it.url) })
+        //an outside player gets a manifest when the sound is its own file, and the manifest holds every
+        //quality: there is nothing to choose (BUGS #56)
+        val oneChoice = tracks.size == 1 || playerType == PlayerType.EXTERNAL && tracks.first().manifestUrl != null
+        if (oneChoice || settingsSource.isExternalBestQuality) onQualitySelected(video, playerType, parsed, tracks.first())
+        else viewState.showQualityChooser(video, playerType, parsed)
     }
 
-    fun onQualityChoosed(url: String?) {
-        openPlayer(selectedPlayer!!, url)
+    fun onQualitySelected(video: TranslationVideo, playerType: PlayerType, parsed: Video, track: Track) {
+        //another app may not be there to open it: the screen tries, and says when one did
+        if (playerType == PlayerType.EXTERNAL) viewState.openExternalPlayer(video, ExternalPlayerData.of(track, parsers.playerHeaders(parsed)))
+        else play(video, playerType, track.url)
     }
 
-    override fun openPlayer(playerType: PlayerType, payload: Any?) {
-        super.openPlayer(playerType, payload)
+    /**
+     * Opens [video] in the built-in or the web player: [payload] is the built-in player's data, else the url to
+     * play. An outside app is opened by the screen itself, which learns whether one did ([onQualitySelected]).
+     */
+    private fun play(video: TranslationVideo, playerType: PlayerType, payload: Any?) {
+        router.navigateTo(if (playerType == PlayerType.EMBEDDED) Screens.EMBEDDED_PLAYER else Screens.WEB_PLAYER, payload)
+        onPlayerOpened(video, playerType)
+    }
 
+    //«Внешний плеер» counts the episode only once an app has opened it (BUGS #63)
+    fun onExternalPlayerOpened(video: TranslationVideo) = onPlayerOpened(video, PlayerType.EXTERNAL)
+
+    private fun onPlayerOpened(video: TranslationVideo, playerType: PlayerType) {
         isWatchSession = true
-        saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, selectedVideo)
+        saveSettingsAndIncrementOptional(playerType != PlayerType.EMBEDDED, video)
     }
 
     private fun saveSettingsAndIncrementOptional(increment: Boolean, payload: TranslationVideo) {
         //the built-in player counts the episode itself, once it starts playing. A failed count is
-        //only logged: it happens in the background and must not cover the screen with an error
+        //only logged: it happens in the background and must not cover the screen with an error.
+        //The video's own episode, not the screen's (BUGS #69 B8)
         if (increment) {
-            progressInteractor.episodePlayed(payload.animeId, episode!!)
+            val episode = payload.episodeIndex
+            progressInteractor.episodePlayed(payload.animeId, episode)
                     .subscribe({}, { Log.w(TAG, "could not count episode $episode", it) })
                     .addToDisposables()
         }
@@ -393,20 +466,29 @@ class SeriesPresenter @Inject constructor(
                 .addToDisposables()
     }
 
-    private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) {
+    private fun getVideoAndExecute(payload: TranslationVideo, onSubscribe: (Video) -> Unit) = videoLookup.start {
         interactor.getVideo(payload)
                 .appendLoadingLogic(viewState)
                 .subscribe(onSubscribe::invoke, this::processVideoErrors)
-                .addToDisposables()
     }
 
     /**
-     * A hosting that asks for an anti-bot check has a cause worth naming - otherwise it reads as
-     * the video being gone, which is what the generic path says.
+     * A failed lookup is a message, and the list stays (BUGS #60). An anti-bot check and a connection
+     * or server error each say what happened; anything else reads as the video being gone, as an
+     * unreadable hosting page does.
      */
     private fun processVideoErrors(throwable: Throwable) {
-        if (throwable is HostingChallengeException) viewState.showHostingChallengeError()
-        else processErrors(throwable)
+        //the list stays: the loading step hid it, and brings it back only for an error with no view
+        viewState.showContent(true)
+        val message = errorMessage(throwable)
+        when {
+            throwable is HostingChallengeException -> viewState.showHostingChallengeError()
+            message != null -> viewState.showErrorMessage(message)
+            else -> {
+                Log.w(LOOKUP_TAG, "video lookup failed", throwable)
+                viewState.showTracksNotFoundError()
+            }
+        }
     }
 
     fun onTrackForDownloadSelected(item: SeriesDownloadItem) {
@@ -427,7 +509,8 @@ class SeriesPresenter @Inject constructor(
 
     private fun downloadVideo(item: SeriesDownloadItem) {
         val data = DownloadVideoData(
-                navigationData.animeId, navigationData.name, episode!!, item.track.url, item.track.audioUrl,
+                //the video's own episode, not the screen's (BUGS #69 B8)
+                navigationData.animeId, navigationData.name, item.video.episodeId.toInt(), item.track.url, item.track.audioUrl,
                 parsers.headers(item.video),
                 author = item.author,
                 quality = item.quality,
@@ -447,7 +530,19 @@ class SeriesPresenter @Inject constructor(
     private fun processDownloadErrors(throwable: Throwable) {
     }
 
+    /** How a list load ends. */
+    private sealed class Loaded {
+        class Translations(val items: List<TranslationViewModel>) : Loaded()
+
+        /** The source does not list the episode: not out yet, or not uploaded there. */
+        object NotInSource : Loaded()
+
+        /** No episode is out at all. */
+        object NothingOut : Loaded()
+    }
+
     companion object {
         private const val TAG = "WatchProgress"
+        private const val LOOKUP_TAG = "VideoLookup"
     }
 }

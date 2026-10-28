@@ -8,9 +8,9 @@ import com.gnoemes.shikimori.entity.rates.data.RateResponse
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
-import com.gnoemes.shikimori.utils.dropExtraPageItem
+import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -20,17 +20,17 @@ class RatesRepositoryImpl @Inject constructor(
         private val userRepository: UserRepository
 ) : RatesRepository {
 
-    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
+    override fun getAnimeRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>> =
             rates(api.getUserAnimeRates(id, page, limit, rateStatus.status), limit)
 
-    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<List<Rate>> =
+    override fun getMangaRates(id: Long, page: Int, limit: Int, rateStatus: RateStatus): Single<Page<Rate>> =
             rates(api.getUserMangaRates(id, page, limit, rateStatus.status), limit)
 
-    private fun rates(request: Single<List<RateResponse>>, limit: Int): Single<List<Rate>> =
+    private fun rates(request: Single<List<RateResponse>>, limit: Int): Single<Page<Rate>> =
             request
-                    .map { it.dropExtraPageItem(limit) }
-                    .map(converter)
-                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(emptyList()) else Single.error(it) }
+                    .map { Page.withExtraRow(it, limit) }
+                    .map { it.map(converter::apply) }
+                    .onErrorResumeNext { if (it is NoSuchElementException) Single.just(Page(emptyList<Rate>(), true)) else Single.error(it) }
 
     override fun getUserRates(id: Long, targetId: Long?, target: Type?, statuses: String?, page: Int, limit: Int): Single<List<UserRate>> =
             api.getUserRates(id, targetId, target?.let { targetType(it) }, statuses, page, limit)
@@ -38,11 +38,16 @@ class RatesRepositoryImpl @Inject constructor(
 
     override fun getMyRates(type: Type, statuses: List<RateStatus>?): Single<Map<Long, UserRate>> =
             Single.defer {
-                if (userRepository.getUserStatus() != UserStatus.AUTHORIZED) Single.just(emptyMap())
+                if (!userRepository.isSignedIn()) Single.just(emptyMap())
                 else userRepository.getMyUserId()
                         .flatMap { getUserRates(it, target = type, statuses = statuses?.joinToString(",") { status -> status.status }) }
                         .map { rates -> rates.filter { it.targetId != null }.associateBy { it.targetId!! } }
             }
+
+    override fun getMyRate(targetId: Long, type: Type): Maybe<UserRate> =
+            userRepository.getMyUserId()
+                    .flatMap { getUserRates(it, targetId, type) }
+                    .flatMapMaybe { rates -> rates.firstOrNull()?.let { Maybe.just(it) } ?: Maybe.empty() }
 
     //the api knows only Anime and Manga: a ranobe is a manga to it, and "Ranobe" gets nothing back
     private fun targetType(type: Type): String = if (type == Type.ANIME) "Anime" else "Manga"

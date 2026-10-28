@@ -15,6 +15,8 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
 
     lateinit var type: Type
     lateinit var appliedFilters: HashMap<String, MutableList<FilterItem>>
+    /** The filter categories, when whoever opened this sheet or panel had them loaded already. */
+    var categories: List<FilterCategory>? = null
 
     override fun initData() {
         onFiltersChanged()
@@ -22,12 +24,17 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
 
     abstract fun loadData()
 
-    /** The filter categories of this [type]: anime, manga or ranobe each have their own. */
-    protected fun loadCategories(): Single<List<FilterCategory>> = when (type) {
-        Type.MANGA -> filterInteractor.getMangaFilters()
-        Type.RANOBE -> filterInteractor.getRanobeFilters()
-        else -> filterInteractor.getAnimeFilters()
-    }
+    protected fun loadCategories(): Single<List<FilterCategory>> = filterInteractor.getFilters(type)
+
+    /**
+     * The categories handed over, at once: a sheet slid in empty and filled a few frames later, waiting
+     * for a load on another thread (P7-T5 Tests 80, 81). Else loaded, and kept for the next change.
+     */
+    protected fun categories(): Single<List<FilterCategory>> =
+            categories?.let { Single.just(it) } ?: loadCategories().doOnSuccess { categories = it }
+
+    protected fun panelCategory(type: FilterType): Single<FilterCategory> =
+            categories().map { list -> list.first { it.filterType == type } }
 
     protected open fun onFiltersChanged() {
         viewState.setResetEnabled(appliedFilters.size > 0)
@@ -43,9 +50,10 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         viewState.onFiltersAccepted(appliedFilters)
     }
 
+    //a long press excludes a chip, and on an excluded one makes it a normal pick again - it did nothing
     open fun onFilterInverted(type: FilterType, item: FilterViewModel) {
         when (item.state) {
-            FilterViewModel.STATE.INVERTED -> Unit
+            FilterViewModel.STATE.INVERTED -> includeAgain(type.value, FilterItem(type.value, item.value, item.text))
             else -> invertOrAddNew(type.value, FilterItem(type.value, item.value, item.text))
         }
         onFiltersChanged()
@@ -68,6 +76,12 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         item?.let { removeFromSelected(key, it); addInverted(key, it) } ?: addInverted(key, value)
     }
 
+    private fun includeAgain(key: String, inverted: FilterItem) {
+        val item = getAppliedFilter(key, inverted.value) ?: inverted
+        removeFromSelected(key, item)
+        addToSelected(key, item.copy(value = item.value?.invertValue()))
+    }
+
     protected open fun addInverted(key: String, item: FilterItem) {
         val newItem =
                 if (!item.value?.contains("!")!!) item.copy(value = "!${item.value}")
@@ -75,20 +89,20 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         addToSelected(key, newItem)
     }
 
+    //added when missing. A chip already there used to replace the whole list with itself: typing a
+    //season that was already picked dropped every other season (BUGS #59 N3)
     protected open fun addToSelected(key: String, value: FilterItem) {
-        if (appliedFilters[key] != null && !appliedFilters[key]?.contains(value)!!) {
-            appliedFilters[key]?.add(value)
-        } else {
-            appliedFilters[key] = mutableListOf(value)
-        }
+        val list = appliedFilters[key]
+        if (list == null) appliedFilters[key] = mutableListOf(value)
+        else if (!list.contains(value)) list.add(value)
     }
 
+    //the key goes with its last item - only when that item is the one asked for: a one-item list was
+    //dropped whatever item was asked (BUGS #69 B14). The lists are this panel's own copies
     protected open fun removeFromSelected(key: String, value: FilterItem) {
-        if (appliedFilters[key]?.size == 1) {
-            appliedFilters.remove(key)
-        } else {
-            appliedFilters[key]?.remove(value)
-        }
+        val list = appliedFilters[key] ?: return
+        list.remove(value)
+        if (list.isEmpty()) appliedFilters.remove(key)
     }
 
     protected fun String.invertValue(): String = if (this.contains("!")) this.replace("!", "") else "!${this}"

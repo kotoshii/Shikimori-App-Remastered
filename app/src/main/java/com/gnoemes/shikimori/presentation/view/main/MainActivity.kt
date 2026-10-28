@@ -23,6 +23,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabContainer
 import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
+import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
@@ -42,7 +43,11 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     lateinit var mainPresenter: MainPresenter
 
     @ProvidePresenter
-    fun providePresenter(): MainPresenter = presenterProvider.get()
+    fun providePresenter(): MainPresenter = presenterProvider.get().apply { isRestored = restoring }
+
+    //this screen comes from saved state - after a rotation, or after Android killed the app in the
+    //background. Read when the presenter is made, which after a rotation it is not
+    private var restoring = false
 
     @Inject
     lateinit var localNavigatorHolder: NavigatorHolder
@@ -59,6 +64,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        restoring = savedInstanceState != null
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
@@ -114,7 +120,7 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         val dialog = appUpdateSource.getAvailableUpdate()?.let { ChangelogDialog.newInstance(it) }
 
         if (dialog != null) dialog.show(supportFragmentManager, ChangelogDialog.TAG)
-        else startActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
+        else startOutsideActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
     override fun tabRootActionOrClearBackStack(screenKey: String) {

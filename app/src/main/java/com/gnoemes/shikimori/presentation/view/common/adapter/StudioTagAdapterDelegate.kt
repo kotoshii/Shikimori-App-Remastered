@@ -30,7 +30,7 @@ class StudioTagAdapterDelegate(
         private lateinit var item: DetailsTagItem
 
         init {
-            itemView.onClick { callback.invoke(DetailsAction.StudioClicked(item.id)) }
+            itemView.onClick { callback.invoke(DetailsAction.StudioClicked(item.id, item.name)) }
         }
 
         fun bind(item: DetailsTagItem) {

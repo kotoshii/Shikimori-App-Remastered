@@ -6,7 +6,6 @@ import com.gnoemes.shikimori.domain.series.WatchProgressInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.episodes.converter.EpisodeViewModelConverter
@@ -30,6 +29,9 @@ class EpisodesPresenter @Inject constructor(
     private val items = mutableListOf<EpisodeViewModel>()
     private var query : String? = null
 
+    //a source switch or «Повторить» replaces the list still loading (BUGS #52)
+    private val episodesLoad = loadSlot()
+
     override fun initData() {
         super.initData()
         isAlternativeSource = navigationData.isAlternative
@@ -42,15 +44,15 @@ class EpisodesPresenter @Inject constructor(
         loadData()
     }
 
-    private fun loadData() =
-            loadEpisodes()
-                    .appendLoadingLogic(viewState)
-                    .subscribe(this::setData, this::processErrors)
-                    .addToDisposables()
+    private fun loadData() = episodesLoad.start {
+        loadEpisodes()
+                .appendLoadingLogic(viewState)
+                .subscribe(this::setData, this::processErrors)
+    }
 
     private fun loadEpisodes(): Single<List<EpisodeViewModel>> =
             interactor.getEpisodes(navigationData.animeId, isAlternativeSource)
-                    .map{ converter.convert(it, navigationData.currentEpisode, userInteractor.getUserStatus())}
+                    .map{ converter.convert(it, navigationData.currentEpisode, !userInteractor.isSignedIn())}
 
     private fun setData(items: List<EpisodeViewModel>) {
         val first = this.items.isEmpty()
@@ -84,7 +86,7 @@ class EpisodesPresenter @Inject constructor(
     }
 
     fun onEpisodeLongClick(item: EpisodeViewModel) {
-        if (userInteractor.getUserStatus() == UserStatus.GUEST) {
+        if (!userInteractor.isSignedIn()) {
             viewState.showErrorMessage(resourceProvider.needAuthRates)
             return
         }

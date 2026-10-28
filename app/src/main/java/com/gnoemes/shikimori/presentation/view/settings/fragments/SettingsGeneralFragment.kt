@@ -1,7 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.settings.fragments
 
 import android.os.Bundle
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.data.local.preference.UserSource
@@ -13,6 +12,7 @@ import com.gnoemes.shikimori.utils.chooseDownloadFolder
 import com.gnoemes.shikimori.utils.preference
 import com.gnoemes.shikimori.utils.prefs
 import com.gnoemes.shikimori.utils.putString
+import com.gnoemes.shikimori.utils.materialDialog
 import javax.inject.Inject
 
 
@@ -79,7 +79,7 @@ class SettingsGeneralFragment : BaseSettingsFragment() {
     }
 
     private fun showRateSwipeActionDialog(key: String) {
-        MaterialDialog(context!!).show {
+        context!!.materialDialog().show {
             listItems(R.array.rate_swipe_actions, waitForPositiveButton = false) { dialog, index, text ->
                 preference(key)?.summary = text
                 prefs().putString(key, RateSwipeAction.values()[index].name)

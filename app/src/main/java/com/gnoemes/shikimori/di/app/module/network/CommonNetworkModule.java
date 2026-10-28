@@ -30,8 +30,11 @@ public interface CommonNetworkModule {
                 .addInterceptor(missingPosterInterceptor)
                 //innermost of the two, so the poster lookup it triggers is queued separately
                 .addInterceptor(rateLimiter)
-                .addNetworkInterceptor(userAgentInterceptor)
-                .addNetworkInterceptor(interceptor)
+                //application interceptors, as on the client with the token: as network ones the name came
+                //after OkHttp's own "okhttp/…" and both were sent, and a request that failed before a
+                //connection was never logged (BUGS #79)
+                .addInterceptor(userAgentInterceptor)
+                .addInterceptor(interceptor)
                 .build();
     }
 
