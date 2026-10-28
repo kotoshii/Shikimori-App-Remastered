@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.presentation.view.common.adapter.StartSnapHelper
 import com.gnoemes.shikimori.presentation.view.common.adapter.content.ContentAdapter
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.gone
+import com.gnoemes.shikimori.utils.isVisible
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.widgets.HorizontalSpaceItemDecorator
 import kotlinx.android.synthetic.main.layout_details_content.view.contentLabelView
@@ -59,7 +60,8 @@ class DetailsContentViewHolder(
         with(view) {
             contentLabelView.setText(stringRes)
             adapter.bindItems(item.items)
-            if (withSearch) searchBtn.visible()
+            //not while the search is open: each result put 🔍 back beside the field (P7-T5 17.6)
+            if (withSearch && !searchView.isVisible()) searchBtn.visible()
             progressBar.gone()
             contentRecyclerView.visible()
         }
