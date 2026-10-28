@@ -15,7 +15,8 @@ import javax.inject.Inject
  * Android has no way to delete one site's cookies, so each is overwritten with an expired copy, which
  * deletes it. The store gives names only, not whether a cookie belongs to the host alone or to
  * `.host` and its subdomains, so both forms are expired. The names are read, not listed here: the site
- * moved to new software in 2026, and its session cookie is no longer the old `_kawai_session`.
+ * is moving to new software, its old pages still set `_kawai_session` but the sign-in page is a new one
+ * with cookies of its own, and which cookie holds the login after a sign-in is not known.
  */
 class ShikimoriSiteCookies @Inject constructor() {
 

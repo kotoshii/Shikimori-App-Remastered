@@ -30,7 +30,7 @@ class FilterSourceImpl @Inject constructor(
     companion object {
         /**
          * Adult genres per vocabulary, hidden unless adult content is on. Erotica is 17+ rather
-         * than adult and stays visible, as it always has - see docs/_internal/GENRES_V2_SPIKE.md.
+         * than adult and stays visible, as it always has - see GENRES_V2_SPIKE.md.
          */
         private val R18_ANIME = setOf(12L, 33L, 34L)    //Хентай, Яой, Юри
         private val R18_MANGA = setOf(602L, 65L, 75L)   //the same three, manga ids

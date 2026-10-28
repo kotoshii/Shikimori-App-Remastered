@@ -9,7 +9,7 @@ import java.util.Locale
  *
  * Replaced the old hardcoded genre list for everything the user sees. v2 splits one flat list into
  * three [Kind]s, and unlike the rest api it is populated for titles added from 2025 onward, where
- * `/api/animes/{id}` returns an empty `genres` array. See docs/_internal/GENRES_V2_SPIKE.md.
+ * `/api/animes/{id}` returns an empty `genres` array. See GENRES_V2_SPIKE.md.
  *
  * ⚠️ [id] only means something together with the entry type it was fetched for. Anime and manga
  * ids are separate namespaces, and five ids mean **different genres** in v1 and v2 (39 was Police,
