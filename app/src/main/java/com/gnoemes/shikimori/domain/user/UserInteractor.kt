@@ -28,7 +28,7 @@ interface UserInteractor {
 
     fun removeFriend(id: Long): Completable
 
-    fun getUserStatus(): UserStatus
+    fun isSignedIn(): Boolean
 
     /** Signs out: the login on the phone and shikimori's session in the in-app browser. */
     fun signOut(): Completable

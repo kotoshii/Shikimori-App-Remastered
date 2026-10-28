@@ -32,7 +32,7 @@ class UserRepositoryImpl @Inject constructor(
 
     //the saved user while signed in, else from the api - also when the saved one cannot be read
     override fun getMyUserBrief(): Single<UserBrief> =
-            Maybe.fromCallable<UserBrief> { if (userSource.getUserStatus() == UserStatus.AUTHORIZED) userSource.getUser() else null }
+            Maybe.fromCallable<UserBrief> { if (userSource.isSignedIn()) userSource.getUser() else null }
                     .switchIfEmpty(api.getCurrentUserBrief()
                             .map { converter.convertResponse(it)!! }
                             .doOnSuccess { userSource.setUser(it) }
@@ -68,7 +68,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override fun removeFriend(id: Long): Completable = api.deleteFriend(id)
 
-    override fun getUserStatus(): UserStatus = userSource.getUserStatus()
+    override fun isSignedIn(): Boolean = userSource.isSignedIn()
 
     override fun setUserStatus(status: UserStatus) = userSource.setUserStatus(status)
 }

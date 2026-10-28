@@ -37,7 +37,7 @@ class UserInteractorImpl @Inject constructor(
     override fun getHistory(id: Long, page: Int, limit: Int): Single<Page<UserHistory>> =
             repository.getHistory(id, page, limit)
                     .applyErrorHandlerAndSchedulers()
-                    .hiddenListOnForbidden { getUserStatus() == UserStatus.GUEST }
+                    .hiddenListOnForbidden { !isSignedIn() }
 
     override fun ignore(id: Long): Completable = repository.ignore(id).applyErrorHandlerAndSchedulers()
 
@@ -47,7 +47,7 @@ class UserInteractorImpl @Inject constructor(
 
     override fun removeFriend(id: Long): Completable = repository.removeFriend(id).applyErrorHandlerAndSchedulers()
 
-    override fun getUserStatus(): UserStatus = repository.getUserStatus()
+    override fun isSignedIn(): Boolean = repository.isSignedIn()
 
     override fun signOut(): Completable =
             Completable.fromAction { authHolder.signOut() }

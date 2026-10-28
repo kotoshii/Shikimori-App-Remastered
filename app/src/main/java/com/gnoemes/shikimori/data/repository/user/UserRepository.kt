@@ -31,7 +31,7 @@ interface UserRepository {
 
     fun removeFriend(id: Long): Completable
 
-    fun getUserStatus(): UserStatus
+    fun isSignedIn(): Boolean
 
     fun setUserStatus(status: UserStatus)
 }

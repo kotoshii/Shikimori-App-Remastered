@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.entity.rates.data.RateResponse
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.entity.common.domain.Page
 import io.reactivex.Completable
 import io.reactivex.Maybe
@@ -39,7 +38,7 @@ class RatesRepositoryImpl @Inject constructor(
 
     override fun getMyRates(type: Type, statuses: List<RateStatus>?): Single<Map<Long, UserRate>> =
             Single.defer {
-                if (userRepository.getUserStatus() != UserStatus.AUTHORIZED) Single.just(emptyMap())
+                if (!userRepository.isSignedIn()) Single.just(emptyMap())
                 else userRepository.getMyUserId()
                         .flatMap { getUserRates(it, target = type, statuses = statuses?.joinToString(",") { status -> status.status }) }
                         .map { rates -> rates.filter { it.targetId != null }.associateBy { it.targetId!! } }

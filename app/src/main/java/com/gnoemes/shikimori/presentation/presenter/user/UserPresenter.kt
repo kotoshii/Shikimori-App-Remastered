@@ -10,7 +10,6 @@ import com.gnoemes.shikimori.entity.main.BottomScreens
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.presentation.RateNavigationData
 import com.gnoemes.shikimori.entity.user.domain.UserDetails
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.entity.user.presentation.UserContentType
 import com.gnoemes.shikimori.entity.user.presentation.UserContentViewModel
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryNavigationData
@@ -258,7 +257,7 @@ class UserPresenter @Inject constructor(
         } else false
     }
 
-    private fun isGuest(): Boolean = interactor.getUserStatus() == UserStatus.GUEST
+    private fun isGuest(): Boolean = !interactor.isSignedIn()
 
     //the tab's own profile shows «Войти» after a sign-out, whatever failed
     override fun processErrors(throwable: Throwable) {

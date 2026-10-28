@@ -22,7 +22,6 @@ import com.gnoemes.shikimori.entity.rates.presentation.RateSortViewModel
 import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.series.presentation.SeriesNavigationData
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.base.PendingRateChanges
 import com.gnoemes.shikimori.presentation.presenter.common.paginator.ViewController
@@ -77,7 +76,7 @@ class RatePresenter @Inject constructor(
     private var isMyList = false
 
     private val isSignedOutOfMyList: Boolean
-        get() = ownerId == null && userInteractor.getUserStatus() == UserStatus.GUEST
+        get() = ownerId == null && !userInteractor.isSignedIn()
 
 
     //the sort saved for the type shown, read each time: a copy kept here missed the anime ↔ manga switch (BUGS #7)

@@ -21,7 +21,7 @@ class UserSourceImpl @Inject constructor(
 
     override fun getUserId(): Long = prefs.getLong(SettingsExtras.USER_ID, Constants.NO_ID)
 
-    override fun isSignedIn(): Boolean = getUserId() != Constants.NO_ID
+    override fun isSignedIn(): Boolean = getUserStatus() == UserStatus.AUTHORIZED
 
     override fun setUserId(id: Long) {
         prefs.putLong(SettingsExtras.USER_ID, id)

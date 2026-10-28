@@ -6,7 +6,6 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.Rate
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import com.gnoemes.shikimori.utils.hiddenListOnForbidden
 import com.gnoemes.shikimori.entity.common.domain.Page
@@ -30,7 +29,7 @@ class RatesInteractorImpl @Inject constructor(
                     .applyErrorHandlerAndSchedulers()
                     .hiddenListOnForbidden(this::isGuest)
 
-    private fun isGuest(): Boolean = userRepository.getUserStatus() == UserStatus.GUEST
+    private fun isGuest(): Boolean = !userRepository.isSignedIn()
 
     override fun getRate(id: Long): Single<UserRate> = repository.getRate(id).applyErrorHandlerAndSchedulers()
 

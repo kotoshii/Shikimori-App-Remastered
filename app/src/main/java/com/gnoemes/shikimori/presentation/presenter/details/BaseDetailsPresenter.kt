@@ -18,7 +18,6 @@ import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.base.PendingRateChanges
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
@@ -52,7 +51,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
 
     /** Read when needed, never kept: the app may sign the user out while the page is open (BUGS #70). */
     private val isGuest: Boolean
-        get() = userInteractor.getUserStatus() == UserStatus.GUEST
+        get() = !userInteractor.isSignedIn()
 
     /** The title's details, once loaded. */
     protected var details: D? = null

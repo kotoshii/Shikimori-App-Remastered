@@ -8,7 +8,6 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.rates.domain.UserRate
 import com.gnoemes.shikimori.entity.series.domain.WatchProgress
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -41,7 +40,7 @@ class WatchProgressInteractorImpl @Inject constructor(
     override fun watchedEpisodes(animeId: Long): Int = store.watchedEpisodes(animeId)
 
     override fun episodePlayed(animeId: Long, episode: Int): Completable {
-        if (!settingsSource.isAutoIncrement || !isSignedIn()) return Completable.complete()
+        if (!settingsSource.isAutoIncrement || !userRepository.isSignedIn()) return Completable.complete()
         if (episode != watchedEpisodes(animeId) + 1) return Completable.complete()
 
         return write(animeId) { current ->
@@ -60,7 +59,7 @@ class WatchProgressInteractorImpl @Inject constructor(
     }
 
     override fun markWatchedUpTo(animeId: Long, episode: Int): Completable {
-        if (!isSignedIn() || episode <= watchedEpisodes(animeId)) return Completable.complete()
+        if (!userRepository.isSignedIn() || episode <= watchedEpisodes(animeId)) return Completable.complete()
 
         return write(animeId) { current ->
             when {
@@ -108,5 +107,4 @@ class WatchProgressInteractorImpl @Inject constructor(
                     .doOnSuccess { store.put(animeId, WatchProgress(it.id, it.episodes ?: episodes)) }
                     .ignoreElement()
 
-    private fun isSignedIn(): Boolean = userRepository.getUserStatus() == UserStatus.AUTHORIZED
 }

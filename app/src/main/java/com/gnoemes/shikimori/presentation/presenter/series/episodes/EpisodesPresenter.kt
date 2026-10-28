@@ -6,7 +6,6 @@ import com.gnoemes.shikimori.domain.series.WatchProgressInteractor
 import com.gnoemes.shikimori.domain.user.UserInteractor
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
 import com.gnoemes.shikimori.entity.series.presentation.EpisodesNavigationData
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.presenter.base.BaseNetworkPresenter
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.presenter.series.episodes.converter.EpisodeViewModelConverter
@@ -53,7 +52,7 @@ class EpisodesPresenter @Inject constructor(
 
     private fun loadEpisodes(): Single<List<EpisodeViewModel>> =
             interactor.getEpisodes(navigationData.animeId, isAlternativeSource)
-                    .map{ converter.convert(it, navigationData.currentEpisode, userInteractor.getUserStatus())}
+                    .map{ converter.convert(it, navigationData.currentEpisode, !userInteractor.isSignedIn())}
 
     private fun setData(items: List<EpisodeViewModel>) {
         val first = this.items.isEmpty()
@@ -87,7 +86,7 @@ class EpisodesPresenter @Inject constructor(
     }
 
     fun onEpisodeLongClick(item: EpisodeViewModel) {
-        if (userInteractor.getUserStatus() == UserStatus.GUEST) {
+        if (!userInteractor.isSignedIn()) {
             viewState.showErrorMessage(resourceProvider.needAuthRates)
             return
         }

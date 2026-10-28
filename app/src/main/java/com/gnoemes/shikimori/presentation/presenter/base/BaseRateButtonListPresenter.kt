@@ -6,7 +6,6 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.RateButtonListItem
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
-import com.gnoemes.shikimori.entity.user.domain.UserStatus
 import com.gnoemes.shikimori.presentation.view.base.fragment.RateButtonListView
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import io.reactivex.Single
@@ -31,7 +30,7 @@ abstract class BaseRateButtonListPresenter<View : RateButtonListView, Item : Rat
     private var selectedItem: Item? = null
 
     private val isGuest: Boolean
-        get() = userInteractor.getUserStatus() == UserStatus.GUEST
+        get() = !userInteractor.isSignedIn()
 
     /** The screen's items, converted; [isGuest] hides their status buttons. */
     protected abstract fun loadItems(isGuest: Boolean): Single<List<Item>>
