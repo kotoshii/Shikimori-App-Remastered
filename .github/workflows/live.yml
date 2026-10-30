@@ -8,8 +8,9 @@ on:
   push:
     branches: ['**']
   schedule:
-    # Mondays, 06:00 UTC
-    - cron: '0 6 * * 1'
+    # Mondays, 06:17 UTC: off the top of the hour, when GitHub delays or drops scheduled runs under load.
+    # Runs only once this file is on the default branch (master)
+    - cron: '17 6 * * 1'
   workflow_dispatch:
 
 concurrency:
