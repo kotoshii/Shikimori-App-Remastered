@@ -8,14 +8,22 @@ here on purpose. Android adds a database's -journal and -wal files by itself.
 Since Android 12 these rules cover the Google backup and a phone-to-phone transfer only: adb backup
 copies everything (FullBackup.getConfigSectionForBackupDestination has no section for it).
 With targetSdk 31 or higher, Android 12+ reads android:dataExtractionRules instead: it needs the same
-list.-->
+list.
+The settings files are named after the app id, so each is listed twice: the release's and the debug
+build's (com.gnoemes.shikimori.debug). A file the app does not have is skipped.-->
 <full-backup-content>
     <include
         domain="sharedpref"
         path="com.gnoemes.shikimori_preferences.xml" />
     <include
         domain="sharedpref"
+        path="com.gnoemes.shikimori.debug_preferences.xml" />
+    <include
+        domain="sharedpref"
         path="com.gnoemes.shikimori_themepreferences.xml" />
+    <include
+        domain="sharedpref"
+        path="com.gnoemes.shikimori.debug_themepreferences.xml" />
     <include
         domain="database"
         path="shikimori_database" />

@@ -43,6 +43,7 @@ android {
         versionCode appVersionCode
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
+        manifestPlaceholders = [appLabel: "@string/app_name"]
     }
     buildTypes {
         release {
@@ -53,7 +54,10 @@ android {
         }
 
         debug {
+            //another app id, so a debug build installs beside the release, with its own login, settings and database
+            applicationIdSuffix ".debug"
             versionNameSuffix "-SNAPSHOT"
+            manifestPlaceholders = [appLabel: "Shikimori (Debug)"]
         }
     }
 
