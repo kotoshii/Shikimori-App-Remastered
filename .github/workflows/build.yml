@@ -33,13 +33,13 @@ jobs:
         # Gradle 4.10.1 and AGP 3.2.1 run on nothing newer
         run: echo "JAVA_HOME=$JAVA_HOME_8_X64" >> "$GITHUB_ENV"
 
-      - name: Build debug and release
+      - name: Build debug and release, run the unit tests
         # the app has no native code; without the image's NDK 27, which AGP 3.2.1 predates, the build sees
         # no NDK, like the machines it is known to build on. AGP reads only this variable, and an empty
         # value would still count as set
         run: |
           unset ANDROID_NDK_HOME
-          ./gradlew assembleDebug assembleRelease --console=plain
+          ./gradlew assembleDebug assembleRelease testDebugUnitTest --console=plain
 
       - name: Release gate
         # library files a broken ProGuard run dropped from the 0.8.9 release: Jsoup's entities, KefirBB's
