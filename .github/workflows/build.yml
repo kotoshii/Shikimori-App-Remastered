@@ -1,0 +1,69 @@
+# Builds every pushed commit from a fresh checkout with no Gradle cache, so a pass means the repository
+# alone builds: no file left uncommitted, no library that only a local cache still has. The release build
+# is unsigned and only checked here; releases are built and signed in Android Studio.
+name: Build
+
+on:
+  push:
+    # every branch; not tags, which only name a commit that was already built
+    branches: ['**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # pinned: ubuntu-latest becomes 26.04 in November 2026, and that image has no JDK 8
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install SDK 28
+        # with the image's default JDK 17, which sdkmanager needs
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-28" "build-tools;28.0.3"
+
+      - name: Use JDK 8
+        # Gradle 4.10.1 and AGP 3.2.1 run on nothing newer
+        run: echo "JAVA_HOME=$JAVA_HOME_8_X64" >> "$GITHUB_ENV"
+
+      - name: Build debug and release
+        # the app has no native code; without the image's NDK 27, which AGP 3.2.1 predates, the build sees
+        # no NDK, like the machines it is known to build on. AGP reads only this variable, and an empty
+        # value would still count as set
+        run: |
+          unset ANDROID_NDK_HOME
+          ./gradlew assembleDebug assembleRelease --console=plain
+
+      - name: Release gate
+        # library files a broken ProGuard run dropped from the 0.8.9 release: Jsoup's entities, KefirBB's
+        # configs, OkHttp's public suffix list
+        run: |
+          count=$(unzip -l app/build/outputs/apk/release/*.apk | grep -c "entities\|kefirsf\|publicsuffixes")
+          echo "found $count of 8"
+          test "$count" -eq 8
+
+      - name: Screens named in XML survive ProGuard
+        # app:fragment names a class only in a string, so ProGuard removes it unless proguard-rules.pro keeps
+        # it (0.9.0 shipped without HostingFilterFragment); usage.txt lists a removed class alone on its line
+        run: |
+          usage=app/build/outputs/mapping/release/usage.txt
+          test -s "$usage"
+          classes=$(grep -rhoP 'app:fragment="\K[^"]+' app/src/main/res | sort -u)
+          test -n "$classes"
+          removed=0
+          for cls in $classes; do
+            if grep -qxF "$cls" "$usage"; then
+              echo "::error::ProGuard removed $cls: keep it in app/proguard-rules.pro"
+              removed=1
+            else
+              echo "kept: $cls"
+            fi
+          done
+          exit $removed
