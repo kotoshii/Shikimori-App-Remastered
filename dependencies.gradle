@@ -44,5 +44,7 @@ ext.versions = [
         ratingBar         : '1.4.2',
         jsoup             : '1.10.2',
 
-        m3u8Parser        : '0.27'
+        m3u8Parser        : '0.27',
+
+        junit             : '4.13.2'
 ]
