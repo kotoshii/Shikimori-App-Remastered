@@ -42,7 +42,7 @@ ext.versions = [
         advancedVersioning: '1.6.0',
 
         ratingBar         : '1.4.2',
-        jsoup             : '1.10.2',
+        jsoup             : '1.14.3',
 
         m3u8Parser        : '0.27',
 

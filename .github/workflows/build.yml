@@ -42,12 +42,12 @@ jobs:
           ./gradlew assembleDebug assembleRelease testDebugUnitTest --console=plain
 
       - name: Release gate
-        # library files a broken ProGuard run dropped from the 0.8.9 release: Jsoup's entities, KefirBB's
-        # configs, OkHttp's public suffix list
+        # library files a broken ProGuard run dropped from the 0.8.9 release: KefirBB's configs and OkHttp's
+        # public suffix list. Jsoup's entities were the third; since Jsoup 1.11 they live in a class
         run: |
-          count=$(unzip -l app/build/outputs/apk/release/*.apk | grep -c "entities\|kefirsf\|publicsuffixes")
-          echo "found $count of 8"
-          test "$count" -eq 8
+          count=$(unzip -l app/build/outputs/apk/release/*.apk | grep -c "kefirsf\|publicsuffixes")
+          echo "found $count of 5"
+          test "$count" -eq 5
 
       - name: Screens named in XML survive ProGuard
         # app:fragment names a class only in a string, so ProGuard removes it unless proguard-rules.pro keeps

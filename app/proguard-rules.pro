@@ -31,6 +31,9 @@
 -dontwarn com.google.android.material.snackbar.**
 -dontwarn io.lindstrom.m3u8.**
 
+# Jsoup 1.14+ names jsr305's annotations (@Nullable, @ParametersAreNonnullByDefault), which no app ships:
+# without this ProGuard stops on 141 warnings. It only silences them; Jsoup is kept whole below.
+-dontwarn javax.annotation.**
 -keep class org.jsoup.**
 
 -keepclassmembers enum * { *; }
