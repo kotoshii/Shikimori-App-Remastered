@@ -1,0 +1,35 @@
+# Compares shikimori's live api with what the app expects: the enum values Gson maps
+# (tools/check_enums.py) and the GraphQL schema (tools/refresh_graphql_schema.py). A red run here means
+# shikimori changed, not the code. Weekly, because shikimori changes without notice; on every push too,
+# because GitHub turns a public repo's schedule off after 60 days without activity.
+name: Live check
+
+on:
+  push:
+    branches: ['**']
+  schedule:
+    # Mondays, 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Enum values
+        run: python3 tools/check_enums.py
+
+      - name: GraphQL schema
+        # runs even when the enums failed: both results are worth seeing
+        if: ${{ !cancelled() }}
+        run: python3 tools/refresh_graphql_schema.py --check
