@@ -1,8 +1,13 @@
 package com.gnoemes.shikimori.presentation.view.player.embedded
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
+import android.media.AudioManager
 import android.os.Bundle
 import android.support.v4.media.session.MediaSessionCompat
 import android.text.SpannableStringBuilder
@@ -27,6 +32,7 @@ import com.gnoemes.shikimori.presentation.view.common.widget.ReSpinner
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.exoplayer.MediaSourceHelper
 import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
@@ -323,6 +329,12 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         init {
             val trackSelector = DefaultTrackSelector(AdaptiveTrackSelection.Factory())
             player = ExoPlayerFactory.newSimpleInstance(this@EmbeddedPlayerActivity, trackSelector)
+            //ExoPlayer then holds the audio focus while it plays: another app's sound pauses it, a short one
+            //such as a notification only lowers it (a movie ducks; speech would pause)
+            player.setAudioAttributes(AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.CONTENT_TYPE_MOVIE)
+                    .build(), true)
             player.addListener(this)
             playerView.player = player
             playerView.setControllerShowOnTouch(false)
@@ -335,6 +347,14 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
             val mediaSession = MediaSessionCompat(this@EmbeddedPlayerActivity, packageName)
             connector = MediaSessionConnector(mediaSession)
+        }
+
+        //headphones pulled out or Bluetooth ones gone: pause rather than go on through the speaker. Below init,
+        //which makes the player it pauses
+        private val becomingNoisyReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                player.playWhenReady = false
+            }
         }
 
         val isVisible
@@ -366,12 +386,15 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         fun onStart() {
             connector.setPlayer(player, null)
             connector.mediaSession.isActive = true
+            //only while started: onStop pauses the player anyway
+            registerReceiver(becomingNoisyReceiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
         }
 
         fun onStop() {
             player.playWhenReady = false
             connector.setPlayer(null, null)
             connector.mediaSession.isActive = false
+            unregisterReceiver(becomingNoisyReceiver)
         }
 
         fun destroy() {
