@@ -55,7 +55,8 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         }
 
         val versionView = View.inflate(this, R.layout.item_setting_menu, null) as TextView
-        versionView.text = BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")
+        //the build number tells apart test builds of one version: every release build raises it
+        versionView.text = "${BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")} (${BuildConfig.VERSION_CODE})"
 
 
         toolbar.menu.findItem(R.id.item_version).actionView = versionView
