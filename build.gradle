@@ -10,8 +10,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:' + versions.gradlePlugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:" + versions.kotlin
-        classpath 'com.android.tools.build.jetifier:jetifier-processor:' + versions.jetifier
-        classpath 'org.moallemi.gradle.advanced-build-version:gradle-plugin:' + versions.advancedVersioning
+        classpath 'me.moallemi.gradle:advanced-build-version:' + versions.advancedVersioning
     }
 }
 

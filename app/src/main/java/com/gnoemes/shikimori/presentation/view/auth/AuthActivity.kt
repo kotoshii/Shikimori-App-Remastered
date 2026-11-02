@@ -83,7 +83,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
     }
 
     override fun onDestroy() {
-        webView.webViewClient = null
+        //a plain client in place of ours before destroy(); API 30 marks the setter non-null
+        webView.webViewClient = WebViewClient()
         webView.stopLoading()
         webView.destroy()
         super.onDestroy()

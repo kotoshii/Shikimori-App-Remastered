@@ -125,7 +125,8 @@ class WebPlayerActivity : BaseThemedActivity() {
         frame?.removeAllViews()
         window.decorView.destroyDrawingCache()
         webView.webChromeClient = null
-        webView.webViewClient = null
+        //a plain client in place of ours before destroy(); API 30 marks the setter non-null
+        webView.webViewClient = WebViewClient()
         webView.destroy()
         super.onDestroy()
     }

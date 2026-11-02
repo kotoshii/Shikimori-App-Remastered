@@ -23,20 +23,19 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install SDK 28
+      - name: Install SDK 30
         # with the image's default JDK 17, which sdkmanager needs
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-28" "build-tools;28.0.3"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-30" "build-tools;30.0.3"
 
       - name: Use JDK 8
-        # Gradle 4.10.1 and AGP 3.2.1 run on nothing newer
+        # what Android Studio 4.1.1 builds with (its bundled JDK); AGP 4.1 also runs on 11
         run: echo "JAVA_HOME=$JAVA_HOME_8_X64" >> "$GITHUB_ENV"
 
       - name: Build debug and release, run the unit tests
-        # the app has no native code; without the image's NDK 27, which AGP 3.2.1 predates, the build sees
-        # no NDK, like the machines it is known to build on. AGP reads only this variable, and an empty
-        # value would still count as set
+        # the app has no native code; without the image's NDK 27, far newer than AGP 4.1, the build sees no
+        # NDK, like the machines it is known to build on. An empty value would still count as set
         run: |
           unset ANDROID_NDK_HOME
           ./gradlew assembleDebug assembleRelease testDebugUnitTest --console=plain

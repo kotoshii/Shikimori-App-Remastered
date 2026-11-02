@@ -62,7 +62,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     @ProvidePresenter
     fun providePresenter(): EmbeddedPlayerPresenter =
             presenterProvider.get()
-                    .apply { navigationData = intent.getParcelableExtra(AppExtras.ARGUMENT_PLAYER_DATA) }
+                    .apply { navigationData = intent.getParcelableExtra(AppExtras.ARGUMENT_PLAYER_DATA)!! }
 
     @Inject
     lateinit var localNavigatorHolder: NavigatorHolder

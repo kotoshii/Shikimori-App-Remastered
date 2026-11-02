@@ -65,7 +65,7 @@ class ScreenshotsActivity : MvpActivity() {
         }
 
         if (intent != null) {
-            val data: ScreenshotsNavigationData = intent.getParcelableExtra(SCREENSHOTS_DATA_KEY)
+            val data: ScreenshotsNavigationData = intent.getParcelableExtra(SCREENSHOTS_DATA_KEY)!!
             adapter = ScreenshotPagerAdapter(data.items, this::toggleUI, this::onSwipe, this::onDismiss)
             itemCount = data.items.size
             animeName = data.animeName
