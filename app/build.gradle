@@ -13,6 +13,9 @@ android {
 
     androidExtensions { experimental = true }
 
+    //a class per layout with a typed field per view id, in place of the synthetics (P7-T14)
+    buildFeatures { viewBinding true }
+
     advancedVersioning {
         nameOptions {
             versionMajor 0

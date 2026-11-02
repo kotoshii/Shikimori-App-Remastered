@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
+import androidx.viewbinding.ViewBinding
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dimen
@@ -20,6 +21,7 @@ import com.gnoemes.shikimori.utils.widgets.TopEdgeBorderDrawable
 import com.gnoemes.shikimori.utils.wrapTheme
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlin.properties.ReadOnlyProperty
 
 abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
 
@@ -33,6 +35,17 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
     var peekHeight = -1
 
     private val viewHandler = Handler()
+
+    private val bindings = ViewBindings { contentRoot }
+
+    /** The root of the sheet's own layout: the whole view, or inside the wrapper's fragment_content ([layoutRoot]). */
+    private val contentRoot: android.view.View?
+        get() {
+            val view = view ?: return null
+            if (!useWrapperLayout) return view
+            if (getDialogLayout() == android.view.View.NO_ID) return null
+            return context?.layoutRoot(view.findViewById(R.id.fragment_content), getDialogLayout())
+        }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
         if (!useWrapperLayout) return inflater.inflate(getDialogLayout(), container, false)
@@ -114,10 +127,18 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
     override fun onDestroyView() {
         viewHandler.removeCallbacksAndMessages(null)
         super.onDestroyView()
+        bindings.clear()
     }
 
     @LayoutRes
     abstract fun getDialogLayout(): Int
+
+    /**
+     * A binding of the sheet's own layout: `private val binding by viewBinding(DialogXBinding::bind)`.
+     * Bound on first use, dropped when the view goes ([ViewBindings]).
+     */
+    protected fun <T : ViewBinding> viewBinding(bind: (android.view.View) -> T): ReadOnlyProperty<Any, T> =
+            bindings.of(bind)
 
     protected fun postViewAction(action: () -> Unit) {
         viewHandler.post { action.invoke() }
