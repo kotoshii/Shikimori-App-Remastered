@@ -2,19 +2,20 @@ package com.gnoemes.shikimori.presentation.view.common.widget
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import androidx.annotation.StringRes
-import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ViewEmptyBinding
 import com.gnoemes.shikimori.presentation.view.base.widget.BaseView
-import kotlinx.android.synthetic.main.view_empty.view.*
 
 class EmptyContentView @JvmOverloads constructor(context: Context,
                                                  attrs: AttributeSet? = null,
                                                  defStyleInt: Int = 0
-) : BaseView(context, attrs, defStyleInt) {
+) : BaseView<ViewEmptyBinding>(context, attrs, defStyleInt) {
 
-    override fun getLayout(): Int = R.layout.view_empty
+    override fun inflate(inflater: LayoutInflater, parent: ViewGroup) = ViewEmptyBinding.inflate(inflater, parent, true)
 
     fun setText(@StringRes textRes: Int) {
-        descriptionTextView.setText(textRes)
+        binding.descriptionTextView.setText(textRes)
     }
 }

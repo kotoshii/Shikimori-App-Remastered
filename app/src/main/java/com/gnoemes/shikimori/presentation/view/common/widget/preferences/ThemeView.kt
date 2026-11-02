@@ -3,16 +3,18 @@ package com.gnoemes.shikimori.presentation.view.common.widget.preferences
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ViewThemeBinding
 import com.gnoemes.shikimori.presentation.view.base.widget.BaseView
 import com.gnoemes.shikimori.utils.drawable
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.view_theme.view.*
 
 class ThemeView @JvmOverloads constructor(context: Context,
                                           attrs: AttributeSet? = null,
                                           defStyleInt: Int = 0
-) : BaseView(context, attrs, defStyleInt) {
+) : BaseView<ViewThemeBinding>(context, attrs, defStyleInt) {
 
     private var theme: Int = DEFAULT
 
@@ -36,15 +38,15 @@ class ThemeView @JvmOverloads constructor(context: Context,
         var iconColor = R.color.default_colorOnSurface
         when (theme) {
             DEFAULT -> {
-                themeImageView.setImageResource(R.drawable.ic_theme_default)
+                binding.themeImageView.setImageResource(R.drawable.ic_theme_default)
                 iconColor = R.color.default_colorOnSurface
             }
             DARK -> {
-                themeImageView.setImageResource(R.drawable.ic_theme_dark)
+                binding.themeImageView.setImageResource(R.drawable.ic_theme_dark)
                 iconColor = R.color.dark_colorOnSurface
             }
             AMOLED -> {
-                themeImageView.setImageResource(R.drawable.ic_theme_amoled)
+                binding.themeImageView.setImageResource(R.drawable.ic_theme_amoled)
                 iconColor = R.color.amoled_colorOnSurface
             }
         }
@@ -54,15 +56,15 @@ class ThemeView @JvmOverloads constructor(context: Context,
         moonIcon = context.drawable(R.drawable.ic_moon, iconColor)
     }
 
-    override fun getLayout(): Int = R.layout.view_theme
+    override fun inflate(inflater: LayoutInflater, parent: ViewGroup) = ViewThemeBinding.inflate(inflater, parent, true)
 
     var isChecked: Boolean
         get() = _isChecked
         set(value) {
             _isChecked = value
             _isNight = false
-            themeStatusView.visibleIf { value }
-            themeStatusView.setImageDrawable(sunIcon)
+            binding.themeStatusView.visibleIf { value }
+            binding.themeStatusView.setImageDrawable(sunIcon)
         }
 
     var isNight: Boolean
@@ -70,8 +72,8 @@ class ThemeView @JvmOverloads constructor(context: Context,
         set(value) {
             _isNight = value
             _isChecked = false
-            themeStatusView.visibleIf { value }
-            themeStatusView.setImageDrawable(moonIcon)
+            binding.themeStatusView.visibleIf { value }
+            binding.themeStatusView.setImageDrawable(moonIcon)
         }
 
 }
