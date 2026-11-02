@@ -121,7 +121,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         if (url.isNullOrBlank()) return
 
         val context = context ?: return
-        context.clipboardManager().primaryClip = ClipData.newPlainText(video.videoHosting.synonymType, url)
+        context.clipboardManager().setPrimaryClip(ClipData.newPlainText(video.videoHosting.synonymType, url))
 
         //Always shown. This was skipped on api 33+ on the assumption that the system's own
         //"copied" confirmation would cover it, but on Android 16 nothing appeared at all - the

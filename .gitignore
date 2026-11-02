@@ -32,6 +32,9 @@ captures/
 *.apk
 app/debug/output.json
 app/release/output.json
+# what AGP 4.1 writes in their place
+app/debug/output-metadata.json
+app/release/output-metadata.json
 
 CLAUDE.md
 .claude/

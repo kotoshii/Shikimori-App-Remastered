@@ -34,9 +34,20 @@
 # Jsoup 1.14+ names jsr305's annotations (@Nullable, @ParametersAreNonnullByDefault), which no app ships:
 # without this ProGuard stops on 141 warnings. It only silences them; Jsoup is kept whole below.
 -dontwarn javax.annotation.**
+# Kotlin 1.4's stdlib jars carry META-INF/versions/9/module-info.class, which ProGuard 6.0.3 stops on as a
+# wrongly named class; Android has no use for it, so it is left out
+-dontwarn module-info
 -keep class org.jsoup.**
 
 -keepclassmembers enum * { *; }
+
+# AGP 3.2's default rules kept every field of every R class; AGP 4.1 dropped that rule. Joda-Time-Android
+# finds its time zone data by reading net.danlew.android.joda.R$raw's fields by name, which ProGuard cannot
+# see, so without this line the release build crashed on start ("Could not read ZoneInfoMap"). Kept for every
+# R class, as before, since a library can read R by name without saying so.
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
 
 -keep class okhttp3.internal.publicsuffix.PublicSuffixDatabase
 

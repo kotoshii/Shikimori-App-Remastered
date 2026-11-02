@@ -3,6 +3,9 @@ apply plugin: 'kotlin'
 dependencies {
     compile project(':storio-sqlite-annotations')
     compile project(':storio-common-annotations-processor')
+    //writes META-INF/services for StorIOSQliteDummyProccessor; Gradle 5+ no longer runs processors found on
+    //the compile classpath, so without this line the app's kapt never finds StorIO's processor
+    annotationProcessor "com.google.auto.service:auto-service:1.0-rc4"
 }
 
 sourceSets {

@@ -13,7 +13,7 @@
         android:id="@+id/linkedContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="typeView, seasonView, statusView, titleView" />
+        app:constraint_referenced_ids="typeView, seasonView, statusView, linkedTitleView" />
 
     <TextView
         android:id="@+id/linkedTitleView"

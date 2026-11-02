@@ -1,11 +1,11 @@
-import org.moallemi.gradle.internal.VersionCodeType
+import me.moallemi.gradle.advancedbuildversion.gradleextensions.VersionCodeType
 
 apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'org.moallemi.advanced-build-version'
+apply plugin: 'me.moallemi.advanced-build-version'
 
 android {
     compileSdkVersion versions.compileSdk
@@ -20,7 +20,8 @@ android {
             versionPatch 6
         }
         codeOptions {
-            versionCodeType VersionCodeType.AUTO_INCREMENT_ONE_STEP
+            versionCodeType VersionCodeType.AUTO_INCREMENT_STEP
+            versionCodeStep 1
             dependsOnTasks 'release'
         }
 
@@ -38,7 +39,7 @@ android {
     defaultConfig {
         applicationId "com.gnoemes.shikimori"
         minSdkVersion versions.minSdk
-        targetSdkVersion versions.compileSdk
+        targetSdkVersion versions.targetSdk
         versionName appVersionName
         versionCode appVersionCode
         vectorDrawables.useSupportLibrary = true
@@ -77,6 +78,9 @@ android {
         exclude 'META-INF/atomicfu.kotlin_module'
     }
 }
+
+//AGP 4.1 dropped renaming the apk through the variant api: the plugin renames it here, after android {}
+advancedVersioning.renameOutputApk()
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:" + versions.kotlin
