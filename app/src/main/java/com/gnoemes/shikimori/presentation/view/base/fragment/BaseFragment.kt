@@ -9,19 +9,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.LayoutRes
+import androidx.appcompat.widget.Toolbar
 import androidx.viewbinding.ViewBinding
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.LayoutDefaultListBinding
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
+import com.gnoemes.shikimori.presentation.view.common.widget.EmptyContentView
+import com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.visibleIf
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_base.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_progress.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlin.properties.ReadOnlyProperty
@@ -62,6 +62,35 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
         setHasOptionsMenu(true)
     }
 
+    /*
+     * The views this class drives - the title, the loading spinner, the error and empty views, the content -
+     * found by id in the screen's view, as the synthetics did. They sit in fragment_base for most screens, in
+     * the screen's own layout for the others, or nowhere, so no one binding class has them. The first view
+     * with the id wins: on the character and person pages the spinner is their first section's, as before
+     * (P7-T14 Q2).
+     */
+    protected val screenToolbar: Toolbar? get() = screenView(R.id.toolbar)
+    protected val screenProgress: android.view.View? get() = screenView(R.id.progressBar)
+    protected val screenErrorView: NetworkErrorView? get() = screenView(R.id.networkErrorView)
+    protected val screenEmptyView: EmptyContentView? get() = screenView(R.id.emptyContentView)
+    private val screenContent: android.view.View? get() = screenView(R.id.fragment_content)
+
+    //each found once per view and kept, as the synthetics' cache kept it: list rows carry the same ids
+    //(item_page_error's networkErrorView, item_progress's progressBar) and sit earlier in the tree than
+    //fragment_base's own, so a later search could find a row's (P7-T14, the 5a review)
+    private val screenViews = HashMap<Int, android.view.View>()
+
+    /** The first view with [id] in the screen's view, found once and kept until the view goes. */
+    protected fun <T : android.view.View> screenView(id: Int): T? {
+        @Suppress("UNCHECKED_CAST")
+        (screenViews[id] as T?)?.let { return it }
+        return view?.findViewById<T>(id)?.also { screenViews[id] = it }
+    }
+
+    /** layout_default_list, the shared list most list screens include (without an id): bound from its root. */
+    protected val defaultList: LayoutDefaultListBinding
+        get() = LayoutDefaultListBinding.bind(requireNotNull(screenView(R.id.refreshLayout)))
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): android.view.View? {
         inBaseLayout = true
         val view = inflater.inflate(R.layout.fragment_base, container, false)
@@ -76,13 +105,13 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
 
         //every screen's error view offers «Повторить»: 11 screens showed the text alone, their list
         //hidden, so not even a pull could try again (P7-T5 Q167)
-        networkErrorView?.apply {
+        screenErrorView?.apply {
             setText(R.string.common_error_message_without_pull)
             callback = { getPresenter().onRetry() }
             showButton()
             gone()
         }
-        emptyContentView?.gone()
+        screenEmptyView?.gone()
     }
 
     override fun onDestroyView() {
@@ -90,6 +119,7 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
         viewHandler.removeCallbacksAndMessages(null)
         super.onDestroyView()
         bindings.clear()
+        screenViews.clear()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -133,31 +163,31 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
     override fun onBackPressed() = getPresenter().onBackPressed()
 
     override fun setTitle(title: String) {
-        toolbar?.title = title
+        screenToolbar?.title = title
     }
 
     override fun setTitle(stringRes: Int) {
-        toolbar?.setTitle(stringRes)
+        screenToolbar?.setTitle(stringRes)
     }
 
     override fun showContent(show: Boolean) {
-        fragment_content?.visibleIf { show }
+        screenContent?.visibleIf { show }
     }
 
     override fun onShowLoading() {
-        progressBar?.visible()
+        screenProgress?.visible()
     }
 
     override fun onHideLoading() {
-        progressBar?.gone()
+        screenProgress?.gone()
     }
 
     override fun onShowLightLoading() {
-        progressBar?.visible()
+        screenProgress?.visible()
     }
 
     override fun onHideLightLoading() {
-        progressBar?.gone()
+        screenProgress?.gone()
     }
 
     /**
@@ -169,7 +199,7 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
     protected open val pageView: android.view.View? get() = null
 
     override fun showNetworkView() {
-        networkErrorView?.visible()
+        screenErrorView?.visible()
         pageView?.gone()
     }
 
@@ -178,15 +208,15 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
     }
 
     override fun hideNetworkView() {
-        networkErrorView?.gone()
+        screenErrorView?.gone()
         pageView?.visible()
     }
 
     override fun showEmptyView() {
-        emptyContentView?.visible()
+        screenEmptyView?.visible()
     }
 
     override fun hideEmptyView() {
-        emptyContentView?.gone()
+        screenEmptyView?.gone()
     }
 }

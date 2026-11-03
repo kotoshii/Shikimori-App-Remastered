@@ -14,8 +14,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.clubs.adapter.UserClubAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), UserClubsView {
@@ -43,17 +41,17 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_clubs)
         }
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@UserClubsFragment.adapter
             layoutManager = LinearLayoutManager(context)
         }
 
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        defaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -73,15 +71,15 @@ class UserClubsFragment : BaseFragment<UserClubsPresenter, UserClubsView>(), Use
     }
 
     override fun showClubsCount(count: Int) {
-        toolbar?.showCount(count)
+        screenToolbar?.showCount(count)
     }
 
     override fun showContent(show: Boolean) {
-        recyclerView.visibleIf { show }
+        defaultList.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = refreshLayout.showRefresh()
+    override fun onShowLoading() = defaultList.refreshLayout.showRefresh()
 
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun onHideLoading() = defaultList.refreshLayout.hideRefresh()
 
 }

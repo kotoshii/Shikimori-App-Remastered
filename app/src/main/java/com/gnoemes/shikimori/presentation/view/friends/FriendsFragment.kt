@@ -15,8 +15,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.friends.adapter.FriendsAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class FriendsFragment : BasePaginationFragment<FriendViewModel, FriendsPresenter, FriendsView>(), FriendsView {
@@ -44,12 +42,12 @@ class FriendsFragment : BasePaginationFragment<FriendViewModel, FriendsPresenter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_friends)
         }
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@FriendsFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addOnScrollListener(nextPageListener)

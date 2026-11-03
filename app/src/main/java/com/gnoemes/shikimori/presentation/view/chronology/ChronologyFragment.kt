@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentChronologyBinding
 import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.presentation.presenter.chronology.ChronologyPresenter
@@ -14,10 +15,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.chronology.adapter.ChronologyAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.fragment_chronology.*
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, ChronologyView>(), ChronologyView, ChronologyTypeDialog.Callback {
@@ -44,7 +41,7 @@ class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, Chron
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_chronology)
             inflateMenu(R.menu.menu_chronology)
@@ -57,8 +54,8 @@ class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, Chron
             }
         }
 
-        emptyContentView.setText(R.string.similar_empty_description)
-        fab.onClick { getPresenter().onFabClicked() }
+        screenEmptyView?.setText(R.string.similar_empty_description)
+        binding.fab.onClick { getPresenter().onFabClicked() }
     }
 
     override fun onTypeChanged(newType: ChronologyType) {
@@ -71,6 +68,8 @@ class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, Chron
 
     override fun getPresenter(): ChronologyPresenter = chronologyPresenter
 
+    private val binding by viewBinding(FragmentChronologyBinding::bind)
+
     override fun getFragmentLayout(): Int = R.layout.fragment_chronology
 
     ///////////////////////////////////////////////////////////////////////////
@@ -78,7 +77,11 @@ class ChronologyFragment : BaseRateButtonListFragment<ChronologyPresenter, Chron
     ///////////////////////////////////////////////////////////////////////////
 
     override fun scrollTo(pos: Int) {
-        postViewAction { (recyclerView?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, recyclerView.dp(16)) }
+        postViewAction {
+            view ?: return@postViewAction
+            val list = defaultList.recyclerView
+            (list.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, list.dp(16))
+        }
     }
 
     override fun showTypeDialog(currentType: ChronologyType) {

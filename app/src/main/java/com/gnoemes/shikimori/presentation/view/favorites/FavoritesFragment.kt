@@ -5,6 +5,7 @@ import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentFavoritesBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.user.domain.FavoriteType
 import com.gnoemes.shikimori.entity.user.presentation.FavoriteViewModel
@@ -17,8 +18,6 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.showCount
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_favorites.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), FavoritesView {
@@ -46,19 +45,19 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             setTitle(R.string.common_favorite)
             addBackButton { getPresenter().onBackPressed() }
         }
 
         contentHolders.apply {
-            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(animeLayout, defaultAdapter))
-            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(mangaLayout, defaultAdapter))
-            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(charactersLayout, defaultAdapter))
-            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(seyuLayout, defaultAdapter))
-            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(producersLayout, defaultAdapter))
-            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(mangakasLayout, defaultAdapter))
-            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(otherLayout, defaultAdapter))
+            put(FavoriteType.ANIME, FavoriteCategoryViewHolder(binding.animeLayout.root, defaultAdapter))
+            put(FavoriteType.MANGA, FavoriteCategoryViewHolder(binding.mangaLayout.root, defaultAdapter))
+            put(FavoriteType.CHARACTERS, FavoriteCategoryViewHolder(binding.charactersLayout.root, defaultAdapter))
+            put(FavoriteType.SEYU, FavoriteCategoryViewHolder(binding.seyuLayout.root, defaultAdapter))
+            put(FavoriteType.PRODUCERS, FavoriteCategoryViewHolder(binding.producersLayout.root, defaultAdapter))
+            put(FavoriteType.MANGAKAS, FavoriteCategoryViewHolder(binding.mangakasLayout.root, defaultAdapter))
+            put(FavoriteType.PEOPLE, FavoriteCategoryViewHolder(binding.otherLayout.root, defaultAdapter))
         }
     }
 
@@ -67,6 +66,8 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
     ///////////////////////////////////////////////////////////////////////////
 
     override fun getPresenter(): FavoritesPresenter = favoritePresenter
+
+    private val binding by viewBinding(FragmentFavoritesBinding::bind)
 
     override fun getFragmentLayout(): Int = R.layout.fragment_favorites
 
@@ -82,6 +83,6 @@ class FavoritesFragment : BaseFragment<FavoritesPresenter, FavoritesView>(), Fav
     }
 
     override fun showFavoritesCount(count: Int) {
-        toolbar?.showCount(count)
+        screenToolbar?.showCount(count)
     }
 }
