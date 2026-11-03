@@ -3,15 +3,13 @@ import me.moallemi.gradle.advancedbuildversion.gradleextensions.VersionCodeType
 apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'me.moallemi.advanced-build-version'
 
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-
-    androidExtensions { experimental = true }
 
     //a class per layout with a typed field per view id, in place of the synthetics (P7-T14)
     buildFeatures { viewBinding true }

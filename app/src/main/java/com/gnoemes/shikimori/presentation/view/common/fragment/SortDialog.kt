@@ -11,7 +11,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDial
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * A sort picker: «Сортировка», the sorts, the current one marked. «Списки» and the catalog's filter

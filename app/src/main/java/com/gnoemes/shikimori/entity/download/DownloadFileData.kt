@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.entity.download
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /** A single file saved as it is, with no playlist or remux step - a screenshot. */
 @Parcelize

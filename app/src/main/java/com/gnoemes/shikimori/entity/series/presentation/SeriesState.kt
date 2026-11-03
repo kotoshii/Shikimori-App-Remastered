@@ -2,7 +2,7 @@ package com.gnoemes.shikimori.entity.series.presentation
 
 import android.os.Parcelable
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * What the watch screen showed, kept in its saved state so that it comes back the same after Android

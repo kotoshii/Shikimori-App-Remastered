@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.entity.series.domain
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import java.net.MalformedURLException
 import java.net.URL
 
