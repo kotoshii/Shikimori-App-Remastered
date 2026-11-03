@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentTransaction
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityMainBinding
 import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Theme
@@ -24,7 +25,6 @@ import com.gnoemes.shikimori.presentation.view.bottom.BottomTabContainer
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.SupportAppNavigator
 import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
-import kotlinx.android.synthetic.main.layout_bottom_bar.*
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
 import ru.terrakok.cicerone.Router
@@ -63,6 +63,8 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
             Tab(R.id.tab_more, BottomScreens.MORE)
     )
 
+    private val binding by viewBinding(ActivityMainBinding::bind)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         restoring = savedInstanceState != null
         super.onCreate(savedInstanceState)
@@ -79,17 +81,17 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
     }
 
     private fun initBottomNav() {
-        bottomNav.setOnNavigationItemSelectedListener { item ->
+        binding.bottomNav.root.setOnNavigationItemSelectedListener { item ->
             val tab = tabs.find { it.id == item.itemId }!!
             presenter.onTabItemSelected(tab.screenKey)
             true
         }
-        bottomNav.setOnNavigationItemReselectedListener { item ->
+        binding.bottomNav.root.setOnNavigationItemReselectedListener { item ->
             val tab = tabs.find { it.id == item.itemId }!!
             presenter.onTabItemReselected(tab.screenKey)
         }
 
-        navbarDivider.visibleIf { activeTheme != Theme.AMOLED }
+        binding.bottomNav.navbarDivider.visibleIf { activeTheme != Theme.AMOLED }
     }
 
     private fun initContainer() {

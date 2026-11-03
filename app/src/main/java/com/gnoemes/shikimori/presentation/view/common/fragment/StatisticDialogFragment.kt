@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentTitleStatisticBinding
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.presentation.view.user.adapter.UserStatisticItemAdapter
@@ -12,8 +13,6 @@ import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.visibleIf
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_title_statistic.*
-import kotlinx.android.synthetic.main.layout_user_profile_statistic.view.*
 
 class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
 
@@ -34,10 +33,12 @@ class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(FragmentTitleStatisticBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(binding.toolbar) {
             val defaultTitle = getString(R.string.common_statistic)
             val titleText = arguments?.getString(TITLE_KEY)?.let { "$defaultTitle «$it»" }
                     ?: defaultTitle
@@ -45,16 +46,16 @@ class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
             addBackButton(R.drawable.ic_close) { dismiss() }
         }
 
-        scoresLayout.headerView.setText(R.string.profile_score)
-        statusesLayout.headerView.setText(R.string.common_rates)
+        binding.scoresLayout.headerView.setText(R.string.profile_score)
+        binding.statusesLayout.headerView.setText(R.string.common_rates)
 
-        with(scoresLayout.recyclerView) {
+        with(binding.scoresLayout.recyclerView) {
             adapter = scoresAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, 0, 0))
         }
 
-        with(statusesLayout.recyclerView) {
+        with(binding.statusesLayout.recyclerView) {
             adapter = statusesAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8), true, 0, 0))
@@ -66,14 +67,14 @@ class StatisticDialogFragment : BaseBottomSheetDialogFragment() {
         val statuses = arguments?.getParcelableArray(STATUSES_KEY)?.map { it as UserStatisticItem }
                 ?: emptyList()
 
-        scoresLayout.subHeaderView.text = scores.sumBy { it.count }.toString()
-        statusesLayout.subHeaderView.text = statuses.sumBy { it.count }.toString()
+        binding.scoresLayout.subHeaderView.text = scores.sumBy { it.count }.toString()
+        binding.statusesLayout.subHeaderView.text = statuses.sumBy { it.count }.toString()
 
         postViewAction { scoresAdapter.bindItems(scores) }
         postViewAction { statusesAdapter.bindItems(statuses) }
 
-        scoresLayout.visibleIf { scores.isNotEmpty() }
-        statusesLayout.visibleIf { statuses.isNotEmpty() }
+        binding.scoresLayout.root.visibleIf { scores.isNotEmpty() }
+        binding.statusesLayout.root.visibleIf { statuses.isNotEmpty() }
     }
 
     ///////////////////////////////////////////////////////////////////////////

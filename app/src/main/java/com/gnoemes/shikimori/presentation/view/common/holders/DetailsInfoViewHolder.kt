@@ -3,15 +3,13 @@ package com.gnoemes.shikimori.presentation.view.common.holders
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.facebook.shimmer.ShimmerFrameLayout
+import com.gnoemes.shikimori.databinding.LayoutDetailsInfoBinding
 import com.gnoemes.shikimori.entity.common.presentation.DetailsInfoItem
 import com.gnoemes.shikimori.presentation.view.common.adapter.InfoAdapter
 import com.gnoemes.shikimori.presentation.view.common.adapter.TagAdapter
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.widgets.HorizontalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.widgets.InfoSpaceDecorator
-import kotlinx.android.synthetic.main.layout_details_info.view.*
-import kotlinx.android.synthetic.main.layout_details_info_content.view.*
 
 
 class DetailsInfoViewHolder(
@@ -20,10 +18,12 @@ class DetailsInfoViewHolder(
         private val infoAdapter: InfoAdapter
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(view.infoContent, view.infoPlaceholder as ShimmerFrameLayout) }
+    private val binding = LayoutDetailsInfoBinding.bind(view)
+
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.infoContent.root, binding.infoPlaceholder.root) }
 
     init {
-        with(view.infoContent) {
+        with(binding.infoContent) {
             tagList.apply {
                 adapter = tagsAdapter
                 isNestedScrollingEnabled = false
@@ -44,7 +44,7 @@ class DetailsInfoViewHolder(
     fun bind(item: DetailsInfoItem) {
         placeholder.showContent()
 
-        with(view.infoContent) {
+        with(binding.infoContent) {
             nameSecondView.text = item.nameSecond
             tagsAdapter.bindItems(item.tags)
             infoAdapter.bindItems(item.info)

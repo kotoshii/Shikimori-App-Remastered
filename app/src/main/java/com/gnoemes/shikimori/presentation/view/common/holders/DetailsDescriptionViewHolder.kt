@@ -1,22 +1,22 @@
 package com.gnoemes.shikimori.presentation.view.common.holders
 
 import android.view.View
-import com.facebook.shimmer.ShimmerFrameLayout
+import com.gnoemes.shikimori.databinding.LayoutDetailsDescriptionBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsDescriptionItem
 import com.gnoemes.shikimori.utils.gone
-import kotlinx.android.synthetic.main.layout_details_description.view.*
-import kotlinx.android.synthetic.main.layout_details_description_content.view.*
 
 class DetailsDescriptionViewHolder(
         private val view: View,
         navigationCallback: (Type, Long) -> Unit
 ) {
 
-    private val placeholder by lazy { DetailsPlaceholderViewHolder(view.descriptionContent, view.descriptionPlaceholder as ShimmerFrameLayout) }
+    private val binding = LayoutDetailsDescriptionBinding.bind(view)
+
+    private val placeholder by lazy { DetailsPlaceholderViewHolder(binding.descriptionContent.root, binding.descriptionPlaceholder.root) }
 
     init {
-        view.descriptionTextView.linkCallback = navigationCallback
+        binding.descriptionContent.descriptionTextView.linkCallback = navigationCallback
     }
 
     fun bind(item: DetailsDescriptionItem) {
@@ -28,9 +28,7 @@ class DetailsDescriptionViewHolder(
 
         placeholder.showContent()
 
-        with(view) {
-            descriptionTextView.setContent(item.description)
-        }
+        binding.descriptionContent.descriptionTextView.setContent(item.description)
     }
 
 

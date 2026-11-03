@@ -47,7 +47,9 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <include layout="@layout/layout_user_profile_toolbar" />
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/layout_user_profile_toolbar" />
 
     <!--the error view centred on the whole screen, as «Вы не вошли в аккаунт» is: placed under the
     header's tall empty box, as on other screens, it sat low. Attributes on an include of a merge layout

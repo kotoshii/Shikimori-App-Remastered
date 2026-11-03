@@ -8,7 +8,9 @@ bottom margin made up for most of it (P7-T5 Test 88d). 16dp now, as on «Сез�
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_filter_nested_toolbar" />
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/layout_filter_nested_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemTopicLinkedBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.topic.domain.TopicType
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
@@ -12,7 +13,6 @@ import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_topic_linked.view.*
 
 class TopicLinkedAdapterDelegate(
         private val imageLoader: ImageLoader,
@@ -31,14 +31,17 @@ class TopicLinkedAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemTopicLinkedBinding.bind(view)
+
         private lateinit var item: TopicViewModel
 
-        private val userHolder by lazy { TopicUserViewHolder(itemView.userLayout, imageLoader, navigationCallback) }
-        private val linkedHolder by lazy { TopicLinkedViewHolder(itemView, itemView.titleView, imageLoader) }
+        private val userHolder by lazy { TopicUserViewHolder(binding.userLayout.root, imageLoader, navigationCallback) }
+        private val linkedHolder by lazy { TopicLinkedViewHolder(binding.imageView, binding.titleView, binding.typeView, binding.seasonView,
+                binding.statusView, imageLoader) }
 
         init {
-            itemView.container.setOnClickListener { navigationCallback.invoke(Type.TOPIC, item.id) }
-            itemView.imageView.setOnClickListener {
+            binding.container.setOnClickListener { navigationCallback.invoke(Type.TOPIC, item.id) }
+            binding.imageView.setOnClickListener {
                 item.linked?.let { content ->
                     navigationCallback.invoke(content.type, content.id)
                 }
@@ -50,7 +53,7 @@ class TopicLinkedAdapterDelegate(
             this.item = item
             linkedHolder.bind(item.linked)
             userHolder.bind(item.userData)
-            itemView.commentView.text = item.commentsCount.toString()
+            binding.commentView.text = item.commentsCount.toString()
         }
     }
 }

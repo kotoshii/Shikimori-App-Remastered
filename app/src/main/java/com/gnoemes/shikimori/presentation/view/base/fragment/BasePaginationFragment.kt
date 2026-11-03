@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.view.base.fragment
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
@@ -11,12 +12,15 @@ import com.gnoemes.shikimori.utils.hideRefresh
 import com.gnoemes.shikimori.utils.showRefresh
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
 
 abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPresenter<Items, View>, View : BasePaginationView> : BaseFragment<Presenter, View>(), BasePaginationView {
 
     abstract val adapter: BasePaginationAdapter
+
+    //the list, by id as the synthetics found it: layout_default_list on most screens, the comments on a topic
+    //(no refresh there), so no one binding class has them
+    private val refreshView: SwipeRefreshLayout? get() = screenView(R.id.refreshLayout)
+    private val listView: RecyclerView? get() = screenView(R.id.recyclerView)
 
     protected open val nextPageListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -37,12 +41,12 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        refreshLayout?.setOnRefreshListener { getPresenter().onRefresh() }
+        refreshView?.setOnRefreshListener { getPresenter().onRefresh() }
         adapter.onRetryPage = { getPresenter().loadNextPage() }
     }
 
     override fun onDestroyView() {
-        recyclerView?.removeOnScrollListener(nextPageListener)
+        listView?.removeOnScrollListener(nextPageListener)
         super.onDestroyView()
     }
 
@@ -50,9 +54,9 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
         adapter.bindItems(data)
     }
 
-    override fun showContent(show: Boolean) = recyclerView?.visibleIf { show } ?: Unit
-    override fun onShowLoading() = refreshLayout?.showRefresh() ?: Unit
-    override fun onHideLoading() = refreshLayout?.hideRefresh() ?: Unit
+    override fun showContent(show: Boolean) = listView?.visibleIf { show } ?: Unit
+    override fun onShowLoading() = refreshView?.showRefresh() ?: Unit
+    override fun onHideLoading() = refreshView?.hideRefresh() ?: Unit
     override fun showPageLoading() = postViewAction { adapter.showProgress(true) }
     override fun hidePageLoading() = postViewAction { adapter.showProgress(false) }
     //posted as the spinner is, so the two keep their order
@@ -61,7 +65,7 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     override fun onAllData() = Unit
 
     override fun showHiddenListView(guest: Boolean) {
-        emptyContentView?.setText(if (guest) R.string.list_hidden_guest else R.string.list_hidden)
-        emptyContentView?.visible()
+        screenEmptyView?.setText(if (guest) R.string.list_hidden_guest else R.string.list_hidden)
+        screenEmptyView?.visible()
     }
 }

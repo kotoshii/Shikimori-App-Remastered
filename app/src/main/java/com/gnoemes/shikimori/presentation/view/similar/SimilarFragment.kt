@@ -12,8 +12,6 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.similar.adapter.SimilarAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class SimilarFragment : BaseRateButtonListFragment<SimilarPresenter, SimilarView>(), SimilarView {
@@ -40,12 +38,12 @@ class SimilarFragment : BaseRateButtonListFragment<SimilarPresenter, SimilarView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_similar)
         }
 
-        emptyContentView.setText(R.string.similar_empty_description)
+        screenEmptyView?.setText(R.string.similar_empty_description)
     }
 
     ///////////////////////////////////////////////////////////////////////////

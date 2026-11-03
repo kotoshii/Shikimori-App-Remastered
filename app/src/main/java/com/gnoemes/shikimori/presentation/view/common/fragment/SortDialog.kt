@@ -6,12 +6,12 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogMenuBinding
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.dialog_menu.*
+import kotlinx.parcelize.Parcelize
 
 /**
  * A sort picker: «Сортировка», the sorts, the current one marked. «Списки» and the catalog's filter
@@ -33,16 +33,18 @@ class SortDialog : BaseBottomSheetDialogFragment() {
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(DialogMenuBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val sorts = arguments?.getParcelableArray(SORTS_KEY)?.map { it as Sort }!!
 
-        with(toolbar) {
+        with(binding.toolbar) {
             setTitle(R.string.sort)
         }
 
-        navView.apply {
+        binding.navView.apply {
             setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
             itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
             //an item's id is its place in the list

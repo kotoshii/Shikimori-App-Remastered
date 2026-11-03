@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemEntryInputBinding
 import com.gnoemes.shikimori.entity.search.presentation.FilterEntryInput
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_entry_input.view.*
 
 class FilterSeasonInputAdapterDelegate(
         //whether the text was taken as a season
@@ -28,6 +28,8 @@ class FilterSeasonInputAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemEntryInputBinding.bind(view)
+
         private val listener = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 if (s?.toString()?.contains(" ") == true) wrapText(s.toString())
@@ -35,23 +37,23 @@ class FilterSeasonInputAdapterDelegate(
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (itemView.input.lineCount > 1) wrapText(s?.toString()?.let { it.substring(0, it.length - 1) })
+                if (binding.input.lineCount > 1) wrapText(s?.toString()?.let { it.substring(0, it.length - 1) })
             }
         }
 
         init {
-            itemView.input.addTextChangedListener(listener)
+            binding.input.addTextChangedListener(listener)
         }
 
         fun bind(item: FilterEntryInput) {
-            itemView.input.setHint(R.string.filter_custom_input_hint)
+            binding.input.setHint(R.string.filter_custom_input_hint)
         }
 
         private fun wrapText(value: String?) {
             if (!value.isNullOrBlank()) {
                 val season = value.replace(Regex(" "), "")
-                if (callback.invoke(season)) itemView.input.text = null
-                else with(itemView.input) {
+                if (callback.invoke(season)) binding.input.text = null
+                else with(binding.input) {
                     //kept, to be fixed, with the reason on the field; it goes as soon as the text
                     //changes (BUGS #75)
                     setText(season)

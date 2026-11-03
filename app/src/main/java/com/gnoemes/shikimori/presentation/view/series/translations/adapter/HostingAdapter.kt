@@ -4,11 +4,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemChipBinding
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
-import kotlinx.android.synthetic.main.item_chip.view.*
 
 class HostingAdapter(
         private val callback: (TranslationVideo) -> Unit,
@@ -33,17 +33,19 @@ class HostingAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemChipBinding.bind(view)
+
         private lateinit var item: TranslationVideo
 
         init {
-            itemView.chip.onClick { callback.invoke(item) }
+            binding.chip.onClick { callback.invoke(item) }
             //true, so the tap that opens the player does not also fire
-            itemView.chip.setOnLongClickListener { longCallback.invoke(item); true }
+            binding.chip.setOnLongClickListener { longCallback.invoke(item); true }
         }
 
         fun bind(item: TranslationVideo) {
             this.item = item
-            itemView.chip.text = item.videoHosting.synonymType
+            binding.chip.text = item.videoHosting.synonymType
         }
 
     }

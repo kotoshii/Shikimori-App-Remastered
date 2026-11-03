@@ -4,13 +4,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemChipFilterBinding
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.dimen
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
-import kotlinx.android.synthetic.main.item_chip_filter.view.*
 
 class FilterChipAdapter(
         private val type: FilterType,
@@ -36,26 +36,28 @@ class FilterChipAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemChipFilterBinding.bind(view)
+
         private lateinit var item: FilterViewModel
 
         private val smallPadding by lazy { itemView.context.dimen(R.dimen.margin_small) }
         private val normalPadding by lazy { itemView.context.dimen(R.dimen.margin_normal) }
 
         init {
-            itemView.chip.onClick { selectCallback.invoke(type, item) }
-            itemView.chip.setOnLongClickListener { invertCallback.invoke(type, item); true }
+            binding.chip.onClick { selectCallback.invoke(type, item) }
+            binding.chip.setOnLongClickListener { invertCallback.invoke(type, item); true }
         }
 
         fun bind(item: FilterViewModel) {
             this.item = item
             with(itemView) {
-                chip.text = item.text
-                chip.isChipIconVisible = item.state == FilterViewModel.STATE.INVERTED
+                binding.chip.text = item.text
+                binding.chip.isChipIconVisible = item.state == FilterViewModel.STATE.INVERTED
 
                 when (item.state) {
-                    FilterViewModel.STATE.DEFAULT -> chip.apply { isSelected = false; isChecked = false; textStartPadding = normalPadding }
-                    FilterViewModel.STATE.INVERTED -> chip.apply { isSelected = false; isChecked = true; textStartPadding = smallPadding }
-                    FilterViewModel.STATE.SELECTED -> chip.apply { isSelected = true; isChecked = false; textStartPadding = normalPadding }
+                    FilterViewModel.STATE.DEFAULT -> binding.chip.apply { isSelected = false; isChecked = false; textStartPadding = normalPadding }
+                    FilterViewModel.STATE.INVERTED -> binding.chip.apply { isSelected = false; isChecked = true; textStartPadding = smallPadding }
+                    FilterViewModel.STATE.SELECTED -> binding.chip.apply { isSelected = true; isChecked = false; textStartPadding = normalPadding }
                 }
 
 

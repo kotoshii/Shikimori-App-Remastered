@@ -4,13 +4,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemCommentBinding
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_comment.view.*
 
 class CommentAdapterDelegate(
         private val imageLoader: ImageLoader,
@@ -29,19 +29,21 @@ class CommentAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemCommentBinding.bind(view)
+
         private lateinit var item: CommentViewModel
 
-        private val userHolder by lazy { TopicUserViewHolder(itemView.userLayout, imageLoader, navigationCallback) }
+        private val userHolder by lazy { TopicUserViewHolder(binding.userLayout.root, imageLoader, navigationCallback) }
 
         init {
-            itemView.contentView.linkCallback = navigationCallback
+            binding.contentView.linkCallback = navigationCallback
         }
 
         fun bind(item: CommentViewModel) {
             this.item = item
             userHolder.bind(item.userData)
             with(itemView) {
-                contentView.setContent(item.content)
+                binding.contentView.setContent(item.content)
             }
 
         }

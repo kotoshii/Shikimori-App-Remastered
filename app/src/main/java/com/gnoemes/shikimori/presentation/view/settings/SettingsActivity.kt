@@ -10,6 +10,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivitySettingsBinding
+import com.gnoemes.shikimori.presentation.view.base.fragment.viewBinding
 import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
@@ -22,7 +24,6 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, ToolbarCallback,
@@ -36,13 +37,15 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
 
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
 
+    private val binding by viewBinding(R.layout.activity_settings, ActivitySettingsBinding::bind)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         setTheme()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
-        toolbar?.apply {
+        binding.appBarLayout.toolbar.apply {
             setDefaultTitle()
             addBackButton { onBackPressed() }
             inflateMenu(R.menu.menu_setting)
@@ -59,8 +62,8 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         versionView.text = "${BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")} (${BuildConfig.VERSION_CODE})"
 
 
-        toolbar.menu.findItem(R.id.item_version).actionView = versionView
-        toolbar.layoutParams = (toolbar.layoutParams as AppBarLayout.LayoutParams).apply {
+        binding.appBarLayout.toolbar.menu.findItem(R.id.item_version).actionView = versionView
+        binding.appBarLayout.toolbar.layoutParams = (binding.appBarLayout.toolbar.layoutParams as AppBarLayout.LayoutParams).apply {
             scrollFlags = 0
         }
 
@@ -70,7 +73,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
     }
 
     override fun onBackPressed() {
-        toolbar?.setDefaultTitle()
+        binding.appBarLayout.toolbar.setDefaultTitle()
         showVersion(true)
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
         if (fragment is SettingsFragment) super.finish()
@@ -84,7 +87,7 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
                 pref?.fragment!!)
                 .apply { setTargetFragment(caller, 0) }
 
-        toolbar?.title = pref.title
+        binding.appBarLayout.toolbar.title = pref.title
         showVersion(false)
         replaceFragment(fragment)
 
@@ -102,11 +105,11 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
     }
 
     private fun showVersion(show: Boolean) {
-        toolbar.menu.findItem(R.id.item_version).isVisible = show
+        binding.appBarLayout.toolbar.menu.findItem(R.id.item_version).isVisible = show
     }
 
     private fun onNewVersionAvailable() {
-        (toolbar.menu.findItem(R.id.item_version).actionView as TextView).apply {
+        (binding.appBarLayout.toolbar.menu.findItem(R.id.item_version).actionView as TextView).apply {
             val indicator = context.drawable(R.drawable.ic_version_indicator)?.apply { tint(context.colorAttr(R.attr.colorSecondary)) }
             setCompoundDrawablesWithIntrinsicBounds(indicator, null, null, null)
             onClick { showChangelog() }
@@ -125,9 +128,9 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         else startOutsideActivity(Intent(Intent.ACTION_VIEW, Constants.GITHUB_RELEASES_URL.toUri()))
     }
 
-    override fun showToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = true }
-    override fun hideToolbarMenu() = run { toolbar.menu.findItem(R.id.item_accept).isVisible = false }
+    override fun showToolbarMenu() = run { binding.appBarLayout.toolbar.menu.findItem(R.id.item_accept).isVisible = true }
+    override fun hideToolbarMenu() = run { binding.appBarLayout.toolbar.menu.findItem(R.id.item_accept).isVisible = false }
 
-    override fun showToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = true }
-    override fun hideToolbarHint() = run { toolbar.menu.findItem(R.id.item_hint).isVisible = false }
+    override fun showToolbarHint() = run { binding.appBarLayout.toolbar.menu.findItem(R.id.item_hint).isVisible = true }
+    override fun hideToolbarHint() = run { binding.appBarLayout.toolbar.menu.findItem(R.id.item_hint).isVisible = false }
 }

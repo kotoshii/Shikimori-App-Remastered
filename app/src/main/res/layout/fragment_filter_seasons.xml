@@ -9,7 +9,9 @@ edge (P7-T5 Test 88d)-->
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/layout_filter_nested_toolbar" />
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/layout_filter_nested_toolbar" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -37,7 +39,9 @@ edge (P7-T5 Test 88d)-->
                 android:layout_gravity="bottom"
                 android:background="?attr/colorDivider" />
 
-            <include layout="@layout/layout_filter_seasons_custom" />
+            <include
+                android:id="@+id/seasonsCustom"
+                layout="@layout/layout_filter_seasons_custom" />
 
         </LinearLayout>
 

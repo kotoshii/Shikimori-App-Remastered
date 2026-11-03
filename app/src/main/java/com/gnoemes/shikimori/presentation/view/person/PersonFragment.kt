@@ -5,6 +5,7 @@ import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentPersonBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -21,8 +22,6 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.ifNotNull
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_person.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
@@ -63,7 +62,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_person)
             inflateMenu(R.menu.menu_browser)
@@ -75,12 +74,12 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(binding.headLayout.root, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter))
-            put(DetailsContentType.WORKS, DetailsContentViewHolder(worksLayout, worksAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout.root, charactersAdapter))
+            put(DetailsContentType.WORKS, DetailsContentViewHolder(binding.worksLayout.root, worksAdapter))
         }
 
     }
@@ -90,6 +89,8 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
     ///////////////////////////////////////////////////////////////////////////
 
     override fun getPresenter(): PersonPresenter = personPresenter
+
+    private val binding by viewBinding(FragmentPersonBinding::bind)
 
     override fun getFragmentLayout(): Int = R.layout.fragment_person
 
@@ -111,5 +112,5 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
 
     override fun showContent(show: Boolean) = Unit
 
-    override val pageView: View? get() = nestedScroll
+    override val pageView: View? get() = binding.nestedScroll
 }

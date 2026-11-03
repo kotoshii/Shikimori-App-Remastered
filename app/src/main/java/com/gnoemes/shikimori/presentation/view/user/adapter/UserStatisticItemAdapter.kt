@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemUserProfileStatisticBinding
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.inflate
-import kotlinx.android.synthetic.main.item_user_profile_statistic.view.*
 
 class UserStatisticItemAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -30,15 +30,17 @@ class UserStatisticItemAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemUserProfileStatisticBinding.bind(view)
+
         fun bind(item: UserStatisticItem) {
             with(itemView) {
-                categoryView.text = item.category
-                countView.text = item.count.toString()
+                binding.categoryView.text = item.category
+                binding.countView.text = item.count.toString()
 
-                progressView.post {
-                    progressView.layoutParams = (progressView.layoutParams as? FrameLayout.LayoutParams)?.apply {
-                        val newWidth = container.measuredWidth * item.progress
-                        width = if (newWidth != 0f && newWidth < container.height) container.height else newWidth.toInt()
+                binding.progressView.post {
+                    binding.progressView.layoutParams = (binding.progressView.layoutParams as? FrameLayout.LayoutParams)?.apply {
+                        val newWidth = binding.container.measuredWidth * item.progress
+                        width = if (newWidth != 0f && newWidth < binding.container.height) binding.container.height else newWidth.toInt()
                     }
                     invalidate()
                 }

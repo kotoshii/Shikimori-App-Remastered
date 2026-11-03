@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.presentation.view.common.widget.preferences
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.annotation.StyleRes
 import androidx.preference.Preference
@@ -11,11 +10,11 @@ import androidx.preference.PreferenceViewHolder
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ViewThemePreferenceBinding
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.view_theme_preference.view.*
 import org.joda.time.LocalTime
 
 class ThemePreference @JvmOverloads constructor(context: Context,
@@ -46,7 +45,7 @@ class ThemePreference @JvmOverloads constructor(context: Context,
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         holder.itemView.isClickable = false
-        with(holder.itemView) {
+        with(ViewThemePreferenceBinding.bind(holder.itemView)) {
             defaultThemeView.onClick { onDefaultClicked() }
             darkThemeView.onClick { onDarkClicked() }
             amoledThemeView.onClick { onAmoledClicked() }
@@ -77,77 +76,77 @@ class ThemePreference @JvmOverloads constructor(context: Context,
         }
     }
 
-    private fun onThemeChange(parentView: View, view: ThemeView, @StyleRes style: Int) {
-        updateLightMode(parentView)
+    private fun onThemeChange(binding: ViewThemePreferenceBinding, view: ThemeView, @StyleRes style: Int) {
+        updateLightMode(binding)
         view.isChecked = true
         theme = style
-        clearNightThemeIfEmpty(parentView)
-        updateNightModeSchedule(parentView)
+        clearNightThemeIfEmpty(binding)
+        updateNightModeSchedule(binding)
     }
 
-    private fun onNightThemeChange(parentView: View, view: ThemeView, @StyleRes style: Int): Boolean {
+    private fun onNightThemeChange(binding: ViewThemePreferenceBinding, view: ThemeView, @StyleRes style: Int): Boolean {
         val newState = !view.isNight
-        updateNightMode(parentView)
+        updateNightMode(binding)
         view.isNight = newState
         nightTheme = if (view.isNight) style else Constants.NO_ID.toInt()
-        checkDefaultIfEmpty(parentView)
-        updateNightModeSchedule(parentView)
+        checkDefaultIfEmpty(binding)
+        updateNightModeSchedule(binding)
         return true
     }
 
-    private fun View.onDefaultClicked() {
+    private fun ViewThemePreferenceBinding.onDefaultClicked() {
         onThemeChange(this, defaultThemeView, R.style.ShikimoriAppTheme_Default)
     }
 
-    private fun View.onDarkClicked() {
+    private fun ViewThemePreferenceBinding.onDarkClicked() {
         onThemeChange(this, darkThemeView, R.style.ShikimoriAppTheme_Dark)
     }
 
-    private fun View.onAmoledClicked() {
+    private fun ViewThemePreferenceBinding.onAmoledClicked() {
         onThemeChange(this, amoledThemeView, R.style.ShikimoriAppTheme_Amoled)
     }
 
-    private fun View.onDarkLongClick(): Boolean {
+    private fun ViewThemePreferenceBinding.onDarkLongClick(): Boolean {
         return onNightThemeChange(this, darkThemeView, R.style.ShikimoriAppTheme_Dark)
     }
 
-    private fun View.onAmoledLongClick(): Boolean {
+    private fun ViewThemePreferenceBinding.onAmoledLongClick(): Boolean {
         return onNightThemeChange(this, amoledThemeView, R.style.ShikimoriAppTheme_Amoled)
     }
 
-    private fun updateLightMode(parentView: View) {
-        with(parentView) {
+    private fun updateLightMode(binding: ViewThemePreferenceBinding) {
+        with(binding) {
             if (!darkThemeView.isNight) darkThemeView.isChecked = false
             if (!amoledThemeView.isNight) amoledThemeView.isChecked = false
             if (!defaultThemeView.isNight) defaultThemeView.isChecked = false
         }
     }
 
-    private fun updateNightMode(parentView: View) {
-        with(parentView) {
+    private fun updateNightMode(binding: ViewThemePreferenceBinding) {
+        with(binding) {
             if (!darkThemeView.isChecked) darkThemeView.isNight = false
             if (!amoledThemeView.isChecked) amoledThemeView.isNight = false
         }
     }
 
-    private fun checkDefaultIfEmpty(parentView: View) {
-        with(parentView) {
+    private fun checkDefaultIfEmpty(binding: ViewThemePreferenceBinding) {
+        with(binding) {
             if (!darkThemeView.isChecked && !defaultThemeView.isChecked && !amoledThemeView.isChecked) onDefaultClicked()
         }
     }
 
-    private fun clearNightThemeIfEmpty(parentView: View) {
-        with(parentView) {
+    private fun clearNightThemeIfEmpty(binding: ViewThemePreferenceBinding) {
+        with(binding) {
             if (!darkThemeView.isNight && !defaultThemeView.isNight && !amoledThemeView.isNight) nightTheme = Constants.NO_ID.toInt()
         }
     }
 
-    private fun updateNightModeSchedule(parentView: View) {
-        with(parentView) {
+    private fun updateNightModeSchedule(binding: ViewThemePreferenceBinding) {
+        with(binding) {
             isNightThemePicked.let {
                 nightModeLabel.setText(if (it) R.string.settings_theme_night_mode_schedule_title else R.string.settings_theme_night_mode_title)
-                nightModeLabel.layoutParams = (nightModeLabel.layoutParams as? LinearLayout.LayoutParams)?.apply { bottomMargin = if (it) context.dp(12) else context.dp(24) }
-                TransitionManager.beginDelayedTransition(parentView as ViewGroup, Fade())
+                nightModeLabel.layoutParams = (nightModeLabel.layoutParams as? LinearLayout.LayoutParams)?.apply { bottomMargin = if (it) root.context.dp(12) else root.context.dp(24) }
+                TransitionManager.beginDelayedTransition(root, Fade())
                 nightTimeStartContainer.visibleIf { it }
                 nightTimeEndContainer.visibleIf { it }
             }

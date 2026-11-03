@@ -1,24 +1,24 @@
 package com.gnoemes.shikimori.presentation.view.common.holders
 
 import android.view.View
-import com.facebook.shimmer.ShimmerFrameLayout
+import com.gnoemes.shikimori.databinding.LayoutDetailsHeadSimpleBinding
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadSimpleItem
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.layout_details_head_simple.view.*
-import kotlinx.android.synthetic.main.layout_details_head_simple_content.view.*
 
 class DetailsHeadSimpleViewHolder(
         private val view: View,
         private val imageLoader: ImageLoader
 ) {
 
-    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(view.headContent, view.headPlaceholder as ShimmerFrameLayout) }
+    private val binding = LayoutDetailsHeadSimpleBinding.bind(view)
+
+    private val placeholder: DetailsPlaceholderViewHolder by lazy { DetailsPlaceholderViewHolder(binding.headContent.root, binding.headPlaceholder.root) }
 
     fun bind(item: DetailsHeadSimpleItem) {
         placeholder.showContent()
 
-        with(view) {
+        with(binding.headContent) {
             imageLoader.setImageWithPlaceHolder(imageView, item.image.original)
 
             onRuLabelView.visibleIf { !item.firstName.isNullOrBlank() }

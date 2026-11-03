@@ -5,6 +5,7 @@ import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentCharacterBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
@@ -21,8 +22,6 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.ifNotNull
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_character.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), CharacterView {
@@ -64,7 +63,7 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        screenToolbar?.apply {
             addBackButton { getPresenter().onBackPressed() }
             setTitle(R.string.common_character)
             inflateMenu(R.menu.menu_character)
@@ -77,13 +76,13 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
             }
         }
 
-        headHolder = DetailsHeadSimpleViewHolder(headLayout, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
+        headHolder = DetailsHeadSimpleViewHolder(binding.headLayout.root, imageLoader)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, getPresenter()::onContentClicked)
 
         contentHolders.apply {
-            put(DetailsContentType.SEYUS, DetailsContentViewHolder(seyuLayout, seyuAdapter))
-            put(DetailsContentType.ANIMES, DetailsContentViewHolder(animeLayout, animeAdapter))
-            put(DetailsContentType.MANGAS, DetailsContentViewHolder(mangaLayout, mangaAdapter))
+            put(DetailsContentType.SEYUS, DetailsContentViewHolder(binding.seyuLayout.root, seyuAdapter))
+            put(DetailsContentType.ANIMES, DetailsContentViewHolder(binding.animeLayout.root, animeAdapter))
+            put(DetailsContentType.MANGAS, DetailsContentViewHolder(binding.mangaLayout.root, mangaAdapter))
         }
 
 
@@ -94,6 +93,8 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
     ///////////////////////////////////////////////////////////////////////////
 
     override fun getPresenter(): CharacterPresenter = characterPresenter
+
+    private val binding by viewBinding(FragmentCharacterBinding::bind)
 
     override fun getFragmentLayout(): Int = R.layout.fragment_character
 
@@ -115,5 +116,5 @@ class CharacterFragment : BaseFragment<CharacterPresenter, CharacterView>(), Cha
 
     override fun showContent(show: Boolean) = Unit
 
-    override val pageView: View? get() = nestedScroll
+    override val pageView: View? get() = binding.nestedScroll
 }

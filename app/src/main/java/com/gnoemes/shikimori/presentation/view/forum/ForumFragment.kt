@@ -16,9 +16,6 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.hideRefresh
 import com.gnoemes.shikimori.utils.showRefresh
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 
 class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
 
@@ -41,16 +38,16 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.gone()
+        screenToolbar?.gone()
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@ForumFragment.adapter
             layoutManager = LinearLayoutManager(context)
             setHasFixedSize(true)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
-        networkErrorView.setText(R.string.common_error_message)
+        defaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        screenErrorView?.setText(R.string.common_error_message)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -70,9 +67,9 @@ class ForumFragment : BaseFragment<ForumPresenter, ForumView>(), ForumView {
     }
 
     override fun showContent(show: Boolean) {
-        recyclerView.visibleIf { show }
+        defaultList.recyclerView.visibleIf { show }
     }
 
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun onShowLoading() = defaultList.refreshLayout.showRefresh()
+    override fun onHideLoading() = defaultList.refreshLayout.hideRefresh()
 }

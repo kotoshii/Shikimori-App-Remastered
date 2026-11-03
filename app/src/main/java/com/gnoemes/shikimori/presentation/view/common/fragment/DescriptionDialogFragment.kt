@@ -4,18 +4,19 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogDescriptionBinding
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.dialog_description.*
 
 class DescriptionDialogFragment : BaseBottomSheetDialogFragment() {
 
     private var title: String? = null
     private var titleRes: Int = 0
     private var text: String? = null
+
+    private val binding by viewBinding(DialogDescriptionBinding::bind)
 
     companion object {
         fun newInstance(title: String? = null, titleRes: Int = 0, text: String? = null) = DescriptionDialogFragment().withArgs {
@@ -41,12 +42,12 @@ class DescriptionDialogFragment : BaseBottomSheetDialogFragment() {
         titleRes = arguments?.getInt(ARGUMENT_TITLE_ID, 0) ?: 0
         text = arguments?.getString(ARGUMENT_TEXT, null)
 
-        with(toolbar) {
+        with(wrapper.toolbar) {
             this@DescriptionDialogFragment.title?.let { title = it } ?: setTitle(titleRes)
             addBackButton(R.drawable.ic_close) { dismiss() }
         }
 
-        descriptionView.text = text
+        binding.descriptionView.text = text
     }
 
     override fun getDialogLayout(): Int = R.layout.dialog_description

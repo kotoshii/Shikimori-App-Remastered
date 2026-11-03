@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogSeriesDownloadBinding
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.addBackButton
@@ -12,8 +13,6 @@ import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.dialog_series_download.*
 
 class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
 
@@ -27,6 +26,8 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
         private const val ITEMS_KEY = "ITEMS_KEY"
     }
 
+    private val binding by viewBinding(DialogSeriesDownloadBinding::bind)
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
@@ -39,19 +40,19 @@ class SeriesDownloadDialog : BaseBottomSheetDialogFragment() {
                 ?.map { it as SeriesDownloadItem }
                 ?.toList() ?: emptyList()
 
-        with(toolbar) {
+        with(wrapper.toolbar) {
             title = arguments?.getString(TITLE_KEY)
         }
 
         //these sources hand out picture and sound separately, the file only appears once both
         //downloads finish and are joined, so say so before a quality is picked
         val needsMerge = items.any { it.track.audioUrl != null }
-        mergeNotice.visibility = if (needsMerge) View.VISIBLE else View.GONE
-        if (needsMerge) mergeNotice.setText(R.string.download_will_be_merged)
+        binding.mergeNotice.visibility = if (needsMerge) View.VISIBLE else View.GONE
+        if (needsMerge) binding.mergeNotice.setText(R.string.download_will_be_merged)
 
         val seriesAdapter = SeriesDownloadAdapter(items, (parentFragment as? SeriesDownloadCallback)) { dismiss() }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = seriesAdapter
             layoutManager = LinearLayoutManager(context)
             val margin = context.dp(16)

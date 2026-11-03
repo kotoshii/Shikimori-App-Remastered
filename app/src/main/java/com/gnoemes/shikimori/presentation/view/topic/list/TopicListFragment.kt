@@ -22,9 +22,6 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.ifNotNull
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
 import javax.inject.Inject
 
 class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresenter, TopicListView>(), TopicListView {
@@ -62,19 +59,19 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (parentFragment is ShikimoriMainFragment) toolbar?.gone()
-        else toolbar?.addBackButton { topicPresenter.onBackPressed() }
+        if (parentFragment is ShikimoriMainFragment) screenToolbar?.gone()
+        else screenToolbar?.addBackButton { topicPresenter.onBackPressed() }
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@TopicListFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
             addOnScrollListener(nextPageListener)
         }
-        ViewCompat.setNestedScrollingEnabled(recyclerView, false)
+        ViewCompat.setNestedScrollingEnabled(defaultList.recyclerView, false)
 
-        networkErrorView.setText(R.string.common_error_message)
-        emptyContentView.setText(R.string.search_nothing)
+        screenErrorView?.setText(R.string.common_error_message)
+        screenEmptyView?.setText(R.string.search_nothing)
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -90,6 +87,6 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setMyClubsEmptyText() {
-        emptyContentView.setText(R.string.forum_my_clubs_empty)
+        screenEmptyView?.setText(R.string.forum_my_clubs_empty)
     }
 }

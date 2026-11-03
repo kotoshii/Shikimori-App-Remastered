@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentHostingFilterBinding
+import com.gnoemes.shikimori.presentation.view.base.fragment.ViewBindings
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.settings.ToolbarCallback
 import com.gnoemes.shikimori.utils.HostingFilter
@@ -24,7 +26,6 @@ import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.putStringSet
 import com.gnoemes.shikimori.utils.visibleIf
 import com.gnoemes.shikimori.utils.materialDialog
-import kotlinx.android.synthetic.main.fragment_hosting_filter.*
 
 /**
  * Lets the user hide hostings from the translations list.
@@ -41,19 +42,27 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private val adapter by lazy { HostingFilterAdapter(::onHostingToggled, ::confirmDelete) }
 
+    private val bindings = ViewBindings { view }
+    private val binding by bindings.of(FragmentHostingFilterBinding::bind)
+
     private val prefs by lazy { context!!.getDefaultSharedPreferences() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_hosting_filter, container, false)
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bindings.clear()
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         (activity as? ToolbarCallback)?.showToolbarHint()
 
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = adapter
-        addButton.onClick { showAddDialog() }
+        binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.adapter = adapter
+        binding.addButton.onClick { showAddDialog() }
 
         showHostings()
     }
@@ -96,8 +105,8 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             HostingFilterAdapter.Item(it, hidden.contains(it), canDelete = !seen.contains(it))
         })
 
-        emptyView.visibleIf { all.isEmpty() }
-        recyclerView.visibleIf { all.isNotEmpty() }
+        binding.emptyView.visibleIf { all.isEmpty() }
+        binding.recyclerView.visibleIf { all.isNotEmpty() }
     }
 
     /**
@@ -183,8 +192,8 @@ class HostingFilterFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun showEmptyIfNeeded() {
         val empty = adapter.itemCount == 0
 
-        emptyView.visibleIf { empty }
-        recyclerView.visibleIf { !empty }
+        binding.emptyView.visibleIf { empty }
+        binding.recyclerView.visibleIf { !empty }
     }
 
     private fun showHint(hint: TextView) {

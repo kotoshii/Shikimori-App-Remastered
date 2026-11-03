@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentTopicBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
@@ -25,13 +26,6 @@ import com.gnoemes.shikimori.presentation.view.topic.holders.TopicLinkedViewHold
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.fragment_topic.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_progress.*
-import kotlinx.android.synthetic.main.layout_toolbar.*
-import kotlinx.android.synthetic.main.layout_topic_comments.*
-import kotlinx.android.synthetic.main.layout_topic_comments.view.*
-import kotlinx.android.synthetic.main.layout_topic_linked.*
 import javax.inject.Inject
 
 class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, TopicView>(), TopicView {
@@ -73,23 +67,26 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
             isPrevious = it.getBoolean(PREVIOUS_KEY, false)
         }
 
-        ViewCompat.setNestedScrollingEnabled(scrollView, false)
-        userHolder = TopicUserViewHolder(userLayout, imageLoader, getPresenter()::onContentClicked)
-        contentHolder = TopicContentViewHolder(topicLayout, getPresenter()::onContentClicked)
-        linkedHolder = TopicLinkedViewHolder(linkedLayout, linkedTitleView, imageLoader)
+        ViewCompat.setNestedScrollingEnabled(binding.scrollView, false)
+        userHolder = TopicUserViewHolder(binding.userLayout.root, imageLoader, getPresenter()::onContentClicked)
+        contentHolder = TopicContentViewHolder(binding.topicLayout.root, getPresenter()::onContentClicked)
+        //the title block's views, found inside it: the same ones as before (its title's id is in no other layout)
+        val linkedViews = binding.linkedLayout
+        linkedHolder = TopicLinkedViewHolder(linkedViews.imageView, linkedViews.linkedTitleView, linkedViews.typeView,
+                linkedViews.seasonView, linkedViews.statusView, imageLoader)
 
-        toolbar.addBackButton { getPresenter().onBackPressed() }
-        toolbar.title = null
+        screenToolbar?.addBackButton { getPresenter().onBackPressed() }
+        screenToolbar?.title = null
 
-        with(recyclerView) {
+        with(binding.commentsLayout.recyclerView) {
             adapter = this@TopicFragment.adapter
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, true)
             itemAnimator = null
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
 
-        commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
-        commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
+        binding.commentsLayout.commentsMore.setOnClickListener { isPrevious = false; getPresenter().loadNextPage() }
+        binding.commentsLayout.commentsBefore.setOnClickListener { isPrevious = true; getPresenter().onPreviousClicked() }
 
     }
 
@@ -103,6 +100,8 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     ///////////////////////////////////////////////////////////////////////////
 
     override fun getPresenter(): TopicPresenter = topicPresenter
+
+    private val binding by viewBinding(FragmentTopicBinding::bind)
 
     override fun getFragmentLayout(): Int = R.layout.fragment_topic
 
@@ -123,32 +122,32 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun setCommentsText(text: String?) {
-        commentsMore.text = text
+        binding.commentsLayout.commentsMore.text = text
     }
 
     override fun setLinkedContent(linked: TopicLinkedViewModel?) {
-        linkedLayout.visibleIf { linked != null }
-        linkedLayout.setOnClickListener { linked?.let { getPresenter().onContentClicked(it.type, it.id) } }
+        binding.linkedLayout.root.visibleIf { linked != null }
+        binding.linkedLayout.root.setOnClickListener { linked?.let { getPresenter().onContentClicked(it.type, it.id) } }
         linkedHolder.bind(linked)
     }
 
     override fun showCommentsLoading(show: Boolean) {
-        commentsLayout.commentProgress.visibleIf { show }
-        recyclerView.visibleIf { !show }
+        binding.commentsLayout.commentProgress.root.visibleIf { show }
+        binding.commentsLayout.recyclerView.visibleIf { !show }
     }
 
     override fun onShowLoading() {
-        progressBar.visible()
+        screenProgress?.visible()
     }
 
     override fun onHideLoading() {
-        progressBar.gone()
+        screenProgress?.gone()
     }
 
     override fun setCommentsCount(count: Long) {
         context?.let {
             val text = it.getString(R.string.common_comments) + " ($count):"
-            commentTitleView.text = text
+            binding.commentsLayout.commentTitleView.text = text
         }
     }
 
@@ -161,15 +160,15 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
     }
 
     override fun showContent(show: Boolean) {
-        scrollView.visibleIf { show }
+        binding.scrollView.visibleIf { show }
     }
 
     override fun showCommentsMore(show: Boolean) {
-        commentsMore.visibleIf { show }
+        binding.commentsLayout.commentsMore.visibleIf { show }
     }
 
     override fun showPreviousComments(show: Boolean) {
-        commentsBefore.visibleIf { show }
+        binding.commentsLayout.commentsBefore.visibleIf { show }
     }
 
 }

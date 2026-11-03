@@ -15,6 +15,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentDetailsBinding
 import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
@@ -33,8 +34,6 @@ import com.gnoemes.shikimori.presentation.view.common.holders.*
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
-import kotlinx.android.synthetic.main.fragment_details.*
-import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 import javax.inject.Inject
 
 abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, View : BaseDetailsView> : BaseFragment<Presenter, View>(),
@@ -52,7 +51,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     //the title on the toolbar's own background once the head has scrolled up under the toolbar, as when
     //the collapsing header the head was part of had collapsed (P7-T5 13.1)
     private fun updateToolbar() {
-        val shown = nestedScroll.scrollY >= headContainer.height - toolbar.height
+        val shown = binding.nestedScroll.scrollY >= binding.headContainer.height - binding.toolbar.height
         if (shown == toolbarShown) return
         toolbarShown = shown
         if (shown) showToolbar() else hideToolbar()
@@ -65,20 +64,20 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     //the blurred poster reaches the bottom of a head taller than it, so no edge shows across a long
     //name (BUGS #80); and the head's height decides the toolbar too
     private fun fitHead() {
-        val height = maxOf(backgroundHeight, headContainer.height)
-        if (backgroundImage.layoutParams.height != height) backgroundImage.updateLayoutParams { this.height = height }
+        val height = maxOf(backgroundHeight, binding.headContainer.height)
+        if (binding.backgroundImage.layoutParams.height != height) binding.backgroundImage.updateLayoutParams { this.height = height }
         updateToolbar()
     }
 
     protected open fun showToolbar() {
-        toolbar?.apply {
+        binding.toolbar.apply {
             detailsName?.let { title = it } ?: setTitle(titleRes)
             background = ColorDrawable(context.colorAttr(R.attr.colorPrimary))
         }
     }
 
     protected open fun hideToolbar() {
-        toolbar?.apply {
+        binding.toolbar.apply {
             title = null
             background = ColorDrawable(Color.TRANSPARENT)
         }
@@ -102,7 +101,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        binding.toolbar.apply {
             addBackButton { getPresenter().onBackPressed() }
             title = null
             inflateMenu(menuRes)
@@ -117,22 +116,23 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         }
 
         toolbarShown = false
-        backgroundHeight = backgroundImage.layoutParams.height
-        nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
+        backgroundHeight = binding.backgroundImage.layoutParams.height
+        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, _, _, _, _ ->
             v.removeCallbacks(toolbarCheck)
             v.post(toolbarCheck)
         })
         //after the layout that changed the head: the poster's height is set outside a layout pass
-        headContainer.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
-            if (bottom - top != oldBottom - oldTop) headContainer.post { if (this@BaseDetailsFragment.view != null) fitHead() }
+        val head = binding.headContainer
+        head.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (bottom - top != oldBottom - oldTop) head.post { if (this@BaseDetailsFragment.view != null) fitHead() }
         }
 
-        headHolder =DetailsHeadViewHolder(headLayout, imageLoader, getPresenter()::onAction)
-        infoHolder = DetailsInfoViewHolder(infoLayout, tagAdapter, infoAdapter)
-        actionHolder = DetailsActionViewHolder(actionLayout, actionAdapter)
-        descriptionHolder = DetailsDescriptionViewHolder(descriptionLayout, getPresenter()::onContentClicked)
+        headHolder =DetailsHeadViewHolder(binding.headLayout.root, imageLoader, getPresenter()::onAction)
+        infoHolder = DetailsInfoViewHolder(binding.infoLayout.root, tagAdapter, infoAdapter)
+        actionHolder = DetailsActionViewHolder(binding.actionLayout.root, actionAdapter)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, getPresenter()::onContentClicked)
 
-        with(charactersLayout.searchView) {
+        with(binding.charactersLayout.searchView) {
             findViewById<LinearLayout>(R.id.search_bar)?.layoutTransition = null
             setOnCloseListener {
                 getPresenter().onCharacterSearch(null)
@@ -152,11 +152,11 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
             applyAppStyle(startPaddingDp = 16, closeButton = false)
         }
 
-        with(charactersLayout) {
+        with(binding.charactersLayout) {
             searchBtn.onClick {
                 searchView.isIconified = false
                 searchView.post {
-                    TransitionManager.beginDelayedTransition(this@with as ViewGroup, Fade())
+                    TransitionManager.beginDelayedTransition(root, Fade())
                     contentLabelView.gone()
                     searchBtn.gone()
                     searchView.visible()
@@ -164,7 +164,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
                 }
             }
             closeBtn.onClick {
-                TransitionManager.beginDelayedTransition(this@with as ViewGroup, Fade())
+                TransitionManager.beginDelayedTransition(root, Fade())
                 contentLabelView.visible()
                 searchBtn.visible()
                 searchView.setQuery("", false)
@@ -208,6 +208,9 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     // GETTERS
     ///////////////////////////////////////////////////////////////////////////
 
+    /** fragment_details, the whole view (this page has no fragment_base); the anime and manga pages use it too. */
+    protected val binding by viewBinding(FragmentDetailsBinding::bind)
+
     override fun getFragmentLayout(): Int = R.layout.fragment_details
 
     abstract val titleRes: Int
@@ -225,14 +228,14 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     }
 
     override fun showRateMessage(message: String, rateId: Long) =
-            coordinator.showUndoMessage(message) { getPresenter().onDeleteCanceled(rateId) }
+            binding.coordinator.showUndoMessage(message) { getPresenter().onDeleteCanceled(rateId) }
 
     override fun setHeadItem(item: DetailsHeadItem) {
         detailsName = item.name
         headHolder.bind(item)
 
-        if (!backgroundImage.hasImage()) {
-            imageLoader.setBlurredImage(backgroundImage, item.image.original, sampling = 2)
+        if (!binding.backgroundImage.hasImage()) {
+            imageLoader.setBlurredImage(binding.backgroundImage, item.image.original, sampling = 2)
         }
     }
 
@@ -269,5 +272,5 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         dialog.show(childFragmentManager, "StatisticDialog")
     }
 
-    override val pageView: android.view.View? get() = nestedScroll
+    override val pageView: android.view.View? get() = binding.nestedScroll
 }

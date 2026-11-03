@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.View
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogChangelogBinding
 import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
 import com.gnoemes.shikimori.entity.app.domain.AppUpdate
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
@@ -13,8 +14,6 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.dialog_changelog.*
 
 /**
  * The release notes of the newest version, with a button that starts the download.
@@ -43,6 +42,8 @@ class ChangelogDialog : BaseBottomSheetDialogFragment() {
         }
     }
 
+    private val binding by viewBinding(DialogChangelogBinding::bind)
+
     private val version: String
         get() = arguments?.getString(ARGUMENT_VERSION).orEmpty()
 
@@ -58,22 +59,22 @@ class ChangelogDialog : BaseBottomSheetDialogFragment() {
         //blank is treated as absent, so the button logic below is a plain null check
         val apkUrl = arguments?.getString(ARGUMENT_APK_URL)?.takeIf { it.isNotBlank() }
 
-        with(toolbar) {
+        with(wrapper.toolbar) {
             title = getString(R.string.update_changelog_title, version)
             addBackButton(R.drawable.ic_close) { dismiss() }
         }
 
         //a release can be published without notes - v0.8.6.51 was - so an empty body says so
         //rather than showing an empty sheet
-        changelogView.text =
+        binding.changelogView.text =
                 if (changelog.isNullOrBlank()) getString(R.string.update_changelog_empty)
                 else MarkdownRenderer.render(changelog)
         //without this the links render as links and do nothing when tapped
-        changelogView.movementMethod = LinkMovementMethod.getInstance()
+        binding.changelogView.movementMethod = LinkMovementMethod.getInstance()
 
         //nothing to download when the release has no apk attached; the notes are still worth reading
-        downloadButton.visibility = if (apkUrl == null) View.GONE else View.VISIBLE
-        downloadButton.onClick {
+        binding.downloadButton.visibility = if (apkUrl == null) View.GONE else View.VISIBLE
+        binding.downloadButton.onClick {
             val target = context
             if (target != null && apkUrl != null) AppUpdateService.download(target, version, apkUrl)
             //closing on download is deliberate: the progress is in the notification from here on

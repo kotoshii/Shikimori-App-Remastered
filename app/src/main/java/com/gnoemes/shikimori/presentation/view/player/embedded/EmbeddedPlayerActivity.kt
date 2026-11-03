@@ -20,6 +20,10 @@ import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityEmbeddedPlayerBinding
+import com.gnoemes.shikimori.databinding.LayoutPlayerBottomBinding
+import com.gnoemes.shikimori.databinding.LayoutPlayerControlsBinding
+import com.gnoemes.shikimori.databinding.LayoutPlayerRewindForwardBinding
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
@@ -43,11 +47,6 @@ import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.MimeTypes
-import kotlinx.android.synthetic.main.activity_embedded_player.*
-import kotlinx.android.synthetic.main.layout_player_bottom.*
-import kotlinx.android.synthetic.main.layout_player_controls.*
-import kotlinx.android.synthetic.main.layout_player_rewind_forward.*
-import kotlinx.android.synthetic.main.layout_player_toolbar.*
 import org.joda.time.Duration
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
@@ -80,6 +79,14 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         get() = false
         set(value) {}
 
+    private val binding by viewBinding(ActivityEmbeddedPlayerBinding::bind)
+
+    //<merge> layouts, bound through a view that holds them: the rewind and forward hints sit in the activity's
+    //layout; the controls sit in the PlayerView's controller, which it inflates from layout_player_controller
+    private val rewindForward by lazy(LazyThreadSafetyMode.NONE) { LayoutPlayerRewindForwardBinding.bind(binding.root) }
+    private val playerControls by lazy(LazyThreadSafetyMode.NONE) { LayoutPlayerControlsBinding.bind(binding.playerView) }
+    private val playerBottom by lazy(LazyThreadSafetyMode.NONE) { LayoutPlayerBottomBinding.bind(binding.playerView) }
+
     private val controller by lazy { PlayerController(settingsSource) }
     private val screen by lazy { PlayerScreen(this) }
     private val levels by lazy { PlayerLevels(this) }
@@ -96,35 +103,35 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
-        toolbar.addBackButton(icon = R.drawable.ic_arrow_back_player) { onBackPressed() }
+        binding.includedToolbar.toolbar.addBackButton(icon = R.drawable.ic_arrow_back_player) { onBackPressed() }
 
         if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-        forwardView.text = smallOffsetText
-        forwardView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_forward, 0, 0)
-        rewindView.text = smallOffsetText
-        rewindView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_rewind, 0, 0)
+        rewindForward.forwardView.text = smallOffsetText
+        rewindForward.forwardView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_forward, 0, 0)
+        rewindForward.rewindView.text = smallOffsetText
+        rewindForward.rewindView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_rewind, 0, 0)
 
-        exo_progress.setBufferedColor(ColorUtils.setAlphaComponent(colorAttr(R.attr.colorSecondaryTransparent), 153))
-        resolutionSpinnerView.background.tint(color(R.color.player_controls))
+        playerBottom.exoProgress.setBufferedColor(ColorUtils.setAlphaComponent(colorAttr(R.attr.colorSecondaryTransparent), 153))
+        binding.includedToolbar.resolutionSpinnerView.background.tint(color(R.color.player_controls))
 
-        speedSpinnerView.apply {
+        binding.includedToolbar.speedSpinnerView.apply {
             background.tint(color(R.color.player_controls))
             adapter = ArrayAdapter(this@EmbeddedPlayerActivity, R.layout.item_spinner_player, resources.getStringArray(R.array.player_speed_rates))
             setOnItemClickListener { _, _, position, _ -> controller.changePlaySpeed(position) }
             setSelection(2, false)
         }
-        includedToolbar.gone()
-        unlockView.hide()
+        binding.includedToolbar.root.gone()
+        binding.unlockView.hide()
 
-        pipView.visibleIf { screen.hasPip }
+        playerBottom.pipView.visibleIf { screen.hasPip }
 
-        prev.onClick { presenter.loadPrevEpisode() }
-        next.onClick { presenter.loadNextEpisode() }
-        rotationView.onClick { screen.toggleOrientation() }
-        lockView.onClick { controller.lock() }
-        unlockView.onClick { controller.unlock() }
-        pipView.onClick { screen.enterPip() }
+        playerControls.prev.onClick { presenter.loadPrevEpisode() }
+        playerControls.next.onClick { presenter.loadNextEpisode() }
+        playerBottom.rotationView.onClick { screen.toggleOrientation() }
+        playerBottom.lockView.onClick { controller.lock() }
+        binding.unlockView.onClick { controller.unlock() }
+        playerBottom.pipView.onClick { screen.enterPip() }
     }
 
     override fun onUserLeaveHint() {
@@ -161,7 +168,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration?) {
-        playerView.useController = !isInPictureInPictureMode
+        binding.playerView.useController = !isInPictureInPictureMode
     }
 
     private fun changeProgressSlide(current: Long, max: Long, offset: Long) {
@@ -194,9 +201,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     }
 
     private fun showParamChanges(text: CharSequence, icon: Drawable?) {
-        paramChangesView.text = text
-        paramChangesView.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null)
-        paramChangesView.visible()
+        binding.paramChangesView.text = text
+        binding.paramChangesView.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null)
+        binding.paramChangesView.visible()
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -217,19 +224,19 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     ///////////////////////////////////////////////////////////////////////////
 
     override fun setTitle(title: String) {
-        toolbar.title = title
+        binding.includedToolbar.toolbar.title = title
     }
 
     override fun setEpisodeSubtitle(currentEpisode: Int) {
         val subTitle = String.format(getString(R.string.episode_number), currentEpisode)
-        toolbar.subtitle = subTitle
+        binding.includedToolbar.toolbar.subtitle = subTitle
     }
 
     override fun setResolutions(resolutions: List<String>) {
-        resolutionSpinnerView.visibleIf { resolutions.isNotEmpty() }
+        binding.includedToolbar.resolutionSpinnerView.visibleIf { resolutions.isNotEmpty() }
         if (resolutions.isNotEmpty()) {
-            resolutionSpinnerView.adapter = ArrayAdapter(this, R.layout.item_spinner_player, resolutions)
-            resolutionSpinnerView.setOnItemClickListener { _, _, position, _ -> presenter.onResolutionChanged(resolutions[position]) }
+            binding.includedToolbar.resolutionSpinnerView.adapter = ArrayAdapter(this, R.layout.item_spinner_player, resolutions)
+            binding.includedToolbar.resolutionSpinnerView.setOnItemClickListener { _, _, position, _ -> presenter.onResolutionChanged(resolutions[position]) }
         }
     }
 
@@ -240,10 +247,10 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     override fun selectTrack(position: Int) = controller.selectTrack(position)
     override fun enableNextButton(enable: Boolean) = controller.enableNextButton(enable)
     override fun enablePrevButton(enable: Boolean) = controller.enablePrevButton(enable)
-    override fun onShowLoading() = progressBar.visible()
-    override fun onHideLoading() = progressBar.gone()
-    override fun onShowLightLoading() = bufferingProgressBar.visible()
-    override fun onHideLightLoading() = bufferingProgressBar.gone()
+    override fun onShowLoading() = binding.progressBar.visible()
+    override fun onHideLoading() = binding.progressBar.gone()
+    override fun onShowLightLoading() = binding.bufferingProgressBar.visible()
+    override fun onHideLightLoading() = binding.bufferingProgressBar.gone()
 
     override fun showMessage(s: String, exit: Boolean) {
         Toast.makeText(this, s, Toast.LENGTH_LONG).show()
@@ -309,7 +316,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
             override fun onScrubMove(timeBar: TimeBar?, position: Long) {
                 val dragText = (if (prevPosition < position) "+" else "-").plus(" ${toMinutesAndSecond(prevPosition - position)}")
-                dragProgress.apply {
+                playerBottom.dragProgress.apply {
                     text = dragText
                     visible()
                     removeCallbacks(dragPostHideRunnable)
@@ -336,14 +343,14 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
                     .setContentType(C.CONTENT_TYPE_MOVIE)
                     .build(), true)
             player.addListener(this)
-            playerView.player = player
-            playerView.setControllerShowOnTouch(false)
-            playerView.setControllerVisibilityListener(this)
-            playerView.controllerAutoShow = false
-            playerView.setOnTouchListener(PlayerGestureHandler(this@EmbeddedPlayerActivity, playerView, playerMargin, settingsSource, this))
-            exo_progress.addListener(progressListener)
-            resolutionSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
-            speedSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
+            binding.playerView.player = player
+            binding.playerView.setControllerShowOnTouch(false)
+            binding.playerView.setControllerVisibilityListener(this)
+            binding.playerView.controllerAutoShow = false
+            binding.playerView.setOnTouchListener(PlayerGestureHandler(this@EmbeddedPlayerActivity, binding.playerView, playerMargin, settingsSource, this))
+            playerBottom.exoProgress.addListener(progressListener)
+            binding.includedToolbar.resolutionSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
+            binding.includedToolbar.speedSpinnerView.setSpinnerEventsListener(spinnerOpenListener)
 
             val mediaSession = MediaSessionCompat(this@EmbeddedPlayerActivity, packageName)
             connector = MediaSessionConnector(mediaSession)
@@ -360,17 +367,17 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         val isVisible
             get() = controlsVisibility == View.VISIBLE
 
-        fun enableNextButton(enable: Boolean) = next.setUsable(enable)
+        fun enableNextButton(enable: Boolean) = playerControls.next.setUsable(enable)
 
-        fun enablePrevButton(enable: Boolean) = prev.setUsable(enable)
+        fun enablePrevButton(enable: Boolean) = playerControls.prev.setUsable(enable)
 
         fun selectTrack(position: Int) {
-            resolutionSpinnerView.setSelection(position, false)
+            binding.includedToolbar.resolutionSpinnerView.setSelection(position, false)
         }
 
         fun changePlaySpeed(currentSpeed: Int) {
             player.playbackParameters = PlaybackParameters(speedRates[currentSpeed])
-            speedSpinnerView.setSelection(currentSpeed, false)
+            binding.includedToolbar.speedSpinnerView.setSelection(currentSpeed, false)
         }
 
         fun addMediaSource(source: MediaSource?) {
@@ -411,9 +418,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
         fun unlock() {
             isLocked = false
-            TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT))
-            unlockSurface.gone()
-            unlockView.hide()
+            TransitionManager.beginDelayedTransition(binding.container, Fade(Fade.MODE_OUT))
+            binding.unlockSurface.gone()
+            binding.unlockView.hide()
             screen.holdOrientation(locked = false)
         }
 
@@ -434,9 +441,9 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
             if (isVisible && !controlsInAction) {
                 hideAfterTimeout()
-                includedToolbar.visible()
+                binding.includedToolbar.root.visible()
             } else if (!controlsInAction) {
-                includedToolbar.gone()
+                binding.includedToolbar.root.gone()
             }
         }
 
@@ -457,15 +464,15 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         ///////////////////////////////////////////////////////////////////////////
 
         override fun onTap() {
-            if (isVisible && !controlsInAction) playerView.hideController()
-            else if (!controlsInAction) playerView.showController()
+            if (isVisible && !controlsInAction) binding.playerView.hideController()
+            else if (!controlsInAction) binding.playerView.showController()
         }
 
         override fun onLockedTouch() {
-            unlockView.show()
-            TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_IN))
-            unlockSurface.visible()
-            playerView.hideController()
+            binding.unlockView.show()
+            TransitionManager.beginDelayedTransition(binding.container, Fade(Fade.MODE_IN))
+            binding.unlockSurface.visible()
+            binding.playerView.hideController()
             hideUnlockAfterTimeout()
         }
 
@@ -474,11 +481,11 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             val text = if (big) bigOffsetText else smallOffsetText
 
             if (forward) {
-                forwardView.text = text
+                rewindForward.forwardView.text = text
                 seek(offset)
                 hideForwardAfterTimeout()
             } else {
-                rewindView.text = text
+                rewindForward.rewindView.text = text
                 seek(-offset)
                 hideRewindAfterTimeout()
             }
@@ -491,15 +498,15 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         override fun onSeekSwipe(offset: Long) = changeProgressSlide(player.currentPosition, player.duration, offset)
 
         override fun onSwipeEnd(seekOffset: Long?) {
-            paramChangesView.removeCallbacks(delayedParamChangesHide)
-            paramChangesView.postDelayed(delayedParamChangesHide, UNLOCK_HIDE_DELAY)
+            binding.paramChangesView.removeCallbacks(delayedParamChangesHide)
+            binding.paramChangesView.postDelayed(delayedParamChangesHide, UNLOCK_HIDE_DELAY)
             levels.onSwipeEnd()
 
             if (seekOffset != null) seek(seekOffset)
         }
 
         override fun onZoom(zoomed: Boolean) {
-            playerView.resizeMode =
+            binding.playerView.resizeMode =
                     if (!zoomed) AspectRatioFrameLayout.RESIZE_MODE_FIT
                     else if (isZoomProportional) AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                     else AspectRatioFrameLayout.RESIZE_MODE_FILL
@@ -511,7 +518,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         }
 
         private fun hideForwardAfterTimeout() {
-            forwardView.apply {
+            rewindForward.forwardView.apply {
                 removeCallbacks(delayedForwardHide)
                 visible()
                 postDelayed(delayedForwardHide, FORWARD_REWIND_HIDE_DELAY)
@@ -519,7 +526,7 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         }
 
         private fun hideRewindAfterTimeout() {
-            rewindView.apply {
+            rewindForward.rewindView.apply {
                 removeCallbacks(delayedRewindHide)
                 visible()
                 postDelayed(delayedRewindHide, FORWARD_REWIND_HIDE_DELAY)
@@ -527,21 +534,21 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         }
 
         private fun hideAfterTimeout() {
-            playerView.removeCallbacks(postHideRunnable)
-            playerView.postDelayed(postHideRunnable, CONTROLLER_HIDE_DELAY)
+            binding.playerView.removeCallbacks(postHideRunnable)
+            binding.playerView.postDelayed(postHideRunnable, CONTROLLER_HIDE_DELAY)
         }
 
         private fun hideUnlockAfterTimeout() {
-            unlockView.removeCallbacks(delayedUnlockHide)
-            unlockView.postDelayed(delayedUnlockHide, UNLOCK_HIDE_DELAY)
+            binding.unlockView.removeCallbacks(delayedUnlockHide)
+            binding.unlockView.postDelayed(delayedUnlockHide, UNLOCK_HIDE_DELAY)
         }
 
-        private val postHideRunnable = Runnable { if (!controlsInAction) playerView.hideController() }
-        private val delayedForwardHide = Runnable { forwardView.gone() }
-        private val delayedRewindHide = Runnable { rewindView.gone() }
-        private val delayedUnlockHide = Runnable { unlockView.hide(); TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT)); unlockSurface.gone() }
-        private val delayedParamChangesHide = Runnable { TransitionManager.beginDelayedTransition(container, Fade(Fade.MODE_OUT)); paramChangesView.gone() }
-        private val dragPostHideRunnable = Runnable { dragProgress.gone(); dragProgress.text = null }
+        private val postHideRunnable = Runnable { if (!controlsInAction) binding.playerView.hideController() }
+        private val delayedForwardHide = Runnable { rewindForward.forwardView.gone() }
+        private val delayedRewindHide = Runnable { rewindForward.rewindView.gone() }
+        private val delayedUnlockHide = Runnable { binding.unlockView.hide(); TransitionManager.beginDelayedTransition(binding.container, Fade(Fade.MODE_OUT)); binding.unlockSurface.gone() }
+        private val delayedParamChangesHide = Runnable { TransitionManager.beginDelayedTransition(binding.container, Fade(Fade.MODE_OUT)); binding.paramChangesView.gone() }
+        private val dragPostHideRunnable = Runnable { playerBottom.dragProgress.gone(); playerBottom.dragProgress.text = null }
     }
 
     private fun toMinutesAndSecond(value: Long): String? {

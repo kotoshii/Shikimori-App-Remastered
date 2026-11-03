@@ -4,10 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemDetailsInfoBinding
 import com.gnoemes.shikimori.entity.common.presentation.InfoItem
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_details_info.view.*
 
 class InfoAdapterDelegate : AbsListItemAdapterDelegate<InfoItem, Any, InfoAdapterDelegate.ViewHolder>() {
 
@@ -23,10 +23,12 @@ class InfoAdapterDelegate : AbsListItemAdapterDelegate<InfoItem, Any, InfoAdapte
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemDetailsInfoBinding.bind(view)
+
         fun bind(item: InfoItem) {
             with(itemView) {
-                infoView.text = item.description
-                categoryView.text = item.category
+                binding.infoView.text = item.description
+                binding.categoryView.text = item.category
             }
         }
     }

@@ -5,14 +5,13 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogSeriesDownloadHostingBinding
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.dialog_series_download_hosting.*
 
 /**
  * Which hosting to download from, asked before the quality list.
@@ -38,6 +37,8 @@ class SeriesDownloadHostingDialog : BaseBottomSheetDialogFragment() {
         private const val UNSUPPORTED_KEY = "UNSUPPORTED_KEY"
     }
 
+    private val binding by viewBinding(DialogSeriesDownloadHostingBinding::bind)
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         peekHeight = context.dimenAttr(android.R.attr.actionBarSize)
@@ -50,18 +51,18 @@ class SeriesDownloadHostingDialog : BaseBottomSheetDialogFragment() {
                 ?.map { it as TranslationVideo }
                 ?: emptyList()
 
-        with(toolbar) {
+        with(wrapper.toolbar) {
             title = arguments?.getString(TITLE_KEY)
         }
 
         //the group also holds hostings the app cannot resolve, and they are not in this list -
         //without a word about them the list simply looks short
         val hasUnsupported = arguments?.getBoolean(UNSUPPORTED_KEY) ?: false
-        hostingUnsupportedNotice.visibility = if (hasUnsupported) View.VISIBLE else View.GONE
+        binding.hostingUnsupportedNotice.visibility = if (hasUnsupported) View.VISIBLE else View.GONE
 
         val hostingAdapter = SeriesDownloadHostingAdapter(videos, (parentFragment as? Callback)) { dismiss() }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = hostingAdapter
             layoutManager = LinearLayoutManager(context)
             val margin = context.dp(16)

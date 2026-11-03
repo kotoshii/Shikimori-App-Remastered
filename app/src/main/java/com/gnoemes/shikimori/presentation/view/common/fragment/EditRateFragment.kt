@@ -8,6 +8,7 @@ import androidx.core.view.forEach
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentEditRateBinding
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
@@ -18,10 +19,6 @@ import com.gnoemes.shikimori.presentation.presenter.rates.EditRatePresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetInjectionDialogFragment
 import com.gnoemes.shikimori.utils.*
 import com.google.android.material.button.MaterialButton
-import kotlinx.android.synthetic.main.fragment_edit_rate.*
-import kotlinx.android.synthetic.main.layout_edit_rate_content.*
-import kotlinx.android.synthetic.main.layout_edit_rate_progress.*
-import kotlinx.android.synthetic.main.layout_edit_rate_status.*
 import kotlin.math.roundToInt
 
 /**
@@ -92,31 +89,33 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(FragmentEditRateBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         callback = parentFragment as? RateDialogCallback
 
-        toolbar.title = arguments?.getString(TITLE)
+        binding.toolbar.title = arguments?.getString(TITLE)
 
-        deleteBtn.onClick { callback?.onDeleteRate(original?.id ?: Constants.NO_ID); dismiss() }
+        binding.deleteBtn.onClick { callback?.onDeleteRate(original?.id ?: Constants.NO_ID); dismiss() }
 
-        acceptBtn.onClick {
+        binding.acceptBtn.onClick {
             val changes = changes()
             //nothing to send for an entry that is there already; a new one is added even unchanged
             if (original?.id == null || !changes.isEmpty()) callback?.onUpdateRate(changes)
             dismiss()
         }
 
-        ratingBar.setEmptyDrawable(context!!.drawable(R.drawable.ic_big_star_empty)?.apply { tint(context!!.colorAttr(R.attr.colorOnPrimarySecondary)) })
-        ratingBar.setFilledDrawable(context!!.drawable(R.drawable.ic_big_star_filled)?.apply { tint(context!!.colorAttr(R.attr.colorSecondary)) })
-        ratingBar.setOnRatingChangeListener { _, fl ->
+        binding.rateContent.ratingBar.setEmptyDrawable(context!!.drawable(R.drawable.ic_big_star_empty)?.apply { tint(context!!.colorAttr(R.attr.colorOnPrimarySecondary)) })
+        binding.rateContent.ratingBar.setFilledDrawable(context!!.drawable(R.drawable.ic_big_star_filled)?.apply { tint(context!!.colorAttr(R.attr.colorSecondary)) })
+        binding.rateContent.ratingBar.setOnRatingChangeListener { _, fl ->
             val newRating = (fl * 2).roundToInt()
             countRating(newRating)
         }
 
-        ratingGroup.setOnClickListener {
-            val currentRating = ratingValueView.text.toString().toIntOrNull()
+        binding.rateContent.ratingGroup.setOnClickListener {
+            val currentRating = binding.rateContent.ratingValueView.text.toString().toIntOrNull()
             currentRating?.let {
                 val newRating = when (it) {
                     10 -> 0
@@ -126,37 +125,37 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
             }
         }
 
-        progressIncrementView.setOnClickListener {
-            val newValue = progressView.text?.toString()?.toIntOrNull()?.plus(1) ?: 0
-            progressView.setText(newValue.toString())
+        binding.rateContent.progressInclude.progressIncrementView.setOnClickListener {
+            val newValue = binding.rateContent.progressInclude.progressView.text?.toString()?.toIntOrNull()?.plus(1) ?: 0
+            binding.rateContent.progressInclude.progressView.setText(newValue.toString())
         }
 
-        progressDecrementView.setOnClickListener {
-            var newValue = progressView.text?.toString()?.toIntOrNull()?.minus(1) ?: 0
+        binding.rateContent.progressInclude.progressDecrementView.setOnClickListener {
+            var newValue = binding.rateContent.progressInclude.progressView.text?.toString()?.toIntOrNull()?.minus(1) ?: 0
             if (newValue < 0) newValue = 0
-            progressView.setText(newValue.toString())
+            binding.rateContent.progressInclude.progressView.setText(newValue.toString())
         }
 
         keepCommentInView()
 
         if (isAnime) {
-            progressLabelView.text = context!!.getString(R.string.profile_rate_watched)
-            rewatchesLabel.text = context!!.getString(R.string.profile_rate_rewatched)
+            binding.rateContent.progressInclude.progressLabelView.text = context!!.getString(R.string.profile_rate_watched)
+            binding.rateContent.progressInclude.rewatchesLabel.text = context!!.getString(R.string.profile_rate_rewatched)
         } else {
-            progressLabelView.text = context!!.getString(R.string.profile_rate_readed)
-            rewatchesLabel.text = context!!.getString(R.string.profile_rate_reread)
+            binding.rateContent.progressInclude.progressLabelView.text = context!!.getString(R.string.profile_rate_readed)
+            binding.rateContent.progressInclude.rewatchesLabel.text = context!!.getString(R.string.profile_rate_reread)
         }
 
-        progressLabel.setText(if (isAnime) R.string.rate_watching else R.string.rate_reading)
-        reProgressLabel.setText(if (isAnime) R.string.rate_rewatch_short else R.string.rate_rereading)
-        completedLabel.setText(if (isAnime) R.string.rate_completed else R.string.rate_readed)
+        binding.rateContent.rateInclude.progressLabel.setText(if (isAnime) R.string.rate_watching else R.string.rate_reading)
+        binding.rateContent.rateInclude.reProgressLabel.setText(if (isAnime) R.string.rate_rewatch_short else R.string.rate_rereading)
+        binding.rateContent.rateInclude.completedLabel.setText(if (isAnime) R.string.rate_completed else R.string.rate_readed)
 
-        progressBtn.onClick { onStatusChanged(it.id) }
-        plannedBtn.onClick { onStatusChanged(it.id) }
-        reProgressBtn.onClick { onStatusChanged(it.id) }
-        completedBtn.onClick { onStatusChanged(it.id) }
-        onHoldBtn.onClick { onStatusChanged(it.id) }
-        droppedBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.progressBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.plannedBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.reProgressBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.completedBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.onHoldBtn.onClick { onStatusChanged(it.id) }
+        binding.rateContent.rateInclude.droppedBtn.onClick { onStatusChanged(it.id) }
 
         //rebuilt after a rotation, or after Android closed the app: the fields have restored the
         //user's edits themselves, the status and the entry come from here
@@ -168,8 +167,8 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
             showContent()
         } else {
             //nothing to save or delete before the entry is in
-            acceptBtn.gone()
-            deleteBtn.gone()
+            binding.acceptBtn.gone()
+            binding.deleteBtn.gone()
         }
     }
 
@@ -194,19 +193,19 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
         selectStatusChip()
 
         val rating = rate?.score?.roundToInt() ?: 0
-        ratingBar.rating = rating.div(2f)
+        binding.rateContent.ratingBar.rating = rating.div(2f)
         countRating(rating)
 
-        progressView.setText((if (isAnime) rate?.episodes else rate?.chapters)?.toString() ?: "0")
-        rewatchesView.setText(rate?.rewatches?.toString() ?: "0")
-        commentView.setText(rate?.text)
+        binding.rateContent.progressInclude.progressView.setText((if (isAnime) rate?.episodes else rate?.chapters)?.toString() ?: "0")
+        binding.rateContent.progressInclude.rewatchesView.setText(rate?.rewatches?.toString() ?: "0")
+        binding.rateContent.commentView.setText(rate?.text)
     }
 
     private fun showContent() {
-        ratePlaceholder.gone()
-        rateContent.visible()
-        acceptBtn.visible()
-        deleteBtn.visibleIf { original?.id != null }
+        binding.ratePlaceholder.root.gone()
+        binding.rateContent.root.visible()
+        binding.acceptBtn.visible()
+        binding.deleteBtn.visibleIf { original?.id != null }
     }
 
     /**
@@ -215,6 +214,8 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
      * only the line with the cursor.
      */
     private fun keepCommentInView() {
+        val nestedScroll = binding.nestedScroll
+        val commentView = binding.rateContent.commentView
         val scrollToEnd = { nestedScroll.post { nestedScroll.smoothScrollTo(0, nestedScroll.getChildAt(0).bottom) } }
         commentView.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) scrollToEnd() }
         nestedScroll.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
@@ -229,7 +230,7 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
 
     private fun selectStatusChip() {
         val selected = chips.find { it.status == status }?.id
-        (rateInclude as? ConstraintLayout)?.forEach { btn ->
+        (binding.rateContent.rateInclude.root as? ConstraintLayout)?.forEach { btn ->
             if (btn is MaterialButton) btn.isSelected = btn.id == selected
         }
     }
@@ -241,10 +242,10 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
      */
     private fun changes(): UserRate {
         val before = original ?: UserRate()
-        val score = (ratingBar.rating * 2).roundToInt()
-        val progress = progressView.text?.toString()?.toIntOrNull()
-        val rewatches = rewatchesView.text?.toString()?.toIntOrNull()
-        val text = commentView.text?.toString().orEmpty()
+        val score = (binding.rateContent.ratingBar.rating * 2).roundToInt()
+        val progress = binding.rateContent.progressInclude.progressView.text?.toString()?.toIntOrNull()
+        val rewatches = binding.rateContent.progressInclude.rewatchesView.text?.toString()?.toIntOrNull()
+        val text = binding.rateContent.commentView.text?.toString().orEmpty()
 
         return UserRate(
                 id = before.id ?: Constants.NO_ID,
@@ -261,9 +262,9 @@ class EditRateFragment : BaseBottomSheetInjectionDialogFragment<EditRatePresente
             listOf(score, status, rewatches, episodes, chapters, text).all { it == null }
 
     private fun countRating(rating: Int) {
-        ratingValueView.text = rating.toString()
-        ratingDescriptionView.text = ratingResourceProvider.getRatingDescription(rating)
-        ratingBar.rating = rating.div(2f)
+        binding.rateContent.ratingValueView.text = rating.toString()
+        binding.rateContent.ratingDescriptionView.text = ratingResourceProvider.getRatingDescription(rating)
+        binding.rateContent.ratingBar.rating = rating.div(2f)
     }
 
     ///////////////////////////////////////////////////////////////////////////

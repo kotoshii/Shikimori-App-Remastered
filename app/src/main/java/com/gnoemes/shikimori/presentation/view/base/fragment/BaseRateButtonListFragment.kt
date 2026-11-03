@@ -16,7 +16,6 @@ import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.showRefresh
 import com.gnoemes.shikimori.utils.visibleIf
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import kotlinx.android.synthetic.main.layout_default_list.*
 
 /**
  * The screen side of [BaseRateButtonListPresenter]: the list, its refresh, and the status dialog.
@@ -30,14 +29,14 @@ abstract class BaseRateButtonListFragment<P : BaseRateButtonListPresenter<V, *>,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = listAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dp(8)))
         }
 
-        refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
-        refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
+        defaultList.refreshLayout.background = ColorDrawable(context!!.colorAttr(R.attr.colorSurface))
+        defaultList.refreshLayout.setOnRefreshListener { getPresenter().onRefresh() }
     }
 
     override fun onStatusChanged(id: Long, newStatus: RateStatus) {
@@ -54,9 +53,9 @@ abstract class BaseRateButtonListFragment<P : BaseRateButtonListPresenter<V, *>,
         dialog.show(childFragmentManager, "StatusDialog")
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
-    override fun onShowLightLoading() = refreshLayout.showRefresh()
-    override fun onHideLightLoading() = refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = defaultList.recyclerView.visibleIf { show }
+    override fun onShowLoading() = defaultList.refreshLayout.showRefresh()
+    override fun onHideLoading() = defaultList.refreshLayout.hideRefresh()
+    override fun onShowLightLoading() = defaultList.refreshLayout.showRefresh()
+    override fun onHideLightLoading() = defaultList.refreshLayout.hideRefresh()
 }

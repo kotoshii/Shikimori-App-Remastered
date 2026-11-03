@@ -6,6 +6,7 @@ import android.view.View
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentFilterSeasonsBinding
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
@@ -19,9 +20,6 @@ import com.gnoemes.shikimori.utils.*
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
-import kotlinx.android.synthetic.main.fragment_filter_seasons.*
-import kotlinx.android.synthetic.main.layout_filter_nested_toolbar.*
-import kotlinx.android.synthetic.main.layout_filter_seasons_custom.*
 
 class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, FilterSeasonsView>(), FilterSeasonsView {
 
@@ -36,6 +34,8 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
                 withFilters(FilterSeasonsFragment(), type, filters, categories)
     }
 
+    private val binding by viewBinding(FragmentFilterSeasonsBinding::bind)
+
     private val simpleAdapter by lazy { FilterChipAdapter(FilterType.SEASON, presenter::onFilterInverted, presenter::onFilterSelected) }
     private val customAdapter by lazy { FilterSeasonsAdapter(presenter::onNewCustomFilter, presenter::onRemoveCustomFilter) }
 
@@ -44,26 +44,26 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(binding.appBarLayout.toolbar) {
             setTitle(R.string.filter_seasons)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = simpleAdapter
             layoutManager = FlexboxLayoutManager(context)
             itemAnimator = null
         }
 
-        with(customInputRecyclerView) {
+        with(binding.seasonsCustom.customInputRecyclerView) {
             adapter = customAdapter
             layoutManager = FlexboxLayoutManager(context).apply { flexWrap = FlexWrap.WRAP; flexDirection = FlexDirection.ROW }
             itemAnimator = null
         }
 
-        clearBtn.onClick { presenter.onResetClicked() }
-        acceptBtn.onClick { presenter.onAcceptClicked() }
-        helpBtn.onClick {
+        binding.appBarLayout.clearBtn.onClick { presenter.onResetClicked() }
+        binding.appBarLayout.acceptBtn.onClick { presenter.onAcceptClicked() }
+        binding.seasonsCustom.helpBtn.onClick {
             context!!.materialDialog().show {
                 title(R.string.filter_custom)
                 message(text = Html.fromHtml(getString(R.string.filter_custom_seasons_hint)))
@@ -93,7 +93,7 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
         customAdapter.bindItems(items)
     }
 
-    override fun setResetEnabled(show: Boolean) = clearBtn.visibleIf { show }
+    override fun setResetEnabled(show: Boolean) = binding.appBarLayout.clearBtn.visibleIf { show }
 
 
     override fun onBackPressed() {

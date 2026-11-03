@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentCalendarBinding
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarViewModel
 import com.gnoemes.shikimori.entity.series.presentation.SeriesPlaceholderItem
 import com.gnoemes.shikimori.presentation.presenter.calendar.CalendarPresenter
@@ -21,9 +22,6 @@ import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import kotlinx.android.synthetic.main.fragment_calendar.*
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
 import javax.inject.Inject
 
 class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), CalendarView {
@@ -50,9 +48,9 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar.setNavigationIcon(R.drawable.ic_search)
+        binding.toolbar.setNavigationIcon(R.drawable.ic_search)
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@CalendarFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 3 }
             val customSpacing = context.dp(84)
@@ -60,13 +58,13 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             setHasFixedSize(true)
         }
 
-        refreshLayout.layoutParams = (refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        defaultList.refreshLayout.layoutParams = (defaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
-        refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
+        defaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
 
-        with(searchView) {
+        with(binding.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -81,7 +79,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
             applyAppStyle()
         }
 
-        refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
+        defaultList.refreshLayout.setOnRefreshListener { calendarPresenter.onRefresh() }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -89,6 +87,8 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
     ///////////////////////////////////////////////////////////////////////////
 
     override fun getPresenter(): CalendarPresenter = calendarPresenter
+
+    private val binding by viewBinding(FragmentCalendarBinding::bind)
 
     override fun getFragmentLayout(): Int = R.layout.fragment_calendar
 
@@ -100,9 +100,9 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         adapter.bindItems(items)
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
-    override fun onShowLoading() = refreshLayout.showRefresh()
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun showContent(show: Boolean) = defaultList.recyclerView.visibleIf { show }
+    override fun onShowLoading() = defaultList.refreshLayout.showRefresh()
+    override fun onHideLoading() = defaultList.refreshLayout.hideRefresh()
 
     override fun showEmptyView() {
         val item = SeriesPlaceholderItem(R.string.calendar_empty_title, R.string.calendar_empty_description)
