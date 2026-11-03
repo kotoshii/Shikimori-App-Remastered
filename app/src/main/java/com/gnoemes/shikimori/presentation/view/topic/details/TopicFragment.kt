@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.LayoutTopicLinkedBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
@@ -76,7 +77,10 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         ViewCompat.setNestedScrollingEnabled(scrollView, false)
         userHolder = TopicUserViewHolder(userLayout, imageLoader, getPresenter()::onContentClicked)
         contentHolder = TopicContentViewHolder(topicLayout, getPresenter()::onContentClicked)
-        linkedHolder = TopicLinkedViewHolder(linkedLayout, linkedTitleView, imageLoader)
+        //the title block's views, found inside it: the same ones as before (its title's id is in no other layout)
+        val linkedViews = LayoutTopicLinkedBinding.bind(linkedLayout)
+        linkedHolder = TopicLinkedViewHolder(linkedViews.imageView, linkedViews.linkedTitleView, linkedViews.typeView,
+                linkedViews.seasonView, linkedViews.statusView, imageLoader)
 
         toolbar.addBackButton { getPresenter().onBackPressed() }
         toolbar.title = null

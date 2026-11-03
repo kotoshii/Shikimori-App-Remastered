@@ -10,13 +10,13 @@ import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.request.target.BitmapImageViewTarget
 import com.bumptech.glide.request.transition.Transition
+import com.gnoemes.shikimori.databinding.ItemUserHistoryBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.UserHistoryViewModel
 import com.gnoemes.shikimori.utils.images.GlideApp
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_user_history.view.*
 
 
 class UserHistoryAdapterDelegate(
@@ -35,23 +35,25 @@ class UserHistoryAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemUserHistoryBinding.bind(view)
+
         private lateinit var item: UserHistoryViewModel
 
         init {
-            itemView.container.onClick { callback.invoke(item.target?.linkedType!!, item.target?.linkedId!!) }
+            binding.container.onClick { callback.invoke(item.target?.linkedType!!, item.target?.linkedId!!) }
         }
 
         fun bind(item: UserHistoryViewModel) {
             this.item = item
             with(itemView) {
-                targetNameView.text = item.targetName
-                actionView.text = Html.fromHtml(item.action)
-                dateView.text = item.actionDateString
+                binding.targetNameView.text = item.targetName
+                binding.actionView.text = Html.fromHtml(item.action)
+                binding.dateView.text = item.actionDateString
 
                 GlideApp.with(itemView)
                         .asBitmap()
                         .load(item.target?.imageUrl)
-                        .into(object : BitmapImageViewTarget(targetImageView) {
+                        .into(object : BitmapImageViewTarget(binding.targetImageView) {
                             override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                                 super.onResourceReady(resource, transition)
 
@@ -64,7 +66,7 @@ class UserHistoryAdapterDelegate(
                                             GradientDrawable.Orientation.LEFT_RIGHT,
                                             intArrayOf(dominantColor, dominantColor, ColorUtils.setAlphaComponent(dominantColor, 0)))
                                     gd.cornerRadius = 0f
-                                    firstLayerGradient.setImageDrawable(gd)
+                                    binding.firstLayerGradient.setImageDrawable(gd)
                                 }
                             }
                         })

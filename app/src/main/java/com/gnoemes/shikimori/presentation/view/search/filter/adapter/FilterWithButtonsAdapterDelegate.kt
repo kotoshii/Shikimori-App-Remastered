@@ -4,6 +4,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemCategoryWithChipGroupAndButtonsBinding
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterAction
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
@@ -13,7 +14,6 @@ import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_category_with_chip_group_and_buttons.view.*
 
 class FilterWithButtonsAdapterDelegate(
         private val invertCallback: (FilterType, FilterViewModel) -> Unit,
@@ -35,27 +35,29 @@ class FilterWithButtonsAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemCategoryWithChipGroupAndButtonsBinding.bind(view)
+
         private lateinit var item: FilterWithButtonsViewModel
 
 
         init {
             with(itemView) {
-                chipList.setRecycledViewPool(sharedPool)
-                chipList.itemAnimator = null
-                clearBtn.onClick { actionCallback.invoke(item.type, FilterAction.Clear) }
-                invertBtn.onClick { actionCallback.invoke(item.type, FilterAction.Invert) }
-                checkAllBtn.onClick { actionCallback.invoke(item.type, FilterAction.SelectAll) }
+                binding.chipList.setRecycledViewPool(sharedPool)
+                binding.chipList.itemAnimator = null
+                binding.clearBtn.onClick { actionCallback.invoke(item.type, FilterAction.Clear) }
+                binding.invertBtn.onClick { actionCallback.invoke(item.type, FilterAction.Invert) }
+                binding.checkAllBtn.onClick { actionCallback.invoke(item.type, FilterAction.SelectAll) }
             }
         }
 
         fun bind(item: FilterWithButtonsViewModel) {
             this.item = item
             with(itemView) {
-                categoryNameView.text = item.categoryLocalised
+                binding.categoryNameView.text = item.categoryLocalised
 
                 val chipAdapter = FilterChipAdapter(item.type, invertCallback, selectCallback).apply { if (!hasObservers()) setHasStableIds(true) }
 
-                with(chipList) {
+                with(binding.chipList) {
                     adapter = chipAdapter
                     layoutManager = FlexboxLayoutManager(context)
                 }
@@ -64,9 +66,9 @@ class FilterWithButtonsAdapterDelegate(
 
                 val filtersApplied = item.filters.find { it.state != FilterViewModel.STATE.DEFAULT } != null
 
-                clearBtn.visibleIf { filtersApplied }
-                invertBtn.visibleIf { item.hasInvert && filtersApplied }
-                checkAllBtn.visibleIf { item.hasSelectAll }
+                binding.clearBtn.visibleIf { filtersApplied }
+                binding.invertBtn.visibleIf { item.hasInvert && filtersApplied }
+                binding.checkAllBtn.visibleIf { item.hasSelectAll }
             }
         }
 

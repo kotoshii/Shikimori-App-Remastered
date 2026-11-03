@@ -4,10 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemChipEntryBinding
 import com.gnoemes.shikimori.entity.search.presentation.FilterEntryViewModel
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_chip_entry.view.*
 
 class FilterEntryAdapterDelegate(
         private val closeCallback: (FilterEntryViewModel) -> Unit
@@ -25,15 +25,17 @@ class FilterEntryAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemChipEntryBinding.bind(view)
+
         private lateinit var item: FilterEntryViewModel
 
         init {
-            itemView.chip.setOnCloseIconClickListener { closeCallback.invoke(item) }
+            binding.chip.setOnCloseIconClickListener { closeCallback.invoke(item) }
         }
 
         fun bind(item: FilterEntryViewModel) {
             this.item = item
-            itemView.chip.text = item.value
+            binding.chip.text = item.value
         }
     }
 }

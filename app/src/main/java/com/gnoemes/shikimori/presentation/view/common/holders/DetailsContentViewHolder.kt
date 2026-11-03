@@ -1,8 +1,12 @@
 package com.gnoemes.shikimori.presentation.view.common.holders
 
 import android.view.View
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.LayoutDetailsContentBinding
+import com.gnoemes.shikimori.databinding.LayoutDetailsContentWithSearchBinding
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
 import com.gnoemes.shikimori.presentation.view.common.adapter.StartSnapHelper
@@ -12,10 +16,6 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.isVisible
 import com.gnoemes.shikimori.utils.visible
 import com.gnoemes.shikimori.utils.widgets.HorizontalSpaceItemDecorator
-import kotlinx.android.synthetic.main.layout_details_content.view.contentLabelView
-import kotlinx.android.synthetic.main.layout_details_content.view.contentRecyclerView
-import kotlinx.android.synthetic.main.layout_details_content.view.progressBar
-import kotlinx.android.synthetic.main.layout_details_content_with_search.view.*
 
 class DetailsContentViewHolder(
         private val view: View,
@@ -23,14 +23,35 @@ class DetailsContentViewHolder(
         private val withSearch : Boolean= false
 ) {
 
+    //two layouts, so two binding classes (P7-T14): the views both have, and the search's own, which
+    //withSearch says the view has (the characters on the anime and manga pages)
+    private val contentLabelView: TextView
+    private val contentRecyclerView: RecyclerView
+    private val progressBar: View
+    private val search: LayoutDetailsContentWithSearchBinding?
+
     init {
-        if (view.contentRecyclerView.onFlingListener == null) {
-            val snapOffset = view.resources.getDimension(R.dimen.margin_normal).toInt()
-            val snapHelper = StartSnapHelper(snapOffset)
-            snapHelper.attachToRecyclerView(view.contentRecyclerView)
+        if (withSearch) {
+            val binding = LayoutDetailsContentWithSearchBinding.bind(view)
+            contentLabelView = binding.contentLabelView
+            contentRecyclerView = binding.contentRecyclerView
+            progressBar = binding.progressBar
+            search = binding
+        } else {
+            val binding = LayoutDetailsContentBinding.bind(view)
+            contentLabelView = binding.contentLabelView
+            contentRecyclerView = binding.contentRecyclerView
+            progressBar = binding.progressBar
+            search = null
         }
 
-        view.contentRecyclerView.apply {
+        if (contentRecyclerView.onFlingListener == null) {
+            val snapOffset = view.resources.getDimension(R.dimen.margin_normal).toInt()
+            val snapHelper = StartSnapHelper(snapOffset)
+            snapHelper.attachToRecyclerView(contentRecyclerView)
+        }
+
+        contentRecyclerView.apply {
             adapter = this@DetailsContentViewHolder.adapter.apply { if (!hasObservers()) setHasStableIds(true) }
             layoutManager = LinearLayoutManager(view.context, LinearLayoutManager.HORIZONTAL, false).apply { initialPrefetchItemCount = 3 }
             setHasFixedSize(true)
@@ -61,7 +82,7 @@ class DetailsContentViewHolder(
             contentLabelView.setText(stringRes)
             adapter.bindItems(item.items)
             //not while the search is open: each result put 🔍 back beside the field (P7-T5 17.6)
-            if (withSearch && !searchView.isVisible()) searchBtn.visible()
+            if (search != null && !search.searchView.isVisible()) search.searchBtn.visible()
             progressBar.gone()
             contentRecyclerView.visible()
         }

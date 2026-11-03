@@ -4,10 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemDownloadHostingBinding
 import com.gnoemes.shikimori.entity.series.presentation.TranslationVideo
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
-import kotlinx.android.synthetic.main.item_download_hosting.view.*
 
 class SeriesDownloadHostingAdapter(
         private val items: List<TranslationVideo>,
@@ -26,15 +26,17 @@ class SeriesDownloadHostingAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemDownloadHostingBinding.bind(view)
+
         private lateinit var item: TranslationVideo
 
         init {
-            itemView.hostingContainer.onClick { callback?.onDownloadHostingSelected(item); onAction.invoke() }
+            binding.hostingContainer.onClick { callback?.onDownloadHostingSelected(item); onAction.invoke() }
         }
 
         fun bind(item: TranslationVideo) {
             this.item = item
-            itemView.hostingView.text = item.videoHosting.synonymType
+            binding.hostingView.text = item.videoHosting.synonymType
         }
     }
 }

@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.annotation.ColorRes
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemCalendarAnimeBinding
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarAnimeItem
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.utils.iconRes
@@ -12,7 +13,6 @@ import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.item_calendar_anime.view.*
 
 class CalendarAnimeAdapter(
         private val imageLoader: ImageLoader,
@@ -36,32 +36,34 @@ class CalendarAnimeAdapter(
     override fun onViewRecycled(holder: ViewHolder) {
         super.onViewRecycled(holder)
         holder.itemView.apply {
-            imageLoader.clearImage(imageView)
+            imageLoader.clearImage(holder.binding.imageView)
         }
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemCalendarAnimeBinding.bind(view)
+
         private lateinit var item: CalendarAnimeItem
 
         init {
-            itemView.materialCardView.onClick { callback.invoke(item.id) }
+            binding.materialCardView.onClick { callback.invoke(item.id) }
         }
 
         fun bind(item: CalendarAnimeItem) {
             this.item = item
             with(itemView) {
-                imageLoader.setImageListItem(imageView, item.image.original)
-                nameView.text = item.name
-                descriptionView.text = item.description
+                imageLoader.setImageListItem(binding.imageView, item.image.original)
+                binding.nameView.text = item.name
+                binding.descriptionView.text = item.description
 
                 if (item.status != null) {
-                    rateView.setIconResource(item.status.iconRes)
-                    rateView.setIconTintResource(getRateColor(item.status))
+                    binding.rateView.setIconResource(item.status.iconRes)
+                    binding.rateView.setIconTintResource(getRateColor(item.status))
                 }
 
-                rateView.visibleIf { item.status != null }
-                seasonLastView.visibleIf { item.isLast }
+                binding.rateView.visibleIf { item.status != null }
+                binding.seasonLastView.visibleIf { item.isLast }
             }
         }
 

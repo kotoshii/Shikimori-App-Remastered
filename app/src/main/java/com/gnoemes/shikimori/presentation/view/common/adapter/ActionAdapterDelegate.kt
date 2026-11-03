@@ -4,12 +4,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemDetailsActionBinding
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsActionType
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_details_action.view.*
 
 class ActionAdapterDelegate(
         private val callback: (DetailsAction) -> Unit
@@ -27,10 +27,12 @@ class ActionAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemDetailsActionBinding.bind(view)
+
         private lateinit var item: DetailsActionType
 
         init {
-            itemView.container.onClick { callback.invoke(getClickAction(item)) }
+            binding.container.onClick { callback.invoke(getClickAction(item)) }
         }
 
         fun bind(item: DetailsActionType) {
@@ -52,8 +54,8 @@ class ActionAdapterDelegate(
                     DetailsActionType.STATISTIC -> R.string.common_statistic
                 }
 
-                imageView.setImageResource(icon)
-                categoryView.setText(text)
+                binding.imageView.setImageResource(icon)
+                binding.categoryView.setText(text)
             }
         }
 

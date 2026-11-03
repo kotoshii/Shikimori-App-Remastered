@@ -4,10 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemSeriesDownloadBinding
 import com.gnoemes.shikimori.entity.series.presentation.SeriesDownloadItem
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
-import kotlinx.android.synthetic.main.item_series_download.view.*
 
 class SeriesDownloadAdapter(
         private val items: List<SeriesDownloadItem>,
@@ -26,19 +26,21 @@ class SeriesDownloadAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemSeriesDownloadBinding.bind(view)
+
         private lateinit var item: SeriesDownloadItem
 
         init {
-            itemView.episodeContainer.onClick { callback?.onDownload(item); onAction.invoke() }
-            itemView.sharingBtn.onClick { callback?.onShare(item) }
+            binding.episodeContainer.onClick { callback?.onDownload(item); onAction.invoke() }
+            binding.sharingBtn.onClick { callback?.onShare(item) }
         }
 
         fun bind(item: SeriesDownloadItem) {
             this.item = item
             with(itemView) {
-                hostingView.text = item.hosting
+                binding.hostingView.text = item.hosting
                 //only on screen: a file name or a shared link leaves an unknown quality out
-                qualityView.text = item.quality.ifEmpty { context.getString(R.string.download_quality_unknown) }
+                binding.qualityView.text = item.quality.ifEmpty { context.getString(R.string.download_quality_unknown) }
             }
         }
 

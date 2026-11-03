@@ -4,11 +4,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemHostingFilterBinding
 import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
-import kotlinx.android.synthetic.main.item_hosting_filter.view.*
 
 /** One row per hosting: ticked when it is hidden, with a delete button to drop it from the list. */
 class HostingFilterAdapter(
@@ -42,29 +42,31 @@ class HostingFilterAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemHostingFilterBinding.bind(view)
+
         private lateinit var item: Item
 
         init {
             //the whole row toggles - a bigger target than the box, which is why the box itself is
             //not clickable in the layout
             itemView.onClick { toggle() }
-            itemView.deleteView.onClick { deleteCallback.invoke(item.domain) }
+            binding.deleteView.onClick { deleteCallback.invoke(item.domain) }
         }
 
         fun bind(item: Item) {
             this.item = item
-            itemView.hostingName.text = item.domain
-            itemView.hostingCheckBox.isChecked = item.hidden
-            itemView.deleteView.visibleIf { item.canDelete }
+            binding.hostingName.text = item.domain
+            binding.hostingCheckBox.isChecked = item.hidden
+            binding.deleteView.visibleIf { item.canDelete }
         }
 
         private fun toggle() {
             val position = adapterPosition
             if (position == RecyclerView.NO_POSITION) return
 
-            val hidden = !itemView.hostingCheckBox.isChecked
+            val hidden = !binding.hostingCheckBox.isChecked
 
-            itemView.hostingCheckBox.isChecked = hidden
+            binding.hostingCheckBox.isChecked = hidden
             //kept in sync, so rebinding this row after a delete does not show a stale tick
             item = item.copy(hidden = hidden)
             items[position] = item

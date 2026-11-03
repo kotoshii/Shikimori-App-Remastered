@@ -4,10 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemSeriesEmptyPlaceholderBinding
 import com.gnoemes.shikimori.entity.series.presentation.SeriesPlaceholderItem
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_series_empty_placeholder.view.*
 
 class SeriesPlaceholderAdapterDelegate : AbsListItemAdapterDelegate<SeriesPlaceholderItem, Any, SeriesPlaceholderAdapterDelegate.ViewHolder>() {
 
@@ -23,10 +23,12 @@ class SeriesPlaceholderAdapterDelegate : AbsListItemAdapterDelegate<SeriesPlaceh
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemSeriesEmptyPlaceholderBinding.bind(view)
+
         fun bind(item: SeriesPlaceholderItem) {
             with(itemView) {
-                titleView.setText(item.title)
-                descriptionView.setText(item.description)
+                binding.titleView.setText(item.title)
+                binding.descriptionView.setText(item.description)
             }
         }
 

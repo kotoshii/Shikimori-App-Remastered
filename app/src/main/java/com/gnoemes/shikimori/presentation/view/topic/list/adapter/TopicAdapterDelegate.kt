@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemTopicBinding
 import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
@@ -16,8 +17,6 @@ import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_topic.view.*
-import kotlinx.android.synthetic.main.layout_topic.view.*
 
 class TopicAdapterDelegate(
         private val imageLoader: ImageLoader,
@@ -36,23 +35,25 @@ class TopicAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemTopicBinding.bind(view)
+
         private lateinit var item: TopicViewModel
 
-        private val userHolder by lazy { TopicUserViewHolder(itemView.userLayout, imageLoader, navigationCallback) }
-        private val topicHolder by lazy { TopicContentViewHolder(view.topicLayout, navigationCallback) }
+        private val userHolder by lazy { TopicUserViewHolder(binding.userLayout.root, imageLoader, navigationCallback) }
+        private val topicHolder by lazy { TopicContentViewHolder(binding.topicLayout.root, navigationCallback) }
 
         private val margin = itemView.context.dimen(R.dimen.margin_normal).toInt()
 
         init {
-            itemView.container.setOnClickListener { navigationCallback.invoke(Type.TOPIC, item.id) }
-            itemView.divider.gone()
-            itemView.linkedImageView.setOnClickListener {
+            binding.container.setOnClickListener { navigationCallback.invoke(Type.TOPIC, item.id) }
+            binding.topicLayout.divider.gone()
+            binding.linkedImageView.setOnClickListener {
                 item.linked?.let { content ->
                     navigationCallback.invoke(content.type, content.id)
                 }
             }
 
-            (itemView.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { topMargin = 0 }
+            (binding.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { topMargin = 0 }
         }
 
         fun bind(item: TopicViewModel) {
@@ -60,18 +61,18 @@ class TopicAdapterDelegate(
             setLinkedContent(item.linked)
             userHolder.bind(item.userData)
             topicHolder.bind(item.contentData)
-            itemView.commentView.text = item.commentsCount.toString()
+            binding.commentView.text = item.commentsCount.toString()
         }
 
         private fun setLinkedContent(linked: TopicLinkedViewModel?) {
             with(itemView) {
-                linkedImageView.visibleIf { linked != null }
+                binding.linkedImageView.visibleIf { linked != null }
 
                 if (linked !== null) {
-                    imageLoader.setImageWithPlaceHolder(linkedImageView, linked.imageUrl)
-                    (itemView.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = margin }
+                    imageLoader.setImageWithPlaceHolder(binding.linkedImageView, linked.imageUrl)
+                    (binding.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = margin }
                 } else {
-                    (itemView.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = 0 }
+                    (binding.topicLayout.titleView.layoutParams as ConstraintLayout.LayoutParams).apply { leftMargin = 0 }
                 }
             }
         }

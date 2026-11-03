@@ -4,13 +4,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ItemUserMoreBinding
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.user.presentation.FriendViewModel
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
-import kotlinx.android.synthetic.main.item_user_more.view.*
 
 class FriendAdapterDelegate(
         private val imageLoader: ImageLoader,
@@ -29,19 +29,21 @@ class FriendAdapterDelegate(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
+        val binding = ItemUserMoreBinding.bind(view)
+
         private lateinit var item: FriendViewModel
 
         init {
-            itemView.container.onClick { callback.invoke(Type.USER, item.id) }
+            binding.container.onClick { callback.invoke(Type.USER, item.id) }
         }
 
         fun bind(item: FriendViewModel) {
             this.item = item
 
             with(itemView) {
-                imageLoader.setCircleImage(avatarView, item.image.x160)
-                nameView.text = item.name
-                lastOnlineView.text = item.lastOnline
+                imageLoader.setCircleImage(binding.avatarView, item.image.x160)
+                binding.nameView.text = item.name
+                binding.lastOnlineView.text = item.lastOnline
             }
         }
 
