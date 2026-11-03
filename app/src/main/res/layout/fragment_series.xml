@@ -20,7 +20,9 @@
         android:background="?attr/colorTransparentBackground"
         android:fitsSystemWindows="true" />
 
-    <include layout="@layout/layout_toolbar_transparent_with_search" />
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/layout_toolbar_transparent_with_search" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/backdrop"
@@ -37,7 +39,9 @@
             android:layout_height="match_parent"
             android:animateLayoutChanges="true">
 
-            <include layout="@layout/layout_series_toolbar" />
+            <include
+                android:id="@+id/appbar"
+                layout="@layout/layout_series_toolbar" />
 
             <com.github.ybq.android.spinkit.SpinKitView
                 android:id="@+id/progress"

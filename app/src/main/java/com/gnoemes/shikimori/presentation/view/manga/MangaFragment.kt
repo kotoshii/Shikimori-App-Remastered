@@ -15,7 +15,6 @@ import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentView
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_details.*
 
 class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaView {
 
@@ -41,15 +40,15 @@ class MangaFragment : BaseDetailsFragment<MangaPresenter, MangaView>(), MangaVie
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        videoLayout.gone()
-        screenshotsLayout.gone()
+        binding.videoLayout.root.gone()
+        binding.screenshotsLayout.root.gone()
 
         contentHolders.apply {
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(relatedLayout, relatedAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout.root, charactersAdapter, true))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(binding.relatedLayout.root, relatedAdapter))
         }
 
-        actionBtn.gone()
+        binding.actionBtn.gone()
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -15,7 +15,6 @@ import com.gnoemes.shikimori.presentation.view.common.holders.DetailsContentView
 import com.gnoemes.shikimori.presentation.view.details.BaseDetailsFragment
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_details.*
 
 class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeView {
 
@@ -42,13 +41,13 @@ class AnimeFragment : BaseDetailsFragment<AnimePresenter, AnimeView>(), AnimeVie
         super.onViewCreated(view, savedInstanceState)
 
         contentHolders.apply {
-            put(DetailsContentType.VIDEO, DetailsContentViewHolder(videoLayout, videoAdapter))
-            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(charactersLayout, charactersAdapter, true))
-            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(screenshotsLayout, screenshotsAdapter))
-            put(DetailsContentType.RELATED, DetailsContentViewHolder(relatedLayout, relatedAdapter))
+            put(DetailsContentType.VIDEO, DetailsContentViewHolder(binding.videoLayout.root, videoAdapter))
+            put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout.root, charactersAdapter, true))
+            put(DetailsContentType.SCREENSHOTS, DetailsContentViewHolder(binding.screenshotsLayout.root, screenshotsAdapter))
+            put(DetailsContentType.RELATED, DetailsContentViewHolder(binding.relatedLayout.root, relatedAdapter))
         }
 
-        with(actionBtn) {
+        with(binding.actionBtn) {
             setImageResource(R.drawable.ic_play_arrow_filled)
             onClick { getPresenter().onAction(DetailsAction.WatchOnline()) }
         }

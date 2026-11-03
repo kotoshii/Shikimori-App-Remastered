@@ -21,6 +21,7 @@ import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentSeriesBinding
 import com.gnoemes.shikimori.entity.common.domain.Image
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
@@ -44,11 +45,6 @@ import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
-import kotlinx.android.synthetic.main.fragment_series.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_series_empty_authors.*
-import kotlinx.android.synthetic.main.layout_series_toolbar.*
-import kotlinx.android.synthetic.main.layout_toolbar_transparent_with_search.*
 import javax.inject.Inject
 
 class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
@@ -134,15 +130,15 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(binding.appBarLayout.toolbar) {
             inflateMenu(R.menu.menu_series)
             setOnMenuItemClickListener { getPresenter().onSearchClicked(); true }
             addBackButton { getPresenter().onBackPressed() }
         }
 
-        searchToolbar.addBackButton { getPresenter().onSearchClose() }
+        binding.appBarLayout.searchToolbar.addBackButton { getPresenter().onSearchClose() }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@SeriesFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dimen(R.dimen.margin_normal).toInt(), false))
@@ -150,7 +146,7 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
             addOnScrollListener(shadowScrollListener)
         }
 
-        with(searchView) {
+        with(binding.appBarLayout.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -165,26 +161,26 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
             applyAppStyle()
         }
 
-        emptyContentView.setText(R.string.episodes_not_found)
-        authorsLayout.gone()
-        translationBtn.gone()
-        progress.visible()
+        screenEmptyView?.setText(R.string.episodes_not_found)
+        binding.authorsLayout.root.gone()
+        binding.appbar.translationBtn.gone()
+        binding.progress.visible()
 
-        translationBtn.onClick { openPicker(Picker.TYPES) }
-        voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
-        subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
-        originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
+        binding.appbar.translationBtn.onClick { openPicker(Picker.TYPES) }
+        binding.appbar.voiceBtn.onClick { onTypeSelected(TranslationType.VOICE_RU) }
+        binding.appbar.subtitlesBtn.onClick { onTypeSelected(TranslationType.SUB_RU) }
+        binding.appbar.originalBtn.onClick { onTypeSelected(TranslationType.RAW) }
 
-        episodeChip.onClick { getPresenter().showEpisodes() }
-        sourceChangeBtn.onClick { openPicker(Picker.SOURCES) }
+        binding.appbar.episodeChip.onClick { getPresenter().showEpisodes() }
+        binding.appbar.sourceChangeBtn.onClick { openPicker(Picker.SOURCES) }
 
-        mainSource.onClick { onSourceSelected(false) }
-        altSource.onClick { onSourceSelected(true) }
+        binding.appbar.mainSource.onClick { onSourceSelected(false) }
+        binding.appbar.altSource.onClick { onSourceSelected(true) }
 
-        actionBtn.onClick { onSourceSelected(true) }
-        fab.onClick { getPresenter().onDiscussionClicked() }
-        nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
-        previousEpisodeBtn.onClick { getPresenter().onPreviousEpisode() }
+        binding.authorsLayout.actionBtn.onClick { onSourceSelected(true) }
+        binding.fab.onClick { getPresenter().onDiscussionClicked() }
+        binding.appbar.nextEpisodeBtn.onClick { getPresenter().onNextEpisode() }
+        binding.appbar.previousEpisodeBtn.onClick { getPresenter().onPreviousEpisode() }
     }
 
     private fun onTypeSelected(newType: TranslationType) {
@@ -205,25 +201,25 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     //the one place that decides what the toolbar shows: the presenter's controls, with an open
     //picker in place of the buttons it covers
     private fun showToolbar(transition: Transition) {
-        TransitionManager.beginDelayedTransition(motionLayout, transition)
+        TransitionManager.beginDelayedTransition(binding.appbar.motionLayout, transition)
         val sources = openPicker == Picker.SOURCES
         val types = openPicker == Picker.TYPES
         val episodes = episodeControls
-        episodeChip.visibleIf { episodes != null && !sources }
-        previousEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
-        nextEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        binding.appbar.episodeChip.visibleIf { episodes != null && !sources }
+        binding.appbar.previousEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
+        binding.appbar.nextEpisodeBtn.visibleIf { episodes?.hasArrows == true && !sources }
         if (episodes != null) {
-            episodeChip.setUsable(episodes.isEnabled)
-            previousEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoBack)
-            nextEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoForward)
+            binding.appbar.episodeChip.setUsable(episodes.isEnabled)
+            binding.appbar.previousEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoBack)
+            binding.appbar.nextEpisodeBtn.setUsable(episodes.isEnabled && episodes.canGoForward)
         }
-        sourceChangeBtn.visibleIf { isSourceShown && !sources }
-        mainSource.visibleIf { sources }
-        altSource.visibleIf { sources }
-        translationBtn.visibleIf { shownType != null && !types }
-        voiceBtn.visibleIf { types }
-        subtitlesBtn.visibleIf { types }
-        originalBtn.visibleIf { types }
+        binding.appbar.sourceChangeBtn.visibleIf { isSourceShown && !sources }
+        binding.appbar.mainSource.visibleIf { sources }
+        binding.appbar.altSource.visibleIf { sources }
+        binding.appbar.translationBtn.visibleIf { shownType != null && !types }
+        binding.appbar.voiceBtn.visibleIf { types }
+        binding.appbar.subtitlesBtn.visibleIf { types }
+        binding.appbar.originalBtn.visibleIf { types }
     }
 
     private val shadowScrollListener = object : RecyclerView.OnScrollListener() {
@@ -234,15 +230,16 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
             if (recyclerView.layoutManager != null) {
 
-                if (recyclerView.canScrollVertically(-1)) ViewCompat.setElevation(appbar, shadowDefault)
-                else ViewCompat.setElevation(appbar, 0f)
+                if (recyclerView.canScrollVertically(-1)) ViewCompat.setElevation(binding.appbar.root, shadowDefault)
+                else ViewCompat.setElevation(binding.appbar.root, 0f)
             }
         }
     }
 
+    //before super: the binding goes with the view
     override fun onDestroyView() {
+        binding.recyclerView.removeOnScrollListener(shadowScrollListener)
         super.onDestroyView()
-        recyclerView.removeOnScrollListener(shadowScrollListener)
     }
 
     override fun onPlayerSelected(playing: EmbeddedPlayerNavigationData, playerType: PlayerType, remember: Boolean) =
@@ -264,6 +261,8 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     override fun getPresenter(): SeriesPresenter = seriesPresenter
 
+    private val binding by viewBinding(FragmentSeriesBinding::bind)
+
     override fun getFragmentLayout(): Int = R.layout.fragment_series
 
     ///////////////////////////////////////////////////////////////////////////
@@ -275,12 +274,12 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     }
 
     override fun setTitle(title: String) {
-        toolbar?.title = title
+        binding.appBarLayout.toolbar.title = title
     }
 
     override fun showEmptyAuthorsView(show: Boolean, isAlternative: Boolean) {
         if (show) showEmptyState(R.string.series_empty_authors_title, R.string.series_empty_authors_description, !isAlternative)
-        else authorsLayout.gone()
+        else binding.authorsLayout.root.gone()
     }
 
     override fun showEpisodeNotFoundView(isAlternative: Boolean) =
@@ -288,10 +287,10 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
 
     //the place under the toolbar for a list with nothing to show; its button switches to the other source
     private fun showEmptyState(@StringRes title: Int, @StringRes description: Int, isSourceButtonShown: Boolean) {
-        authorsLayout.visible()
-        titleView.setText(title)
-        descriptionView.setText(description)
-        actionBtn.visibleIf { isSourceButtonShown }
+        binding.authorsLayout.root.visible()
+        binding.authorsLayout.titleView.setText(title)
+        binding.authorsLayout.descriptionView.setText(description)
+        binding.authorsLayout.actionBtn.visibleIf { isSourceButtonShown }
     }
 
     override fun showEmptySearchView() {
@@ -312,35 +311,35 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
             TranslationType.RAW -> R.drawable.ic_original
             else -> 0
         }
-        if (icon != 0) translationBtn.setIconResource(icon)
+        if (icon != 0) binding.appbar.translationBtn.setIconResource(icon)
 
         //«#» lighter than the number, at Material's 60% for secondary text. It was the chip's own
         //background colour, and could hardly be seen (BUGS #74)
         val hashColor = ColorUtils.setAlphaComponent(context!!.colorAttr(R.attr.colorSecondary), 153)
-        if (episodes != null) episodeChip.text = "# ".colorSpan(hashColor).append("${episodes.episode}")
+        if (episodes != null) binding.appbar.episodeChip.text = "# ".colorSpan(hashColor).append("${episodes.episode}")
 
         showToolbar(Fade())
     }
 
     override fun changeSource(isAlternative: Boolean) {
-        mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
-        altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
+        binding.appbar.mainSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorOnSurface else R.attr.colorSecondary))
+        binding.appbar.altSource.setTextColor(context!!.colorAttr(if (isAlternative) R.attr.colorSecondary else R.attr.colorOnSurface))
     }
 
     override fun showSearchView() {
-        TransitionManager.beginDelayedTransition(appBarLayout, Fade())
-        searchToolbar.visible()
-        toolbar.gone()
-        motionLayout.gone()
-        backdrop.radius = 0f
+        TransitionManager.beginDelayedTransition(binding.appBarLayout.root, Fade())
+        binding.appBarLayout.searchToolbar.visible()
+        binding.appBarLayout.toolbar.gone()
+        binding.appbar.motionLayout.gone()
+        binding.backdrop.radius = 0f
     }
 
     override fun onSearchClosed() {
-        TransitionManager.beginDelayedTransition(appBarLayout, Fade())
-        motionLayout.visible()
-        toolbar.visible()
-        searchToolbar.gone()
-        backdrop.radius = defaultCorners
+        TransitionManager.beginDelayedTransition(binding.appBarLayout.root, Fade())
+        binding.appbar.motionLayout.visible()
+        binding.appBarLayout.toolbar.visible()
+        binding.appBarLayout.searchToolbar.gone()
+        binding.backdrop.radius = defaultCorners
     }
 
     override fun showPlayerDialog(playing: EmbeddedPlayerNavigationData) {
@@ -401,15 +400,15 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
     override fun showEmptyView() =
             showEmptyState(R.string.series_empty_episode_title, R.string.series_empty_episode_description, false)
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
-    override fun hideEmptyView() = emptyContentView.gone()
-    override fun showNetworkView() = networkErrorView.visible()
-    override fun hideNetworkView() = networkErrorView.gone()
-    override fun setBackground(image: Image) = imageLoader.setBlurredImage(backgroundImage, image.original, sampling = 2)
-    override fun scrollToPosition(position: Int) = recyclerView.scrollToPosition(position)
-    override fun showFab(show: Boolean) = if (show) fab.show() else fab.hide()
-    override fun onShowLoading() = progress.visible()
-    override fun onHideLoading() = progress.gone()
-    override fun onShowLightLoading() = progress.visible()
-    override fun onHideLightLoading() = progress.gone()
+    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
+    override fun hideEmptyView() { screenEmptyView?.gone() }
+    override fun showNetworkView() { screenErrorView?.visible() }
+    override fun hideNetworkView() { screenErrorView?.gone() }
+    override fun setBackground(image: Image) = imageLoader.setBlurredImage(binding.backgroundImage, image.original, sampling = 2)
+    override fun scrollToPosition(position: Int) = binding.recyclerView.scrollToPosition(position)
+    override fun showFab(show: Boolean) = if (show) binding.fab.show() else binding.fab.hide()
+    override fun onShowLoading() = binding.progress.visible()
+    override fun onHideLoading() = binding.progress.gone()
+    override fun onShowLightLoading() = binding.progress.visible()
+    override fun onHideLightLoading() = binding.progress.gone()
 }

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentRateBinding
 import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.Type
@@ -44,13 +45,6 @@ import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.google.android.material.internal.NavigationMenuView
-import kotlinx.android.synthetic.main.fragment_rate.*
-import kotlinx.android.synthetic.main.layout_default_list.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_profile_auth.*
-import kotlinx.android.synthetic.main.layout_progress.*
-import kotlinx.android.synthetic.main.layout_rates_placeholder.*
-import kotlinx.android.synthetic.main.layout_toolbar.toolbar
 import javax.inject.Inject
 
 class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, SortDialog.SortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
@@ -99,7 +93,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         initDrawer()
         initNav()
 
-        with(toolbar) {
+        with(binding.toolbar) {
             title = null
             setNavigationOnClickListener { toggleDrawer() }
             inflateMenu(R.menu.menu_rates)
@@ -111,16 +105,16 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
         }
 
-        with(searchView) {
+        with(binding.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    toolbar.menuVisibleIf { query.isNullOrEmpty() }
+                    binding.toolbar.menuVisibleIf { query.isNullOrEmpty() }
                     hideSoftInput()
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    toolbar.menuVisibleIf { newText.isNullOrEmpty() }
+                    binding.toolbar.menuVisibleIf { newText.isNullOrEmpty() }
                     getPresenter().onQueryChanged(newText)
                     return true
                 }
@@ -129,13 +123,13 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         }
 
         savedInstanceState?.let {
-            drawer.post {
+            binding.drawer.post {
                 if (it.getBoolean(DRAWER_KEY)) openDrawer()
                 else closeDrawer()
             }
         }
 
-        with(recyclerView) {
+        with(defaultList.recyclerView) {
             adapter = this@RateFragment.adapter
             layoutManager = LinearLayoutManager(context).apply { initialPrefetchItemCount = 5 }
             itemAnimator = DefaultItemAnimator()
@@ -149,32 +143,31 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             setHasFixedSize(true)
         }
 
-        refreshLayout.layoutParams = (refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        defaultList.refreshLayout.layoutParams = (defaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
             behavior = OverlapHeaderScrollingBehavior()
         }
         placeRefreshCircle()
 
-        emptyContentView.setText(R.string.rate_empty)
-        rateEmptyView.gone()
-        progressBar?.gone()
+        screenEmptyView?.setText(R.string.rate_empty)
+        binding.rateEmptyView.root.gone()
 
-        signInBtn.onClick { getPresenter().onSignIn() }
-        signUpBtn.onClick { getPresenter().onSignUp() }
+        binding.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
+        binding.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
 
-        titleView.setText(R.string.rate_empty_list)
-        descriptionView.gone()
-        authLayout.gone()
+        binding.authLayout.titleView.setText(R.string.rate_empty_list)
+        binding.authLayout.descriptionView.gone()
+        binding.authLayout.root.gone()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(DRAWER_KEY, drawer?.isDrawerOpen(GravityCompat.START) ?: false)
+        outState.putBoolean(DRAWER_KEY, view?.let { binding.drawer.isDrawerOpen(GravityCompat.START) } ?: false)
     }
 
     private fun initDrawer() {
-        drawer.apply {
+        binding.drawer.apply {
             val toggle = ActionBarDrawerToggle(
-                    activity, drawer, toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
+                    activity, binding.drawer, binding.toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
 
             addDrawerListener(toggle)
             setViewScale(Gravity.START, 0.9f)
@@ -186,38 +179,39 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     private fun initNav() {
         updateNavColors(RateStatus.WATCHING.ordinal)
-        navView.setNavigationItemSelectedListener {
+        binding.navView.setNavigationItemSelectedListener {
             getPresenter().onChangeStatus(RateStatus.values()[it.itemId])
-            navView.menu.iterator().forEach { item -> item.actionView?.isSelected = false }
+            binding.navView.menu.iterator().forEach { item -> item.actionView?.isSelected = false }
             it.actionView?.isSelected = true
             true
         }
 
-        val menuContainer = navView.findViewById<NavigationMenuView>(R.id.design_navigation_view)
+        val menuContainer = binding.navView.findViewById<NavigationMenuView>(R.id.design_navigation_view)
         menuContainer.layoutParams = FrameLayout.LayoutParams(menuContainer.layoutParams).apply { height = ViewGroup.LayoutParams.WRAP_CONTENT; gravity = Gravity.CENTER_VERTICAL }
     }
 
     private fun toggleDrawer() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+        if (binding.drawer.isDrawerOpen(GravityCompat.START)) {
             closeDrawer()
         } else {
             openDrawer()
         }
     }
 
+    //nothing without the view, as before: also run from the drawer's posted restore
     private fun openDrawer() {
-        drawer?.openDrawer(GravityCompat.START)
+        if (view != null) binding.drawer.openDrawer(GravityCompat.START)
     }
 
     private fun closeDrawer() {
-        drawer?.closeDrawer(GravityCompat.START)
+        if (view != null) binding.drawer.closeDrawer(GravityCompat.START)
     }
 
     //the pull's circle starts hidden behind the top bar and stops below it; [below] is how far the
     //owner's strip reaches past the bar, so the circle stops below the strip. It still starts behind
     //the bar: the strip is a pill as wide as its text, which may not cover the circle (P7-T5 Q162)
     private fun placeRefreshCircle(below: Int = 0) {
-        with(refreshLayout) {
+        with(defaultList.refreshLayout) {
             val end = context.dp(96) + below
             if (progressViewEndOffset == end) return
             //moving the circle hides it and drops a refresh under way: that one is shown again
@@ -251,7 +245,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     private fun updateNavColors(rateIndex: Int) {
-        navView.apply {
+        binding.navView.apply {
             setItemBackgroundResource(getRateBackground(rateIndex))
             itemTextColor = context.colorStateList(getRateTextColor(rateIndex))
         }
@@ -274,7 +268,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun onDestroyView() {
-        recyclerView.adapter = null
+        defaultList.recyclerView.adapter = null
         super.onDestroyView()
     }
 
@@ -289,6 +283,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun getPresenter(): RatePresenter = ratePresenter
 
+    private val binding by viewBinding(FragmentRateBinding::bind)
+
     override fun getFragmentLayout(): Int = R.layout.fragment_rate
 
     ///////////////////////////////////////////////////////////////////////////
@@ -298,15 +294,15 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     override fun showData(data: List<Any>) {
         //fix auto scroll on sort
         closeDrawer()
-        val parcelable = recyclerView.layoutManager?.onSaveInstanceState()
+        val parcelable = defaultList.recyclerView.layoutManager?.onSaveInstanceState()
         adapter.bindItems(data)
-        recyclerView.visible()
-        recyclerView.layoutManager?.onRestoreInstanceState(parcelable)
+        defaultList.recyclerView.visible()
+        defaultList.recyclerView.layoutManager?.onRestoreInstanceState(parcelable)
     }
 
     override fun scrollToTop() {
-        appBarLayout.setExpanded(true)
-        recyclerView.scrollToPosition(0)
+        binding.appBarLayout.setExpanded(true)
+        defaultList.recyclerView.scrollToPosition(0)
     }
 
     override fun showRateDialog(title: String, targetId: Long, type: Type) {
@@ -328,13 +324,13 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) closeDrawer()
+        if (binding.drawer.isDrawerOpen(GravityCompat.START)) closeDrawer()
         else super.onBackPressed()
     }
 
     override fun setNavigationItems(items: List<RateCategory>) {
-        navView.menu.apply {
-            val checkedId = navView.checkedItem?.itemId ?: 0
+        binding.navView.menu.apply {
+            val checkedId = binding.navView.checkedItem?.itemId ?: 0
             clear()
             items.forEach {
                 add(0, it.status.ordinal, it.status.ordinal, it.localizedCategory)
@@ -345,12 +341,12 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
 
             setGroupCheckable(0, true, true)
-            navView.setCheckedItem(checkedId)
+            binding.navView.setCheckedItem(checkedId)
         }
     }
 
     override fun selectRateStatus(rateStatus: RateStatus) {
-        navView.apply {
+        binding.navView.apply {
             updateNavColors(rateStatus.ordinal)
             setCheckedItem(rateStatus.ordinal)
             (menu.findItem(rateStatus.ordinal)?.actionView as? TextView)?.isSelected = true
@@ -358,18 +354,18 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun selectType(type: Type) {
-        searchView?.let {
+        binding.searchView.let {
             val hint = if (type == Type.ANIME) it.context.getString(R.string.common_anime)
             else it.context.getString(R.string.common_manga_and_ranobe)
             it.queryHint = hint
         }
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
+    override fun showContent(show: Boolean) = defaultList.recyclerView.visibleIf { show }
 
-    override fun onShowLoading() = refreshLayout.showRefresh()
+    override fun onShowLoading() = defaultList.refreshLayout.showRefresh()
 
-    override fun onHideLoading() = refreshLayout.hideRefresh()
+    override fun onHideLoading() = defaultList.refreshLayout.hideRefresh()
 
     override fun showEmptySearchView(it: List<Any>) {
         //TODO create common placeholder
@@ -391,44 +387,48 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showEmptyRatesView(show: Boolean, isAnime: Boolean?) {
         if (isAnime != null) {
-            actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)
-            actionBtn.onClick {
+            binding.rateEmptyView.actionBtn.setText(if (isAnime) R.string.rate_empty_anime else R.string.rate_empty_manga)
+            binding.rateEmptyView.actionBtn.onClick {
                 getPresenter().onEmptyRateClicked(isAnime)
             }
         }
 
-        rateEmptyView.visibleIf { show }
+        binding.rateEmptyView.root.visibleIf { show }
     }
 
     override fun showNeedAuthView(show: Boolean) {
-        authLayout.visibleIf { show }
+        binding.authLayout.root.visibleIf { show }
     }
 
     override fun showListOwner(nickname: String?, avatar: String?) {
-        ownerStrip.visibleIf { nickname != null }
+        binding.ownerStrip.visibleIf { nickname != null }
         //the gap under the bar goes above the strip: the bar slides away with the gaps around it, and
         //the strip would sit flush against the screen's top. Without the strip, the bar has the same
         //gap below it as above
-        toolbarCard.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        binding.toolbarCard.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = if (nickname != null) 0 else topMargin
         }
         if (nickname != null) {
-            ownerNameView.text = getString(R.string.rate_list_owner, nickname)
-            imageLoader.setCircleImage(ownerAvatarView, avatar)
+            binding.ownerNameView.text = getString(R.string.rate_list_owner, nickname)
+            imageLoader.setCircleImage(binding.ownerAvatarView, avatar)
         }
         //the rows and the pull's circle start below the strip, as far down as it reaches past the bar
-        ownerStrip.post {
+        binding.ownerStrip.post {
             if (view == null) return@post
-            val below = if (nickname != null) ownerStrip.bottom - toolbarCard.bottom else 0
-            recyclerView.updatePadding(top = below)
+            val below = if (nickname != null) binding.ownerStrip.bottom - binding.toolbarCard.bottom else 0
+            defaultList.recyclerView.updatePadding(top = below)
             placeRefreshCircle(below)
         }
     }
 
     override fun showRateMessage(message: String, rateId: Long) =
-            coordinator.showUndoMessage(message) { getPresenter().onChangeCanceled(rateId) }
+            binding.coordinator.showUndoMessage(message) { getPresenter().onChangeCanceled(rateId) }
 
-    override fun showNetworkView() = networkErrorView.visible()
+    override fun showNetworkView() {
+        screenErrorView?.visible()
+    }
 
-    override fun hideNetworkView() = networkErrorView.gone()
+    override fun hideNetworkView() {
+        screenErrorView?.gone()
+    }
 }
