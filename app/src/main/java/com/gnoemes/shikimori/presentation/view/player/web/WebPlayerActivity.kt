@@ -14,6 +14,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityWebPlayerBinding
+import com.gnoemes.shikimori.presentation.view.base.fragment.viewBinding
 import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
@@ -21,7 +23,6 @@ import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
 import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.activity_web_player.*
 import java.util.regex.Pattern
 import javax.inject.Inject
 
@@ -29,6 +30,8 @@ class WebPlayerActivity : BaseThemedActivity() {
 
     private lateinit var chromeClient: VideoWebChromeClient
     private lateinit var webView: WebView
+
+    private val binding by viewBinding(R.layout.activity_web_player, ActivityWebPlayerBinding::bind)
 
     @Inject
     lateinit var settingsSource: PlayerSettingsSource
@@ -57,7 +60,7 @@ class WebPlayerActivity : BaseThemedActivity() {
         if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         webView = WebView(applicationContext)
-        frame.addView(webView)
+        binding.frame.addView(webView)
 
         chromeClient = VideoWebChromeClient(webView, windowCallback)
         webView.apply {
@@ -122,7 +125,7 @@ class WebPlayerActivity : BaseThemedActivity() {
     }
 
     override fun onDestroy() {
-        frame?.removeAllViews()
+        binding.frame.removeAllViews()
         window.decorView.destroyDrawingCache()
         webView.webChromeClient = null
         //a plain client in place of ours before destroy(); API 30 marks the setter non-null

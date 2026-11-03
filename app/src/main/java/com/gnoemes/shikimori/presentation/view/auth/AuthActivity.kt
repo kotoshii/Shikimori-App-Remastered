@@ -13,6 +13,7 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityAuthBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.auth.AuthType
@@ -22,7 +23,6 @@ import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.ifNotNull
 import com.gnoemes.shikimori.utils.putString
 import com.gnoemes.shikimori.utils.visible
-import kotlinx.android.synthetic.main.activity_auth.*
 import ru.terrakok.cicerone.Navigator
 import ru.terrakok.cicerone.NavigatorHolder
 import java.util.regex.Pattern
@@ -46,6 +46,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
         return authPresenter
     }
+
+    private val binding by viewBinding(ActivityAuthBinding::bind)
 
     private val shikimoriClient by lazy { ShikimoriAuthClient() }
     private val anime365Client by lazy { Anime365AuthClient() }
@@ -75,7 +77,7 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView(shikimori: Boolean) {
-        webView.apply {
+        binding.webView.apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             webViewClient = if (shikimori) shikimoriClient else anime365Client
@@ -84,9 +86,9 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
     override fun onDestroy() {
         //a plain client in place of ours before destroy(); API 30 marks the setter non-null
-        webView.webViewClient = WebViewClient()
-        webView.stopLoading()
-        webView.destroy()
+        binding.webView.webViewClient = WebViewClient()
+        binding.webView.stopLoading()
+        binding.webView.destroy()
         super.onDestroy()
     }
 
@@ -108,15 +110,15 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
     ///////////////////////////////////////////////////////////////////////////
 
     override fun onSignIn() {
-        webView.loadUrl(SHIKIMORI_SIGN_IN_URL)
+        binding.webView.loadUrl(SHIKIMORI_SIGN_IN_URL)
     }
 
     override fun onSignUp() {
-        webView.loadUrl(SHIKIMORI_SIGN_UP_URL)
+        binding.webView.loadUrl(SHIKIMORI_SIGN_UP_URL)
     }
 
     override fun onAnime365() {
-        webView.loadUrl(ANIME_365_SIGN_IN)
+        binding.webView.loadUrl(ANIME_365_SIGN_IN)
     }
 
     override fun onAnime365SignedIn() {
@@ -151,7 +153,7 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
-            progressBar.visible()
+            binding.progressBar.visible()
             if (url == BuildConfig.ShikimoriBaseUrl) {
                 view?.loadUrl(Constants.AUTH_URL)
             }
@@ -159,7 +161,7 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
-            progressBar.gone()
+            binding.progressBar.gone()
         }
 
         private fun interceptCode(url: String?) {
@@ -175,8 +177,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
                         .replaceFirst("/", "")
                 presenter.onAuthCodeReceived(authCode)
 
-                webView.gone()
-                progressBar.visible()
+                binding.webView.gone()
+                binding.progressBar.visible()
             }
         }
     }
@@ -190,7 +192,7 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
-            progressBar.visible()
+            binding.progressBar.visible()
             if (url == "https://smotret-anime.com/" || url == "https://smotret-anime.com/users/profile") {
                 view?.loadUrl(TOKEN_URL)
             }
@@ -209,16 +211,16 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
             }
 
             interceptCode(url)
-            progressBar.gone()
+            binding.progressBar.gone()
         }
 
         private fun interceptCode(url: String?) {
             if (url == TOKEN_URL) {
-                webView.evaluateJavascript("(function() { return JSON.stringify(document.getElementsByTagName('html')[0].innerHTML); })();") { s ->
+                binding.webView.evaluateJavascript("(function() { return JSON.stringify(document.getElementsByTagName('html')[0].innerHTML); })();") { s ->
                     processCode(s)
                 }
-                webView.gone()
-                progressBar.visible()
+                binding.webView.gone()
+                binding.progressBar.visible()
             }
         }
 

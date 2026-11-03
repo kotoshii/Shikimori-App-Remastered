@@ -5,10 +5,12 @@ import android.widget.Toast
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.viewbinding.ViewBinding
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.di.base.modules.BaseActivityModule
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.fragment.BackButtonListener
+import com.gnoemes.shikimori.presentation.view.base.fragment.bindContent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -56,6 +58,13 @@ abstract class BaseActivity<Presenter : BasePresenter<View>, View : BaseView> : 
 
     @LayoutRes
     protected abstract fun getLayoutActivity(): Int
+
+    /**
+     * A binding of the screen's layout ([getLayoutActivity], set in [onCreate]):
+     * `private val binding by viewBinding(ActivityXBinding::bind)`, made on first use.
+     */
+    protected fun <T : ViewBinding> viewBinding(bind: (android.view.View) -> T): Lazy<T> =
+            lazy(LazyThreadSafetyMode.NONE) { bindContent(getLayoutActivity(), bind) }
 
     protected abstract fun getNavigator(): Navigator
 

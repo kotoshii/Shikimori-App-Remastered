@@ -10,6 +10,8 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import androidx.viewpager.widget.ViewPager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.ActivityScreenshotsBinding
+import com.gnoemes.shikimori.presentation.view.base.fragment.viewBinding
 import com.gnoemes.shikimori.data.local.services.impl.DownloadService
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
@@ -17,7 +19,6 @@ import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.screenshots.adapter.ScreenshotPagerAdapter
 import com.gnoemes.shikimori.utils.*
-import kotlinx.android.synthetic.main.activity_screenshots.*
 
 
 class ScreenshotsActivity : MvpActivity() {
@@ -36,6 +37,8 @@ class ScreenshotsActivity : MvpActivity() {
         }
     }
 
+    private val binding by viewBinding(R.layout.activity_screenshots, ActivityScreenshotsBinding::bind)
+
     private var adapter: ScreenshotPagerAdapter? = null
     private var itemCount = 0
     private val formatString by lazy { getString(R.string.common_count_format) }
@@ -48,7 +51,7 @@ class ScreenshotsActivity : MvpActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_screenshots)
 
-        toolbar.run {
+        binding.toolbar.run {
             addBackButton(R.drawable.ic_close) { finish() }
             inflateMenu(R.menu.menu_screenshots)
             onMenuClick {
@@ -59,7 +62,7 @@ class ScreenshotsActivity : MvpActivity() {
                 true
             }
         }
-        with(viewpager) {
+        with(binding.viewpager) {
             offscreenPageLimit = 5
             addOnPageChangeListener(pageChangeCallback)
         }
@@ -70,12 +73,12 @@ class ScreenshotsActivity : MvpActivity() {
             itemCount = data.items.size
             animeName = data.animeName
             val pos = savedInstanceState?.getInt(CURRENT_PAGE, data.selected) ?: data.selected
-            viewpager.adapter = this@ScreenshotsActivity.adapter
-            viewpager.setCurrentItem(pos, false)
-            toolbar.title = String.format(formatString, pos + 1, data.items.size)
+            binding.viewpager.adapter = this@ScreenshotsActivity.adapter
+            binding.viewpager.setCurrentItem(pos, false)
+            binding.toolbar.title = String.format(formatString, pos + 1, data.items.size)
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(appBarLayout) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { v, insets ->
             v.setPadding(0, insets.systemWindowInsetTop, insets.systemWindowInsetRight, 0)
             insets
         }
@@ -86,7 +89,7 @@ class ScreenshotsActivity : MvpActivity() {
     }
 
     private fun getCurrentScreenshot(): String? {
-        return (viewpager.adapter as? ScreenshotPagerAdapter)?.items?.getOrNull(viewpager.currentItem)?.original
+        return (binding.viewpager.adapter as? ScreenshotPagerAdapter)?.items?.getOrNull(binding.viewpager.currentItem)?.original
     }
 
     private fun onSwipe() {
@@ -139,8 +142,8 @@ class ScreenshotsActivity : MvpActivity() {
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        TransitionManager.beginDelayedTransition(coordinator, Fade().apply { duration = 110 })
-        appBarLayout.visible()
+        TransitionManager.beginDelayedTransition(binding.coordinator, Fade().apply { duration = 110 })
+        binding.appBarLayout.visible()
     }
 
 
@@ -155,26 +158,26 @@ class ScreenshotsActivity : MvpActivity() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_IMMERSIVE)
-        if (animate) TransitionManager.beginDelayedTransition(coordinator, Fade().apply { duration = 110 })
-        appBarLayout.gone()
+        if (animate) TransitionManager.beginDelayedTransition(binding.coordinator, Fade().apply { duration = 110 })
+        binding.appBarLayout.gone()
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        viewpager?.removeOnPageChangeListener(pageChangeCallback)
+        binding.viewpager.removeOnPageChangeListener(pageChangeCallback)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        outState.putInt(CURRENT_PAGE, viewpager?.currentItem ?: 0)
+        outState.putInt(CURRENT_PAGE, binding.viewpager.currentItem)
         outState.putBoolean(UI_VISIBLE, uiVisible)
     }
 
     private val pageChangeCallback = object : ViewPager.SimpleOnPageChangeListener() {
         override fun onPageSelected(position: Int) {
-            toolbar?.title = String.format(formatString, position + 1, itemCount)
+            binding.toolbar.title = String.format(formatString, position + 1, itemCount)
         }
     }
 }

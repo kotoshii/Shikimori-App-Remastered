@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.base.fragment
 
+import android.app.Activity
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -54,6 +55,17 @@ class ViewBindings(private val root: () -> View?) {
         }
     }
 }
+
+/**
+ * An activity's binding of the layout it set with `setContentView(layout)`, made on first use, after that call.
+ * An activity's views live as long as it does, so nothing clears it (P7-T14).
+ */
+fun <T : ViewBinding> Activity.viewBinding(@LayoutRes layout: Int, bind: (View) -> T): Lazy<T> =
+        lazy(LazyThreadSafetyMode.NONE) { bindContent(layout, bind) }
+
+/** A binding of the layout the activity set with `setContentView(layout)`, made now. */
+fun <T : ViewBinding> Activity.bindContent(@LayoutRes layout: Int, bind: (View) -> T): T =
+        bind(layoutRoot(findViewById(android.R.id.content), layout))
 
 /**
  * The view a layout inflated into [parent] binds to: the layout's own root, the one child [parent] holds,
