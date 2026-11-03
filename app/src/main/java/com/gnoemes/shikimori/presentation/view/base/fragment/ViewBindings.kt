@@ -12,8 +12,9 @@ import kotlin.reflect.KProperty
 
 /**
  * A fragment's view bindings (ViewBinding: the build writes a class per layout, with a typed field per view
- * id). Each binds on first use to the view [root] gives, and [clear] drops them all when the fragment's view
- * goes: the base fragments call it after `super.onDestroyView()`, once Moxy has detached.
+ * id). Each binds on first use to its root - the one [of] was given, by default [root] - and [clear] drops
+ * them all when the fragment's view goes: the base fragments call it after `super.onDestroyView()`, once Moxy
+ * has detached.
  *
  * Read before the view exists or after it went, a binding throws: a late use fails loudly instead of
  * silently doing nothing. That includes code after `super.onDestroyView()`, where the fragment still holds
@@ -24,20 +25,21 @@ class ViewBindings(private val root: () -> View?) {
 
     private val bindings = mutableListOf<Binding<*>>()
 
-    //the root of the view that went; weak, so it does not keep that view alive
-    private var gone: WeakReference<View>? = null
+    /** A binding of the view [root] gives; by default the one this holder was made with. */
+    fun <T : ViewBinding> of(bind: (View) -> T, root: () -> View? = this.root): ReadOnlyProperty<Any, T> =
+            Binding(bind, root).also { bindings += it }
 
-    fun <T : ViewBinding> of(bind: (View) -> T): ReadOnlyProperty<Any, T> =
-            Binding(bind).also { bindings += it }
+    fun clear() = bindings.forEach { it.clear() }
 
-    fun clear() {
-        gone = root()?.let { WeakReference(it) }
-        bindings.forEach { it.clear() }
-    }
-
-    private inner class Binding<T : ViewBinding>(private val bind: (View) -> T) : ReadOnlyProperty<Any, T> {
+    private class Binding<T : ViewBinding>(
+            private val bind: (View) -> T,
+            private val root: () -> View?
+    ) : ReadOnlyProperty<Any, T> {
 
         private var value: T? = null
+
+        //the root of the view that went; weak, so it does not keep that view alive
+        private var gone: WeakReference<View>? = null
 
         override fun getValue(thisRef: Any, property: KProperty<*>): T {
             value?.let { return it }
@@ -47,6 +49,7 @@ class ViewBindings(private val root: () -> View?) {
         }
 
         fun clear() {
+            gone = root()?.let { WeakReference(it) }
             value = null
         }
     }

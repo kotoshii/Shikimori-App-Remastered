@@ -88,6 +88,8 @@
         android:background="?attr/colorSurface"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <include layout="@layout/layout_filter_bottom" />
+    <include
+        android:id="@+id/filterBottom"
+        layout="@layout/layout_filter_bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

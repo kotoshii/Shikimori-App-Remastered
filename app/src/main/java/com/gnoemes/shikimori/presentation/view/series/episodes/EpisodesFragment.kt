@@ -10,6 +10,8 @@ import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentEpisodesBinding
+import com.gnoemes.shikimori.databinding.LayoutDefaultPlaceholdersBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.series.presentation.EpisodePlaceholderItem
 import com.gnoemes.shikimori.entity.series.presentation.EpisodeViewModel
@@ -21,9 +23,6 @@ import com.gnoemes.shikimori.presentation.view.common.fragment.ListDialogFragmen
 import com.gnoemes.shikimori.presentation.view.series.episodes.adapter.EpisodeAdapter
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
-import kotlinx.android.synthetic.main.fragment_episodes.*
-import kotlinx.android.synthetic.main.layout_default_placeholders.*
-import kotlinx.android.synthetic.main.layout_series_empty_authors.*
 
 class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresenter, EpisodesView>(), EpisodesView, ListDialogFragment.DialogCallback {
 
@@ -46,12 +45,19 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(FragmentEpisodesBinding::bind)
+
+    //layout_default_placeholders is a <merge>: its views sit straight in the sheet's layout
+    private val placeholders by viewBinding(LayoutDefaultPlaceholdersBinding::bind)
+
+    override val networkErrorView get() = placeholders.networkErrorView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         configureSearchView()
 
-        toolbar?.apply {
+        binding.toolbar.apply {
             addBackButton(R.drawable.ic_close) { onBackPressed() }
             setTitle(R.string.common_episodes)
             inflateMenu(R.menu.menu_episodes)
@@ -64,28 +70,28 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
             }
         }
 
-        searchToolbar.addBackButton { presenter.onSearchClosed() }
-        actionBtn.onClick { presenter.onAlternativeSourceClicked() }
+        binding.searchToolbar.addBackButton { presenter.onSearchClosed() }
+        binding.episodesLayout.actionBtn.onClick { presenter.onAlternativeSourceClicked() }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@EpisodesFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(VerticalSpaceItemDecorator(context.dimen(R.dimen.margin_normal).toInt(), true))
             setHasFixedSize(true)
         }
 
-        emptyContentView.setText(R.string.episodes_not_found)
+        placeholders.emptyContentView.setText(R.string.episodes_not_found)
         //the sheet has «Повторить», not a pull to refresh
-        networkErrorView.setText(R.string.common_error_message_without_pull)
-        networkErrorView.showButton()
-        networkErrorView.callback = { presenter.onRefresh() }
-        emptyContentView.gone()
-        networkErrorView.gone()
-        episodesLayout.gone()
+        placeholders.networkErrorView.setText(R.string.common_error_message_without_pull)
+        placeholders.networkErrorView.showButton()
+        placeholders.networkErrorView.callback = { presenter.onRefresh() }
+        placeholders.emptyContentView.gone()
+        placeholders.networkErrorView.gone()
+        binding.episodesLayout.root.gone()
     }
 
     private fun configureSearchView() {
-        with(searchView) {
+        with(binding.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
@@ -124,20 +130,20 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     }
 
     override fun scrollToPosition(pos: Int) {
-        (recyclerView?.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, 0)
+        (binding.recyclerView.layoutManager as? LinearLayoutManager)?.scrollToPositionWithOffset(pos, 0)
     }
 
     override fun showSearchView() {
-        TransitionManager.beginDelayedTransition(appBarLayout, Fade())
-        searchToolbar.visible()
-        toolbar.gone()
-        searchView.isIconified = false
+        TransitionManager.beginDelayedTransition(binding.appBarLayout, Fade())
+        binding.searchToolbar.visible()
+        binding.toolbar.gone()
+        binding.searchView.isIconified = false
     }
 
     override fun hideSearchView() {
-        TransitionManager.beginDelayedTransition(appBarLayout, Fade())
-        searchToolbar.gone()
-        toolbar.visible()
+        TransitionManager.beginDelayedTransition(binding.appBarLayout, Fade())
+        binding.searchToolbar.gone()
+        binding.toolbar.visible()
         hideSoftInput()
     }
 
@@ -149,17 +155,17 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
     override fun onHideLoading() = Unit
 
     override fun showEmptyEpisodesView(show: Boolean, isAlternative: Boolean) {
-        episodesLayout.visibleIf { show }
-        titleView.setText(R.string.episodes_empty_title)
+        binding.episodesLayout.root.visibleIf { show }
+        binding.episodesLayout.titleView.setText(R.string.episodes_empty_title)
         //the source shown: it said «В основном источнике» on the alternative one too
-        descriptionView.setText(if (isAlternative) R.string.episodes_empty_description_alternative else R.string.episodes_empty_description)
-        actionBtn.visibleIf { !isAlternative }
+        binding.episodesLayout.descriptionView.setText(if (isAlternative) R.string.episodes_empty_description_alternative else R.string.episodes_empty_description)
+        binding.episodesLayout.actionBtn.visibleIf { !isAlternative }
     }
 
     override fun showAlternativeLabel(show: Boolean) {
-        if (show) toolbar.setSubtitle(R.string.series_alternative_source)
-        else toolbar.subtitle = null
-        toolbar.setTitleTextAppearance(context, if (show) R.style.ToolbarSmallTextAppearance else R.style.ToolbarTextAppearance)
+        if (show) binding.toolbar.setSubtitle(R.string.series_alternative_source)
+        else binding.toolbar.subtitle = null
+        binding.toolbar.setTitleTextAppearance(context, if (show) R.style.ToolbarSmallTextAppearance else R.style.ToolbarTextAppearance)
     }
 
     override fun showEpisodeOptionsDialog(index: Int) {
@@ -173,7 +179,7 @@ class EpisodesFragment : BaseBottomSheetInjectionDialogFragment<EpisodesPresente
         }.show(childFragmentManager, "OptionsTag")
     }
 
-    override fun showContent(show: Boolean) = recyclerView.visibleIf { show }
+    override fun showContent(show: Boolean) = binding.recyclerView.visibleIf { show }
 
     override fun showSearchEmpty() {
         val item = SeriesPlaceholderItem(R.string.episode_search_empty_title, R.string.episode_search_empty_desc)

@@ -6,6 +6,7 @@ import android.view.View
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogMenuBinding
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
@@ -14,7 +15,6 @@ import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.iconRes
 import com.gnoemes.shikimori.utils.nameRes
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_menu.*
 
 class RateStatusDialog : BaseBottomSheetDialogFragment() {
 
@@ -39,13 +39,15 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(DialogMenuBinding::bind)
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val isAnime = arguments?.getBoolean(IS_ANIME) != false
 
-        with(toolbar) {
+        with(binding.toolbar) {
             title = arguments?.getString(TITLE)
         }
 
@@ -56,7 +58,7 @@ class RateStatusDialog : BaseBottomSheetDialogFragment() {
         val items = RateStatus.values()
                 .map { Rate(it.ordinal, it, getString(it.nameRes(isAnime)), currentStatus == it, it.iconRes, getTintColor(it), getSelector(it)) }
 
-        navView.apply {
+        binding.navView.apply {
 
             val item = items.firstOrNull { it.isSelected }
             if (item != null) {

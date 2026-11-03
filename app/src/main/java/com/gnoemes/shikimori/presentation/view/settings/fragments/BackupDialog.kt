@@ -10,15 +10,13 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.afollestad.materialdialogs.files.fileChooser
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogBackupBinding
 import com.gnoemes.shikimori.data.local.preference.SettingsBackup
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.*
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.dialog_backup.*
-import kotlinx.android.synthetic.main.dialog_base_bottom_sheet.*
-import kotlinx.android.synthetic.main.layout_backup_save.view.*
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -30,6 +28,8 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     @Inject
     lateinit var settingsBackup: SettingsBackup
 
+    private val binding by viewBinding(DialogBackupBinding::bind)
+
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
@@ -39,15 +39,15 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(wrapper.toolbar) {
             setTitle(R.string.settings_backup_title)
             inflateMenu(R.menu.menu_close)
             onMenuClick { dismiss(); true }
         }
 
-        saveLayout.deviceBtn.onClick { writeFileToPublic(createBackupPrivate()) }
-        saveLayout.shareBtn.onClick { shareBackup() }
-        downloadLayout.deviceBtn.onClick { findBackupLocal() }
+        binding.saveLayout.deviceBtn.onClick { writeFileToPublic(createBackupPrivate()) }
+        binding.saveLayout.shareBtn.onClick { shareBackup() }
+        binding.downloadLayout.deviceBtn.onClick { findBackupLocal() }
     }
 
     ///////////////////////////////////////////////////////////////////////////

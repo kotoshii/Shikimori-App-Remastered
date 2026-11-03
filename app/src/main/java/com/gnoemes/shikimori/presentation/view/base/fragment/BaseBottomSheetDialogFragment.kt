@@ -12,6 +12,7 @@ import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import androidx.viewbinding.ViewBinding
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogBaseBottomSheetBinding
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dimen
 import com.gnoemes.shikimori.utils.dimenAttr
@@ -139,6 +140,12 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
      */
     protected fun <T : ViewBinding> viewBinding(bind: (android.view.View) -> T): ReadOnlyProperty<Any, T> =
             bindings.of(bind)
+
+    /**
+     * The shared wrapper's views (dialog_base_bottom_sheet: the toolbar over the content), for a sheet that
+     * uses it. A sheet without it has no view for this binding, so a read throws.
+     */
+    protected val wrapper by bindings.of(DialogBaseBottomSheetBinding::bind) { view?.takeIf { useWrapperLayout } }
 
     protected fun postViewAction(action: () -> Unit) {
         viewHandler.post { action.invoke() }

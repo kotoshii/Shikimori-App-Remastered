@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentLinksBinding
 import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
@@ -12,7 +13,6 @@ import com.gnoemes.shikimori.utils.addBackButton
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.fragment_links.*
 
 class LinkDialogFragment : BaseBottomSheetDialogFragment() {
 
@@ -25,15 +25,17 @@ class LinkDialogFragment : BaseBottomSheetDialogFragment() {
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(FragmentLinksBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar?.apply {
+        binding.toolbar.apply {
             addBackButton(R.drawable.ic_close) { dismiss() }
             setTitle(R.string.common_links)
         }
 
-        with(recyclerView) {
+        with(binding.recyclerView) {
             adapter = this@LinkDialogFragment.adapter
             layoutManager = LinearLayoutManager(context)
             val margin = dp(16)

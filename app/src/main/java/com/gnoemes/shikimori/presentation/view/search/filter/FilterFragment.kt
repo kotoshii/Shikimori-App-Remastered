@@ -9,6 +9,7 @@ import androidx.transition.TransitionManager
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.arellomobile.mvp.presenter.ProvidePresenter
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.FragmentFilterBinding
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
@@ -20,8 +21,6 @@ import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapt
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
-import kotlinx.android.synthetic.main.fragment_filter.*
-import kotlinx.android.synthetic.main.layout_filter_bottom.*
 
 class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, SortDialog.SortCallback {
 
@@ -46,30 +45,32 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
                 }
     }
 
+    private val binding by viewBinding(FragmentFilterBinding::bind)
+
     private val adapter by lazy { FilterAdapter(presenter::onFilterAction, presenter::onFilterSelected, presenter::onFilterInverted) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) hintContainer.gone()
+        if (context!!.getDefaultSharedPreferences().getBoolean(HINT_KEY, false)) binding.hintContainer.gone()
         else {
-            hintContainer.onClick {
+            binding.hintContainer.onClick {
                 putSetting(HINT_KEY, true)
-                TransitionManager.beginDelayedTransition(appBarLayout, ChangeBounds())
-                hintContainer.gone()
+                TransitionManager.beginDelayedTransition(binding.appBarLayout, ChangeBounds())
+                binding.hintContainer.gone()
             }
         }
 
-        with(toolbar) {
+        with(binding.toolbar) {
             setTitle(R.string.filters)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
-        resetBtn.onClick { presenter.onResetClicked() }
-        acceptBtn.onClick { presenter.onAcceptClicked() }
-        sortBtn.onClick { presenter.onSortClicked() }
+        binding.resetBtn.onClick { presenter.onResetClicked() }
+        binding.filterBottom.acceptBtn.onClick { presenter.onAcceptClicked() }
+        binding.filterBottom.sortBtn.onClick { presenter.onSortClicked() }
 
-        with(list) {
+        with(binding.list) {
             adapter = this@FilterFragment.adapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
@@ -125,7 +126,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
     }
 
     override fun setResetEnabled(show: Boolean) {
-        resetBtn.isEnabled = show
+        binding.resetBtn.isEnabled = show
     }
 
     //the sort sheet «Списки» uses: titled, the current sort marked (BUGS #16b)
@@ -135,6 +136,6 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
     }
 
     override fun setSortFilterText(text: String) {
-        sortBtn.text = text
+        binding.filterBottom.sortBtn.text = text
     }
 }

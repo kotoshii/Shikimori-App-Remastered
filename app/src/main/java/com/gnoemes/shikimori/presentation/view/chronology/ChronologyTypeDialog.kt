@@ -4,12 +4,12 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import com.gnoemes.shikimori.R
+import com.gnoemes.shikimori.databinding.DialogMenuBinding
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseBottomSheetDialogFragment
 import com.gnoemes.shikimori.utils.colorStateList
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.withArgs
-import kotlinx.android.synthetic.main.dialog_menu.*
 
 class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
 
@@ -28,10 +28,12 @@ class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
 
     override val useWrapperLayout = false
 
+    private val binding by viewBinding(DialogMenuBinding::bind)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(toolbar) {
+        with(binding.toolbar) {
             setTitle(R.string.chronology_type)
         }
 
@@ -39,7 +41,7 @@ class ChronologyTypeDialog : BaseBottomSheetDialogFragment() {
 
         val items = ChronologyType.values().toMutableList()
 
-        navView.apply {
+        binding.navView.apply {
             setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
             itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
             setNavigationItemSelectedListener { menu ->
