@@ -83,6 +83,13 @@ android {
 //AGP 4.1 dropped renaming the apk through the variant api: the plugin renames it here, after android {}
 advancedVersioning.renameOutputApk()
 
+//Room writes each database version's schema into app/schemas: the record a later migration is written against
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:" + versions.kotlin
 
@@ -139,11 +146,9 @@ dependencies {
     implementation 'com.github.ome450901:SimpleRatingBar:' + versions.ratingBar
     implementation 'org.jsoup:jsoup:' + versions.jsoup
 
-    implementation project(":storio-common")
-    implementation project(":storio-sqlite")
-    implementation project(':storio-sqlite-annotations')
-    kapt project(':storio-common-annotations-processor')
-    kapt project(':storio-sqlite-annotations-processor')
+    implementation "androidx.room:room-runtime:" + versions.room
+    implementation "androidx.room:room-rxjava2:" + versions.room
+    kapt "androidx.room:room-compiler:" + versions.room
 
     implementation 'io.lindstrom:m3u8-parser:' + versions.m3u8Parser
 

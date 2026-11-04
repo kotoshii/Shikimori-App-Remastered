@@ -15,12 +15,14 @@ ext.versions = [
         ktx               : '1.1.0-alpha04',
 
         dagger            : '2.19',
-        rxJava            : '2.2.6',
+        rxJava            : '2.2.9', //what room-rxjava2 asks for: Gradle would pick it anyway
         rxAndroid         : '2.1.0',
 
         retrofit          : '2.4.0',
         okHttp            : '3.10.0',
         gson              : '2.8.5',
+
+        room              : '2.2.6',
 
         cicerone          : '3.0.0',
         jodaDateTime      : '2.9.9.3',
