@@ -11,11 +11,4 @@ object PinnedRateTable {
     const val COLUMN_STATUS = "status"
 
     const val COLUMN_ORDER = "pin_order"
-
-    const val CREATE_QUERY = "CREATE TABLE $TABLE(" +
-            "$COLUMN_ID INTEGER NOT NULL, " +
-            "$COLUMN_TYPE TEXT NOT NULL, " +
-            "$COLUMN_STATUS TEXT NOT NULL, " +
-            "$COLUMN_ORDER INTEGER, " +
-            "PRIMARY KEY ($COLUMN_ID , $COLUMN_TYPE, $COLUMN_STATUS));"
 }

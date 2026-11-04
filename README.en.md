@@ -99,7 +99,7 @@ The app checks this repo for a newer release when it starts. Nothing installs on
 
 ## Building
 
-Old project with an old toolchain. StorIO is used with deprecated modules and code generation, which is what keeps everything pinned to 2018 versions. Moving to Room would fix that.
+Old project with an old toolchain.
 
 - JDK 8. Gradle 4.10.1 and AGP 3.2.1 do not run on newer ones.
 - [Android Studio 4.1.1](https://developer.android.com/studio/archive) or older.

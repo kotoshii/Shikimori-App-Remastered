@@ -1,20 +1,16 @@
 package com.gnoemes.shikimori.di.app.module.local;
 
-import android.database.sqlite.SQLiteOpenHelper;
+import android.content.Context;
 
-import androidx.annotation.NonNull;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 
-import com.gnoemes.shikimori.entity.rates.data.PinnedRateDao;
-import com.gnoemes.shikimori.entity.rates.data.PinnedRateDaoSQLiteTypeMapping;
-import com.gnoemes.shikimori.entity.series.data.TranslationSettingDao;
-import com.gnoemes.shikimori.entity.series.data.TranslationSettingDaoSQLiteTypeMapping;
-import com.gnoemes.shikimori.utils.db.DbOpenHelper;
-import com.pushtorefresh.storio3.sqlite.StorIOSQLite;
-import com.pushtorefresh.storio3.sqlite.impl.DefaultStorIOSQLite;
+import com.gnoemes.shikimori.data.local.db.AppDatabase;
+import com.gnoemes.shikimori.data.local.db.dao.PinnedRateDao;
+import com.gnoemes.shikimori.data.local.db.dao.TranslationSettingDao;
 
 import javax.inject.Singleton;
 
-import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
@@ -23,15 +19,22 @@ public interface DbModule {
 
     @Provides
     @Singleton
-    static StorIOSQLite provideStorIosqLite(@NonNull SQLiteOpenHelper sqLiteOpenHelper) {
-        return DefaultStorIOSQLite.builder()
-                .sqliteOpenHelper(sqLiteOpenHelper)
-                .addTypeMapping(TranslationSettingDao.class, new TranslationSettingDaoSQLiteTypeMapping())
-                .addTypeMapping(PinnedRateDao.class, new PinnedRateDaoSQLiteTypeMapping())
+    static AppDatabase provideDatabase(Context context) {
+        return Room.databaseBuilder(context, AppDatabase.class, AppDatabase.NAME)
+                .addMigrations(AppDatabase.MIGRATIONS)
+                //one file, as before Room: Room's default (WAL) keeps the latest writes in a second file,
+                //shikimori_database-wal, which Android's own backup may not copy before Android 9
+                .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
                 .build();
     }
 
-    @Binds
-    @Singleton
-    SQLiteOpenHelper bindSqLiteOpenHelper(DbOpenHelper helper);
+    @Provides
+    static PinnedRateDao providePinnedRateDao(AppDatabase database) {
+        return database.pinnedRateDao();
+    }
+
+    @Provides
+    static TranslationSettingDao provideTranslationSettingDao(AppDatabase database) {
+        return database.translationSettingDao();
+    }
 }
