@@ -22,6 +22,7 @@ import com.gnoemes.shikimori.utils.VideoMuxer
 import com.gnoemes.shikimori.utils.appFolder
 import com.gnoemes.shikimori.utils.notificationManager
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -491,7 +492,7 @@ class DownloadService : Service() {
             //a .ts is what is left when the device could not remux, and it still plays; Android's
             //own table does not know the extension on every version
             if (file.extension.equals("ts", true)) "video/mp2t"
-            else MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.toLowerCase()) ?: "*/*"
+            else MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension.lowercase(Locale.getDefault())) ?: "*/*"
 
     /**
      * Adds a finished file to Android's media index, so gallery and video apps list it straight

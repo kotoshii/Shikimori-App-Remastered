@@ -25,6 +25,7 @@ import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.tag
 import com.gnoemes.shikimori.utils.toBold
 import com.gnoemes.shikimori.utils.unknownIfZero
+import java.util.Locale
 import javax.inject.Inject
 
 class TopicViewModelConverterImpl @Inject constructor(
@@ -68,7 +69,7 @@ class TopicViewModelConverterImpl @Inject constructor(
         is Anime -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl,
                 settings.titleName(linked.name, linked.nameRu),
                 line(R.string.details_type, String.format(context.getString(R.string.type_pattern_without_duration),
-                        titleText.typeLabel(linked.type) ?: linked.type.type.toUpperCase(), linked.episodes.unknownIfZero())),
+                        titleText.typeLabel(linked.type) ?: linked.type.type.uppercase(Locale.getDefault()), linked.episodes.unknownIfZero())),
                 line(R.string.details_season, dateTimeConverter.convertAnimeSeasonToString(linked.dateAired)),
                 line(R.string.details_status, context.getString(linked.status.labelRes(true))))
         is Manga -> TopicLinkedViewModel(linked.linkedType, linked.linkedId, linked.imageUrl,

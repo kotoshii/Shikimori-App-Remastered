@@ -16,6 +16,7 @@ import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import com.gnoemes.shikimori.utils.labelRes
 import com.gnoemes.shikimori.utils.nameRes
+import java.util.Locale
 import org.joda.time.DateTime
 import javax.inject.Inject
 
@@ -91,7 +92,7 @@ class FilterSourceImpl @Inject constructor(
 
     private fun getAgeRatings(): MutableList<FilterItem> =
             getList(R.array.age_ratings)
-                    .zip(AgeRating.values().asSequence().filter { it.rating != AgeRating.NONE.rating }.let { if (!settingsSource.allowR18Content) it.filter { !it.isR18 } else it }.map { it.rating.toLowerCase() }.toMutableList())
+                    .zip(AgeRating.values().asSequence().filter { it.rating != AgeRating.NONE.rating }.let { if (!settingsSource.allowR18Content) it.filter { !it.isR18 } else it }.map { it.rating.lowercase(Locale.getDefault()) }.toMutableList())
                     .map { (name, value) -> convert(FilterType.AGE_RATING.value, value, name) }
                     .toMutableList()
 
@@ -124,7 +125,7 @@ class FilterSourceImpl @Inject constructor(
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =
             RateStatus.values()
-                    .map { convert(FilterType.RATE.value, it.status.toLowerCase(), context.getString(it.nameRes(anime))) }
+                    .map { convert(FilterType.RATE.value, it.status.lowercase(Locale.getDefault()), context.getString(it.nameRes(anime))) }
                     .toMutableList()
 
     /**

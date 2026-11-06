@@ -10,7 +10,6 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:' + versions.gradlePlugin
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:" + versions.kotlin
-        classpath 'me.moallemi.gradle:advanced-build-version:' + versions.advancedVersioning
     }
 }
 
@@ -24,5 +23,5 @@ allprojects {
 }
 
 task clean(type: Delete) {
-    delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
 }

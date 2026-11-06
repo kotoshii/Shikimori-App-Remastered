@@ -10,7 +10,6 @@ import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BaseFilterPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.FilterViewModelConverter
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsView
-import java.util.Locale
 import javax.inject.Inject
 
 @InjectViewState
@@ -53,7 +52,7 @@ class FilterSeasonsPresenter @Inject constructor(
      * @return whether it was taken; the input keeps a text that was not
      */
     fun onNewCustomFilter(value : String): Boolean {
-        val season = value.toLowerCase(Locale.ROOT)
+        val season = value.lowercase()
         if (!SEASON_SYNTAX.matches(season)) return false
 
         val key = FilterType.SEASON.value

@@ -2,6 +2,8 @@
 # Gradle files
 .gradle/
 build/
+# what Kotlin 2 writes during a build
+.kotlin/
 
 # Local configuration file (sdk path, etc)
 local.properties

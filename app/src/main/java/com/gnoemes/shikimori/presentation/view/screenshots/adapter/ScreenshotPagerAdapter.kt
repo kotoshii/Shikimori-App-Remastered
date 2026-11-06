@@ -60,9 +60,9 @@ class ScreenshotPagerAdapter(
     }
 
     private val tapListener = object : GestureDetector.OnDoubleTapListener {
-        override fun onDoubleTap(e: MotionEvent?): Boolean = false
-        override fun onDoubleTapEvent(e: MotionEvent?): Boolean = false
-        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+        override fun onDoubleTap(e: MotionEvent): Boolean = false
+        override fun onDoubleTapEvent(e: MotionEvent): Boolean = false
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
             uiVisibilityCallback.invoke()
             return true
         }
