@@ -109,7 +109,7 @@ object MarkdownRenderer {
             val link = LINK.find(rest)
             val url = BARE_URL.find(rest)
 
-            val next = listOfNotNull(bold, code, link, url).minBy { it.range.first }
+            val next = listOfNotNull(bold, code, link, url).minByOrNull { it.range.first }
             if (next == null) {
                 out.append(rest)
                 return

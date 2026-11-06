@@ -27,7 +27,7 @@ class AnimeSourceImpl @Inject constructor(
      */
     override fun getEpisodes(id: Long): Single<List<EpisodeResponse>> {
         return searchKodik(id)
-                .map { results -> results.map { it.episodes }.max() ?: 0 }
+                .map { results -> results.map { it.episodes }.maxOrNull() ?: 0 }
                 .map { episodes ->
                     (0..episodes).map {
                         EpisodeResponse(
