@@ -28,8 +28,9 @@ class UserSourceImpl @Inject constructor(
     }
 
     /**
-     * The saved user, or null - also for a value that cannot be read, or reads with empty fields (a
-     * name renamed by a release build's shrinking, BUGS #21): it is then loaded again.
+     * The saved user, or null - also for a value that cannot be read, or reads with empty fields (the
+     * shrunk names release builds stored before `UserBrief` had fixed ones, BUGS #21): it is then
+     * loaded again.
      */
     override fun getUser(): UserBrief? {
         val json = prefs.getString(SettingsExtras.USER_BRIEF, null) ?: return null
