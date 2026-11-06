@@ -94,21 +94,21 @@ class PlayerGestureHandler(
         return true
     }
 
-    override fun onLongPress(e: MotionEvent?) {
-        if (e == null || isSlideControl) return
+    override fun onLongPress(e: MotionEvent) {
+        if (isSlideControl) return
         val forward = side(e) ?: return
         callback.onSeekTap(forward, big = true)
     }
 
-    override fun onDoubleTap(e: MotionEvent?): Boolean {
-        if (e == null || isSlideControl) return false
+    override fun onDoubleTap(e: MotionEvent): Boolean {
+        if (isSlideControl) return false
         val forward = side(e) ?: return false
         callback.onSeekTap(forward, big = false)
         return true
     }
 
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-        if (e1 == null || e2 == null) return false
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        if (e1 == null) return false
 
         return if (isLevelsEnabled) {
             val diff = abs(e1.y - e2.y).toInt()
@@ -135,15 +135,15 @@ class PlayerGestureHandler(
         } else false
     }
 
-    override fun onScale(detector: ScaleGestureDetector?): Boolean {
+    override fun onScale(detector: ScaleGestureDetector): Boolean {
         scaleFactor *= scale.scaleFactor
         scaleFactor = max(0.1f, min(scaleFactor, 1.0f))
         callback.onZoom(scaleFactor > 0.5f)
         return true
     }
 
-    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean = true
-    override fun onScaleEnd(detector: ScaleGestureDetector?) = Unit
+    override fun onScaleBegin(detector: ScaleGestureDetector): Boolean = true
+    override fun onScaleEnd(detector: ScaleGestureDetector) = Unit
 
     private fun onScrollEnd() {
         callback.onSwipeEnd(if (isSlide) slideOffset else null)

@@ -94,7 +94,7 @@ class PosterSourceImpl @Inject constructor(
                 .groupBy { it.type }
                 .mapValues { entry -> entry.value.map { it.id }.distinct().chunked(MAX_IDS_PER_QUERY) }
 
-        val batchCount = chunksByType.values.map { it.size }.max() ?: 0
+        val batchCount = chunksByType.values.map { it.size }.maxOrNull() ?: 0
 
         for (index in 0 until batchCount) {
             if (isPaused()) return

@@ -19,8 +19,15 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--dontskipnonpubliclibraryclassmembers
--dontpreverify
+
+# Gson builds the api's response classes (and the saved login) by reflection, through no constructor R8
+# can see, so R8 takes them for never made: it empties them and turns the code that reads them into a
+# throw - the converter of every user's avatars did, in the first R8 build (P7-T16). ProGuard never did
+# this. Every class with a @SerializedName field is kept as made, with those fields; both may still be
+# renamed, as before, since Gson reads the names from the annotation. Gson 2.11+ ships a rule like it.
+-keepclasseswithmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
 -dontwarn okio.**
 -dontwarn retrofit2.**
@@ -34,9 +41,6 @@
 # Jsoup 1.14+ names jsr305's annotations (@Nullable, @ParametersAreNonnullByDefault), which no app ships:
 # without this ProGuard stops on 141 warnings. It only silences them; Jsoup is kept whole below.
 -dontwarn javax.annotation.**
-# Kotlin 1.4's stdlib jars carry META-INF/versions/9/module-info.class, which ProGuard 6.0.3 stops on as a
-# wrongly named class; Android has no use for it, so it is left out
--dontwarn module-info
 -keep class org.jsoup.**
 
 -keepclassmembers enum * { *; }
@@ -59,7 +63,7 @@
 }
 
 -dontwarn org.slf4j.**
--keep public class * extends androidx.preference.PreferenceFragmentCompat
+-keep public class * extends androidx.preference.PreferenceFragmentCompat { <init>(); }
 
 # HostingFilterFragment is a plain Fragment, so the rule above does not cover it, and the only thing
 # naming it is preferences_anime.xml. ProGuard dropped it from the release build and opening the

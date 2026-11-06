@@ -303,6 +303,7 @@ class RatePresenter @Inject constructor(
         when (it) {
             is DetailsAction.ChangeRateStatus -> onChangeRateStatus(it.id, it.newStatus)
             is DetailsAction.WatchOnline -> onWatchOnline(it.id!!)
+            else -> Unit
         }
     }
 

@@ -1,12 +1,12 @@
 ext.versions = [
         minSdk            : 21,
-        compileSdk        : 30,
+        compileSdk        : 35,
         targetSdk         : 28,
-        buildTools        : '30.0.3',
+        buildTools        : '35.0.0',
 
-        gradlePlugin      : '4.1.3',
+        gradlePlugin      : '8.13.2',
 
-        kotlin            : '1.4.32',
+        kotlin            : '2.3.21',
         constraint        : '2.0.0-alpha3',
         androidx          : '1.0.0',
         androidxFragment  : '1.1.0-alpha03',
@@ -40,8 +40,6 @@ ext.versions = [
         exoplayer         : '2.9.6',
 
         kefirBB           : '1.5',
-
-        advancedVersioning: '1.7.3',
 
         ratingBar         : '1.4.2',
         jsoup             : '1.14.3',

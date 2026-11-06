@@ -24,8 +24,8 @@ class TokenSourceImpl @Inject constructor(
 
     /**
      * The saved token, or null - also for a value that cannot be read, or reads with empty fields:
-     * Gson leaves a field empty when its stored name no longer matches, as after a release build's
-     * shrinking renames it (BUGS #21).
+     * Gson leaves a field empty when its stored name no longer matches, as with the shrunk names
+     * release builds stored before `Token` had fixed ones (BUGS #21).
      */
     override fun getToken(): Token? {
         val json = preferences.getString(AppExtras.ARGUMENT_TOKEN, null) ?: return null

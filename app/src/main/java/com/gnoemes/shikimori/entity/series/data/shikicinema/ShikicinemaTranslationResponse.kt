@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.entity.series.domain.VideoHosting
 import com.google.gson.annotations.SerializedName
 import java.net.URL
+import java.util.Locale
 
 //smarthard.net answers in snake_case on a cache miss and in camelCase on a cache hit (x-cache: HIT),
 //so the two renamed keys accept both spellings
@@ -23,7 +24,7 @@ data class ShikicinemaTranslationResponse (
         @SerializedName("uploader") val uploader: String
 ) {
     val quality: TranslationQuality
-        get() = when (_quality?.toLowerCase()) {
+        get() = when (_quality?.lowercase(Locale.getDefault())) {
             "bd" -> TranslationQuality.BD
             "dvd" -> TranslationQuality.DVD
             else -> TranslationQuality.TV

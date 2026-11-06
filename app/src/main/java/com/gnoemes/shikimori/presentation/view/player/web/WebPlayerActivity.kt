@@ -69,7 +69,6 @@ class WebPlayerActivity : BaseThemedActivity() {
             setLayerType(WebView.LAYER_TYPE_HARDWARE, null)
 
             settings.apply {
-                setAppCacheEnabled(true)
                 cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                 javaScriptCanOpenWindowsAutomatically = true
                 javaScriptEnabled = true

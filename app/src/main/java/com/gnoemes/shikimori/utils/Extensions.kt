@@ -25,6 +25,7 @@ import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import io.reactivex.Single
+import java.util.Locale
 import okhttp3.HttpUrl
 
 /**
@@ -37,7 +38,7 @@ fun String.appendHostIfNeed(host: String = BuildConfig.ShikimoriBaseUrl): String
         HttpUrl.parse(host)?.resolve(this)?.toString() ?: this
 
 fun String.firstUpperCase(): String? {
-    return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).toUpperCase() + this.substring(1)
+    return if (TextUtils.isEmpty(this)) null else this.substring(0, 1).uppercase(Locale.getDefault()) + this.substring(1)
 }
 
 fun String?.nullIfEmpty(): String? {

@@ -22,6 +22,6 @@ interface TitleGenreSource {
      * `genres` array is empty for titles added from 2025 onward. [genres] never fails, so the details
      * still load when it comes back empty - see GENRES_V2_SPIKE.md.
      */
-    fun <T> withGenres(details: Single<T>, type: GenreEntryType, id: Long, attach: (T, List<GenreV2>) -> T): Single<T> =
-            Single.zip(details, genres(type, id), BiFunction { loaded: T, genres: List<GenreV2> -> attach(loaded, genres) })
+    fun <T : Any> withGenres(details: Single<T>, type: GenreEntryType, id: Long, attach: (T, List<GenreV2>) -> T): Single<T> =
+            Single.zip(details, genres(type, id), BiFunction<T, List<GenreV2>, T> { loaded, genres -> attach(loaded, genres) })
 }

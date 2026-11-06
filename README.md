@@ -101,11 +101,10 @@ Android-клиент для [shikimori.io](https://shikimori.io). База ан�
 
 ## Сборка
 
-Старый проект со старым тулчейном.
-
-- JDK 8. Gradle 4.10.1 и AGP 3.2.1 на новых не запускаются.
-- [Android Studio 4.1.1](https://developer.android.com/studio/archive) или более ранняя версия.
-- Android SDK 28.
+- JDK 17. Gradle 8.14 не запускается на JDK 25, который идёт с Android Studio 2026.2.1: в Android Studio
+  выберите JDK 17 в Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK.
+- Android Studio, которая поддерживает AGP 8.13, например 2026.2.1.
+- Android SDK 35.
 
 ```
 ./gradlew assembleDebug

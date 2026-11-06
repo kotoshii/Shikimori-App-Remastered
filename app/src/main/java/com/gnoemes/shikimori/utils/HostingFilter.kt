@@ -1,7 +1,5 @@
 package com.gnoemes.shikimori.utils
 
-import java.util.Locale
-
 /**
  * Turns whatever a user typed into a bare domain, and decides whether a hosting is filtered out.
  *
@@ -24,7 +22,7 @@ object HostingFilter {
     fun normalize(raw: String?): String? {
         if (raw == null) return null
 
-        var value = raw.trim().toLowerCase(Locale.ROOT)
+        var value = raw.trim().lowercase()
         if (value.isEmpty()) return null
 
         value = value.substringAfter("://")      //scheme
@@ -45,7 +43,7 @@ object HostingFilter {
     fun isHidden(hosting: String?, hidden: Set<String>): Boolean {
         if (hosting.isNullOrBlank() || hidden.isEmpty()) return false
 
-        val value = hosting.toLowerCase(Locale.ROOT)
+        val value = hosting.lowercase()
 
         return hidden.any { entry -> value == entry || value.endsWith(".$entry") }
     }

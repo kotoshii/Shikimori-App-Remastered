@@ -17,28 +17,19 @@ permissions:
 
 jobs:
   build:
-    # pinned: ubuntu-latest becomes 26.04 in November 2026, and that image has no JDK 8
-    runs-on: ubuntu-24.04
+    # pinned, so the image changes only when this line does. It has JDK 17 and the SDK platform 35 and
+    # build-tools 35.0.0 the build uses (runner-images readme, 2026-11-04)
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install SDK 30
-        # with the image's default JDK 17, which sdkmanager needs
-        run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-30" "build-tools;30.0.3"
-
-      - name: Use JDK 8
-        # what Android Studio 4.1.1 builds with (its bundled JDK); AGP 4.1 also runs on 11
-        run: echo "JAVA_HOME=$JAVA_HOME_8_X64" >> "$GITHUB_ENV"
+      - name: Use JDK 17
+        # what AGP 8 needs; the image's default, 25, is too new for Gradle 8.14
+        run: echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
 
       - name: Build debug and release, run the unit tests
-        # the app has no native code; without the image's NDK 27, far newer than AGP 4.1, the build sees no
-        # NDK, like the machines it is known to build on. An empty value would still count as set
-        run: |
-          unset ANDROID_NDK_HOME
-          ./gradlew assembleDebug assembleRelease testDebugUnitTest --console=plain
+        run: ./gradlew assembleDebug assembleRelease testDebugUnitTest --console=plain
 
       - name: Release gate
         # library files a broken ProGuard run dropped from the 0.8.9 release: KefirBB's configs and OkHttp's
@@ -48,9 +39,10 @@ jobs:
           echo "found $count of 5"
           test "$count" -eq 5
 
-      - name: Screens named in XML survive ProGuard
-        # app:fragment names a class only in a string, so ProGuard removes it unless proguard-rules.pro keeps
-        # it (0.9.0 shipped without HostingFilterFragment); usage.txt lists a removed class alone on its line
+      - name: Screens named in XML survive R8
+        # app:fragment names a class only in a string, so the shrinker removes it unless proguard-rules.pro
+        # keeps it (0.9.0 shipped without HostingFilterFragment, under ProGuard); usage.txt lists a removed
+        # class alone on its line
         run: |
           usage=app/build/outputs/mapping/release/usage.txt
           test -s "$usage"
@@ -59,7 +51,7 @@ jobs:
           removed=0
           for cls in $classes; do
             if grep -qxF "$cls" "$usage"; then
-              echo "::error::ProGuard removed $cls: keep it in app/proguard-rules.pro"
+              echo "::error::R8 removed $cls: keep it in app/proguard-rules.pro"
               removed=1
             else
               echo "kept: $cls"

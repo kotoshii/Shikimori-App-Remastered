@@ -1,46 +1,47 @@
-import me.moallemi.gradle.advancedbuildversion.gradleextensions.VersionCodeType
-
 apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'me.moallemi.advanced-build-version'
+
+//The version. The name is the three numbers below; the code (versionCode) is a counter in version.properties: every
+//build takes the stored number plus one, and a release build stores that number, so each release is one higher than
+//the last one. What the advanced-build-version plugin did up to 1.7.3; its 3.0.0, the one for AGP 8, stored the number
+//before reading it, so a release got the stored number plus two (P7-T16)
+def versionMajor = 0
+def versionMinor = 10
+def versionPatch = 6
+def appVersionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+
+def versionFile = file('version.properties')
+def versionProps = new Properties()
+versionFile.withInputStream { versionProps.load(it) }
+def appVersionCode = (versionProps.getProperty('AI_VERSION_CODE') as int) + 1
+//assembleRelease, Studio's signed apk, or any other task with "release" in its name
+if (gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }) {
+    versionProps.setProperty('AI_VERSION_CODE', appVersionCode as String)
+    versionFile.withOutputStream { versionProps.store(it, null) }
+}
+
+println "config name: ${appVersionName}, code: ${appVersionCode}"
 
 android {
-    compileSdkVersion versions.compileSdk
+    //the package of R and BuildConfig: AGP 8 reads it here, no longer from the manifest
+    namespace = 'com.gnoemes.shikimori'
+    compileSdk versions.compileSdk
     buildToolsVersion versions.buildTools
 
-    //a class per layout with a typed field per view id, in place of the synthetics (P7-T14)
-    buildFeatures { viewBinding true }
-
-    advancedVersioning {
-        nameOptions {
-            versionMajor 0
-            versionMinor 10
-            versionPatch 6
-        }
-        codeOptions {
-            versionCodeType VersionCodeType.AUTO_INCREMENT_STEP
-            versionCodeStep 1
-            dependsOnTasks 'release'
-        }
-
-        outputOptions {
-            renameOutput true
-            nameFormat 'ShikimoriApp-v' + versionName + '-${buildType}'
-        }
+    buildFeatures {
+        //a class per layout with a typed field per view id, in place of the synthetics (P7-T14)
+        viewBinding = true
+        //off by default since AGP 8; the api keys and the base url below are read from it
+        buildConfig = true
     }
-
-    def appVersionName = advancedVersioning.versionName
-    def appVersionCode = advancedVersioning.versionCode
-
-    println "config name: ${appVersionName}, code: ${appVersionCode}"
 
     defaultConfig {
         applicationId "com.gnoemes.shikimori"
-        minSdkVersion versions.minSdk
-        targetSdkVersion versions.targetSdk
+        minSdk versions.minSdk
+        targetSdk versions.targetSdk
         versionName appVersionName
         versionCode appVersionCode
         vectorDrawables.useSupportLibrary = true
@@ -51,7 +52,6 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
@@ -70,18 +70,31 @@ android {
         it.buildConfigField 'String', 'KodikToken', KodikToken
     }
 
+    //ShikimoriApp-v<version>-<build type>.apk, as the versioning plugin named it (until P7-T16)
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "ShikimoriApp-v${appVersionName}-${variant.buildType.name}.apk"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    packagingOptions {
-        exclude 'META-INF/atomicfu.kotlin_module'
+    packaging {
+        resources {
+            excludes += 'META-INF/atomicfu.kotlin_module'
+        }
     }
 }
 
-//AGP 4.1 dropped renaming the apk through the variant api: the plugin renames it here, after android {}
-advancedVersioning.renameOutputApk()
+//the same bytecode level as the Java code (compileOptions); Kotlin 2 would take the JDK's, 17
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
 
 //Room writes each database version's schema into app/schemas: the record a later migration is written against
 kapt {
@@ -91,8 +104,6 @@ kapt {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:" + versions.kotlin
-
     implementation 'androidx.appcompat:appcompat:' + versions.androidx
     implementation 'androidx.constraintlayout:constraintlayout:' + versions.constraint
     implementation 'androidx.fragment:fragment:' + versions.androidxFragment

@@ -20,6 +20,7 @@ import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.roles.domain.Work
 import com.gnoemes.shikimori.utils.colorSpan
 import com.gnoemes.shikimori.utils.faintTextColor
+import java.util.Locale
 import javax.inject.Inject
 import org.joda.time.DateTime
 
@@ -81,7 +82,7 @@ class DetailsContentViewModelConverterImpl @Inject constructor(
         return FrameItem(
                 Image(it.imageUrl, it.imageUrl, it.imageUrl, it.imageUrl),
                 it.name ?: context.getString(getTitleFromType(it.type)),
-                it.hosting?.toUpperCase(),
+                it.hosting?.uppercase(Locale.getDefault()),
                 it
         )
     }
