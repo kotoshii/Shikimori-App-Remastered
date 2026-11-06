@@ -99,11 +99,10 @@ The app checks this repo for a newer release when it starts. Nothing installs on
 
 ## Building
 
-Old project with an old toolchain.
-
-- JDK 8. Gradle 4.10.1 and AGP 3.2.1 do not run on newer ones.
-- [Android Studio 4.1.1](https://developer.android.com/studio/archive) or older.
-- Android SDK 28.
+- JDK 17. Gradle 8.14 does not run on JDK 25, which comes with Android Studio 2026.2.1: in Android Studio,
+  pick JDK 17 in Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK.
+- An Android Studio version that supports AGP 8.13, such as 2026.2.1.
+- Android SDK 35.
 
 ```
 ./gradlew assembleDebug
