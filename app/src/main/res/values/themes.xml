@@ -3,8 +3,13 @@
 
     <!-- Light, not DayNight: the app picks its own theme and night schedule, so the phone's dark mode must not switch
     the parent under it. With DayNight it did, and the dark parent's elevation overlay tinted raised surfaces grey
-    (BUGS #106) -->
-    <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.Light.NoActionBar"/>
+    (BUGS #106). values-v27 has a full copy of it with the light navigation bar (API 27): an item added here goes
+    there too -->
+    <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:navigationBarColor">?attr/colorNavigationBar</item>
+        <item name="android:statusBarColor">?attr/colorStatusBar</item>
+        <item name="android:windowLightStatusBar">?attr/lightStatusBar</item>
+    </style>
 
     <style name="ShikimoriAppTheme.Base" parent="Platform.Theme.Shikimori">
         <!-- a Light parent lets Android 10+ darken the app by itself while the phone is in dark mode -->
