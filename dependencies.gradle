@@ -1,5 +1,5 @@
 ext.versions = [
-        minSdk            : 21,
+        minSdk            : 23, //Android 6.0; 21 until 1.0.0
         compileSdk        : 35,
         targetSdk         : 28,
         buildTools        : '35.0.0',
