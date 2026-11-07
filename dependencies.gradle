@@ -22,7 +22,7 @@ ext.versions = [
         okHttp            : '3.10.0',
         gson              : '2.8.5',
 
-        room              : '2.2.6',
+        room              : '2.8.5', //the last Room for kapt: Room 3 is KSP only
 
         cicerone          : '3.0.0',
         jodaDateTime      : '2.9.9.3',
