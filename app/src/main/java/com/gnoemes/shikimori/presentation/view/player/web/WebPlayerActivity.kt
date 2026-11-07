@@ -2,10 +2,8 @@ package com.gnoemes.shikimori.presentation.view.player.web
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -20,10 +18,8 @@ import com.gnoemes.shikimori.data.local.preference.PlayerSettingsSource
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseThemedActivity
-import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
 import com.gnoemes.shikimori.utils.widgets.VideoWebChromeClient
 import dagger.android.AndroidInjection
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 class WebPlayerActivity : BaseThemedActivity() {
@@ -65,7 +61,8 @@ class WebPlayerActivity : BaseThemedActivity() {
         chromeClient = VideoWebChromeClient(webView, windowCallback)
         webView.apply {
             webChromeClient = chromeClient
-            webViewClient = client
+            //a client keeps the player's links in this WebView: with none, Android opens them in a browser
+            webViewClient = WebViewClient()
             setLayerType(WebView.LAYER_TYPE_HARDWARE, null)
 
             settings.apply {
@@ -150,20 +147,6 @@ class WebPlayerActivity : BaseThemedActivity() {
                 // Hide the nav bar and status bar
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    private val client = object : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-            return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                if (Pattern.compile("https?://vk\\.com/").matcher(url).find()) {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    startOutsideActivity(intent)
-                    true
-                } else false
-
-            } else super.shouldOverrideUrlLoading(view, url)
-        }
     }
 
     private val windowCallback = object : WindowCallback {

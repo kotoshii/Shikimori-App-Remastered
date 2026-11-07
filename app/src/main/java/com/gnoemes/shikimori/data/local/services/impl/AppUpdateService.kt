@@ -109,10 +109,7 @@ class AppUpdateService : Service() {
         }
 
         /** Matches `DownloadService`: immutable is only required from Android 12, but is free here. */
-        private fun pendingIntentFlags(): Int =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                else PendingIntent.FLAG_UPDATE_CURRENT
+        private fun pendingIntentFlags(): Int = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
         private fun createChannel(context: Context) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return

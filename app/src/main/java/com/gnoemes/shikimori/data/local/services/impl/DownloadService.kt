@@ -431,10 +431,7 @@ class DownloadService : Service() {
      * FLAG_IMMUTABLE is only required from Android 12 for apps targeting it, but it costs nothing
      * here and keeps these correct if the target is ever raised.
      */
-    private fun pendingIntentFlags(): Int =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            else PendingIntent.FLAG_UPDATE_CURRENT
+    private fun pendingIntentFlags(): Int = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
     private fun finishedNotification(title: String, text: String) =
             NotificationCompat.Builder(this, CHANNEL_ID)
