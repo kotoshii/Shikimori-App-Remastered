@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.DayNight.NoActionBar"/>
+    <!-- Light, not DayNight: the app picks its own theme and night schedule, so the phone's dark mode must not switch
+    the parent under it. With DayNight it did, and the dark parent's elevation overlay tinted raised surfaces grey
+    (BUGS #106) -->
+    <style name="Platform.Theme.Shikimori" parent="Theme.MaterialComponents.Light.NoActionBar"/>
 
     <style name="ShikimoriAppTheme.Base" parent="Platform.Theme.Shikimori">
+        <!-- a Light parent lets Android 10+ darken the app by itself while the phone is in dark mode -->
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="textAppearanceHeadline6">@style/ToolbarTextAppearance</item>
 
         <item name="md_corner_radius">8dp</item>
