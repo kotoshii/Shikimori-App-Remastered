@@ -2,7 +2,9 @@
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="112" alt="">
 </p>
 
-<h1 align="center">Shikimori App Remastered</h1>
+<h1 align="center">Shikigami</h1>
+
+<p align="center">Раньше называлось Shikimori App Remastered</p>
 
 <p align="center">
   <a href="https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"><img src="https://img.shields.io/github/v/release/kotoshii/Shikimori-App-Remastered" alt="Release"></a>
@@ -35,6 +37,10 @@ Android-клиент для [shikimori.io](https://shikimori.io). База ан�
 [Скачать последний APK](https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest)
 
 Нужен Android 6.0 или новее. Разрешите установку из неизвестных источников. При первом запуске Play Protect, скорее всего, предложит проверить приложение — так бывает с любым APK, установленным не из магазина.
+
+**Переход с Shikimori App 0.10.6 и более старых версий.** Shikigami - отдельное приложение: оно ставится рядом со старым, а автоматическое обновление через Shikimori App не сработает. Скачайте APK по ссылке выше и установите вручную.
+
+Чтобы перенести настройки, в Shikimori App откройте «Настройки» → «Приложение» → «Бэкап настроек» и нажмите «На устройство», затем в Shikigami на том же экране нажмите «С устройства». Не переносятся закреплённые тайтлы и то, что запоминается для каждого аниме: последний автор и тип перевода (озвучка, субтитры или оригинал). Войти в аккаунт нужно заново. После этого Shikimori App можно удалить.
 
 Версии выглядят как `major.minor.patch`, например `0.8.8`. В старых релизах в конце был четвёртый номер сборки, например `0.8.7.1`. Сейчас он не используется.
 

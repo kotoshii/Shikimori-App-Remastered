@@ -2,7 +2,9 @@
   <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="112" alt="">
 </p>
 
-<h1 align="center">Shikimori App Remastered</h1>
+<h1 align="center">Shikigami</h1>
+
+<p align="center">Formerly called Shikimori App Remastered</p>
 
 <p align="center">
   <a href="https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest"><img src="https://img.shields.io/github/v/release/kotoshii/Shikimori-App-Remastered" alt="Release"></a>
@@ -35,6 +37,10 @@ This is a fork of [gnoemes/Shikimori-App-Remastered](https://github.com/gnoemes/
 [Download the latest APK](https://github.com/kotoshii/Shikimori-App-Remastered/releases/latest)
 
 Needs Android 6.0 or newer. Allow installs from unknown sources, and when you open the app Play Protect will probably ask to scan or verify it. That happens with any APK installed outside the store.
+
+**Moving from Shikimori App 0.10.6 and older.** Shikigami is a separate app: it installs next to the old one, and the automatic update through Shikimori App will not work. Download the APK above and install it by hand.
+
+To move your settings, in Shikimori App open «Настройки» → «Приложение» → «Бэкап настроек» and tap «На устройство», then in Shikigami tap «С устройства» on the same screen. Pinned titles are not moved, and neither is what the app remembers for each anime: the last translation author and type (dub, subtitles or original). You need to log in again. After that you can remove Shikimori App.
 
 Versions are `major.minor.patch`, like `0.8.8`. Older releases had a fourth build number in the end, like `0.8.7.1`. It is not used anymore.
 
