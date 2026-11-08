@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.gnoemes.shikimori.App
 import com.gnoemes.shikimori.R
@@ -51,8 +52,14 @@ class AppUpdateService : Service() {
         /**
          * Tells the user a new version exists. Swiping it away is allowed on purpose - the badge in
          * settings is the way back to it, which is why nothing here is ongoing.
+         *
+         * Returns false when notifications were off, so Android dropped it. On a fresh install on
+         * Android 13+ they are off until the user allows them, and with this targetSdk Android asks only
+         * once the app makes its first channel - here, just before the post, which is lost while it
+         * asks. `AppUpdateSource.notifyIfMissed` posts it again once they are on.
          */
-        fun notifyAvailable(context: Context, version: String, apkUrl: String?) {
+        fun notifyAvailable(context: Context, version: String, apkUrl: String?): Boolean {
+            //made every time, even when notifications are off: making it is what makes Android ask
             createChannel(context)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -76,6 +83,7 @@ class AppUpdateService : Service() {
             }
 
             context.notificationManager().notify(AVAILABLE_ID, builder.build())
+            return NotificationManagerCompat.from(context).areNotificationsEnabled()
         }
 
         /** Starts the download. Used by the notification action and by the changelog dialog. */

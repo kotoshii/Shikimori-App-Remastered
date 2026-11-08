@@ -73,6 +73,13 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         showChangelogIfRequested()
     }
 
+    override fun onResume() {
+        super.onResume()
+        //Android 13+'s notification permission dialog is an activity over this one: the update notification
+        //posted while it asked was dropped, so post it again once it closes with notifications allowed
+        appUpdateSource.notifyIfMissed()
+    }
+
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         //the notification reuses this activity rather than stacking a second copy of the app

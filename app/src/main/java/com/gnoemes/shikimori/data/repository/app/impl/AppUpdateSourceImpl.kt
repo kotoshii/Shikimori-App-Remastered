@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.data.repository.app.impl
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.app.NotificationManagerCompat
 import com.gnoemes.shikimori.BuildConfig
 import com.gnoemes.shikimori.data.local.services.impl.AppUpdateService
 import com.gnoemes.shikimori.data.network.GithubApi
@@ -69,6 +70,17 @@ class AppUpdateSourceImpl @Inject constructor(
         prefs.putString(SettingsExtras.NEW_VERSION_APK_URL, release.apkUrl)
 
         //this runs on an io thread and can outlive any screen, so the notification uses the app
-        AppUpdateService.notifyAvailable(context, version, release.apkUrl)
+        noticeMissed = !AppUpdateService.notifyAvailable(context, version, release.apkUrl)
+    }
+
+    //set on the check's io thread, read on the main one
+    @Volatile
+    private var noticeMissed = false
+
+    override fun notifyIfMissed() {
+        if (!noticeMissed || !NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        noticeMissed = false
+        val update = getAvailableUpdate() ?: return
+        AppUpdateService.notifyAvailable(context, update.version, update.apkUrl)
     }
 }
