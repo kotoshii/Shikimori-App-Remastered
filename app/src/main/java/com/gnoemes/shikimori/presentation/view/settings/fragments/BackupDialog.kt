@@ -101,9 +101,9 @@ class BackupDialog : BaseBottomSheetDialogFragment() {
                 val folders = listOf(chosenFolder, androidDownloadFolder).filter { it.isNotEmpty() }
 
                 //the app's folder first, where backups are saved now, then the folders themselves,
-                //where they were saved before it, so an older backup is still found
-                val found = (folders.map { appFolder(it) } + folders.map { File(it) })
-                        .map { File(it, Constants.BACKUP_FILE_NAME) }
+                //where 0.10.6 and older saved theirs under the old name, so such a backup is still found
+                val found = (folders.map { File(appFolder(it), Constants.BACKUP_FILE_NAME) } +
+                        folders.map { File(it, Constants.OLD_BACKUP_FILE_NAME) })
                         .firstOrNull { it.exists() }
 
                 val read: (File?) -> Unit = { readBackup(it) }

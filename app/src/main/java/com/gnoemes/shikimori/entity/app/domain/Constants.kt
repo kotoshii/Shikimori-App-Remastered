@@ -50,7 +50,11 @@ object Constants {
 
     const val MAX_PINNED_RATES = 3
 
-    const val BACKUP_FILE_NAME= "shimori-backup.json"
+    const val BACKUP_FILE_NAME = "shikigami-backup.json"
+
+    //the settings backup's name in 0.10.6 and older, saved straight into the download folder (or
+    //Android's Downloads); still read, so their settings can be restored in this app
+    const val OLD_BACKUP_FILE_NAME = "shimori-backup.json"
 
     //the folder the app creates inside the download folder chosen in settings; named in the
     //setting's texts too
