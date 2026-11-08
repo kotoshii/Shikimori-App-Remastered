@@ -39,7 +39,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.gnoemes.shikimori"
+        //the app's identity on the phone, separate from the code's packages (namespace above); the release was
+        //com.gnoemes.shikimori until 1.0.0, so 1.0.0 installs as another app beside it
+        applicationId "com.kotoshii.shikigami"
         minSdk versions.minSdk
         targetSdk versions.targetSdk
         versionName appVersionName

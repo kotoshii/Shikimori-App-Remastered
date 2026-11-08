@@ -10,20 +10,21 @@ copies everything (FullBackup.getConfigSectionForBackupDestination has no sectio
 With targetSdk 31 or higher, Android 12+ reads android:dataExtractionRules instead: it needs the same
 list.
 The settings files are named after the app id, so each is listed twice: the release's and the debug
-build's (com.gnoemes.shikimori.debug). A file the app does not have is skipped.-->
+build's (com.kotoshii.shikigami.debug), and must change with the id (applicationId in app/build.gradle).
+A file the app does not have is skipped.-->
 <full-backup-content>
     <include
         domain="sharedpref"
-        path="com.gnoemes.shikimori_preferences.xml" />
+        path="com.kotoshii.shikigami_preferences.xml" />
     <include
         domain="sharedpref"
-        path="com.gnoemes.shikimori.debug_preferences.xml" />
+        path="com.kotoshii.shikigami.debug_preferences.xml" />
     <include
         domain="sharedpref"
-        path="com.gnoemes.shikimori_themepreferences.xml" />
+        path="com.kotoshii.shikigami_themepreferences.xml" />
     <include
         domain="sharedpref"
-        path="com.gnoemes.shikimori.debug_themepreferences.xml" />
+        path="com.kotoshii.shikigami.debug_themepreferences.xml" />
     <include
         domain="database"
         path="shikimori_database" />
