@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!--
+    The splash before Android 12: the first window, drawn from the manifest's ShikimoriAppTheme.Launch before any
+    app code runs, so it cannot follow the theme picked in the app - it is night in every theme, so a dark room
+    never gets a light flash. Android 12+ shows its own splash instead (values-v31). The seal is the launcher
+    icon's foreground at the size Android 12+ gives a splash icon (288dp, the seal itself about 165dp).
+-->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
     android:opacity="opaque">
 
-    <item android:drawable="?attr/colorPrimary" />
+    <item android:drawable="@color/seal_night" />
 
     <item
-        android:drawable="@drawable/ic_launch_screen_logo"
-        android:gravity="center"
-        />
+        android:width="288dp"
+        android:height="288dp"
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:gravity="center" />
 
 </layer-list>

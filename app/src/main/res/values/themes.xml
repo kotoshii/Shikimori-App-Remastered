@@ -30,12 +30,16 @@
         <item name="themeStrokeWidth">0dp</item>
     </style>
 
-    <style name="ShikimoriAppTheme.Launch" parent="ShikimoriAppTheme.Base">
+    <!-- The splash activity's theme (the manifest's), so its window is the splash. Its items live in LaunchBase,
+    because values-v31 redefines ShikimoriAppTheme.Launch with Android 12's splash attributes on top -->
+    <style name="ShikimoriAppTheme.LaunchBase" parent="ShikimoriAppTheme.Base">
         <item name="colorPrimary">@color/default_colorPrimary</item>
         <item name="colorPrimaryDark">@color/default_colorPrimaryVariant</item>
         <item name="colorSecondary">@color/default_colorSecondary</item>
         <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
+
+    <style name="ShikimoriAppTheme.Launch" parent="ShikimoriAppTheme.LaunchBase" />
 
     <style name="ShikimoriAppTheme.Player" parent="ShikimoriAppTheme.Base">
         <item name="colorPrimary">@color/default_colorPrimary</item>

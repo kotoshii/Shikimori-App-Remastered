@@ -3,7 +3,9 @@ package com.gnoemes.shikimori.utils
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Resources
 import android.graphics.Color
+import android.os.Build
 import android.os.Handler
 import androidx.annotation.ColorInt
 import androidx.annotation.StyleRes
@@ -101,6 +103,25 @@ fun Activity.setTheme(recreationRunnable: Runnable? = null) {
     if (nightTheme != null) scheduleNightTheme(recreationRunnable)
 
     theme.applyStyle(getCurrentAscentTheme, true)
+
+    matchSplashToTheme()
+}
+
+/** The splash theme last handed to Android in this process, so it is told once, not on every screen. */
+private var splashTheme: Int? = null
+
+/**
+ * Android 12+ draws its splash before any app code runs, from the manifest's theme: night (values-v31). It can be
+ * told to use another theme, and keeps that for the next starts - paper for the light theme, back to the
+ * manifest's night (`ID_NULL`) for the dark ones. With the scheduled night theme the splash shows the theme the
+ * app last applied. Before Android 12 the splash is always night (launch_screen).
+ */
+private fun Activity.matchSplashToTheme() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+    val style = if (isDarkTheme) Resources.ID_NULL else R.style.ShikimoriAppTheme_Launch_Paper
+    if (style == splashTheme) return
+    splashScreen.setSplashScreenTheme(style)
+    splashTheme = style
 }
 
 val themeHandler: Handler by lazy { Handler() }
