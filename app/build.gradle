@@ -59,7 +59,7 @@ android {
             //another app id, so a debug build installs beside the release, with its own login, settings and database
             applicationIdSuffix ".debug"
             versionNameSuffix "-SNAPSHOT"
-            manifestPlaceholders = [appLabel: "Shikimori (Debug)"]
+            manifestPlaceholders = [appLabel: "Shikigami (Debug)"]
         }
     }
 
@@ -70,10 +70,11 @@ android {
         it.buildConfigField 'String', 'KodikToken', KodikToken
     }
 
-    //ShikimoriApp-v<version>-<build type>.apk, as the versioning plugin named it (until P7-T16)
+    //Shikigami-v<version>-<build type>.apk: the versioning plugin's pattern (until P7-T16), which used the old
+    //name, ShikimoriApp, until 1.0.0
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "ShikimoriApp-v${appVersionName}-${variant.buildType.name}.apk"
+            outputFileName = "Shikigami-v${appVersionName}-${variant.buildType.name}.apk"
         }
     }
 

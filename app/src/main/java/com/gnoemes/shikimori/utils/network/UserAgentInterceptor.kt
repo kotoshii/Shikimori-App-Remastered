@@ -7,7 +7,7 @@ class UserAgentInterceptor : Interceptor {
 
     companion object {
         const val USER_AGENT_HEADER = "User-agent"
-        const val USER_AGENT_CLIENT = "Shikimori App"
+        const val USER_AGENT_CLIENT = "Shikigami"
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {

@@ -19,8 +19,8 @@ data class GithubReleaseResponse(
 
     /**
      * Where to download the build from. Every release of this fork attaches exactly one apk, named
-     * `ShikimoriApp-v<version>-release.apk`, but it is matched by extension rather than by that
-     * name so a rename does not silently disable updating.
+     * `Shikigami-v<version>-release.apk` (`ShikimoriApp-…` until 1.0.0), but it is matched by extension
+     * rather than by that name so a rename does not silently disable updating.
      */
     val apkUrl: String?
         get() = assets?.firstOrNull { it.name?.endsWith(".apk", ignoreCase = true) == true }?.downloadUrl

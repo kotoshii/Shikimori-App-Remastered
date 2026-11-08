@@ -177,7 +177,7 @@ class AppUpdateService : Service() {
             //only one update is ever wanted; an abandoned apk from a previous version is clutter
             directory.listFiles()?.forEach { it.delete() }
 
-            val apk = File(directory, "ShikimoriApp-$version.apk")
+            val apk = File(directory, "Shikigami-$version.apk")
             target = apk
 
             Log.d(TAG, "downloading $url -> ${apk.absolutePath}")

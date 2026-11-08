@@ -54,5 +54,5 @@ object Constants {
 
     //the folder the app creates inside the download folder chosen in settings; named in the
     //setting's texts too
-    const val APP_FOLDER_NAME = "ShikimoriApp"
+    const val APP_FOLDER_NAME = "Shikigami"
 }

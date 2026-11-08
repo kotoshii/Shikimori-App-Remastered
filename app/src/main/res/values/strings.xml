@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Shikimori App</string>
+    <string name="app_name">Shikigami</string>
     <string name="appBarFixScrollingFooterBehavior">com.gnoemes.shikimori.utils.widgets.FixScrollingFooterBehavior</string>
     <string name="download_notification_channel">Загрузки</string>
     <string name="download_notification_progress">Загрузка…</string>
