@@ -3,7 +3,6 @@ package com.gnoemes.shikimori.utils
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.res.Resources
 import android.graphics.Color
 import android.os.Build
 import android.os.Handler
@@ -111,14 +110,16 @@ fun Activity.setTheme(recreationRunnable: Runnable? = null) {
 private var splashTheme: Int? = null
 
 /**
- * Android 12+ draws its splash before any app code runs, from the manifest's theme: night (values-v31). It can be
- * told to use another theme, and keeps that for the next starts - paper for the light theme, back to the
- * manifest's night (`ID_NULL`) for the dark ones. With the scheduled night theme the splash shows the theme the
- * app last applied. Before Android 12 the splash is always night (launch_screen).
+ * Android 12+ draws its splash before any app code runs, from the manifest's theme, whose splash follows the
+ * phone's dark mode (`splash_background`). It can be told to use another theme for the next starts, and keeps
+ * that: paper for the light theme, night for the dark ones - always one of the two, as the manifest's would follow
+ * the phone and flash paper before a dark app. With the scheduled night theme the splash shows the theme the app
+ * last applied. A restore from recent apps ignores this choice and follows the phone (themes.xml, Base); so does
+ * the splash before Android 12 (launch_screen).
  */
 private fun Activity.matchSplashToTheme() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-    val style = if (isDarkTheme) Resources.ID_NULL else R.style.ShikimoriAppTheme_Launch_Paper
+    val style = if (isDarkTheme) R.style.ShikimoriAppTheme_Launch_Night else R.style.ShikimoriAppTheme_Launch_Paper
     if (style == splashTheme) return
     splashScreen.setSplashScreenTheme(style)
     splashTheme = style

@@ -4,7 +4,7 @@
     character of 式神, shikigami - on the 108dp canvas, inside the 66dp circle every launcher shape keeps. The
     background layer is @color/ic_launcher_background.
 
-    Also the splash's icon: launch_screen (before Android 12) and windowSplashScreenAnimatedIcon (values-v31).
+    Also the splash's icon: launch_screen (before Android 12) and windowSplashScreenAnimatedIcon (themes.xml, Base).
     ic_launcher_monochrome draws the same ring and 式, and the PNGs for Android 6-7.1 are rendered from the same
     shapes. 式 is six round strokes in a 100-unit box, scaled into place; stroke widths scale with the group.
 -->

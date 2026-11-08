@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 10+ with the phone in light mode: the splash Android draws without the app's theme is paper
+    (values/colors.xml, splash_background). The -v29 keeps Android 6-9 out: they have no dark mode, so they would
+    match "notnight" and get paper, and they keep night -->
+    <color name="splash_background">@color/seal_paper</color>
+</resources>

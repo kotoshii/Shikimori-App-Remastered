@@ -28,18 +28,32 @@
         <item name="android:timePickerStyle">@style/TimePickerStyle</item>
 
         <item name="themeStrokeWidth">0dp</item>
+
+        <!-- Android 12+'s own splash, for every theme: when Android restores a screen from recent apps it draws the
+        splash from that screen's manifest theme and ignores the choice the app handed it, so each theme carries
+        the seal on splash_background, which follows the phone's dark mode. Fresh starts use Launch.Paper or
+        Launch.Night instead (ThemeExtensions.kt, Activity.setTheme) -->
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@drawable/ic_launcher_foreground</item>
     </style>
 
-    <!-- The splash activity's theme (the manifest's), so its window is the splash. Its items live in LaunchBase,
-    because values-v31 redefines ShikimoriAppTheme.Launch with Android 12's splash attributes on top -->
-    <style name="ShikimoriAppTheme.LaunchBase" parent="ShikimoriAppTheme.Base">
+    <!-- The splash activity's theme (the manifest's), so its window is the splash -->
+    <style name="ShikimoriAppTheme.Launch" parent="ShikimoriAppTheme.Base">
         <item name="colorPrimary">@color/default_colorPrimary</item>
         <item name="colorPrimaryDark">@color/default_colorPrimaryVariant</item>
         <item name="colorSecondary">@color/default_colorSecondary</item>
         <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
 
-    <style name="ShikimoriAppTheme.Launch" parent="ShikimoriAppTheme.LaunchBase" />
+    <!-- The splash themes the app hands Android for its next starts (Android 12+): paper for the light theme, night
+    for Dark and Amoled. Android keeps the choice by the theme's name: renaming either loses it -->
+    <style name="ShikimoriAppTheme.Launch.Paper">
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/seal_paper</item>
+    </style>
+
+    <style name="ShikimoriAppTheme.Launch.Night">
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/seal_night</item>
+    </style>
 
     <style name="ShikimoriAppTheme.Player" parent="ShikimoriAppTheme.Base">
         <item name="colorPrimary">@color/default_colorPrimary</item>

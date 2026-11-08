@@ -96,10 +96,14 @@
     <color name="ic_launcher_background">#252C4C</color>
     <!-- the seal's red: its ring and 式 in ic_launcher_foreground; the accent of the update notifications -->
     <color name="logo_red">#D2442E</color>
-    <!-- the seal's paper disc; the splash's background in the light theme (Android 12+, values-v31) -->
+    <!-- the seal's paper disc; the splash's background in the light theme (ShikimoriAppTheme.Launch.Paper) -->
     <color name="seal_paper">#F2ECDD</color>
-    <!-- the splash's background in the dark themes, and before Android 12 in every theme (launch_screen) -->
+    <!-- the splash's background in the dark themes (ShikimoriAppTheme.Launch.Night) -->
     <color name="seal_night">#15161B</color>
+    <!-- the splash's background where Android does not use the app's theme (a restore from recent apps, the splash
+    before Android 12, a fresh install): night here, paper in values-notnight-v29 - so it follows the phone's dark
+    mode on Android 10+, and stays night on Android 6-9, which have none -->
+    <color name="splash_background">@color/seal_night</color>
 
     <color name="player_controls">#deffffff</color>
     <color name="player_surface">#80000000</color>
