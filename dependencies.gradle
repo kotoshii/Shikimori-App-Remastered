@@ -39,8 +39,6 @@ ext.versions = [
 
         exoplayer         : '2.9.6',
 
-        kefirBB           : '1.5',
-
         ratingBar         : '1.4.2',
         jsoup             : '1.14.3',
 

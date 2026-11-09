@@ -8,4 +8,7 @@ import io.reactivex.Single
 interface CommentRepository {
 
     fun getList(id : Long, type : CommentableType, page : Int, limit : Int, desc : Int) : Single<Page<Comment>>
+
+    /** One comment; a deleted one fails with 404. */
+    fun getComment(id: Long): Single<Comment>
 }

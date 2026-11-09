@@ -22,7 +22,7 @@ data class MangaDetails(
         val dateReleased: DateTime?,
         override val score: Double,
         override val description: String?,
-        val descriptionHtml: String,
+        override val descriptionHtml: String?,
         val franchise : String?,
         val favoured: Boolean,
         override val topicId: Long?,

@@ -125,6 +125,13 @@
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
 
+        <item name="colorTextSpoiler">@color/default_colorTextSpoiler</item>
+        <item name="colorTextSpoilerOpen">@color/default_colorTextSpoilerOpen</item>
+        <item name="colorTextBlockBackground">@color/default_colorTextBlockBackground</item>
+        <item name="colorTextQuoteBar">@color/default_colorTextQuoteBar</item>
+        <item name="colorTextCode">@color/default_colorTextCode</item>
+        <item name="colorTextCodeBackground">@color/default_colorTextCodeBackground</item>
+
         <item name="colorStatusBar">@color/default_colorStatusBar</item>
         <item name="colorNavigationBar">@color/default_colorStatusBar</item>
         <item name="lightStatusBar">true</item>
@@ -171,6 +178,13 @@
         <item name="colorRateWatched">@color/rate_watched_transparent</item>
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
+
+        <item name="colorTextSpoiler">@color/dark_colorTextSpoiler</item>
+        <item name="colorTextSpoilerOpen">@color/dark_colorTextSpoilerOpen</item>
+        <item name="colorTextBlockBackground">@color/dark_colorTextBlockBackground</item>
+        <item name="colorTextQuoteBar">@color/dark_colorTextQuoteBar</item>
+        <item name="colorTextCode">@color/dark_colorTextCode</item>
+        <item name="colorTextCodeBackground">@color/dark_colorTextCodeBackground</item>
 
         <item name="colorStatusBar">@color/dark_colorStatusBar</item>
         <item name="colorNavigationBar">@color/dark_colorStatusBar</item>
@@ -224,6 +238,13 @@
         <item name="colorRateWatched">@color/rate_watched_transparent</item>
         <item name="colorRateOnHold">@color/rate_on_hold_transparent</item>
         <item name="colorRateDropped">@color/rate_dropped_transparent</item>
+
+        <item name="colorTextSpoiler">@color/amoled_colorTextSpoiler</item>
+        <item name="colorTextSpoilerOpen">@color/amoled_colorTextSpoilerOpen</item>
+        <item name="colorTextBlockBackground">@color/amoled_colorTextBlockBackground</item>
+        <item name="colorTextQuoteBar">@color/amoled_colorTextQuoteBar</item>
+        <item name="colorTextCode">@color/amoled_colorTextCode</item>
+        <item name="colorTextCodeBackground">@color/amoled_colorTextCodeBackground</item>
 
         <item name="colorStatusBar">@color/amoled_colorStatusBar</item>
         <item name="colorNavigationBar">@color/amoled_colorPrimary</item>

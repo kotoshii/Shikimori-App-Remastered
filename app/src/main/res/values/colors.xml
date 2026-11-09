@@ -64,6 +64,37 @@
     <color name="amoled_colorSnackBar">#000000</color>
     <color name="amoled_colorStatusBar">#de000000</color>
 
+    <!--user text (P8-T4): the site's own colours on the light theme (#678 spoilers, #548eaa quotes,
+    #f3f5f7 boxes, #c7254e code on #f9f2f4), and darker ones for the dark themes, which the site has none of-->
+    <color name="default_colorTextSpoiler">#667788</color>
+    <!--the site's rgba(102, 119, 136, 0.125) was too faint on a phone (the user, 2026-11-09): 25%-->
+    <color name="default_colorTextSpoilerOpen">#40667788</color>
+    <color name="default_colorTextBlockBackground">#f3f5f7</color>
+    <color name="default_colorTextQuoteBar">#548eaa</color>
+    <color name="default_colorTextCode">#c7254e</color>
+    <color name="default_colorTextCodeBackground">#f9f2f4</color>
+
+    <color name="dark_colorTextSpoiler">#56626e</color>
+    <color name="dark_colorTextSpoilerOpen">#4D8899AA</color>
+    <color name="dark_colorTextBlockBackground">#2a2d31</color>
+    <color name="dark_colorTextQuoteBar">#548eaa</color>
+    <color name="dark_colorTextCode">#f48fb1</color>
+    <color name="dark_colorTextCodeBackground">#3a2a30</color>
+
+    <!--no lifted box on Amoled: the bar beside a quote or an open spoiler sets it apart (BUGS #17)-->
+    <color name="amoled_colorTextSpoiler">#4a5562</color>
+    <color name="amoled_colorTextSpoilerOpen">#598899AA</color>
+    <color name="amoled_colorTextBlockBackground">#000000</color>
+    <color name="amoled_colorTextQuoteBar">#548eaa</color>
+    <color name="amoled_colorTextCode">#f48fb1</color>
+    <color name="amoled_colorTextCodeBackground">#1e1416</color>
+
+    <!--the same on every theme: a code block light on dark, as the site's (b-code-v2.sass); the bar of a
+    moderator's ban note, the site's red ($red), whose box is a faint tint of it-->
+    <color name="text_code_block">#ffffff</color>
+    <color name="text_code_block_background">#263238</color>
+    <color name="text_ban">#ff4136</color>
+
     <color name="colorTextProtector">#96000000</color>
     <color name="colorTextProtectorVariant">#de000000</color>
     <color name="colorOnProtector">#DEffffff</color>

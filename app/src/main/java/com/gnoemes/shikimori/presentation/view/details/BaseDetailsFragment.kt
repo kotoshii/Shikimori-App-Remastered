@@ -130,7 +130,7 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
         headHolder =DetailsHeadViewHolder(binding.headLayout.root, imageLoader, getPresenter()::onAction)
         infoHolder = DetailsInfoViewHolder(binding.infoLayout.root, tagAdapter, infoAdapter)
         actionHolder = DetailsActionViewHolder(binding.actionLayout.root, actionAdapter)
-        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, getPresenter()::onContentClicked)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, imageLoader, getPresenter())
 
         with(binding.charactersLayout.searchView) {
             findViewById<LinearLayout>(R.id.search_bar)?.layoutTransition = null

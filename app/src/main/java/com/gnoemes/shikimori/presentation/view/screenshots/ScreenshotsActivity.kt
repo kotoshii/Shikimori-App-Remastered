@@ -43,7 +43,7 @@ class ScreenshotsActivity : MvpActivity() {
     private var itemCount = 0
     private val formatString by lazy { getString(R.string.common_count_format) }
     private var uiVisible = true
-    private var animeName = ""
+    private var folderName = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.ShikimoriAppTheme_Screenshots)
@@ -71,7 +71,7 @@ class ScreenshotsActivity : MvpActivity() {
             val data: ScreenshotsNavigationData = intent.getParcelableExtra(SCREENSHOTS_DATA_KEY)!!
             adapter = ScreenshotPagerAdapter(data.items, this::toggleUI, this::onSwipe, this::onDismiss)
             itemCount = data.items.size
-            animeName = data.animeName
+            folderName = data.name
             val pos = savedInstanceState?.getInt(CURRENT_PAGE, data.selected) ?: data.selected
             binding.viewpager.adapter = this@ScreenshotsActivity.adapter
             binding.viewpager.setCurrentItem(pos, false)
@@ -125,10 +125,10 @@ class ScreenshotsActivity : MvpActivity() {
         }
 
         val data = DownloadFileData(url,
-                listOf(SCREENSHOTS_FOLDER, animeName),
+                listOf(SCREENSHOTS_FOLDER, folderName).filter { it.isNotBlank() },
                 //the url ends in a "?<timestamp>" query, which is not part of the name
                 Uri.parse(url).lastPathSegment ?: url.substringAfterLast('/'),
-                getString(R.string.download_screenshot_title, animeName))
+                getString(R.string.download_screenshot_title, folderName))
         DownloadService.enqueue(this, data, folder)
     }
 

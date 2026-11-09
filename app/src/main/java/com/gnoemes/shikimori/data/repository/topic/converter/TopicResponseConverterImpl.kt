@@ -5,6 +5,8 @@ import com.gnoemes.shikimori.data.repository.user.converter.UserBriefResponseCon
 import com.gnoemes.shikimori.entity.topic.data.TopicResponse
 import com.gnoemes.shikimori.entity.topic.domain.Topic
 import com.gnoemes.shikimori.entity.topic.domain.TopicType
+import com.gnoemes.shikimori.utils.appendHostIfNeed
+import org.jsoup.parser.Parser
 import javax.inject.Inject
 
 class TopicResponseConverterImpl @Inject constructor(
@@ -21,13 +23,18 @@ class TopicResponseConverterImpl @Inject constructor(
 
         return Topic(
                 it.id,
-                it.title.orEmpty(),
+                //plain text: the site builds critique and review titles from its templates for HTML pages, with
+                //`&laquo;`/`&raquo;` in them (`config/locales/view_objects.ru.yml`), while users' own titles come as
+                //typed (live 2026-11-09). Decoded as in an attribute, so `&not` in «R&D &notes» stays as written
+                Parser.unescapeEntities(it.title.orEmpty(), true),
                 it.description,
                 it.descriptionHtml,
                 it.footer,
                 it.dateCreated,
                 it.commentsCount,
                 it.forum.name,
+                //`/topics/<id>` is no page (404, live 2026-11-09); `/forum/<forum>/<id>` redirects to the topic
+                "${it.forum.url.trimEnd('/')}/${it.id}".appendHostIfNeed(),
                 userConverter.convertResponse(it.user)!!,
                 convertType(it.type, it.description, it.descriptionHtml),
                 it.linkedType,

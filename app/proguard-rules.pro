@@ -62,7 +62,6 @@
   public *;
 }
 
--dontwarn org.slf4j.**
 -keep public class * extends androidx.preference.PreferenceFragmentCompat { <init>(); }
 
 # HostingFilterFragment is a plain Fragment, so the rule above does not cover it, and the only thing

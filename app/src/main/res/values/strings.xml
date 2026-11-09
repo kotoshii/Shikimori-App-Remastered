@@ -368,9 +368,16 @@
 
     <string name="comment_more_format_message">Загрузить еще %d из</string>
     <string name="comment_more_format_message_last">Загрузить еще</string>
-    <string name="comment_previous">Показать предыдущие</string>
     <string name="comment_empty">Комментарии не найдены.</string>
-    <string name="comment_reply">Ответ:</string>
+    <!--the sheet a tap on a mention of a comment opens (P8-T4)-->
+    <string name="comment_title">Комментарий</string>
+    <string name="comment_deleted">Комментарий удалён.</string>
+    <string name="comment_open_topic">Открыть обсуждение</string>
+    <string name="comment_open_profile">Открыть профиль</string>
+    <!--a spoiler's label when the text gives none, as on the site-->
+    <string name="spoiler_label">спойлер</string>
+    <!--a poll in a post: the app cannot show it, the link opens the post on the site-->
+    <string name="text_poll_link">Опрос — открыть на сайте</string>
 
     <string name="series_alternative_source">Альтернативный источник</string>
     <string name="episode_number_hint">Номер эпизода</string>

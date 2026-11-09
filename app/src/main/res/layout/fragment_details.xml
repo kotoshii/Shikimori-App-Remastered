@@ -19,7 +19,7 @@
     to it by fixed numbers for a one- or two-line name: a longer name showed a line across the head
     (BUGS #80), and a swipe that started on the name, a head button or the head's top did not scroll
     (BUGS #81)-->
-    <androidx.core.widget.NestedScrollView
+    <com.gnoemes.shikimori.utils.widgets.NoAutoScrollView
         android:id="@+id/nestedScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -90,7 +90,7 @@
         </LinearLayout>
 
 
-    </androidx.core.widget.NestedScrollView>
+    </com.gnoemes.shikimori.utils.widgets.NoAutoScrollView>
 
     <!--the error view, in place of the page when its first load fails; under the toolbar, whose back
     button still works (P7-T5 Q166). The page had none, and a failed load left the shimmer for good-->

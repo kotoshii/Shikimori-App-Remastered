@@ -17,4 +17,8 @@ class CommentRepositoryImpl @Inject constructor(
             api.getComments(id, type.type, page, limit, desc)
                     .map { Page.withExtraRow(it, limit) }
                     .map { it.map(converter::apply) }
+
+    override fun getComment(id: Long): Single<Comment> =
+            api.getComment(id)
+                    .map(converter::convertResponse)
 }

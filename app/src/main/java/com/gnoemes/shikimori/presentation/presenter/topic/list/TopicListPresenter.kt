@@ -31,7 +31,10 @@ class TopicListPresenter @Inject constructor(
         if (type == ForumType.MY_CLUBS) viewState.setMyClubsEmptyText()
     }
 
-    //parsing the topics' bbcode can take seconds on a long post, so it runs off the main thread
+    override val galleryName: String
+        get() = topicResourceProvider.getTopicName(type)
+
+    //reading the topics' HTML takes a while on a long post, so it runs off the main thread
     override fun getPaginatorRequestFactory(): (Int) -> Single<Page<TopicViewModel>> {
         return { page: Int ->
             interactor.getList(type, page)

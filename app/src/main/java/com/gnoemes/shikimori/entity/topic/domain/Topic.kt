@@ -16,6 +16,8 @@ data class Topic(
         //the api's own name: a topic needs no forum type, so one in a forum the app does not know opens
         //too (BUGS #41)
         val forumName: String,
+        /** The topic's page on the site, `<forum>/<id>`, which the site redirects to the full address. */
+        val url: String,
         val user: UserBrief,
         val type: TopicType,
         val linkedType: Type,

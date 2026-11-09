@@ -66,6 +66,10 @@ interface UserApi {
     @GET("/api/users/{id}")
     fun getUserProfile(@Path("id") id: Long): Single<UserDetailsResponse>
 
+    //the api answers the full profile; only the brief part is read. A space in the nickname may come as is or as `+`
+    @GET("/api/users/{nickname}?is_nickname=1")
+    fun getUserByNickname(@Path("nickname") nickname: String): Single<UserBriefResponse>
+
     @POST("/api/friends/{id}")
     fun addToFriends(@Path("id") id: Long): Completable
 

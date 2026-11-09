@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.entity.topic.domain.Topic
 import com.gnoemes.shikimori.entity.common.domain.Page
+import io.reactivex.Maybe
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -22,6 +23,10 @@ class TopicRepositoryImpl @Inject constructor(
                     .map { it.map(converter::apply) }
 
     override fun getDetails(id: Long): Single<Topic> = api.getDetails(id).map { converter.convertResponse(it) }
+
+    override fun getLinkedTopicId(linkedType: String, linkedId: Long): Maybe<Long> =
+            api.getList(1, 1, null, linkedType, linkedId)
+                    .flatMapMaybe { topics -> topics.firstOrNull()?.let { Maybe.just(it.id) } ?: Maybe.empty() }
 
     override fun getForums(): Single<List<Forum>> = api.getForums().map(forumConverter)
 }

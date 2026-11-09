@@ -17,7 +17,8 @@ interface TitleDetailsViewModelConverter<D : TitleDetails> {
 
     fun convertInfo(it: D, creators: List<Pair<Person, List<String>>>): DetailsInfoItem
 
-    fun convertDescriptionItem(description: String?): DetailsDescriptionItem
+    /** From `description_html`; slow on a long text, so not on the main thread. */
+    fun convertDescriptionItem(descriptionHtml: String?): DetailsDescriptionItem
 
     fun getActions(status: Status): DetailsActionItem
 

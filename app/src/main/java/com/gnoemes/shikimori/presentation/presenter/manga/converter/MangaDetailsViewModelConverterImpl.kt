@@ -9,7 +9,7 @@ import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.manga.domain.MangaDetails
 import com.gnoemes.shikimori.entity.manga.domain.MangaType
 import com.gnoemes.shikimori.entity.roles.domain.Person
-import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
 import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.presentation.presenter.details.BaseTitleDetailsViewModelConverter
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
@@ -19,9 +19,9 @@ class MangaDetailsViewModelConverterImpl @Inject constructor(
         context: Context,
         settings: SettingsSource,
         dateTimeConverter: DateTimeConverter,
-        textProcessor: BBCodesTextProcessor,
+        parser: HtmlContentParser,
         private val titleText: TitleTextConverter
-) : BaseTitleDetailsViewModelConverter<MangaDetails>(context, settings, dateTimeConverter, textProcessor), MangaDetailsViewModelConverter {
+) : BaseTitleDetailsViewModelConverter<MangaDetails>(context, settings, dateTimeConverter, parser), MangaDetailsViewModelConverter {
 
     companion object {
         private val CREATOR_ROLES = mapOf(

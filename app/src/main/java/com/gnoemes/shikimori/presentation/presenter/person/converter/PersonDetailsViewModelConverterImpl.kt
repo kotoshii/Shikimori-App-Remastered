@@ -6,6 +6,10 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
 import com.gnoemes.shikimori.entity.common.presentation.DetailsDescriptionItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadSimpleItem
+import com.gnoemes.shikimori.entity.common.presentation.richtext.Block
+import com.gnoemes.shikimori.entity.common.presentation.richtext.Inline
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
+import com.gnoemes.shikimori.entity.common.presentation.richtext.Style
 import com.gnoemes.shikimori.entity.roles.domain.PersonDetails
 import com.gnoemes.shikimori.presentation.presenter.common.converter.DetailsContentViewModelConverter
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
@@ -34,25 +38,20 @@ class PersonDetailsViewModelConverterImpl @Inject constructor(
         return items
     }
 
-    private fun convertRoles(roles: List<List<String?>?>): String? {
-        if (roles.isEmpty()) {
-            return null
+    //the same text as before («Сэйю: 12» a line), built for the content view directly: it was HTML for
+    //Html.fromHtml, and is not user text
+    private fun convertRoles(roles: List<List<String?>?>): RichText {
+        //each role: its name, «: », its count, then any further part on a line of its own
+        val lines = roles.flatMap { role ->
+            val parts = role.orEmpty().filterNotNull().filter { it.isNotBlank() }
+            if (parts.isEmpty()) emptyList()
+            else listOf(parts[0] + ": " + parts.getOrElse(1) { "" }) + parts.drop(2)
         }
-
-        val builder = StringBuilder()
-        roles.forEach { role ->
-            var first = true
-            role?.forEach {
-                if (!it.isNullOrBlank()) {
-                    builder.append(it)
-                    if (first) builder.append(": ")
-                    else builder.append("<br>")
-                    first = false
-                }
-            }
+        if (lines.isEmpty()) return RichText.EMPTY
+        val inlines = lines.flatMapIndexed { index, line ->
+            (if (index > 0) listOf(Inline.LineBreak) else emptyList()) + Inline.Text(line, Style.PLAIN)
         }
-
-        return builder.toString()
+        return RichText(listOf(Block.Paragraph(inlines)))
     }
 
     private fun convertHeadItem(t: PersonDetails): DetailsHeadSimpleItem = DetailsHeadSimpleItem(

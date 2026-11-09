@@ -3,6 +3,9 @@ package com.gnoemes.shikimori.presentation.presenter.base
 import com.gnoemes.shikimori.entity.common.domain.CommonNavigationData
 import com.gnoemes.shikimori.entity.common.domain.Screens
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.main.BottomScreens
+import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
+import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseView
 import ru.terrakok.cicerone.Router
 
@@ -49,6 +52,14 @@ abstract class BaseNavigationPresenter<View : BaseView> : BasePresenter<View>() 
 
     open fun onClubClicked(id: Long){
         router.navigateTo(Screens.CLUB_DETAILS, id)
+    }
+
+    /**
+     * The catalog filtered by a studio: the title page's studio row and a studio link in user text. The
+     * name goes along, so the filter sheet can show which studio the list is limited to (BUGS #13).
+     */
+    open fun onStudioClicked(id: Long, name: String?) {
+        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id, studioName = name), Type.ANIME))
     }
 
     open fun onOpenWeb(url: String?) {

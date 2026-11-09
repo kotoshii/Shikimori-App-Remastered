@@ -75,7 +75,7 @@ class PersonFragment : BaseFragment<PersonPresenter, PersonView>(), PersonView {
         }
 
         headHolder = DetailsHeadSimpleViewHolder(binding.headLayout.root, imageLoader)
-        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, getPresenter()::onContentClicked)
+        descriptionHolder = DetailsDescriptionViewHolder(binding.descriptionLayout.root, imageLoader, getPresenter())
 
         contentHolders.apply {
             put(DetailsContentType.CHARACTERS, DetailsContentViewHolder(binding.charactersLayout.root, charactersAdapter))

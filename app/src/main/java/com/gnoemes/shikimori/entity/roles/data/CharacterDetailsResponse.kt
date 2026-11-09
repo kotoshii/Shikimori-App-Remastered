@@ -14,6 +14,7 @@ data class CharacterDetailsResponse(
         @field:SerializedName("altname") val nameAlt: String?,
         @field:SerializedName("japanese") val nameJp: String?,
         @field:SerializedName("description") val description: String?,
+        @field:SerializedName("description_html") val descriptionHtml: String?,
         @field:SerializedName("description_source") val descriptionSource: String?,
         @field:SerializedName("seyu") val seyu: List<PersonResponse>?,
         @field:SerializedName("animes") val animes: List<AnimeResponse>,

@@ -1,24 +1,73 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
 import android.util.Log
+import com.gnoemes.shikimori.domain.common.LinkLookup
+import com.gnoemes.shikimori.entity.anime.domain.Screenshot
+import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.exceptions.NetworkException
 import com.gnoemes.shikimori.entity.app.domain.exceptions.ServiceCodeException
+import com.gnoemes.shikimori.entity.common.domain.Screens
+import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.common.presentation.richtext.Image
+import com.gnoemes.shikimori.entity.common.presentation.richtext.LinkTarget
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
 import com.gnoemes.shikimori.presentation.presenter.common.provider.CommonResourceProvider
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
-abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPresenter<View>() {
+abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPresenter<View>(), RichTextListener {
 
     //Dagger fills it in every presenter it builds, after the constructor: the error texts need a
     //Context, and a constructor argument would have to be added to every presenter
     @Inject
     lateinit var commonResources: CommonResourceProvider
 
+    //the same way, for the links in user text whose screen id the HTML does not carry
+    @Inject
+    lateinit var linkLookup: LinkLookup
+
     private var compositeDisposable = CompositeDisposable()
 
     override fun initData() {}
+
+    /**
+     * A tap on a link in user text (P8-T4): a title, a character, a person, a user or a topic opens its
+     * screen; a comment opens in a sheet over this screen; a studio opens the catalog filtered by it; a
+     * collection, an article, a critique or a review opens its topic, looked up first, or the browser when the
+     * api has none; any other page opens outside the app, through the navigator, which says so when nothing
+     * can open it.
+     */
+    override fun onLinkClicked(target: LinkTarget) {
+        when (target) {
+            is LinkTarget.Screen ->
+                if (target.type == Type.COMMENT) viewState.showComment(target.id, shownTopicId)
+                else onContentClicked(target.type, target.id)
+            is LinkTarget.UserByNickname -> linkLookup.userId(target.nickname)
+                    .subscribe(this::onUserClicked, this::showErrorText)
+                    .addToDisposables()
+            //through onLinkClicked again, so a screen's own rule for a topic applies (the topic page: its own topic
+            //scrolls up to the post)
+            is LinkTarget.EntryTopic -> linkLookup.topicId(target.entry, target.id)
+                    .subscribe({ onLinkClicked(LinkTarget.Screen(Type.TOPIC, it)) }, this::showErrorText, { onOpenWeb(target.url) })
+                    .addToDisposables()
+            is LinkTarget.Studio -> onStudioClicked(target.id, target.name)
+            is LinkTarget.Web -> onOpenWeb(target.url)
+        }
+    }
+
+    /** Opens the zoom screen on the images of a text, at the one tapped. */
+    override fun onImageClicked(images: List<Image>, index: Int) {
+        val items = images.map { Screenshot(it.zoomUrl ?: it.url, it.url) }
+        router.navigateTo(Screens.SCREENSHOTS, ScreenshotsNavigationData(index, items, galleryName))
+    }
+
+    /** The topic this screen shows: a comment from it opens in the sheet without «Открыть обсуждение». */
+    protected open val shownTopicId: Long? get() = null
+
+    /** Names the folder that images enlarged from this screen's texts are saved in: a title, a topic. */
+    protected open val galleryName: String get() = ""
 
     override fun onDestroy() {
         compositeDisposable.clear()
