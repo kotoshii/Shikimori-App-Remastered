@@ -4,11 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurface">
 
     <include
         android:id="@+id/userLayout"
         layout="@layout/layout_topic_user" />
+
+    <!-- the line under each comment, as the comment list's divider drew it (the theme's list divider) -->
+    <View
+        android:id="@+id/commentDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.gnoemes.shikimori.presentation.view.common.widget.shikimori.ShikimoriContentView
         android:id="@+id/contentView"
@@ -18,7 +29,7 @@
         android:layout_marginBottom="8dp"
         app:content_margin_left="16dp"
         app:content_margin_right="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/commentDivider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userLayout"

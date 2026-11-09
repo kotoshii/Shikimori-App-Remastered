@@ -27,6 +27,7 @@ import com.gnoemes.shikimori.entity.common.presentation.richtext.Inline
 import com.gnoemes.shikimori.entity.common.presentation.richtext.LinkTarget
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Style
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Video
 import com.gnoemes.shikimori.utils.colorAttr
@@ -36,28 +37,30 @@ import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
-import java.util.Collections
-import java.util.IdentityHashMap
 
 /**
  * [RichText] → views, on the main thread, once per text: a text view for each paragraph (its formatting,
  * links, smileys and `||spoilers||` as spans), and a view for each block (quotes, spoilers, images). The
  * parser's model is in RichText.kt; how each element should look is in P8-T4's plan, §2.
  *
- * What is opened — `||spoilers||`, `[spoiler=label]` inside a sentence, block spoilers — lives as long as
- * the views: a rebuilt screen shows them closed again. A spoiler's content is built when it is first
- * opened, so a closed one costs nothing and its images load only once seen.
+ * What is opened — `||spoilers||`, `[spoiler=label]` inside a sentence, block spoilers — is kept in [state],
+ * so views built again from the same state show them as the user left them (a list that reuses its rows).
+ * A spoiler's content is built when it is first opened, so a closed one costs nothing and its images load
+ * only once seen.
  */
 class RichTextRenderer(
         private val context: Context,
         private val imageLoader: ImageLoader?,
         private val listener: RichTextListener?,
-        private val text: RichText
+        val state: RichTextState
 ) {
+
+    private val text: RichText = state.text
 
     private val gallery: List<Image> by lazy { text.zoomableImages() }
 
-    private val blockGap = context.dp(6)
+    /** The space between two top-level parts of a text. */
+    val blockGap = context.dp(6)
     private val spoilerColor = context.colorAttr(R.attr.colorTextSpoiler)
     private val blockBackground = context.colorAttr(R.attr.colorTextBlockBackground)
     private val quoteBarColor = context.colorAttr(R.attr.colorTextQuoteBar)
@@ -76,13 +79,22 @@ class RichTextRenderer(
     //avatar sits 20 px left of the name), and the user asked for a gap
     private val avatarSpace: Int by lazy { (textSize * AVATAR_SPACE_SCALE).toInt() }
 
-    //the `||spoilers||` opened: the parser numbers them once per text
-    private val revealed = mutableSetOf<Int>()
-
-    //the `[spoiler=label]`s opened, by identity: two alike in one text are still two
-    private val opened: MutableSet<Inline.LabelledSpoiler> = Collections.newSetFromMap(IdentityHashMap())
+    //what is opened: `||spoilers||` by the parser's numbers; `[spoiler=label]`s and spoiler blocks by identity
+    private val revealed: MutableSet<Int> get() = state.revealed
+    private val opened: MutableSet<Any> get() = state.opened
 
     fun render(into: LinearLayout) = addBlocks(text.blocks, into)
+
+    /**
+     * Builds only the top-level part at [index] into [into], for a list that shows a long text part by part
+     * (the topic page's post, P8-T4 Q29); false when that part shows nothing. Every part built by one renderer
+     * shares what spans them: the zoom gallery, what is opened.
+     */
+    fun renderBlock(index: Int, into: LinearLayout): Boolean {
+        val view = blockView(text.blocks[index]) ?: return false
+        add(into, view)
+        return true
+    }
 
     private fun addBlocks(blocks: List<Block>, into: LinearLayout) {
         for (block in blocks) blockView(block)?.let { add(into, it) }
@@ -145,23 +157,23 @@ class RichTextRenderer(
             setPadding(context.dp(10), context.dp(4), context.dp(10), context.dp(4))
             gravity = if (spoiler.isCentered) Gravity.CENTER else Gravity.START or Gravity.CENTER_VERTICAL
             if (spoiler.isFullWidth) setTypeface(typeface, Typeface.BOLD)
-            text = spoilerButtonText(spoiler, false)
         }
         column.addView(button, LinearLayout.LayoutParams(if (spoiler.isFullWidth) MATCH else WRAP, WRAP))
         var box: View? = null
-        button.setOnClickListener {
+        fun show(open: Boolean) {
             val shown = box
-            val open = if (shown == null) {
+            if (open && shown == null) {
                 val content = column().apply { setPadding(context.dp(10), context.dp(6), context.dp(8), context.dp(6)) }
                 addBlocks(spoiler.blocks, content)
                 box = barBox(spoilerColor, content).also { column.addView(it) }
-                true
-            } else {
-                val open = shown.visibility != View.VISIBLE
-                shown.visibility = if (open) View.VISIBLE else View.GONE
-                open
-            }
+            } else shown?.visibility = if (open) View.VISIBLE else View.GONE
             button.text = spoilerButtonText(spoiler, open)
+        }
+        show(spoiler in opened)
+        button.setOnClickListener {
+            val open = spoiler !in opened
+            if (open) opened.add(spoiler) else opened.remove(spoiler)
+            show(open)
         }
         return column
     }

@@ -8,15 +8,18 @@ import com.gnoemes.shikimori.databinding.ItemCommentBinding
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
+/** A comment on the topic page; [stateOf] gives what the user opened in it, kept by the list (TopicAdapter). */
 class CommentAdapterDelegate(
         private val imageLoader: ImageLoader,
         private val navigationCallback: (Type, Long) -> Unit,
-        private val textListener: RichTextListener
+        private val textListener: RichTextListener,
+        private val stateOf: (CommentViewModel) -> RichTextState
 ) : AbsListItemAdapterDelegate<CommentViewModel, Any, CommentAdapterDelegate.ViewHolder>() {
 
     override fun isForViewType(item: Any, items: MutableList<Any>, position: Int): Boolean =
@@ -44,9 +47,7 @@ class CommentAdapterDelegate(
         fun bind(item: CommentViewModel) {
             this.item = item
             userHolder.bind(item.userData)
-            with(itemView) {
-                binding.contentView.setContent(item.content)
-            }
+            binding.contentView.setContentState(stateOf(item))
 
         }
 

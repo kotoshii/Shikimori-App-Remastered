@@ -1,29 +1,15 @@
 package com.gnoemes.shikimori.presentation.view.topic.details
 
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
-import com.gnoemes.shikimori.entity.topic.presentation.TopicContentViewModel
-import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
-import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
-import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
+import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFragmentView
 
-interface TopicView : BasePaginationView {
+interface TopicView : BaseFragmentView {
 
-    fun setUserData(item : TopicUserViewModel)
-
-    fun setContentData(item : TopicContentViewModel)
-
-    fun setCommentsText(text : String?)
-
-    fun showCommentsMore(show : Boolean)
-
-    fun showPreviousComments(show : Boolean)
-
-    fun setCommentsCount(count : Long)
-
-    fun showCommentsLoading(show : Boolean)
-
-    fun setLinkedContent(linked: TopicLinkedViewModel?)
+    /** The whole page in reading order, the post's rows then the comments' (TopicPresenter.showRows); the last is shown again on a rebuilt view. */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showRows(rows: List<Any>)
 
     /** Back to the post, for a link to this topic in its own text; a tap, so not replayed. */
     @StateStrategyType(SkipStrategy::class)

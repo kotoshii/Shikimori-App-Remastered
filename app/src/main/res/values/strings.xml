@@ -368,7 +368,6 @@
 
     <string name="comment_more_format_message">Загрузить еще %d из</string>
     <string name="comment_more_format_message_last">Загрузить еще</string>
-    <string name="comment_previous">Показать предыдущие</string>
     <string name="comment_empty">Комментарии не найдены.</string>
     <string name="comment_reply">Ответ:</string>
     <!--the sheet a tap on a mention of a comment opens (P8-T4)-->

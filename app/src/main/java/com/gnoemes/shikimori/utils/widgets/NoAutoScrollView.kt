@@ -7,12 +7,13 @@ import androidx.core.widget.NestedScrollView
 
 /**
  * A `NestedScrollView` that does not move by itself on a touch screen: it never scrolls to bring a focused
- * view or a cursor into view. The screens with user text use it (the topic page, the comment sheet, the
- * title, character and person pages). A tap on selectable text focuses it, and every later layout of a list
- * inside — a comment opened, a spoiler, an image loaded — made the page jump back to that text: a
- * `RecyclerView` re-attaches its rows and asks for the focus again (`ViewGroup.attachViewToParent` →
- * `requestChildFocus`), and the scroll view scrolls to it (P8-T4, 2026-11-09; CODE_CONVENTIONS.md §12).
- * With a keyboard or a remote (not touch mode) it scrolls to the focus as usual.
+ * view or a cursor into view. The screens with user text in a scroll view use it (the comment sheet, the
+ * title, character and person pages; the topic page, one list, has [NoAutoScrollLayoutManager]). A tap on
+ * selectable text focuses it, and every later layout of a list inside — a comment opened, a spoiler, an image
+ * loaded — made the page jump back to that text: a `RecyclerView` re-attaches its rows and asks for the focus
+ * again (`ViewGroup.attachViewToParent` → `requestChildFocus`), and the scroll view scrolls to it (P8-T4,
+ * 2026-11-09; CODE_CONVENTIONS.md §12). With a keyboard or a remote (not touch mode) it scrolls to the focus
+ * as usual.
  */
 class NoAutoScrollView : NestedScrollView {
 

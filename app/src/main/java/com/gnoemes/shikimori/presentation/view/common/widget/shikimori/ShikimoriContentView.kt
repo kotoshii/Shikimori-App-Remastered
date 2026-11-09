@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ViewShikimoriCollapsedBinding
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.onClick
 import com.gnoemes.shikimori.utils.visibleIf
@@ -26,6 +27,10 @@ import com.gnoemes.shikimori.utils.widgets.UniqueStateLinearLayout
  * a text that was shown whole (the user, 2026-11-09, P8-T4 Q22: a short comment was cut, its opened
  * spoiler hidden, the moment the spoiler opened). While cut and closed, a tap anywhere on it opens it; the
  * links and spoilers inside take taps once it is open.
+ *
+ * Whether it is cut and open, and the spoilers opened, live in a [RichTextState]: this view's own for
+ * [setContent], or one its owner keeps for [setContentState], so a list that reuses this view for another
+ * row shows each text again as the user left it (the topic page's comments).
  */
 class ShikimoriContentView @JvmOverloads constructor(
         context: Context,
@@ -43,16 +48,13 @@ class ShikimoriContentView @JvmOverloads constructor(
     private var imageLoader: ImageLoader? = null
     private var listener: RichTextListener? = null
 
-    private var text: RichText? = null
-    private var isExpanded = false
-    private var isCut = false
-    //whether the first layout has decided [isCut]
-    private var isCutDecided = false
+    private var state: RichTextState? = null
 
     var expandable: Boolean = true
         set(value) {
             field = value
-            isCutDecided = false
+            //decided again at the next layout
+            state?.isCut = null
             clamp.requestLayout()
             updateChevron()
         }
@@ -85,7 +87,7 @@ class ShikimoriContentView @JvmOverloads constructor(
             connect(clamp.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             applyTo(binding.container)
         }
-        binding.expandView.onClick { setExpanded(!isExpanded) }
+        binding.expandView.onClick { setExpanded(state?.isExpanded != true) }
         clamp.setOnClickListener { setExpanded(true) }
         updateChevron()
     }
@@ -97,29 +99,37 @@ class ShikimoriContentView @JvmOverloads constructor(
     }
 
     /**
-     * Builds the views for [text]; the same text again does nothing, so a reload that brings no change
-     * keeps what the user opened (an expanded description stays expanded).
+     * Builds the views for [text], with what the user opens in it kept by this view. The same text again does
+     * nothing, so a reload that brings no change keeps what the user opened (an expanded description stays
+     * expanded).
      */
     fun setContent(text: RichText?) {
-        if (text == this.text) return
-        this.text = text
-        isExpanded = false
-        isCut = false
-        isCutDecided = false
+        if (text == state?.text) return
+        setContentState(text?.let { RichTextState(it) })
+    }
+
+    /**
+     * Builds the views for [state]'s text, opened and cut as [state] says, for an owner that keeps one state
+     * per item and reuses this view for others (a list's rows). The same state again does nothing.
+     */
+    fun setContentState(state: RichTextState?) {
+        if (state === this.state) return
+        this.state = state
         content.removeAllViews()
-        if (text != null && !text.isEmpty) RichTextRenderer(context, imageLoader, listener, text).render(content)
+        if (state != null && !state.text.isEmpty) RichTextRenderer(context, imageLoader, listener, state).render(content)
         clamp.requestLayout()
         updateChevron()
     }
 
     private fun setExpanded(expanded: Boolean) {
-        isExpanded = expanded
+        state?.isExpanded = expanded
         clamp.requestLayout()
         updateChevron()
     }
 
     private fun updateChevron() {
-        val shown = expandable && isCut
+        val shown = expandable && state?.isCut == true
+        val isExpanded = state?.isExpanded == true
         binding.expandView.visibleIf { shown }
         binding.gradient.visibleIf { shown && !isExpanded }
         binding.expandView.setImageResource(if (isExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down)
@@ -139,18 +149,16 @@ class ShikimoriContentView @JvmOverloads constructor(
             val full = child.measuredHeight
             val width = if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED) child.measuredWidth
             else MeasureSpec.getSize(widthMeasureSpec)
-            if (!isCutDecided && width > 0) {
-                isCutDecided = true
+            val current = state
+            if (current != null && current.isCut == null && width > 0) {
                 val cut = expandable && full > collapsedHeight
-                if (cut != isCut) {
-                    isCut = cut
-                    //not while measuring: the chevron is a view of the same layout pass
-                    post { updateChevron() }
-                }
+                current.isCut = cut
+                //not while measuring: the chevron is a view of the same layout pass
+                if (cut) post { updateChevron() }
             }
             val height = when {
-                !isCut -> full
-                isExpanded -> full + chevronHeight
+                current == null || current.isCut != true -> full
+                current.isExpanded -> full + chevronHeight
                 else -> collapsedHeight
             }
             setMeasuredDimension(width, height)
