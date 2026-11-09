@@ -40,9 +40,11 @@ import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListene
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Style
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Video
+import com.gnoemes.shikimori.utils.attr
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dimenAttr
 import com.gnoemes.shikimori.utils.dp
+import com.gnoemes.shikimori.utils.drawable
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
@@ -305,12 +307,21 @@ class RichTextRenderer(
         val link = image.link
         when {
             //an image inside a link: the tap follows the link, as on the site
-            link != null -> setOnClickListener { listener?.onLinkClicked(link) }
-            image.zoomUrl != null -> setOnClickListener {
+            link != null -> onTap { listener?.onLinkClicked(link) }
+            image.zoomUrl != null -> onTap {
                 val index = gallery.indexOfFirst { it === image }
                 if (index >= 0) listener?.onImageClicked(gallery, index)
             }
         }
+    }
+
+    /**
+     * A tappable image or card: its action, and the ripple the app's cards show on a tap (P8-T4 Q43: in a text with
+     * many of them, the one tapped is seen).
+     */
+    private fun View.onTap(action: () -> Unit) {
+        setOnClickListener { action() }
+        foreground = context.drawable(context.attr(R.attr.selectableItemBackground).resourceId)
     }
 
     /**
@@ -348,7 +359,7 @@ class RichTextRenderer(
         }, FrameLayout.LayoutParams(WRAP, WRAP, Gravity.BOTTOM or Gravity.END).apply {
             setMargins(context.dp(4), context.dp(4), context.dp(4), context.dp(4))
         })
-        card.setOnClickListener { listener?.onLinkClicked(LinkTarget.Web(video.url)) }
+        card.onTap { listener?.onLinkClicked(LinkTarget.Web(video.url)) }
         return card
     }
 
@@ -377,7 +388,7 @@ class RichTextRenderer(
             setPadding(0, context.dp(4), 0, 0)
         }, LinearLayout.LayoutParams(MATCH, WRAP))
         val target = card.target
-        if (target != null) setOnClickListener { listener?.onLinkClicked(target) }
+        if (target != null) onTap { listener?.onLinkClicked(target) }
     }
 
     /** The «ещё +N» tile at the end of a shortened list: the size of a poster; a tap opens the whole list. */
@@ -389,7 +400,7 @@ class RichTextRenderer(
             //in the colour of the links in the text
             setTextColor(linkTextColors)
         }, FrameLayout.LayoutParams(MATCH, MATCH))
-        setOnClickListener { listener?.onLinkClicked(more.target) }
+        onTap { listener?.onLinkClicked(more.target) }
     }
 
     /** A critique's ratings, a line each: «Сюжет — 10 · Эпик вин!», the score in bold. */
@@ -569,24 +580,31 @@ class RichTextRenderer(
     private fun appendCloseMark(text: SpannableStringBuilder, spoiler: Inline.LabelledSpoiler, paragraph: Paragraph?) {
         val start = text.length
         text.append(context.getString(R.string.spoiler_label)).append(" ▴")
-        val end = text.length
-        text.setSpan(SpoilerLabelSpan {
+        styleLabel(text, start, text.length) {
             opened.remove(spoiler)
             paragraph?.rebuild()
-        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        text.setSpan(RelativeSizeSpan(LABEL_PX / SITE_TEXT_PX), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
         text.append(' ')
     }
 
     private fun appendLabel(text: SpannableStringBuilder, spoiler: Inline.LabelledSpoiler, paragraph: Paragraph?) {
         val start = text.length
         text.append(spans(spoiler.label.ifEmpty { defaultLabel() }, null, links = false))
-        val end = text.length
-        text.setSpan(SpoilerLabelSpan {
+        styleLabel(text, start, text.length) {
             opened.add(spoiler)
             paragraph?.rebuild()
-        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        text.setSpan(RelativeSizeSpan(LABEL_PX / SITE_TEXT_PX), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+    }
+
+    /**
+     * A `[spoiler=label]`'s label or its close mark, as the site draws a label (`b-spoiler.sass`): 12 px, a little
+     * spaced, in the link colour, with a dashed line under it that the text view draws ([SpoilerLabelSpan]).
+     */
+    private fun styleLabel(text: SpannableStringBuilder, start: Int, end: Int, action: () -> Unit) {
+        val scale = LABEL_PX / SITE_TEXT_PX
+        text.setSpan(SpoilerLabelSpan(scale, action), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        text.setSpan(RelativeSizeSpan(scale), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        text.setSpan(LetterSpacingSpan(LABEL_SPACING_PX / LABEL_PX), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
 
     private fun reveal(id: Int, paragraph: Paragraph?) {
@@ -610,8 +628,9 @@ class RichTextRenderer(
 
         //the site's text is 13 px (`--font-size-base-mobile`, globals.scss): `[size=N]` is N/13 of the app's
         const val SITE_TEXT_PX = 13f
-        //a spoiler's label is 12 px on the site (`b-spoiler.sass`)
+        //a spoiler's label is 12 px on the site, 0.5 px between its letters (`b-spoiler.sass`)
         const val LABEL_PX = 12f
+        const val LABEL_SPACING_PX = 0.5f
         const val REPLIES_TEXT_SP = 12f
 
         //the site draws smileys 32 px high beside 13 px text; here a little over the line, to keep lines even

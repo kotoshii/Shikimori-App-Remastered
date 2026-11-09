@@ -5,8 +5,11 @@ import android.graphics.Paint
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.Drawable
 import android.text.TextPaint
+import android.text.style.CharacterStyle
 import android.text.style.ClickableSpan
+import android.text.style.MetricAffectingSpan
 import android.text.style.ReplacementSpan
+import android.text.style.UpdateAppearance
 import android.view.View
 import androidx.annotation.ColorInt
 import com.gnoemes.shikimori.utils.images.ImageRequest
@@ -66,15 +69,41 @@ class OpenSpoilerSpan(
 
 /**
  * The label of a closed `[spoiler=label]` inside a sentence, or the small mark before an open one's
- * content, which closes it: underlined, in the link colour.
+ * content, which closes it: in the link colour with a dashed line under it, as the site draws a label
+ * (`b-spoiler.sass`) — a link has no line, so the dashes say it opens something here (P8-T4 Q41). The text view
+ * draws the dashes ([ShikimoriTextView.onDraw]); Android has no dashed underline. [scale] is the label's size
+ * against the text's, for where the line goes.
  */
-class SpoilerLabelSpan(private val action: () -> Unit) : ClickableSpan() {
+class SpoilerLabelSpan(val scale: Float, private val action: () -> Unit) : ClickableSpan() {
 
     override fun onClick(widget: View) = action()
 
     override fun updateDrawState(ds: TextPaint) {
         ds.color = ds.linkColor
-        ds.isUnderlineText = true
+        ds.isUnderlineText = false
+    }
+}
+
+/** Space between the letters, in ems: a spoiler's label (the site's 0.5 px at 12 px). */
+class LetterSpacingSpan(private val ems: Float) : MetricAffectingSpan() {
+
+    override fun updateMeasureState(textPaint: TextPaint) {
+        textPaint.letterSpacing = ems
+    }
+
+    override fun updateDrawState(tp: TextPaint) {
+        tp.letterSpacing = ems
+    }
+}
+
+/**
+ * The tapped link or spoiler label, while the finger is on it and a moment after: a tint behind it, so that
+ * among many links the one tapped is seen (P8-T4 Q42). Set and removed by ShikimoriLinkMovementMethod.
+ */
+class PressedSpan(@ColorInt private val tint: Int) : CharacterStyle(), UpdateAppearance {
+
+    override fun updateDrawState(tp: TextPaint) {
+        tp.bgColor = tint
     }
 }
 
