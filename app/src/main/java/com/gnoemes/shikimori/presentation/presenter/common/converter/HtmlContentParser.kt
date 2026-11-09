@@ -53,8 +53,33 @@ internal class HtmlContentReader(
     fun read(html: String?): RichText {
         if (html.isNullOrBlank()) return RichText.EMPTY
         val sink = Sink()
-        children(Jsoup.parseBodyFragment(html).body(), sink, Style.PLAIN)
+        children(Jsoup.parseBodyFragment(withLeftoverDivs(html)).body(), sink, Style.PLAIN)
         return RichText(sink.finish())
+    }
+
+    /**
+     * Users' `[div=…]…[/div]` that the api left as text. The Rails renderer the api still uses leaves every
+     * `[div]` of a text as text when its openings and closings do not pair up (`bb_codes/tags/div_tag.rb`) - one
+     * `[/div]` missing out of 82 is enough - while the live site's pages render them (BB_CODES.md §7). This makes
+     * the `<div … data-div>` the site makes, by the site's own patterns: the line break after an opening tag and
+     * around a closing one goes with the tag, and closing tags right after a closing one stay after it. Code and
+     * tags' attributes are left alone. An unclosed one ends where its parent ends, as in a browser.
+     */
+    private fun withLeftoverDivs(html: String): String {
+        if (!html.contains("[/div]")) return html
+        return LEFTOVER_DIV.replace(html) { match ->
+            val groups = match.groups
+            when {
+                groups[1] != null -> match.value
+                groups[2] != null -> {
+                    val classes = groups[3]?.value.orEmpty().split(' ')
+                            .filter { it.isNotEmpty() && it.lowercase() !in FORBIDDEN_DIV_CLASSES }
+                    val classAttr = if (classes.isEmpty()) "" else " class=\"${classes.joinToString(" ")}\""
+                    "<div$classAttr${groups[4]?.value.orEmpty()} data-div>"
+                }
+                else -> "</div>" + groups[5]!!.value
+            }
+        }
     }
 
     // Walking the tree
@@ -634,6 +659,20 @@ internal class HtmlContentReader(
                 "summary", "form", "fieldset"
         )
         val SKIPPED_TAGS = setOf("meta", "link", "script", "style", "source", "noscript", "template", "head", "title")
+
+        //users' `[div]` left as text ([withLeftoverDivs]), one match per part: 1 what is left alone (code; a tag
+        //with attributes, whose values could hold the same words); 2 an opening tag (3 its classes, 4 its data
+        //attributes) with the line break after it; else a closing tag with the line breaks around it, 5 the
+        //closing tags right after it. The site's patterns (`bb_codes/tags/div_tag.rb`) over the api's HTML, where
+        //a line break is `<br>`, or `<br class="br">` in a run of them
+        val LEFTOVER_DIV = Regex(
+                """(<pre\b[\s\S]*?</pre>|<code\b[\s\S]*?</code>|<(?!br(?: class="br")?>|/)[^>]*>)""" +
+                        """|(\[div(?:=((?:[\w \-](?!data-\w))+))?((?: data-[\w\-]+(?:=[\w\-]+)?)+)?\])(?:<br(?: class="br")?>)?""" +
+                        """|(?:<br(?: class="br")?>)?\[/div\]((?:[\[<]/(?!div)\w+[\]>])*)(?:<br(?: class="br")?>)?""",
+                RegexOption.IGNORE_CASE)
+        //the classes of the site's forbidden list (`bb_codes/cleanup_css_class.rb`) that this parser acts on: a
+        //user's `[div=ban]` is not a ban note
+        val FORBIDDEN_DIV_CLASSES = setOf("ban", "b-video")
 
         val SCREEN_TYPES = mapOf(
                 "anime" to Type.ANIME, "manga" to Type.MANGA, "ranobe" to Type.RANOBE,

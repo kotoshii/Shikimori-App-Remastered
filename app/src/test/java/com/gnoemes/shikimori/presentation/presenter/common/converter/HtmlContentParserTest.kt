@@ -205,6 +205,34 @@ class HtmlContentParserTest {
         assertEquals("ab", text.allInlines().plain())
     }
 
+    @Test
+    fun `users' blocks the api left as text are blocks, as on the site`() {
+        //82 `[div` and 81 `[/div]`, so the api left all as text (fetched 2026-11-09)
+        val critique = fixture("topic_647699_body")
+        assertFalse(critique.allInlines().plain().contains("[div", ignoreCase = true))
+        assertFalse(critique.allInlines().plain().contains("[/div]", ignoreCase = true))
+        //`[div=b-quote d-inline-block p-2]`, the spoiler warning at the top
+        assertTrue(critique.all<Block.Quote>().first().blocks.any { it.inlines().plain().startsWith("Д И С К Л Е Й М Е Р") })
+        //`[div=b-quote d-inline-block p-2 pr-3 pl-3 m-0]` around each of 11 songs' video and name, and a real
+        //`[quote]` around five more
+        val songs = critique.all<Block.Quote>().filter { quote -> blocks(quote.blocks).any { it is Block.VideoCard } }
+        assertEquals(12, songs.size)
+        assertTrue(blocks(songs.first().blocks).any { it.inlines().plain().contains("(первый OP)") })
+    }
+
+    @Test
+    fun `users' blocks the api left as text keep the site's rules`() {
+        val text = parse("[div=ban]a[/div]<br>[div=hidden]b<br>[/div]<br>c " +
+                "<code class=\"b-code_inline\">[div]</code> <a href=\"https://example.com/[div]\">x</a>[div]e")
+        assertTrue(text.all<Block.Ban>().isEmpty())
+        //a box breaks the line; the hidden one is not shown; the line breaks went with the tags; the last one,
+        //never closed, holds the rest
+        assertEquals("a\nc [div] x\ne", text.allInlines().plain())
+        assertEquals(LinkTarget.Web("https://example.com/[div]"), text.textWith("x").style.link)
+        val code = parse("<pre class=\"b-code-v2\"><code>[div]x[/div]</code></pre>[/div]").all<Block.Code>().single()
+        assertEquals("[div]x[/div]", code.text)
+    }
+
     // Links
 
     @Test
