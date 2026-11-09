@@ -26,6 +26,7 @@ class CharacterDetailsResponseConverterImpl @Inject constructor(
             it.nameAlt,
             it.nameJp,
             it.description,
+            it.descriptionHtml,
             it.descriptionSource,
             personConverter.apply(it.seyu ?: emptyList()),
             animeConverter.apply(it.animes),

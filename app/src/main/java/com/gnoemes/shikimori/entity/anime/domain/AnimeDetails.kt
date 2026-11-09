@@ -29,7 +29,7 @@ data class AnimeDetails(
         override val score: Double,
         val duration: Int,
         override val description: String?,
-        val descriptionHtml: String,
+        override val descriptionHtml: String?,
         val franchise : String?,
         val favoured: Boolean,
         override val topicId: Long?,

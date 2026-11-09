@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.data.network
 import com.gnoemes.shikimori.entity.comment.data.CommentResponse
 import io.reactivex.Single
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface CommentApi {
@@ -13,5 +14,9 @@ interface CommentApi {
                     @Query("page") page: Int,
                     @Query("limit") limit: Int,
                     @Query("desc") desc: Int): Single<List<CommentResponse>>
+
+    //a deleted comment answers 404
+    @GET("/api/comments/{id}")
+    fun getComment(@Path("id") id: Long): Single<CommentResponse>
 
 }

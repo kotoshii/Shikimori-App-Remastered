@@ -15,6 +15,7 @@ interface TitleDetails {
     val dateAired: DateTime?
     val score: Double
     val description: String?
+    val descriptionHtml: String?
     val topicId: Long?
     val genres: List<GenreV2>
     val userRate: UserRate?

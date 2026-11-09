@@ -13,6 +13,7 @@ data class CharacterDetails(
         val nameAlt: String?,
         val nameJp: String?,
         val description: String?,
+        val descriptionHtml: String?,
         val descriptionSource: String?,
         val seyu: List<Person>,
         val animes: List<Anime>,

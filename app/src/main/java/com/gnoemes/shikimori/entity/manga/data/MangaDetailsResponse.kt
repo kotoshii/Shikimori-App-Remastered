@@ -24,7 +24,7 @@ data class MangaDetailsResponse(
         @field:SerializedName("japanese") val namesJapanese: List<String?>?,
         @field:SerializedName("score") val score: Double,
         @field:SerializedName("description") val description: String?,
-        @field:SerializedName("description_html") val descriptionHtml: String,
+        @field:SerializedName("description_html") val descriptionHtml: String?,
         @field:SerializedName("franchise") val franchise: String?,
         @field:SerializedName("favoured") val favoured: Boolean,
         @field:SerializedName("topic_id") val topicId: Long?,
