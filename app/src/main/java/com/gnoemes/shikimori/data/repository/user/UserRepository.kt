@@ -15,6 +15,9 @@ interface UserRepository {
 
     fun getDetails(id: Long): Single<UserDetails>
 
+    /** A user known only by the nickname (an avatar link in user text); an unknown one fails with 404. */
+    fun getUserIdByNickname(nickname: String): Single<Long>
+
     fun getFriends(id: Long, page: Int, limit: Int): Single<Page<UserBrief>>
 
     fun getFavorites(id: Long): Single<FavoriteList>

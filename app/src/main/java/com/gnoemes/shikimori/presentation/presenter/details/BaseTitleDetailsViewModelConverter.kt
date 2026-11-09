@@ -13,7 +13,7 @@ import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.user.domain.Statistic
 import com.gnoemes.shikimori.entity.user.presentation.UserStatisticItem
-import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.colorRes
 import com.gnoemes.shikimori.utils.colorSpan
@@ -30,7 +30,7 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
         protected val context: Context,
         protected val settings: SettingsSource,
         protected val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor
+        private val parser: HtmlContentParser
 ) : TitleDetailsViewModelConverter<D> {
 
     /** The statistics' status rows, in order: the api's names (english|russian) and the label. */
@@ -44,10 +44,9 @@ abstract class BaseTitleDetailsViewModelConverter<D : TitleDetails>(
             isGuest
     )
 
-    override fun convertDescriptionItem(description: String?): DetailsDescriptionItem {
-        val processedText = description?.let { textProcessor.process(it) }
-        return DetailsDescriptionItem(processedText)
-    }
+    //the api's rendered HTML, read on a background thread (BaseDetailsPresenter.loadDetails)
+    override fun convertDescriptionItem(descriptionHtml: String?): DetailsDescriptionItem =
+            DetailsDescriptionItem(parser.parse(descriptionHtml))
 
     override fun getActions(status: Status): DetailsActionItem {
         val actions = DetailsActionType.values().toMutableList()

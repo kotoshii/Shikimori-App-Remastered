@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.entity.comment.presentation
 
 import com.gnoemes.shikimori.entity.comment.domain.CommentableType
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
 
 data class CommentViewModel(
@@ -9,7 +10,7 @@ data class CommentViewModel(
         val commentableId: Long,
         val commentableType: CommentableType,
         val userData: TopicUserViewModel,
-        val content: String?,
+        val content: RichText,
         val isOfftopic: Boolean,
         val isSummary: Boolean,
         val isEditable: Boolean

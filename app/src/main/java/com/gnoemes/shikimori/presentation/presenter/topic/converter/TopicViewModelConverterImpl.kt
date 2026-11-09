@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.data.local.preference.titleName
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.common.domain.LinkedContent
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.manga.domain.Manga
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
@@ -17,7 +18,7 @@ import com.gnoemes.shikimori.entity.topic.presentation.TopicContentViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
-import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
 import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
@@ -31,15 +32,15 @@ import javax.inject.Inject
 class TopicViewModelConverterImpl @Inject constructor(
         private val context: Context,
         private val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor,
+        private val parser: HtmlContentParser,
         private val settings: SettingsSource,
         private val titleText: TitleTextConverter
 ) : TopicViewModelConverter {
 
     override fun apply(t: List<Topic>): List<TopicViewModel> =
-            t.map { convertTopic(it) }
+            t.map { convertTopic(it, withFooter = false) }
 
-    override fun convertTopic(it: Topic): TopicViewModel {
+    override fun convertTopic(it: Topic, withFooter: Boolean): TopicViewModel {
         val createdDate = dateTimeConverter.convertDateAgoToString(it.dateCreated)
 
         //a new episode or a release first, else the kind of topic
@@ -48,7 +49,10 @@ class TopicViewModelConverterImpl @Inject constructor(
         val tagColor = (getTagColor(it.event) ?: typeTag?.color)?.let { res -> context.color(res) }
 
         val userViewModel = TopicUserViewModel(it.user, createdDate, tag, tagColor)
-        val contentViewModel = TopicContentViewModel(it.title, it.description?.let { textProcessor.process(it) })
+        //the post, and on the topic page the image and video wall the api cuts from its end (BB_CODES.md §5)
+        val body = parser.parse(it.descriptionHtml)
+        val content = if (withFooter) RichText(body.blocks + parser.parse(it.footer).blocks) else body
+        val contentViewModel = TopicContentViewModel(it.title, content)
 
         return TopicViewModel(
                 it.id,

@@ -49,7 +49,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         private const val PREVIOUS_KEY = "PREVIOUS_KEY"
     }
 
-    private val commentsAdapter by lazy { CommentsAdapter(imageLoader, getPresenter()::onContentClicked).apply { if (!hasObservers()) setHasStableIds(true) } }
+    private val commentsAdapter by lazy { CommentsAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()).apply { if (!hasObservers()) setHasStableIds(true) } }
 
     private lateinit var userHolder: TopicUserViewHolder
     private lateinit var contentHolder: TopicContentViewHolder
@@ -69,7 +69,7 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
 
         ViewCompat.setNestedScrollingEnabled(binding.scrollView, false)
         userHolder = TopicUserViewHolder(binding.userLayout.root, imageLoader, getPresenter()::onContentClicked)
-        contentHolder = TopicContentViewHolder(binding.topicLayout.root, getPresenter()::onContentClicked)
+        contentHolder = TopicContentViewHolder(binding.topicLayout.root, imageLoader, getPresenter())
         //the title block's views, found inside it: the same ones as before (its title's id is in no other layout)
         val linkedViews = binding.linkedLayout
         linkedHolder = TopicLinkedViewHolder(linkedViews.imageView, linkedViews.linkedTitleView, linkedViews.typeView,
@@ -129,6 +129,10 @@ class TopicFragment : BasePaginationFragment<CommentViewModel, TopicPresenter, T
         binding.linkedLayout.root.visibleIf { linked != null }
         binding.linkedLayout.root.setOnClickListener { linked?.let { getPresenter().onContentClicked(it.type, it.id) } }
         linkedHolder.bind(linked)
+    }
+
+    override fun scrollToTop() {
+        binding.scrollView.smoothScrollTo(0, 0)
     }
 
     override fun showCommentsLoading(show: Boolean) {

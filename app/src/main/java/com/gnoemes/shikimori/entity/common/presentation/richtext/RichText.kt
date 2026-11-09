@@ -140,7 +140,7 @@ enum class Alignment { CENTER, END }
 data class Image(
         /** What to show: a preview or the original. */
         val url: String,
-        /** What a tap enlarges; null when the site does not enlarge it. */
+        /** What a tap enlarges; null when the author marked it `no-zoom` (the site enlarges posters neither; the app does). */
         val zoomUrl: String?,
         /** The size the author asked for, in the site's pixels. */
         val width: Int?,

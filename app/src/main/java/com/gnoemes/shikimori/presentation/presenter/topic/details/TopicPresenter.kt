@@ -6,6 +6,8 @@ import com.gnoemes.shikimori.domain.topic.TopicInteractor
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.comment.domain.CommentableType
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
+import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.common.presentation.richtext.LinkTarget
 import com.gnoemes.shikimori.entity.topic.domain.Topic
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
@@ -45,7 +47,7 @@ class TopicPresenter @Inject constructor(
         viewState.showCommentsMore(false)
     }
 
-    //parsing a long post's bbcode can take seconds, so it runs off the main thread, and before the
+    //reading a long post's HTML takes a while, so it runs off the main thread, and before the
     //loading logic so the spinner stays up until the text is ready
     private fun loadTopic() = topicLoad.start {
         interactor.getDetails(id)
@@ -56,10 +58,23 @@ class TopicPresenter @Inject constructor(
                 .doOnSuccess { (loaded, _) -> topic = loaded }
                 //the count needs the post's total: comments that came first counted 0 and hid
                 //«Загрузить еще» for good (P7-T5 Q96)
-                .doOnSuccess { if (comments.isNotEmpty()) countComments(lastPage, Constants.DEFAULT_LIMIT) }
+                .doOnSuccess { if (comments.isNotEmpty()) countComments(lastPage, Constants.COMMENTS_LIMIT) }
                 .doOnSuccess { (loaded, _) -> viewState.setTitle(loaded.forumName) }
                 .subscribe({ (_, item) -> setData(item) }, this::processErrors)
     }
+
+    override val shownTopicId: Long?
+        get() = id
+
+    //a mention of this very topic (a `[topic]` tag, a quote of its post): its top, not the topic again
+    //(the user, 2026-11-09, P8-T4 Q15)
+    override fun onLinkClicked(target: LinkTarget) {
+        if (target is LinkTarget.Screen && target.type == Type.TOPIC && target.id == id) viewState.scrollToTop()
+        else super.onLinkClicked(target)
+    }
+
+    override val galleryName: String
+        get() = if (::topic.isInitialized) topic.title else ""
 
     private fun setData(item: TopicViewModel) {
         viewState.setUserData(item.userData)
@@ -70,16 +85,19 @@ class TopicPresenter @Inject constructor(
 
     fun onPreviousClicked() {
         if (comments.isNotEmpty()) {
-            viewState.showData(comments.take(lastPage * Constants.DEFAULT_LIMIT))
+            viewState.showData(comments.take(lastPage * Constants.COMMENTS_LIMIT))
             viewState.showPreviousComments(false)
         }
     }
 
     override fun getPaginatorRequestFactory(): (Int) -> Single<Page<CommentViewModel>> {
         return { page: Int ->
+            //the comments' HTML is read on a background thread (P8-T4 plan §3.2)
             commentInteractor.getList(id, CommentableType.TOPIC, page)
+                    .observeOn(Schedulers.computation())
                     .map { it.map(commentConverter::apply) }
-                    .doOnSuccess { countComments(page, Constants.DEFAULT_LIMIT) }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSuccess { countComments(page, Constants.COMMENTS_LIMIT) }
                     .doOnSuccess { lastPage = page }
         }
     }

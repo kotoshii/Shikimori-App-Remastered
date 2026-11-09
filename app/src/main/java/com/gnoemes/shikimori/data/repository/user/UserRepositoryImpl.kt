@@ -42,6 +42,10 @@ class UserRepositoryImpl @Inject constructor(
             api.getUserProfile(id)
                     .map(detailsConverter::convertResponse)
 
+    override fun getUserIdByNickname(nickname: String): Single<Long> =
+            api.getUserByNickname(nickname)
+                    .map { it.id }
+
     override fun getFriends(id: Long, page: Int, limit: Int): Single<Page<UserBrief>> =
             api.getUserFriends(id, page, limit)
                     .map { Page.exact(it, limit) }

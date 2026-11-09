@@ -239,7 +239,6 @@ class HtmlContentParserTest {
     fun `other site pages and outside links open the browser`() {
         assertEquals(LinkTarget.Web("https://shikimori.io/contests/110-luchshiy-anime-film-2017-goda"),
                 fixture("comment_14131573").textWith("/contests/110").style.link)
-        assertEquals(LinkTarget.Web("https://shikimori.io/animes/studio/56"), fixture("topic_649866_body").textWith("A-1 Pictures").style.link)
         assertEquals(LinkTarget.Web("https://kujico.jp/detail/158"), fixture("comment_14156778").textWith("kujico.jp").style.link)
         //a critique is a sub-page of a title, not the title
         assertEquals(LinkTarget.Web("https://shikimori.io/animes/z16201-aku-no-hana/critiques/2382"),
@@ -247,6 +246,14 @@ class HtmlContentParserTest {
         //the site renders `[url=mailto:…]` as `http://mailto:…`
         assertEquals(LinkTarget.Web("mailto:a@b.c"),
                 parse("<a class=\"b-link\" href=\"http://mailto:a@b.c\" rel=\"noopener noreferrer nofollow\">mail</a>").textWith("mail").style.link)
+    }
+
+    @Test
+    fun `a studio's page opens the catalog filtered by it, named by the link`() {
+        assertEquals(LinkTarget.Studio(56, "A-1 Pictures"), fixture("topic_649866_body").textWith("A-1 Pictures").style.link)
+        //a bare address is its own text, which names nothing
+        assertEquals(LinkTarget.Studio(56, null),
+                parse("<a class=\"b-link\" href=\"/animes/studio/56-A-1-Pictures\">/animes/studio/56-A-1-Pictures</a>").textWith("/animes").style.link)
     }
 
     @Test
@@ -394,7 +401,7 @@ class HtmlContentParserTest {
     }
 
     @Test
-    fun `outside images come through the proxy, no-zoom ones and posters cannot be enlarged`() {
+    fun `outside images come through the proxy, no-zoom ones cannot be enlarged, posters can`() {
         val camo = fixture("comment_14147875").all<Block.Images>().single().images.single()
         assertTrue(camo.url.startsWith("https://camo-v3.shikimori.io/"))
         assertTrue(camo.zoomUrl!!.startsWith("https://camo-v3.shikimori.io/"))
@@ -403,9 +410,10 @@ class HtmlContentParserTest {
         assertNull(noZoom.zoomUrl)
         assertEquals(110, noZoom.width)
 
+        //the site enlarges no poster; the app does (P8-T4 Q16), its own image
         val poster = fixture("comment_14091351").all<Block.Images>().single().images.single()
         assertTrue(poster.isPoster)
-        assertNull(poster.zoomUrl)
+        assertEquals(poster.url, poster.zoomUrl)
     }
 
     @Test

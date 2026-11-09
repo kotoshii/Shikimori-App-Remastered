@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.chronology.ChronologyNavigationData
 import com.gnoemes.shikimori.entity.common.domain.*
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsContentType
+import com.gnoemes.shikimori.entity.common.presentation.DetailsDescriptionItem
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
 import com.gnoemes.shikimori.entity.common.presentation.PlaceholderItem
 import com.gnoemes.shikimori.entity.main.BottomScreens
@@ -31,6 +32,8 @@ import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.firstUpperCase
 import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 
 /**
  * The anime and the manga page. Everything that reads the title's details waits until they have
@@ -56,6 +59,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     /** The title's details, once loaded. */
     protected var details: D? = null
 
+    //read from the details' HTML with them, off the main thread
+    private var description: DetailsDescriptionItem? = null
+
     //🗑 waits behind «Отменить», as in «Списки» (BUGS #85)
     private val pendingChanges = PendingRateChanges()
 
@@ -77,6 +83,9 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     /** The title's name, by the naming setting; empty before the details have loaded. */
     protected val title: String
         get() = details?.let { settingsSource.titleName(it.name, it.nameRu) }.orEmpty()
+
+    override val galleryName: String
+        get() = title
 
     private inline fun withDetails(action: (D) -> Unit) {
         details?.let(action)
@@ -108,10 +117,18 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
                 .addToDisposables()
     }
 
+    //the description's HTML is read on a background thread: a long one takes a while (P8-T4 plan §3.2)
     private fun loadDetails(): Single<DetailsHeadItem> =
             fetchDetails()
-                    .doOnSuccess { details = it; rateId = it.userRate?.id ?: Constants.NO_ID }
-                    .map { detailsConverter.convertHead(it, isGuest) }
+                    .observeOn(Schedulers.computation())
+                    .map { it to detailsConverter.convertDescriptionItem(it.descriptionHtml) }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSuccess { (loaded, description) ->
+                        details = loaded
+                        this.description = description
+                        rateId = loaded.userRate?.id ?: Constants.NO_ID
+                    }
+                    .map { (loaded, _) -> detailsConverter.convertHead(loaded, isGuest) }
 
     private fun loadContent(showLoading: Boolean = true): Single<DetailsHeadItem> =
             loadDetails()
@@ -125,7 +142,7 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     protected open fun onDetailsLoaded(details: D) {
         viewState.setInfoItem(detailsConverter.convertInfo(details, creators))
         viewState.setActionItem(detailsConverter.getActions(details.status))
-        viewState.setDescriptionItem(detailsConverter.convertDescriptionItem(details.description))
+        description?.let { viewState.setDescriptionItem(it) }
     }
 
     protected open fun loadData() =
@@ -268,11 +285,6 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
 
     private fun onLinks() {
         loadLinks()
-    }
-
-    //the name goes along, so the filter sheet can show which studio the list is limited to (BUGS #13)
-    private fun onStudioClicked(id: Long, name: String) {
-        router.navigateTo(BottomScreens.SEARCH, SearchNavigationData(SearchPayload(studioId = id, studioName = name), Type.ANIME))
     }
 
     open fun onChangeRateStatus(newStatus: RateStatus) {

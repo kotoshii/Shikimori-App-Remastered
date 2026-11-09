@@ -15,4 +15,8 @@ class CommentInteractorImpl @Inject constructor(
     override fun getList(id: Long, type: CommentableType, page: Int, limit: Int, desc: Int): Single<Page<Comment>> =
             repository.getList(id, type, page, limit, desc)
                     .applyErrorHandlerAndSchedulers()
+
+    override fun getComment(id: Long): Single<Comment> =
+            repository.getComment(id)
+                    .applyErrorHandlerAndSchedulers()
 }

@@ -23,6 +23,16 @@
     <attr name="colorRateOnHold" format="color" />
     <attr name="colorRateDropped" format="color" />
 
+    <!--user text (P8-T4): the inline spoiler's bar and the block spoiler's button; the background of quotes
+    and open spoilers; the bar beside a quote; inline code-->
+    <attr name="colorTextSpoiler" format="color" />
+    <!--behind the words of an open ||spoiler||, which a tap closes again-->
+    <attr name="colorTextSpoilerOpen" format="color" />
+    <attr name="colorTextBlockBackground" format="color" />
+    <attr name="colorTextQuoteBar" format="color" />
+    <attr name="colorTextCode" format="color" />
+    <attr name="colorTextCodeBackground" format="color" />
+
     <declare-styleable name="NetworkErrorView">
         <attr name="text" format="string" />
     </declare-styleable>

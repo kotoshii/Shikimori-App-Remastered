@@ -1,5 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.topic.details
 
+import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
+import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.topic.presentation.TopicContentViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
@@ -22,5 +24,9 @@ interface TopicView : BasePaginationView {
     fun showCommentsLoading(show : Boolean)
 
     fun setLinkedContent(linked: TopicLinkedViewModel?)
+
+    /** Back to the post, for a link to this topic in its own text; a tap, so not replayed. */
+    @StateStrategyType(SkipStrategy::class)
+    fun scrollToTop()
 
 }

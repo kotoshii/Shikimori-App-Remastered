@@ -6,65 +6,52 @@ import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
 import android.view.MotionEvent;
-import android.webkit.URLUtil;
 import android.widget.TextView;
 
-import com.gnoemes.shikimori.entity.common.domain.Type;
-import com.gnoemes.shikimori.entity.common.presentation.shikimori.ShikimoriViews;
-import com.gnoemes.shikimori.presentation.view.common.widget.shikimori.ShikimoriTextView;
+import com.gnoemes.shikimori.presentation.view.common.widget.shikimori.HiddenSpoilerSpan;
+import com.gnoemes.shikimori.presentation.view.common.widget.shikimori.OpenSpoilerSpan;
 
 /**
- * Link taps in one text view: a web link opens as usual, one of the app's own links
- * ({@code <TYPE>_<id>}, see {@code ShikimoriTextView.appendLink}) goes to that view's listener, and
- * anything else - {@code mailto:}, a site-relative path - is left alone. One per text view: a shared
- * one held the listener of whichever view was made last, and that view with it.
+ * Taps in one text view of user text: the tappable part under the finger runs its own action - a link
+ * opens its target, a closed spoiler opens, an open one closes (see RichTextSpans.kt). A closed spoiler wins
+ * over a link inside it, and a link over the open spoiler around it, as on the site. Until P8-T4 only
+ * URLSpans were run and every other tap was lost. One per text view (CODE_CONVENTIONS.md §12): it keeps
+ * the part pressed now, and a shared one used to hold a listener, and leaked it.
  */
 public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
 
-    private final ShikimoriTextView.LinkClickListener clickListener;
-
-    public ShikimoriLinkMovementMethod(ShikimoriTextView.LinkClickListener clickListener) {
-        this.clickListener = clickListener;
-    }
+    //marked by a selection while pressed
+    private boolean pressed = false;
 
     @Override
     public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
 
         int action = event.getAction();
 
+        //the finger moved on and the page scrolls: the pressed mark must not stay, a selection the page
+        //would scroll back to (ShikimoriTextView.onTouchEvent)
+        if (action == MotionEvent.ACTION_CANCEL && pressed) {
+            pressed = false;
+            Selection.removeSelection(buffer);
+        }
+
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
+            ClickableSpan span = spanAt(widget, buffer, event);
 
-            x -= widget.getTotalPaddingLeft();
-            y -= widget.getTotalPaddingTop();
-
-            x += widget.getScrollX();
-            y += widget.getScrollY();
-
-            Layout layout = widget.getLayout();
-            int line = layout.getLineForVertical(y);
-            int off = layout.getOffsetForHorizontal(line, x);
-
-            ClickableSpan[] links = buffer.getSpans(off, off, ClickableSpan.class);
-
-            if (links.length != 0) {
+            if (span != null) {
                 if (action == MotionEvent.ACTION_UP) {
-                    String url = links[0] instanceof URLSpan ? ((URLSpan) links[0]).getURL() : null;
-                    if (url != null && URLUtil.isNetworkUrl(url)) {
-                        links[0].onClick(widget);
-                    } else if (url != null) {
-                        onAppLink(url);
-                    }
-                } else if (action == MotionEvent.ACTION_DOWN) {
-                    Selection.setSelection(buffer,
-                            buffer.getSpanStart(links[0]),
-                            buffer.getSpanEnd(links[0]));
+                    //before the action, which may give the view new text
+                    pressed = false;
+                    Selection.removeSelection(buffer);
+                    span.onClick(widget);
+                } else {
+                    pressed = true;
+                    Selection.setSelection(buffer, buffer.getSpanStart(span), buffer.getSpanEnd(span));
                 }
                 return true;
             } else {
+                pressed = false;
                 Selection.removeSelection(buffer);
             }
         }
@@ -72,20 +59,32 @@ public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
         return super.onTouchEvent(widget, buffer, event);
     }
 
-    //split at the last divider: a type's own name can hold one (CLUB_PAGE)
-    private void onAppLink(String url) {
-        int divider = url.lastIndexOf(ShikimoriViews.ACTION_DIVIDER);
-        if (divider <= 0) return;
+    /**
+     * The tappable part under the finger; none beside the end of a line, where the nearest letter is a link.
+     * A closed spoiler first, an open spoiler last: the parts inside it are its links.
+     */
+    private static ClickableSpan spanAt(TextView widget, Spannable buffer, MotionEvent event) {
+        Layout layout = widget.getLayout();
+        if (layout == null) return null;
 
-        Type type;
-        long id;
-        try {
-            type = Type.valueOf(url.substring(0, divider));
-            id = Long.parseLong(url.substring(divider + ShikimoriViews.ACTION_DIVIDER.length()));
-        } catch (IllegalArgumentException notAppLink) {
-            //NumberFormatException is one too
-            return;
+        int x = (int) event.getX() - widget.getTotalPaddingLeft() + widget.getScrollX();
+        int y = (int) event.getY() - widget.getTotalPaddingTop() + widget.getScrollY();
+
+        int line = layout.getLineForVertical(y);
+        if (x < layout.getLineLeft(line) || x > layout.getLineRight(line)) return null;
+        int offset = layout.getOffsetForHorizontal(line, x);
+
+        ClickableSpan[] spans = buffer.getSpans(offset, offset, ClickableSpan.class);
+        ClickableSpan open = null;
+        ClickableSpan other = null;
+        for (ClickableSpan span : spans) {
+            if (span instanceof HiddenSpoilerSpan) return span;
+            if (span instanceof OpenSpoilerSpan) {
+                if (open == null) open = span;
+            } else if (other == null) {
+                other = span;
+            }
         }
-        clickListener.onLinkClicked(type, id);
+        return other != null ? other : open;
     }
 }

@@ -51,7 +51,7 @@ class TopicListFragment : BasePaginationFragment<TopicViewModel, TopicListPresen
         fun newInstance(type: ForumType) = TopicListFragment().withArgs { putSerializable(AppExtras.ARGUMENT_FORUM_TYPE, type) }
     }
 
-    private val topicAdapter by lazy { TopicListAdapter(imageLoader, getPresenter()::onContentClicked) }
+    private val topicAdapter by lazy { TopicListAdapter(imageLoader, getPresenter()::onContentClicked, getPresenter()) }
 
     override val adapter: BasePaginationAdapter
         get() = topicAdapter

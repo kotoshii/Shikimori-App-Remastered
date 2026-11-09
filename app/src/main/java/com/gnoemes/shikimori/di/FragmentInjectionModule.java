@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.di.calendar.CalendarModule;
 import com.gnoemes.shikimori.di.character.CharacterModule;
 import com.gnoemes.shikimori.di.chronology.ChronologyModule;
 import com.gnoemes.shikimori.di.club.UserClubsModule;
+import com.gnoemes.shikimori.di.comment.CommentModule;
 import com.gnoemes.shikimori.di.favorites.FavoritesModule;
 import com.gnoemes.shikimori.di.friends.FriendsModule;
 import com.gnoemes.shikimori.di.manga.MangaModule;
@@ -41,6 +42,7 @@ import com.gnoemes.shikimori.presentation.view.series.episodes.EpisodesFragment;
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment;
 import com.gnoemes.shikimori.presentation.view.shikimorimain.ShikimoriMainFragment;
 import com.gnoemes.shikimori.presentation.view.similar.SimilarFragment;
+import com.gnoemes.shikimori.presentation.view.topic.comment.CommentFragment;
 import com.gnoemes.shikimori.presentation.view.topic.details.TopicFragment;
 import com.gnoemes.shikimori.presentation.view.topic.list.TopicListFragment;
 import com.gnoemes.shikimori.presentation.view.user.UserFragment;
@@ -91,6 +93,11 @@ public interface FragmentInjectionModule {
     @BottomChildScope
     @ContributesAndroidInjector(modules = EpisodeModule.class)
     EpisodesFragment episodeFragment();
+
+    //the sheet a tap on a mention of a comment opens, over any screen with user text (P8-T4)
+    @BottomChildScope
+    @ContributesAndroidInjector(modules = CommentModule.class)
+    CommentFragment commentFragment();
 
     //the list entry's sheet reads the entry itself (BUGS #83)
     @BottomChildScope

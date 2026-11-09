@@ -13,10 +13,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.viewbinding.ViewBinding
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.LayoutDefaultListBinding
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
 import com.gnoemes.shikimori.presentation.presenter.base.BasePresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseNetworkView
 import com.gnoemes.shikimori.presentation.view.common.widget.EmptyContentView
 import com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView
+import com.gnoemes.shikimori.presentation.view.topic.comment.CommentFragment
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.hideSoftInput
 import com.gnoemes.shikimori.utils.visible
@@ -205,6 +207,16 @@ abstract class BaseFragment<Presenter : BasePresenter<View>, View : BaseNetworkV
 
     override fun showErrorMessage(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+
+    /** Who answers the taps in user text shown over this screen: in the comment sheet, this screen's presenter. */
+    val textListener: RichTextListener?
+        get() = getPresenter() as? RichTextListener
+
+    //a sheet of this screen's own: a comment mentioned inside the sheet opens one more over it
+    override fun showComment(id: Long, shownTopicId: Long?) {
+        if (childFragmentManager.isStateSaved) return
+        CommentFragment.newInstance(id, shownTopicId).show(childFragmentManager, CommentFragment.TAG)
     }
 
     override fun hideNetworkView() {

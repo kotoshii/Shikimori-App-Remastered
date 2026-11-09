@@ -11,4 +11,11 @@ interface BaseNetworkView : BaseView {
      */
     @StateStrategyType(SkipStrategy::class)
     fun showErrorMessage(message: String)
+
+    /**
+     * The comment a tap in user text points to, in a sheet over the screen (P8-T4, Q11); [shownTopicId] is
+     * the topic the screen shows, if any. Screens that show user text have it (`BaseFragment`).
+     */
+    @StateStrategyType(SkipStrategy::class)
+    fun showComment(id: Long, shownTopicId: Long?) = Unit
 }

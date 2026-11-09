@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ItemCommentBinding
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
@@ -14,7 +15,8 @@ import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 class CommentAdapterDelegate(
         private val imageLoader: ImageLoader,
-        private val navigationCallback: (Type, Long) -> Unit
+        private val navigationCallback: (Type, Long) -> Unit,
+        private val textListener: RichTextListener
 ) : AbsListItemAdapterDelegate<CommentViewModel, Any, CommentAdapterDelegate.ViewHolder>() {
 
     override fun isForViewType(item: Any, items: MutableList<Any>, position: Int): Boolean =
@@ -36,7 +38,7 @@ class CommentAdapterDelegate(
         private val userHolder by lazy { TopicUserViewHolder(binding.userLayout.root, imageLoader, navigationCallback) }
 
         init {
-            binding.contentView.linkCallback = navigationCallback
+            binding.contentView.setup(imageLoader, textListener)
         }
 
         fun bind(item: CommentViewModel) {

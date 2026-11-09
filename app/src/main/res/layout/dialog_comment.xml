@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--the comment a tap on a mention of it opens (P8-T4, Q11): its author, its text, and the way to its topic.
+It loads over the network, so it opens with a spinner (CODE_CONVENTIONS §7)-->
+<com.gnoemes.shikimori.utils.widgets.NoAutoScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="120dp">
+
+        <LinearLayout
+            android:id="@+id/commentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/userLayout"
+                layout="@layout/layout_topic_user" />
+
+            <com.gnoemes.shikimori.presentation.view.common.widget.shikimori.ShikimoriContentView
+                android:id="@+id/contentView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:content_margin_left="16dp"
+                app:content_margin_right="16dp"
+                app:expandable="false" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/openButton"
+                style="@style/OutlinedButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="16dp"
+                android:paddingStart="16dp"
+                android:paddingLeft="16dp"
+                android:paddingEnd="16dp"
+                android:paddingRight="16dp"
+                android:text="@string/comment_open_topic"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/messageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="16dp"
+            android:gravity="center"
+            android:text="@string/comment_deleted"
+            android:textColor="?attr/colorOnPrimarySecondary"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <com.gnoemes.shikimori.presentation.view.common.widget.NetworkErrorView
+            android:id="@+id/networkErrorView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</com.gnoemes.shikimori.utils.widgets.NoAutoScrollView>

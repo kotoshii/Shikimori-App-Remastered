@@ -8,5 +8,8 @@ import io.reactivex.Single
 
 interface CommentInteractor {
 
-    fun getList(id: Long, type: CommentableType, page: Int, limit: Int = Constants.DEFAULT_LIMIT, desc: Int = 1): Single<Page<Comment>>
+    fun getList(id: Long, type: CommentableType, page: Int, limit: Int = Constants.COMMENTS_LIMIT, desc: Int = 1): Single<Page<Comment>>
+
+    /** One comment, for the sheet a mention of it opens; a deleted one fails with 404. */
+    fun getComment(id: Long): Single<Comment>
 }

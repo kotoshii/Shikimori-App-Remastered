@@ -5,7 +5,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.comment.domain.Comment
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
-import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import javax.inject.Inject
@@ -13,7 +13,7 @@ import javax.inject.Inject
 class CommentViewModelConverterImpl @Inject constructor(
         private val context: Context,
         private val dateTimeConverter: DateTimeConverter,
-        private val textProcessor: BBCodesTextProcessor
+        private val parser: HtmlContentParser
 ) : CommentViewModelConverter {
 
     override fun apply(t: List<Comment>): List<CommentViewModel> =
@@ -25,7 +25,7 @@ class CommentViewModelConverterImpl @Inject constructor(
         val tag = getTag(it.isOfftopic, it.isSummary)
         val tagColor = getTagColor(it.isOfftopic, it.isSummary)?.let { context.color(it) }
         val userData = TopicUserViewModel(it.user, createdDate, tag, tagColor)
-        val content = it.body?.let { textProcessor.process(it) }
+        val content = parser.parse(it.bodyHtml)
 
 
         return CommentViewModel(

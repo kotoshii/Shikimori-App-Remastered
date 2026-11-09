@@ -182,11 +182,14 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
             val nickname = el.attr("title").ifEmpty { el.text() }.trim()
             if (nickname.isNotEmpty()) return LinkTarget.UserByNickname(nickname)
         }
-        return urlTarget(el.attr("href").ifEmpty { el.attr("data-href") })
+        return urlTarget(el.attr("href").ifEmpty { el.attr("data-href") }, el.text())
     }
 
-    /** A link by its address alone: some links carry no ids (BB_CODES.md §8), so a site page is read from its path. */
-    private fun urlTarget(href: String): LinkTarget? {
+    /**
+     * A link by its address alone: some links carry no ids (BB_CODES.md §8), so a site page is read from its
+     * path. [text] is the link's own text, which names a studio.
+     */
+    private fun urlTarget(href: String, text: String? = null): LinkTarget? {
         val trimmed = href.trim()
         if (trimmed.isEmpty()) return null
         //the site renders `[url=mailto:…]` as `http://mailto:…` (BB_CODES.md §6)
@@ -204,6 +207,11 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
         }
         COMMENT_PATH.matchEntire(path)?.let { match ->
             match.groupValues[1].toLongOrNull()?.let { return LinkTarget.Screen(Type.COMMENT, it) }
+        }
+        STUDIO_PATH.matchEntire(path)?.let { match ->
+            //a bare address shows itself as the text, which is no name
+            val name = text?.trim()?.takeIf { it.isNotEmpty() && !it.startsWith("/") && !it.contains("://") }
+            match.groupValues[1].toLongOrNull()?.let { return LinkTarget.Studio(it, name) }
         }
         return LinkTarget.Web(url)
     }
@@ -223,12 +231,21 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
         }
     }
 
-    /** `a.b-image` (a tap enlarges it) or `span.b-image` (no zoom: `no-zoom` and posters). */
+    /**
+     * `a.b-image` (a tap enlarges it) or `span.b-image` (`no-zoom`, and posters). The site enlarges no
+     * poster; the app does (the user, 2026-11-09, P8-T4 Q16): a poster is shown whole, its own image is the
+     * zoom. An image the author marked `no-zoom` stays as it is.
+     */
     private fun image(wrapper: Element, style: Style): Image? {
         val img = wrapper.selectFirst("img") ?: return null
         val src = img.attr("src").ifBlank { return null }
         val original = dataAttrs(wrapper)?.string("src")
-        val zoom = if (wrapper.normalName() == "a") wrapper.attr("data-href").ifEmpty { wrapper.attr("href") } else ""
+        val isPoster = wrapper.hasClass("b-poster")
+        val zoom = when {
+            wrapper.normalName() == "a" -> wrapper.attr("data-href").ifEmpty { wrapper.attr("href") }
+            isPoster -> src
+            else -> ""
+        }
         return Image(
                 url = imageUrl(src, original),
                 zoomUrl = zoom.takeIf { it.isNotBlank() }?.let { imageUrl(it, original) },
@@ -236,7 +253,7 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
                 height = img.intAttr("height"),
                 realWidth = img.intAttr("data-width"),
                 realHeight = img.intAttr("data-height"),
-                isPoster = wrapper.hasClass("b-poster"),
+                isPoster = isPoster,
                 link = style.link
         )
     }
@@ -633,6 +650,7 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
         val FORUM_TOPIC_PATH = Regex("/forum/(?:[^/]+/)+(\\d+)(-[^/]*)?/?")
         val TOPIC_PATH = Regex("/topics/(\\d+)(-[^/]*)?/?")
         val COMMENT_PATH = Regex("/comments/(\\d+)/?")
+        val STUDIO_PATH = Regex("/animes/studio/(\\d+)(-[^/]*)?/?")
 
         const val BROKEN_MAILTO = "http://mailto:"
         const val MAIN_HOST = "https://shikimori.io/"

@@ -16,6 +16,9 @@ object Constants {
 
     const val DEFAULT_LIMIT = 12
 
+    //a topic's comments per page (the user, 2026-11-09); the api allows 30
+    const val COMMENTS_LIMIT = 20
+
     const val LONG_TIMEOUT = 30
 
     const val NO_ID = -1L

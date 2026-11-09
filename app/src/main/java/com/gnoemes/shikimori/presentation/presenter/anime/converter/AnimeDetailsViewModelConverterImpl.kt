@@ -10,7 +10,7 @@ import com.gnoemes.shikimori.entity.common.domain.Status
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.*
 import com.gnoemes.shikimori.entity.roles.domain.Person
-import com.gnoemes.shikimori.presentation.presenter.common.converter.BBCodesTextProcessor
+import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
 import com.gnoemes.shikimori.presentation.presenter.common.converter.TitleTextConverter
 import com.gnoemes.shikimori.presentation.presenter.details.BaseTitleDetailsViewModelConverter
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
@@ -23,9 +23,9 @@ class AnimeDetailsViewModelConverterImpl @Inject constructor(
         context: Context,
         settings: SettingsSource,
         dateTimeConverter: DateTimeConverter,
-        textProcessor: BBCodesTextProcessor,
+        parser: HtmlContentParser,
         private val titleText: TitleTextConverter
-) : BaseTitleDetailsViewModelConverter<AnimeDetails>(context, settings, dateTimeConverter, textProcessor), AnimeDetailsViewModelConverter {
+) : BaseTitleDetailsViewModelConverter<AnimeDetails>(context, settings, dateTimeConverter, parser), AnimeDetailsViewModelConverter {
 
     companion object {
         private val CREATOR_ROLES = mapOf(
