@@ -1,7 +1,7 @@
 package com.gnoemes.shikimori.presentation.presenter.base
 
 import android.util.Log
-import com.gnoemes.shikimori.domain.user.UserLookup
+import com.gnoemes.shikimori.domain.common.LinkLookup
 import com.gnoemes.shikimori.entity.anime.domain.Screenshot
 import com.gnoemes.shikimori.entity.anime.domain.ScreenshotsNavigationData
 import com.gnoemes.shikimori.entity.app.domain.exceptions.NetworkException
@@ -24,9 +24,9 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
     @Inject
     lateinit var commonResources: CommonResourceProvider
 
-    //the same way, for the links in user text that name a user but carry no id
+    //the same way, for the links in user text whose screen id the HTML does not carry
     @Inject
-    lateinit var userLookup: UserLookup
+    lateinit var linkLookup: LinkLookup
 
     private var compositeDisposable = CompositeDisposable()
 
@@ -34,16 +34,23 @@ abstract class BaseNetworkPresenter<View : BaseNetworkView> : BaseNavigationPres
 
     /**
      * A tap on a link in user text (P8-T4): a title, a character, a person, a user or a topic opens its
-     * screen; a comment opens in a sheet over this screen; a studio opens the catalog filtered by it; any
-     * other page opens outside the app, through the navigator, which says so when nothing can open it.
+     * screen; a comment opens in a sheet over this screen; a studio opens the catalog filtered by it; a
+     * collection, an article, a critique or a review opens its topic, looked up first, or the browser when the
+     * api has none; any other page opens outside the app, through the navigator, which says so when nothing
+     * can open it.
      */
     override fun onLinkClicked(target: LinkTarget) {
         when (target) {
             is LinkTarget.Screen ->
                 if (target.type == Type.COMMENT) viewState.showComment(target.id, shownTopicId)
                 else onContentClicked(target.type, target.id)
-            is LinkTarget.UserByNickname -> userLookup.idByNickname(target.nickname)
+            is LinkTarget.UserByNickname -> linkLookup.userId(target.nickname)
                     .subscribe(this::onUserClicked, this::showErrorText)
+                    .addToDisposables()
+            //through onLinkClicked again, so a screen's own rule for a topic applies (the topic page: its own topic
+            //scrolls up to the post)
+            is LinkTarget.EntryTopic -> linkLookup.topicId(target.entry, target.id)
+                    .subscribe({ onLinkClicked(LinkTarget.Screen(Type.TOPIC, it)) }, this::showErrorText, { onOpenWeb(target.url) })
                     .addToDisposables()
             is LinkTarget.Studio -> onStudioClicked(target.id, target.name)
             is LinkTarget.Web -> onOpenWeb(target.url)

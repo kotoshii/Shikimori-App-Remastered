@@ -20,6 +20,23 @@ sealed class LinkTarget {
      */
     data class Studio(val id: Long, val name: String?) : LinkTarget()
 
+    /**
+     * The page of an entry that is a topic on the site: a collection, an article, a critique, a review. The site
+     * builds that page from the entry's topic, as the forum's topic page and the api do (BB_CODES.md §4), so it
+     * opens the app's topic page; the link names the entry, so its topic is looked up first. [url] is the
+     * link's own address, for the browser when the api has no topic for it (an 18+ topic the user hides, a
+     * draft).
+     */
+    data class EntryTopic(val entry: TopicEntry, val id: Long, val url: String) : LinkTarget()
+
     /** Any other page, opened outside the app. */
     data class Web(val url: String) : LinkTarget()
+}
+
+/** The entries whose page is their topic; [linkedType] is how the api names them (`linked_type`). */
+enum class TopicEntry(val linkedType: String) {
+    COLLECTION("Collection"),
+    ARTICLE("Article"),
+    CRITIQUE("Critique"),
+    REVIEW("Review")
 }

@@ -13,6 +13,7 @@ import com.gnoemes.shikimori.entity.common.presentation.richtext.MoreLink
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Rating
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Style
+import com.gnoemes.shikimori.entity.common.presentation.richtext.TopicEntry
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Video
 import com.gnoemes.shikimori.utils.appendHostIfNeed
 import com.google.gson.Gson
@@ -233,8 +234,13 @@ internal class HtmlContentReader(
             val id = match.groupValues[2].toLongOrNull()
             if (id != null) return LinkTarget.Screen(PATH_TYPES.getValue(match.groupValues[1]), id)
         }
-        (TOPIC_PATH.matchEntire(path) ?: FORUM_TOPIC_PATH.matchEntire(path))?.let { match ->
+        (TOPIC_PATH.matchEntire(path) ?: FORUM_TOPIC_PATH.matchEntire(path) ?: CLUB_TOPIC_PATH.matchEntire(path))?.let { match ->
             match.groupValues[1].toLongOrNull()?.let { return LinkTarget.Screen(Type.TOPIC, it) }
+        }
+        ENTRY_TOPIC_PATHS.forEach { (pattern, entry) ->
+            pattern.matchEntire(path)?.let { match ->
+                match.groupValues[1].toLongOrNull()?.let { return LinkTarget.EntryTopic(entry, it, url) }
+            }
         }
         COMMENT_PATH.matchEntire(path)?.let { match ->
             match.groupValues[1].toLongOrNull()?.let { return LinkTarget.Screen(Type.COMMENT, it) }
@@ -689,11 +695,21 @@ internal class HtmlContentReader(
         val VIDEO_NON_HOST_CLASSES = setOf("b-video", "unprocessed", "to-process")
 
         val SHIKIMORI_HOST = Regex("(www\\.)?shikimori\\.(io|one|me|org)")
-        //a title's or a person's own page only (a letter before the id is a DMCA prefix); its sub-pages,
-        //such as a critique, open in the browser
+        //a title's or a person's own page only (a letter before the id is a DMCA prefix); of its sub-pages, a
+        //critique and a review are topics (ENTRY_TOPIC_PATHS), the rest open in the browser
         val ENTITY_PATH = Regex("/(animes|mangas|ranobe|characters|people)/[a-z]?(\\d+)(-[^/]*)?/?")
         val FORUM_TOPIC_PATH = Regex("/forum/(?:[^/]+/)+(\\d+)(-[^/]*)?/?")
         val TOPIC_PATH = Regex("/topics/(\\d+)(-[^/]*)?/?")
+        //a club's topic: the site shows it inside the club's page, but it is a topic (`lib/routing.rb` topic_url,
+        //`Clubs::ClubTopicsController#show`). The club itself and its pages (`/clubs/<id>/pages/<id>`) are not
+        val CLUB_TOPIC_PATH = Regex("/clubs/[^/]+/topics/(\\d+)(-[^/]*)?/?")
+        //the pages the site builds from the entry's topic (BB_CODES.md §4); the id is the entry's, not the topic's
+        val ENTRY_TOPIC_PATHS = listOf(
+                Regex("/collections/(\\d+)(-[^/]*)?/?") to TopicEntry.COLLECTION,
+                Regex("/articles/(\\d+)(-[^/]*)?/?") to TopicEntry.ARTICLE,
+                Regex("/(?:animes|mangas|ranobe)/[a-z]?\\d+(?:-[^/]*)?/critiques/(\\d+)/?") to TopicEntry.CRITIQUE,
+                Regex("/(?:animes|mangas|ranobe)/[a-z]?\\d+(?:-[^/]*)?/reviews/(\\d+)/?") to TopicEntry.REVIEW
+        )
         val COMMENT_PATH = Regex("/comments/(\\d+)/?")
         val STUDIO_PATH = Regex("/animes/studio/(\\d+)(-[^/]*)?/?")
 

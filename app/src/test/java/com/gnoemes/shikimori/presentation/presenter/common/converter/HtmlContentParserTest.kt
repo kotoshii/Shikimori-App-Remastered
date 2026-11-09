@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.common.presentation.richtext.Inline
 import com.gnoemes.shikimori.entity.common.presentation.richtext.LinkTarget
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Style
+import com.gnoemes.shikimori.entity.common.presentation.richtext.TopicEntry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -268,12 +269,42 @@ class HtmlContentParserTest {
         assertEquals(LinkTarget.Web("https://shikimori.io/contests/110-luchshiy-anime-film-2017-goda"),
                 fixture("comment_14131573").textWith("/contests/110").style.link)
         assertEquals(LinkTarget.Web("https://kujico.jp/detail/158"), fixture("comment_14156778").textWith("kujico.jp").style.link)
-        //a critique is a sub-page of a title, not the title
-        assertEquals(LinkTarget.Web("https://shikimori.io/animes/z16201-aku-no-hana/critiques/2382"),
-                parse("<a class=\"b-link\" href=\"https://shikimori.io/animes/z16201-aku-no-hana/critiques/2382\">cr</a>").textWith("cr").style.link)
+        //a club, a club's page, a contest's match, a collection's edit page: no app screen
+        assertEquals(LinkTarget.Web("https://shikimori.io/clubs/4266-honkai-star-rail"),
+                fixture("topic_486006_body").textWith("клуба").style.link)
+        assertEquals(LinkTarget.Web("https://shikimori.io/clubs/811/pages/82"),
+                parse("<a class=\"b-link\" href=\"/clubs/811/pages/82\">page</a>").textWith("page").style.link)
+        assertEquals(LinkTarget.Web("https://shikimori.io/contests/184-luchshee-anime-zimnego-sezona-2026/rounds/2/match/171406"),
+                fixture("topic_639902_body").textWith("лыжная гонка").style.link)
+        assertEquals(LinkTarget.Web("https://shikimori.io/collections/22227/edit"),
+                parse("<a class=\"b-link\" href=\"/collections/22227/edit\">edit</a>").textWith("edit").style.link)
         //the site renders `[url=mailto:…]` as `http://mailto:…`
         assertEquals(LinkTarget.Web("mailto:a@b.c"),
                 parse("<a class=\"b-link\" href=\"http://mailto:a@b.c\" rel=\"noopener noreferrer nofollow\">mail</a>").textWith("mail").style.link)
+    }
+
+    @Test
+    fun `a collection, an article, a critique and a review open their topic, a club's topic by its id`() {
+        val collection = "https://shikimori.io/collections/22227-interaktiv-v-ozhidanii-prodolzheniya-etogo-anime-ili-nadezhda-umiraet-posledney"
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.COLLECTION, 22227, collection),
+                fixture("topic_649710_body").textWith("надежда умирает последней").style.link)
+        //root-relative, no slug, an old domain
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.ARTICLE, 301, "https://shikimori.io/articles/301"),
+                parse("<a class=\"b-link\" href=\"/articles/301\">art</a>").textWith("art").style.link)
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.COLLECTION, 22227, "https://shikimori.one/collections/22227-x/"),
+                parse("<a class=\"b-link\" href=\"https://shikimori.one/collections/22227-x/\">col</a>").textWith("col").style.link)
+        //a title's sub-page, with a DMCA letter; a manga's, a ranobe's
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.CRITIQUE, 2382, "https://shikimori.io/animes/z16201-aku-no-hana/critiques/2382"),
+                parse("<a class=\"b-link\" href=\"https://shikimori.io/animes/z16201-aku-no-hana/critiques/2382\">cr</a>").textWith("cr").style.link)
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.REVIEW, 5, "https://shikimori.io/mangas/1-x/reviews/5"),
+                parse("<a class=\"b-link\" href=\"/mangas/1-x/reviews/5\">rv</a>").textWith("rv").style.link)
+        assertEquals(LinkTarget.EntryTopic(TopicEntry.CRITIQUE, 7, "https://shikimori.io/ranobe/9/critiques/7"),
+                parse("<a class=\"b-link\" href=\"/ranobe/9/critiques/7\">rn</a>").textWith("rn").style.link)
+        //a club's topic: the topic's own id is in the address
+        assertEquals(LinkTarget.Screen(Type.TOPIC, 596339),
+                fixture("topic_624149_body").textWith("/clubs/5724-initsiativnyy-klub/topics/").style.link)
+        //a `[topic]` mention of a review's topic carries the topic's id, with the review's address: that id wins
+        assertEquals(LinkTarget.Screen(Type.TOPIC, 589765), fixture("comment_11637508").textWith("Denis").style.link)
     }
 
     @Test

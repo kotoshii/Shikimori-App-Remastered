@@ -19,6 +19,10 @@ import com.gnoemes.shikimori.data.repository.common.impl.MangaResponseConverterI
 import com.gnoemes.shikimori.data.repository.common.impl.PersonResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.common.impl.RolesResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.user.converter.UserBriefResponseConverter;
+import com.gnoemes.shikimori.data.repository.topic.converter.ForumResponseConverter;
+import com.gnoemes.shikimori.data.repository.topic.converter.ForumResponseConverterImpl;
+import com.gnoemes.shikimori.data.repository.topic.converter.TopicResponseConverter;
+import com.gnoemes.shikimori.data.repository.topic.converter.TopicResponseConverterImpl;
 import com.gnoemes.shikimori.data.repository.user.converter.UserBriefResponseConverterImpl;
 
 import dagger.Binds;
@@ -67,5 +71,14 @@ public interface ConverterModule {
     @Binds
     @Reusable
     PersonResponseConverter bindPersonResponseConverter(PersonResponseConverterImpl converter);
+
+    //the topic repository's, which is bound for the whole app (RepositoryModule)
+    @Binds
+    @Reusable
+    TopicResponseConverter bindTopicResponseConverter(TopicResponseConverterImpl converter);
+
+    @Binds
+    @Reusable
+    ForumResponseConverter bindForumResponseConverter(ForumResponseConverterImpl converter);
 
 }

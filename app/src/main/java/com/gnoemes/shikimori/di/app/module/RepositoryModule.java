@@ -16,6 +16,8 @@ import com.gnoemes.shikimori.data.repository.rates.RatesRepository;
 import com.gnoemes.shikimori.data.repository.rates.RatesRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSource;
 import com.gnoemes.shikimori.data.repository.series.smotretanime.Anime365TokenSourceImpl;
+import com.gnoemes.shikimori.data.repository.topic.TopicRepository;
+import com.gnoemes.shikimori.data.repository.topic.TopicRepositoryImpl;
 import com.gnoemes.shikimori.data.repository.user.UserRepository;
 import com.gnoemes.shikimori.data.repository.user.UserRepositoryImpl;
 
@@ -43,6 +45,12 @@ public interface RepositoryModule {
     @Binds
     @Reusable
     RatesRepository bindRatesRepository(RatesRepositoryImpl repository);
+
+    //for the whole app, not only the forum's screens: every presenter looks up the topic a link names
+    //(LinkLookup, P8-T4)
+    @Binds
+    @Reusable
+    TopicRepository bindTopicRepository(TopicRepositoryImpl repository);
 
     @Binds
     @Reusable
