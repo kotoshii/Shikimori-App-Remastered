@@ -50,8 +50,8 @@ class TopicViewModelConverterImpl @Inject constructor(
 
         val userViewModel = TopicUserViewModel(it.user, createdDate, tag, tagColor)
         //the post, and on the topic page the image and video wall the api cuts from its end (BB_CODES.md §5)
-        val body = parser.parse(it.descriptionHtml)
-        val content = if (withFooter) RichText(body.blocks + parser.parse(it.footer).blocks) else body
+        val body = parser.parse(it.descriptionHtml, it.url)
+        val content = if (withFooter) RichText(body.blocks + parser.parse(it.footer, it.url).blocks) else body
         val contentViewModel = TopicContentViewModel(it.title, content)
 
         return TopicViewModel(

@@ -28,9 +28,17 @@ import com.gnoemes.shikimori.utils.widgets.UniqueStateLinearLayout
  * spoiler hidden, the moment the spoiler opened). While cut and closed, a tap anywhere on it opens it; the
  * links and spoilers inside take taps once it is open.
  *
+ * While cut and closed, only the top-level parts that fill the cut are built; the rest when it is opened. A
+ * long post in a forum row or a long comment then costs a few views, not hundreds (P8-T4: the «Статьи» forum
+ * stuttered while every row built its whole article).
+ *
  * Whether it is cut and open, and the spoilers opened, live in a [RichTextState]: this view's own for
  * [setContent], or one its owner keeps for [setContentState], so a list that reuses this view for another
- * row shows each text again as the user left it (the topic page's comments).
+ * row shows each text again as the user left it (the topic page's comments, the forum's rows).
+ *
+ * `app:content_selectable="false"` (a forum row's post): the text cannot be selected, and a tap on its plain
+ * words — or anywhere on it while it is cut — reaches the view under it, which opens the topic. Its links,
+ * spoilers, pictures and the chevron still take their taps.
  */
 class ShikimoriContentView @JvmOverloads constructor(
         context: Context,
@@ -49,12 +57,18 @@ class ShikimoriContentView @JvmOverloads constructor(
     private var listener: RichTextListener? = null
 
     private var state: RichTextState? = null
+    private var renderer: RichTextRenderer? = null
+    //how many of the text's top-level parts are built
+    private var built = 0
+
+    private var selectable = true
 
     var expandable: Boolean = true
         set(value) {
             field = value
             //decided again at the next layout
             state?.isCut = null
+            if (!value) buildAll()
             clamp.requestLayout()
             updateChevron()
         }
@@ -64,6 +78,7 @@ class ShikimoriContentView @JvmOverloads constructor(
         if (attrs != null) {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.ShikimoriContentView)
             expandable = ta.getBoolean(R.styleable.ShikimoriContentView_expandable, true)
+            selectable = ta.getBoolean(R.styleable.ShikimoriContentView_content_selectable, true)
             val all = ta.getDimension(R.styleable.ShikimoriContentView_content_margin, 0f).toInt()
             margins = if (all != 0) intArrayOf(all, all, all, all) else intArrayOf(
                     ta.getDimension(R.styleable.ShikimoriContentView_content_margin_left, 0f).toInt(),
@@ -116,13 +131,22 @@ class ShikimoriContentView @JvmOverloads constructor(
         if (state === this.state) return
         this.state = state
         content.removeAllViews()
-        if (state != null && !state.text.isEmpty) RichTextRenderer(context, imageLoader, listener, state).render(content)
+        built = 0
+        renderer = state?.takeIf { !it.text.isEmpty }?.let { RichTextRenderer(context, imageLoader, listener, it, selectable) }
+        //cut and closed, or not decided yet: the parts that fill the cut are built when it is measured (Clamp)
+        if (!expandable || state?.isCut == false || state?.isExpanded == true) buildAll()
         clamp.requestLayout()
         updateChevron()
     }
 
+    private fun buildAll() {
+        val renderer = renderer ?: return
+        while (built < renderer.blockCount) renderer.renderBlock(built++, content)
+    }
+
     private fun setExpanded(expanded: Boolean) {
         state?.isExpanded = expanded
+        if (expanded) buildAll()
         clamp.requestLayout()
         updateChevron()
     }
@@ -133,11 +157,15 @@ class ShikimoriContentView @JvmOverloads constructor(
         binding.expandView.visibleIf { shown }
         binding.gradient.visibleIf { shown && !isExpanded }
         binding.expandView.setImageResource(if (isExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down)
-        //cut and closed, the whole text is one button that opens it
-        clamp.isClickable = shown && !isExpanded
+        //cut and closed, the whole text is one button that opens it; a forum row's opens the topic instead
+        clamp.isClickable = selectable && shown && !isExpanded
     }
 
-    /** Shows its content whole, or its top 80dp while cut and closed; open, it leaves room for the chevron. */
+    /**
+     * Shows its content whole, or its top 80dp while cut and closed; open, it leaves room for the chevron.
+     * Cut and closed, or not decided yet, it builds the text's parts one by one until they pass the cut: views
+     * added while measuring, then measured in the same pass, so the layout runs once.
+     */
     private inner class Clamp(context: Context) : FrameLayout(context) {
 
         //cut and closed, a tap opens the text instead of reaching a link or a spoiler in its top lines
@@ -145,7 +173,18 @@ class ShikimoriContentView @JvmOverloads constructor(
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             val child = getChildAt(0)
-            child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
+            val childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+            val renderer = renderer
+            val hasWidth = MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.UNSPECIFIED && MeasureSpec.getSize(widthMeasureSpec) > 0
+            val closed = state?.let { expandable && it.isCut != false && !it.isExpanded } == true
+            if (renderer != null && hasWidth && closed) {
+                while (built < renderer.blockCount) {
+                    child.measure(widthMeasureSpec, childHeightSpec)
+                    if (child.measuredHeight > collapsedHeight) break
+                    renderer.renderBlock(built++, content)
+                }
+            }
+            child.measure(widthMeasureSpec, childHeightSpec)
             val full = child.measuredHeight
             val width = if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.UNSPECIFIED) child.measuredWidth
             else MeasureSpec.getSize(widthMeasureSpec)

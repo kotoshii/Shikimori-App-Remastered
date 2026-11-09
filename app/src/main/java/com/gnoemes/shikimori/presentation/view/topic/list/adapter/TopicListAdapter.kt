@@ -2,6 +2,8 @@ package com.gnoemes.shikimori.presentation.view.topic.list.adapter
 
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextStates
 import com.gnoemes.shikimori.entity.common.presentation.ProgressItem
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
 import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
@@ -13,13 +15,18 @@ class TopicListAdapter(
         textListener: RichTextListener
 ) : BasePaginationAdapter() {
 
+    //what the user opened in each row's post (it is cut like a comment), for as long as this adapter lives
+    private val states = RichTextStates()
+
     init {
         delegatesManager.apply {
-            addDelegate(TopicClubAdapterDelegate(imageLoader, navigationCallback, textListener))
+            addDelegate(TopicClubAdapterDelegate(imageLoader, navigationCallback, textListener, ::stateOf))
             addDelegate(TopicLinkedAdapterDelegate(imageLoader, navigationCallback))
-            setFallbackDelegate(TopicAdapterDelegate(imageLoader, navigationCallback, textListener))
+            setFallbackDelegate(TopicAdapterDelegate(imageLoader, navigationCallback, textListener, ::stateOf))
         }
     }
+
+    private fun stateOf(topic: TopicViewModel): RichTextState = states.of(topic.id, topic.contentData.content)
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
         return when {

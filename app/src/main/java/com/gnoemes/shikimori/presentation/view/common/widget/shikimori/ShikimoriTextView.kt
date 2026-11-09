@@ -11,7 +11,7 @@ import com.gnoemes.shikimori.utils.widgets.ShikimoriLinkMovementMethod
 
 /**
  * One run of user text, styled by hand ([RichTextRenderer]) rather than through `Html.fromHtml`, so it
- * looks the same on every Android version. The text can be selected. Its smileys and avatars
+ * looks the same on every Android version. The text can be selected, unless [passPlainTaps]. Its smileys and avatars
  * ([PictureSpan]) load while it is on a window, and animated ones move only then.
  *
  * The pictures are drawn here, after the text, not by their spans: selectable text is drawn through the
@@ -47,6 +47,20 @@ class ShikimoriTextView @JvmOverloads constructor(
         setTextIsSelectable(true)
         //one per view (CODE_CONVENTIONS.md §12); set after the line above, which sets its own
         movementMethod = ShikimoriLinkMovementMethod()
+    }
+
+    /**
+     * Makes the text not selectable, and lets a tap that hits no link, spoiler or picture reach the view
+     * under it: a forum row's post, where that tap opens the topic as a tap on the rest of the row does (P8-T4
+     * plan, §1). A text view with a movement method takes every tap otherwise, as a selectable one does.
+     */
+    fun passPlainTaps() {
+        setTextIsSelectable(false)
+        movementMethod = ShikimoriLinkMovementMethod()
+        //after the line above, which makes the view clickable; ShikimoriLinkMovementMethod reads this
+        isClickable = false
+        isLongClickable = false
+        isFocusable = false
     }
 
     fun setRichText(text: CharSequence) {

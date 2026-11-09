@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.data.repository.user.converter.UserBriefResponseCon
 import com.gnoemes.shikimori.entity.topic.data.TopicResponse
 import com.gnoemes.shikimori.entity.topic.domain.Topic
 import com.gnoemes.shikimori.entity.topic.domain.TopicType
+import com.gnoemes.shikimori.utils.appendHostIfNeed
 import javax.inject.Inject
 
 class TopicResponseConverterImpl @Inject constructor(
@@ -28,6 +29,8 @@ class TopicResponseConverterImpl @Inject constructor(
                 it.dateCreated,
                 it.commentsCount,
                 it.forum.name,
+                //`/topics/<id>` is no page (404, live 2026-11-09); `/forum/<forum>/<id>` redirects to the topic
+                "${it.forum.url.trimEnd('/')}/${it.id}".appendHostIfNeed(),
                 userConverter.convertResponse(it.user)!!,
                 convertType(it.type, it.description, it.descriptionHtml),
                 it.linkedType,

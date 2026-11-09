@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.databinding.ItemTopicBinding
 import com.gnoemes.shikimori.entity.topic.presentation.TopicLinkedViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
 import com.gnoemes.shikimori.entity.topic.presentation.TopicViewModel
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicContentViewHolder
 import com.gnoemes.shikimori.presentation.view.topic.holders.TopicUserViewHolder
@@ -22,7 +23,8 @@ import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 class TopicAdapterDelegate(
         private val imageLoader: ImageLoader,
         private val navigationCallback: (Type, Long) -> Unit,
-        private val textListener: RichTextListener
+        private val textListener: RichTextListener,
+        private val stateOf: (TopicViewModel) -> RichTextState
 ) : AbsListItemAdapterDelegate<TopicViewModel, Any, TopicAdapterDelegate.ViewHolder>() {
 
     //fallback adapter
@@ -62,7 +64,7 @@ class TopicAdapterDelegate(
             this.item = item
             setLinkedContent(item.linked)
             userHolder.bind(item.userData)
-            topicHolder.bind(item.contentData)
+            topicHolder.bind(item.contentData, stateOf(item))
             binding.commentView.text = item.commentsCount.toString()
         }
 

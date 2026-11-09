@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.common.presentation.ProgressItem
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichText
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextListener
 import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextState
+import com.gnoemes.shikimori.entity.common.presentation.richtext.RichTextStates
 import com.gnoemes.shikimori.entity.topic.presentation.TopicPostPartRow
 import com.gnoemes.shikimori.presentation.view.common.adapter.BaseAdapter
 import com.gnoemes.shikimori.presentation.view.common.adapter.ProgressAdapterDelegate
@@ -25,9 +26,8 @@ class TopicAdapter(
         onMoreClicked: () -> Unit
 ) : BaseAdapter<Any>() {
 
-    //what the user opened in each text, for as long as this adapter lives (the fragment keeps it while its view
-    //is rebuilt): a row that leaves the screen is reused for another, and its text is built again from this
-    private val commentStates = HashMap<Long, RichTextState>()
+    //what the user opened in each text, for as long as this adapter lives
+    private val commentStates = RichTextStates()
     private var shownPostState: RichTextState? = null
 
     init {
@@ -49,9 +49,7 @@ class TopicAdapter(
     private fun postState(text: RichText): RichTextState =
             shownPostState?.takeIf { it.text === text } ?: RichTextState(text).also { shownPostState = it }
 
-    private fun commentState(comment: CommentViewModel): RichTextState =
-            commentStates[comment.id]?.takeIf { it.text === comment.content }
-                    ?: RichTextState(comment.content).also { commentStates[comment.id] = it }
+    private fun commentState(comment: CommentViewModel): RichTextState = commentStates.of(comment.id, comment.content)
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
         oldItem is CommentViewModel && newItem is CommentViewModel -> oldItem.id == newItem.id

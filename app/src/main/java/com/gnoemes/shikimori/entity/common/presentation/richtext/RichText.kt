@@ -71,8 +71,11 @@ sealed class Block {
     /** The comments that answer this one, «Ответ:» or «Ответы:» and their mentions. */
     data class Replies(val label: String, val inlines: List<Inline>) : Block()
 
-    /** `[poll]`: the app has no polls, so this stands for a link to the post on the site. */
-    data class Poll(val id: Long) : Block()
+    /**
+     * `[poll]`: the app has no polls, so this stands for a link to the post that holds it, on the site (the
+     * poll's own page is its owner's only; BB_CODES.md §6). [postUrl] is null when the text is no post.
+     */
+    data class Poll(val id: Long, val postUrl: String?) : Block()
 
     fun zoomableImages(): List<Image> = when (this) {
         is Paragraph -> inlines.flatMap { it.zoomableImages() }

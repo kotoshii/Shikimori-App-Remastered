@@ -6,6 +6,7 @@ import com.gnoemes.shikimori.entity.comment.domain.Comment
 import com.gnoemes.shikimori.entity.comment.presentation.CommentViewModel
 import com.gnoemes.shikimori.entity.topic.presentation.TopicUserViewModel
 import com.gnoemes.shikimori.presentation.presenter.common.converter.HtmlContentParser
+import com.gnoemes.shikimori.utils.appendHostIfNeed
 import com.gnoemes.shikimori.utils.color
 import com.gnoemes.shikimori.utils.date.DateTimeConverter
 import javax.inject.Inject
@@ -25,7 +26,8 @@ class CommentViewModelConverterImpl @Inject constructor(
         val tag = getTag(it.isOfftopic, it.isSummary)
         val tagColor = getTagColor(it.isOfftopic, it.isSummary)?.let { context.color(it) }
         val userData = TopicUserViewModel(it.user, createdDate, tag, tagColor)
-        val content = parser.parse(it.bodyHtml)
+        //a comment's page on the site shows it, a poll in it too (BB_CODES.md §6)
+        val content = parser.parse(it.bodyHtml, "/comments/${it.id}".appendHostIfNeed())
 
 
         return CommentViewModel(

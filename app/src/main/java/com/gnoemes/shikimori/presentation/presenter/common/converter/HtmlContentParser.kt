@@ -33,14 +33,20 @@ import javax.inject.Inject
 class HtmlContentParser @Inject constructor(
         private val settings: SettingsSource
 ) {
-    fun parse(html: String?): RichText = HtmlContentReader { name, nameRu -> settings.titleName(name, nameRu) }.read(html)
+    /** [postUrl]: the page of the post that holds the text, on the site; a poll in it links there. */
+    fun parse(html: String?, postUrl: String? = null): RichText =
+            HtmlContentReader(postUrl) { name, nameRu -> settings.titleName(name, nameRu) }.read(html)
 }
 
 /**
- * One reading of one text; [pickName] is the naming rule (`SettingsSource.titleName`). Kept apart from
- * [HtmlContentParser] so the unit tests can run it without the settings.
+ * One reading of one text; [pickName] is the naming rule (`SettingsSource.titleName`), [postUrl] as in
+ * [HtmlContentParser.parse]. Kept apart from [HtmlContentParser] so the unit tests can run it without the
+ * settings.
  */
-internal class HtmlContentReader(private val pickName: (name: String, nameRu: String?) -> String) {
+internal class HtmlContentReader(
+        private val postUrl: String? = null,
+        private val pickName: (name: String, nameRu: String?) -> String
+) {
 
     private var nextSpoilerId = 0
 
@@ -403,7 +409,7 @@ internal class HtmlContentReader(private val pickName: (name: String, nameRu: St
     }
 
     private fun poll(el: Element): Block.Poll? =
-            (el.id().toLongOrNull() ?: el.attr("data-track_poll").toLongOrNull())?.let { Block.Poll(it) }
+            (el.id().toLongOrNull() ?: el.attr("data-track_poll").toLongOrNull())?.let { Block.Poll(it, postUrl) }
 
     // Helpers
 

@@ -53,6 +53,10 @@ public class ShikimoriLinkMovementMethod extends LinkMovementMethod {
             } else {
                 pressed = false;
                 Selection.removeSelection(buffer);
+                //a text view that is not clickable takes only the taps on its parts (a forum row's post,
+                //ShikimoriTextView.passPlainTaps): the rest go to the view under it. The base class would take
+                //the press, to scroll the text by dragging.
+                if (action == MotionEvent.ACTION_DOWN && !widget.isClickable()) return false;
             }
         }
 

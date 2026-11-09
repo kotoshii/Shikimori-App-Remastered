@@ -2,8 +2,6 @@ package com.gnoemes.shikimori.presentation.view.common.widget.shikimori
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Rect
-import android.view.ViewTreeObserver
 import androidx.appcompat.widget.AppCompatImageView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.presentation.richtext.Image
@@ -11,10 +9,7 @@ import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.images.ImageLoader
 
 /**
- * An image in user text. It loads only once some part of it is on screen: a text can hold dozens of large
- * GIFs (a tumblr `.gifv` answers 9.5 MB, critique 634144 has 40; BB_CODES.md §5), and the topic page builds
- * every part at once inside a scroll view. Inside a collapsed comment or a closed spoiler it is not on
- * screen, so it waits.
+ * An image in user text. It loads only once some part of it is on screen ([doWhenFirstShown] says why).
  *
  * Its size, as the site shows it: an image a tap enlarges fits in a 235 px box (`$media_width`,
  * `b-image.sass`); any other image keeps its own size up to the text's width. The site's pixels are taken
@@ -35,41 +30,18 @@ class RichTextImageView(
     private var loadedWidth = 0
     private var loadedHeight = 0
     private var failed = false
-    private var started = false
-
-    private val rect = Rect()
-    private val scrollListener = ViewTreeObserver.OnScrollChangedListener { loadIfShown() }
-    private val layoutListener = ViewTreeObserver.OnGlobalLayoutListener { loadIfShown() }
 
     init {
         scaleType = ScaleType.FIT_CENTER
         adjustViewBounds = false
         setBackgroundColor(context.colorAttr(R.attr.colorTextBlockBackground))
+        doWhenFirstShown { load() }
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        if (started) return
-        viewTreeObserver.addOnScrollChangedListener(scrollListener)
-        viewTreeObserver.addOnGlobalLayoutListener(layoutListener)
-    }
-
-    override fun onDetachedFromWindow() {
-        stopWatching()
-        super.onDetachedFromWindow()
-    }
-
-    private fun stopWatching() {
-        viewTreeObserver.removeOnScrollChangedListener(scrollListener)
-        viewTreeObserver.removeOnGlobalLayoutListener(layoutListener)
-    }
-
-    private fun loadIfShown() {
-        if (started || width == 0 || !isShown || !getGlobalVisibleRect(rect)) return
-        started = true
-        //safe while the observer walks its listeners: it walks a copy
-        stopWatching()
+    private fun load() {
         val loader = imageLoader ?: return
+        //no picture to load (a video with no thumbnail, a censored poster): the placeholder stays
+        if (image.url.isBlank()) return
         val maxWidth = minOf(box, maxOf(width, (parent as? android.view.View)?.width ?: width))
         loader.setTextImage(this, image.url, maxWidth, minOf(box, MAX_SIDE), { width, height ->
             loadedWidth = width

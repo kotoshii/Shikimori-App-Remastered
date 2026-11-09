@@ -516,8 +516,16 @@ class HtmlContentParserTest {
     @Test
     fun `a poll is a poll, not its literal tag`() {
         val text = fixture("topic_578956_body")
-        assertEquals(Block.Poll(276040), text.blocks.last())
+        assertEquals(Block.Poll(276040, null), text.blocks.last())
         assertTrue(text.texts().none { it.text.contains("[poll") })
+    }
+
+    @Test
+    fun `a poll links to the post that holds it`() {
+        val html = """<div class="poll-placeholder" id="276040" data-track_poll="276040">[poll=276040]</div>"""
+        val post = "https://shikimori.io/forum/offtopic/578956"
+        val text = HtmlContentReader(post) { name, _ -> name }.read(html)
+        assertEquals(listOf(Block.Poll(276040, post)), text.blocks)
     }
 
     @Test

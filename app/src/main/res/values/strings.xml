@@ -377,6 +377,8 @@
     <string name="comment_open_profile">Открыть профиль</string>
     <!--a spoiler's label when the text gives none, as on the site-->
     <string name="spoiler_label">спойлер</string>
+    <!--a poll in a post: the app cannot show it, the link opens the post on the site-->
+    <string name="text_poll_link">Опрос — открыть на сайте</string>
 
     <string name="series_alternative_source">Альтернативный источник</string>
     <string name="episode_number_hint">Номер эпизода</string>

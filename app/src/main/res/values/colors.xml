@@ -89,6 +89,12 @@
     <color name="amoled_colorTextCode">#f48fb1</color>
     <color name="amoled_colorTextCodeBackground">#1e1416</color>
 
+    <!--the same on every theme: a code block light on dark, as the site's (b-code-v2.sass); the bar of a
+    moderator's ban note, the site's red ($red), whose box is a faint tint of it-->
+    <color name="text_code_block">#ffffff</color>
+    <color name="text_code_block_background">#263238</color>
+    <color name="text_ban">#ff4136</color>
+
     <color name="colorTextProtector">#96000000</color>
     <color name="colorTextProtectorVariant">#de000000</color>
     <color name="colorOnProtector">#DEffffff</color>
