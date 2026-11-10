@@ -13,11 +13,12 @@ import android.text.style.URLSpan
  * Renders the small slice of markdown that this project's github release notes actually use, into a
  * `CharSequence` a `TextView` can show.
  *
- * A full markdown library was considered and rejected: Markwon is the obvious choice but lives on
- * Maven Central, which this project does not declare, and nothing about a new dependency can be
- * verified here because Gradle cannot run - a resolution failure on AGP 3.2.1 would only appear on
- * the developer's machine. The notes are written to a pinned house style, so the supported set is
- * known and small. **That set is documented in BUILD_AND_RELEASE.md** - keep the two in step.
+ * Written by hand rather than with a markdown library (Markwon): when it was written (0.9.0, AGP 3.2.1)
+ * the project did not declare Maven Central, and no build could run outside Android Studio to check a new
+ * dependency. Both have changed since (Maven Central since P7-T5; Gradle runs from the agent shell,
+ * BUILD_AND_RELEASE.md), but the notes are still written to a pinned house style, so the supported set is
+ * known and small, and a library would add nothing they use. **That set is documented in
+ * BUILD_AND_RELEASE.md** - keep the two in step.
  *
  * Supported: `#`/`##`/`###` headings, `-`/`*` bullets, `**bold**`, `` `code` ``, `[text](url)` and
  * bare urls. Anything else is passed through as plain text rather than swallowed, so an unsupported
