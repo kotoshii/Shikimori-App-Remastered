@@ -94,7 +94,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         initDrawer()
         initNav()
 
-        with(binding.toolbar) {
+        with(binding.toolbarCard.toolbar) {
             title = null
             setNavigationOnClickListener { toggleDrawer() }
             inflateMenu(R.menu.menu_rates)
@@ -106,16 +106,16 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
             }
         }
 
-        with(binding.searchView) {
+        with(binding.toolbarCard.searchView) {
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    binding.toolbar.menuVisibleIf { query.isNullOrEmpty() }
+                    binding.toolbarCard.toolbar.menuVisibleIf { query.isNullOrEmpty() }
                     hideSoftInput()
                     return true
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    binding.toolbar.menuVisibleIf { newText.isNullOrEmpty() }
+                    binding.toolbarCard.toolbar.menuVisibleIf { newText.isNullOrEmpty() }
                     getPresenter().onQueryChanged(newText)
                     return true
                 }
@@ -168,7 +168,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     private fun initDrawer() {
         binding.drawer.apply {
             val toggle = ActionBarDrawerToggle(
-                    activity, binding.drawer, binding.toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
+                    activity, binding.drawer, binding.toolbarCard.toolbar, R.string.rate_drawer_open, R.string.rate_drawer_close)
 
             addDrawerListener(toggle)
             setViewScale(Gravity.START, 0.9f)
@@ -357,7 +357,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     override fun selectType(type: Type) {
-        binding.searchView.let {
+        binding.toolbarCard.searchView.let {
             val hint = if (type == Type.ANIME) it.context.getString(R.string.common_anime)
             else it.context.getString(R.string.common_manga_and_ranobe)
             it.queryHint = hint
@@ -408,7 +408,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         //the gap under the bar goes above the strip: the bar slides away with the gaps around it, and
         //the strip would sit flush against the screen's top. Without the strip, the bar has the same
         //gap below it as above
-        binding.toolbarCard.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+        binding.toolbarCard.root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
             bottomMargin = if (nickname != null) 0 else topMargin
         }
         if (nickname != null) {
@@ -418,7 +418,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         //the rows and the pull's circle start below the strip, as far down as it reaches past the bar
         binding.ownerStrip.post {
             if (view == null) return@post
-            val below = if (nickname != null) binding.ownerStrip.bottom - binding.toolbarCard.bottom else 0
+            val below = if (nickname != null) binding.ownerStrip.bottom - binding.toolbarCard.root.bottom else 0
             defaultList.recyclerView.updatePadding(top = below)
             placeRefreshCircle(below)
         }

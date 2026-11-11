@@ -48,7 +48,7 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationIcon(R.drawable.ic_search)
+        binding.toolbarCard.toolbar.setNavigationIcon(R.drawable.ic_search)
 
         with(defaultList.recyclerView) {
             adapter = this@CalendarFragment.adapter
@@ -64,7 +64,8 @@ class CalendarFragment : BaseFragment<CalendarPresenter, CalendarView>(), Calend
         defaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
 
-        with(binding.searchView) {
+        with(binding.toolbarCard.searchView) {
+            queryHint = getString(R.string.calendar_search_hint)
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     hideSoftInput()
