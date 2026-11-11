@@ -3,7 +3,9 @@ package com.gnoemes.shikimori.presentation.view.search
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ArrayAdapter
+import android.view.ViewGroup
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.arellomobile.mvp.presenter.InjectPresenter
@@ -21,19 +23,20 @@ import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapte
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationFragment
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
-import com.gnoemes.shikimori.presentation.view.common.widget.ReSpinner
+import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
 import com.gnoemes.shikimori.presentation.view.search.adapter.SearchAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterCallback
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterFragment
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.widgets.GridItemDecorator
+import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
 import javax.inject.Inject
 
-class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, SearchView>(), SearchView, FilterCallback, HasSupportFragmentInjector, TabRootFragment {
+class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, SearchView>(), SearchView, FilterCallback, ChoiceDialog.ChoiceCallback, HasSupportFragmentInjector, TabRootFragment {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -66,48 +69,37 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     }
 
     companion object {
+        private const val TYPE_REQUEST = "TYPE_REQUEST"
+        private const val TYPE_SHEET_TAG = "typeSheet"
+
         fun newInstance(data: SearchNavigationData?) = SearchFragment().withArgs { putParcelable(AppExtras.ARGUMENT_SEARCH_DATA, data) }
     }
-
-    private var searchView: androidx.appcompat.widget.SearchView? = null
-    private var spinner: ReSpinner? = null
 
     private val searchAdapter by lazy { SearchAdapter(imageLoader, getPresenter()::onContentClicked).apply { if (!hasObservers()) setHasStableIds(true) } }
 
     override val adapter: BasePaginationAdapter
         get() = searchAdapter
 
+    //its own layout, the floating bar over the list, as «Списки» and «Календарь» (P10-T2)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(getFragmentLayout(), container, false)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        screenProgress?.gone()
 
-        spinner = ReSpinner(view.context)
-        spinner?.adapter = ArrayAdapter<String>(
-                view.context,
-                R.layout.item_spinner_toolbar_normal,
-                resources.getStringArray(R.array.search_types
-                ))
-        spinner?.setOnItemClickListener { _, _, position, _ -> getPresenter().onTypeChanged(position) }
-        spinner?.background = spinner?.background?.apply { tint(context!!.colorAttr(R.attr.colorOnPrimary)) }
-
-        screenToolbar?.apply {
+        //what to search, picked in a sheet. A catalog opened with a genre or studio has the back arrow
+        //here instead (addBackButton)
+        with(binding.toolbarCard.toolbar) {
             title = null
-            addView(spinner)
-            inflateMenu(R.menu.menu_search)
+            setNavigationIcon(R.drawable.ic_chevron_down)
+            setNavigationContentDescription(R.string.search_type_title)
+            setNavigationOnClickListener { getPresenter().onTypeClicked() }
         }
 
-        searchView = LayoutInflater.from(context).inflate(R.layout.layout_search_view, null) as? androidx.appcompat.widget.SearchView
-
-        screenToolbar?.menu?.findItem(R.id.item_search)?.actionView = searchView
-        searchView?.run {
-
+        with(binding.toolbarCard.searchView) {
             setOnQueryTextListener(searchViewQueryListener)
-            setOnCloseListener {
-                return@setOnCloseListener true
-            }
-            applyAppStyle(closeButton = false)
+            applyAppStyle()
         }
-
 
         with(defaultList.recyclerView) {
             val spanCount = context.calculateColumns(R.dimen.image_search_width)
@@ -122,24 +114,42 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             }
             setHasFixedSize(true)
             addItemDecoration(GridItemDecorator(context.dimen(R.dimen.margin_small).toInt()))
+            //the first row starts below the bar, as on «Списки», and the rows scroll on under it
+            clipToPadding = false
+            updatePadding(top = context.dp(64))
             addOnScrollListener(nextPageListener)
         }
+
+        defaultList.refreshLayout.layoutParams = (defaultList.refreshLayout.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+            behavior = OverlapHeaderScrollingBehavior()
+        }
+        //the pull's circle starts behind the bar and stops below it
+        defaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
         binding.fab.setOnClickListener { getPresenter().onFilterClicked() }
     }
 
+    //the bar back if it slid away, and the field ready to type in (P10-T2 Q3)
     override fun onTabRootAction() {
-        screenToolbar?.menu?.findItem(R.id.item_search)?.expandActionView()
+        if (view == null) return
+        binding.appBarLayout.setExpanded(true)
+        val field = binding.toolbarCard.searchView.findViewById<View>(R.id.search_src_text) ?: return
+        if (field.requestFocus()) context?.inputMethodManager()?.showSoftInput(field, 0)
     }
 
     private val searchViewQueryListener = object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String?): Boolean {
             getPresenter().onQuerySearch(query)
-            screenToolbar?.menu?.findItem(R.id.item_search)?.collapseActionView()
-            return false
+            hideSoftInput()
+            return true
         }
 
-        override fun onQueryTextChange(newText: String?): Boolean = false
+        //every change: the presenter keeps what the field shows (P10-T2 Q18); an empty or blank field drops
+        //the search
+        override fun onQueryTextChange(newText: String?): Boolean {
+            getPresenter().onQueryTextChanged(newText.orEmpty())
+            return true
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -160,11 +170,17 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         getPresenter().onFilterSelected(appliedFilters)
     }
 
+    //a type's key in the sheet is its place in search_types
+    override fun onChoiceClicked(requestKey: String, key: String) {
+        if (requestKey == TYPE_REQUEST) getPresenter().onTypeChanged(key.toInt())
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
 
     override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?) {
+        hideSoftInput()
         val tag = "filterDialog"
         val fragment = fragmentManager?.findFragmentByTag(tag)
         if (fragment == null) {
@@ -174,12 +190,33 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         }
     }
 
-    override fun selectType(newTypePos: Int) {
-        spinner?.setSelection(newTypePos, false)
+    override fun showTypeSheet(currentPos: Int) {
+        if (childFragmentManager.findFragmentByTag(TYPE_SHEET_TAG) != null) return
+        hideSoftInput()
+        val choices = resources.getStringArray(R.array.search_types)
+                .mapIndexed { pos, text -> ChoiceDialog.Choice(pos.toString(), text, pos == currentPos) }
+        ChoiceDialog.newInstance(TYPE_REQUEST, getString(R.string.search_type_title), choices)
+                .show(childFragmentManager, TYPE_SHEET_TAG)
     }
 
+    //the field says what it searches, as on «Списки»
+    override fun selectType(newTypePos: Int) {
+        binding.toolbarCard.searchView.queryHint = resources.getStringArray(R.array.search_types)[newTypePos]
+    }
+
+    //comes again with every change of the field's text: set only when it differs, as setting the field's
+    //own text again moves the cursor to the end
+    override fun showQuery(query: String) {
+        val field = binding.toolbarCard.searchView
+        if (field.query.toString() != query) field.setQuery(query, false)
+    }
+
+    //a catalog opened with a genre or studio: its type came with it, so the back arrow takes the type
+    //picker's place (P10-T2 Q4)
     override fun addBackButton() {
-        screenToolbar?.addBackButton { getPresenter().onBackPressed() }
+        val toolbar = binding.toolbarCard.toolbar
+        toolbar.addBackButton { getPresenter().onBackPressed() }
+        toolbar.navigationContentDescription = null
     }
 
     override fun updateFilterIcon(empty: Boolean) {

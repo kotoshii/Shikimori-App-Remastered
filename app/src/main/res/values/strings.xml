@@ -291,6 +291,8 @@
     <string name="rate_drawer_open">Открыть список статусов</string>
     <string name="rate_drawer_close">Закрыть список статусов</string>
     <string name="search_need_query">Введите имя для поиска</string>
+    <!--the catalog's type sheet: not «Тип», the filter sheet's row of TV Сериал, Фильм… (P10-T2 Q5)-->
+    <string name="search_type_title">Что искать</string>
 
     <string name="duration_small">&lt; 10 мин.</string>
     <string name="duration_medium">&lt; 30 мин.</string>

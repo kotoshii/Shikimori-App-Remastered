@@ -37,6 +37,13 @@ class SearchPresenter @Inject constructor(
     var type: Type = Type.ANIME
     var filters = HashMap<String, MutableList<FilterItem>>()
 
+    //the text the list is searched for. Not one of the sheet's filters: «Сбросить» and the filter icon
+    //leave it alone, the field shows it and its ✕ clears it (P10-T2 Q1)
+    private var query: String? = null
+    //what the field shows, sent or not: a rebuilt screen (a rotation) shows it again (P10-T2 Q18), and a
+    //type switch or «Применить» searches it (Q14)
+    private var fieldText = ""
+
     private val supportsPagination = listOf(Type.ANIME, Type.MANGA, Type.RANOBE)
 
     override fun initData() {
@@ -48,6 +55,10 @@ class SearchPresenter @Inject constructor(
         readFilterSheetAhead()
         viewState.selectType(getTypePos(type))
         viewState.setDefaultEmptyText()
+        //an empty field, sent all the same: after Android killed the app the field brings its old text back
+        //(and reports it, before this), while the list, made by this new presenter, has no search
+        fieldText = ""
+        viewState.showQuery(fieldText)
     }
 
     override fun loadData() {
@@ -66,10 +77,11 @@ class SearchPresenter @Inject constructor(
     }
 
     private fun loadSimple(refresh: Boolean = false) {
-        if (filters.isEmpty()) {
+        val request = requestFilters()
+        if (request.isEmpty()) {
             viewState.apply { showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
         } else {
-            getSimpleRequestFactory()
+            getSimpleRequestFactory(request)
                     .appendLoadingLogic(viewState, refresh)
                     .subscribe({ showData(true, it) }, loadErrors(overContent = refresh))
                     .addToDisposables()
@@ -107,22 +119,34 @@ class SearchPresenter @Inject constructor(
 
     override fun getPaginatorRequestFactory(): (Int) -> Single<Page<SearchItem>> {
         return when (type) {
-            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(filters, page).map { it.map(converter::apply) } }
-            else -> { page: Int -> interactor.loadMangaListWithFilters(filters, type, page).map { it.map(converter::apply) } }
+            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(requestFilters(), page).map { it.map(converter::apply) } }
+            else -> { page: Int -> interactor.loadMangaListWithFilters(requestFilters(), type, page).map { it.map(converter::apply) } }
         }
     }
 
-    private fun getSimpleRequestFactory(): Single<List<SearchItem>> {
+    private fun getSimpleRequestFactory(request: HashMap<String, MutableList<FilterItem>>): Single<List<SearchItem>> {
         return when (type) {
-            Type.CHARACTER -> interactor.loadCharacterListWithFilters(filters).map(converter)
-            else -> interactor.loadPersonListWithFilters(filters).map(converter)
+            Type.CHARACTER -> interactor.loadCharacterListWithFilters(request).map(converter)
+            else -> interactor.loadPersonListWithFilters(request).map(converter)
         }
     }
+
+    //what the list is asked for: the sheet's filters, and the search text under the key the query
+    //builder sends as `search`
+    private fun requestFilters(): HashMap<String, MutableList<FilterItem>> =
+            HashMap(filters).apply {
+                query?.let { put(SearchConstants.SEARCH, mutableListOf(FilterItem(SearchConstants.SEARCH, it, null))) }
+            }
 
     private fun isPagination(): Boolean = supportsPagination.contains(type)
 
+    fun onTypeClicked() = viewState.showTypeSheet(getTypePos(type))
+
     fun onTypeChanged(newTypePos: Int) {
-        this.type = getType(newTypePos)
+        val newType = getType(newTypePos)
+        //the type the sheet marks as current, picked again
+        if (newType == type) return
+        this.type = newType
 
         destroyPaginator()
 
@@ -136,7 +160,9 @@ class SearchPresenter @Inject constructor(
             else hideFilterButton()
         }
 
+        //the sheet's filters are the old type's; the field's text stays, searched in the new type (P10-T2 Q2)
         filters.clear()
+        takeFieldText()
         onRefresh()
         readFilterSheetAhead()
         showFilterIcon()
@@ -166,12 +192,20 @@ class SearchPresenter @Inject constructor(
 
     fun onFilterSelected(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         filters = appliedFilters
+        takeFieldText()
         onRefresh()
         showFilterIcon()
     }
 
-    //whether anything narrows the list, after every change. The search text counts: «Сбросить» in the
-    //sheet is the only way to clear it, and the icon shows where to look (BUGS #16a, P7-T5 Q22)
+    //a list reloaded by the user's choice (a type, «Применить») searches what the field shows, sent with
+    //the keyboard's key or not: a text typed and not sent stayed in the field while the list ignored it
+    //(P10-T2 Q14)
+    private fun takeFieldText() {
+        query = fieldText.takeIf { it.isNotBlank() }
+    }
+
+    //whether the sheet's filters narrow the list, after every change (BUGS #16a). The search text does not
+    //count: the field shows it (P10-T2 Q1; it did while «Сбросить» was the only way to clear it, P7-T5 Q22)
     private fun showFilterIcon() = viewState.updateFilterIcon(filters.isEmpty())
 
     private fun onPayloadSearch() {
@@ -183,11 +217,24 @@ class SearchPresenter @Inject constructor(
         showFilterIcon()
     }
 
+    //the keyboard's search key; the field's text came already (onQueryTextChanged)
     fun onQuerySearch(query: String?) {
-        val filterItem = FilterItem(SearchConstants.SEARCH, query, null)
-        putFilter(filterItem)
+        this.query = query
         onRefresh()
-        showFilterIcon()
+    }
+
+    //every change of the field's text, sent back so a rebuilt screen (a rotation) shows it, sent or not
+    //(P10-T2 Q18). The same text again (a restored field, or one set by showQuery) changes nothing. An
+    //empty or blank field (its ✕, or the text deleted) drops the search: the keyboard's search key does
+    //nothing on it, so this is how a search is dropped
+    fun onQueryTextChanged(text: String) {
+        if (text == fieldText) return
+        fieldText = text
+        viewState.showQuery(text)
+        if (text.isBlank() && query != null) {
+            query = null
+            onRefresh()
+        }
     }
 
     private fun onStudioSearch(studioId: Long, name: String?) {
