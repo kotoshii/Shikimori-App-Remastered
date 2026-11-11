@@ -250,8 +250,11 @@ class SeriesPresenter @Inject constructor(
         } else viewState.showData(it)
     }
 
+    //the bar, then the cursor in it: the bar is shown again on a rebuilt screen, the cursor is not, or a
+    //rotation would open the keyboard each time (P10-T2 Q17)
     fun onSearchClicked() {
         viewState.showSearchView()
+        viewState.focusSearch()
     }
 
     fun onSearchClose() = viewState.onSearchClosed()

@@ -334,6 +334,11 @@ class SeriesFragment : BaseFragment<SeriesPresenter, SeriesView>(),
         binding.backdrop.radius = 0f
     }
 
+    //as the characters search and the episode sheet do: focus and keyboard
+    override fun focusSearch() {
+        binding.appBarLayout.searchView.isIconified = false
+    }
+
     override fun onSearchClosed() {
         TransitionManager.beginDelayedTransition(binding.appBarLayout.root, Fade())
         binding.appbar.motionLayout.visible()

@@ -37,6 +37,10 @@ interface SeriesView : BaseFragmentView {
     @StateStrategyType(AddToEndSingleTagStrategy::class, tag = "search")
     fun onSearchClosed()
 
+    /** The cursor into the search field, with the keyboard: on a tap of 🔍 only, not after a rotation. */
+    @StateStrategyType(SkipStrategy::class)
+    fun focusSearch()
+
     @StateStrategyType(SkipStrategy::class)
     fun showPlayerDialog(playing: EmbeddedPlayerNavigationData)
 
