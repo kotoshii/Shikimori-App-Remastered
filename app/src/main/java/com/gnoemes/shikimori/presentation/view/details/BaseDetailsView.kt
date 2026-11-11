@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.details
 
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.Link
@@ -20,6 +21,17 @@ interface BaseDetailsView : BaseFragmentView {
     fun setContentItem(type: DetailsContentType, item : DetailsContentItem)
 
     fun setActionItem(item : DetailsActionItem)
+
+    /**
+     * The characters search row: closed for null, else open with [text]. Sent again on every change of the
+     * text, so a rebuilt page shows the row as it was.
+     */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showCharacterSearch(text: String?)
+
+    /** The cursor into the characters search, with the keyboard: on a tap of 🔍 only, not after a rotation. */
+    @StateStrategyType(SkipStrategy::class)
+    fun focusCharacterSearch()
 
     /** The list entry's sheet for this title; it reads the entry itself. */
     @StateStrategyType(SkipStrategy::class)

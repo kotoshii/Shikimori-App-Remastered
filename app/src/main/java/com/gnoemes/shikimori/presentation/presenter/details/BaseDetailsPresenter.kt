@@ -66,6 +66,10 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
     private val pendingChanges = PendingRateChanges()
 
     protected val characters = mutableListOf<Character>()
+
+    //the characters search: null while its row is closed, else the text in it. Kept here, not only in
+    //the field, so a rebuilt page (a rotation) shows the row as it was (P10-T2 Q16)
+    private var characterSearch: String? = null
     protected val creators = mutableListOf<Pair<Person, List<String>>>()
 
     abstract val type: Type
@@ -294,14 +298,41 @@ abstract class BaseDetailsPresenter<View : BaseDetailsView, D : TitleDetails>(
         }
     }
 
-    //nothing to search before the characters have come (a title without any shows no search): a restored
-    //page's search field reports its empty text at once, and that empty list replaced the loading
-    //section (P7-T5 17.5, BUGS #89)
+    //🔍 tapped: the row opens empty, ready to type in
+    fun onCharacterSearchOpened() {
+        characterSearch = ""
+        viewState.showCharacterSearch("")
+        viewState.focusCharacterSearch()
+    }
+
+    //the row's ✕: closed, every character back
+    fun onCharacterSearchClosed() {
+        characterSearch = null
+        viewState.showCharacterSearch(null)
+        showCharacters()
+    }
+
+    //the field's text changed. Only while the row is open: after Android killed the app, the rebuilt
+    //page's field brings back an old text this new presenter never had, in a row shown closed. The row's
+    //command goes again with each new text: sent only on 🔍, a rebuilt page (a rotation) got the row back
+    //empty while the list stayed searched (P10-T2 Test 24a)
     open fun onCharacterSearch(newText: String?) {
+        val text = newText.orEmpty()
+        if (characterSearch == null || text == characterSearch) return
+        characterSearch = text
+        viewState.showCharacterSearch(text)
+        showCharacters()
+    }
+
+    //the characters by the search. Nothing before they have come (a title without any shows no search):
+    //a restored page's field reports its text at once, and that empty list replaced the loading section
+    //(P7-T5 17.5, BUGS #89)
+    private fun showCharacters() {
         if (characters.isEmpty()) return
-        if (newText.isNullOrBlank()) viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(characters))
+        val text = characterSearch
+        if (text.isNullOrBlank()) viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(characters))
         else {
-            val searchItems: MutableList<Any> = characters.filter { it.name.contains(newText, true) || it.nameRu?.contains(newText, true) ?: false }.toMutableList()
+            val searchItems: MutableList<Any> = characters.filter { it.name.contains(text, true) || it.nameRu?.contains(text, true) ?: false }.toMutableList()
             if (searchItems.isEmpty()) searchItems.add(PlaceholderItem())
             viewState.setContentItem(DetailsContentType.CHARACTERS, contentConverter.apply(searchItems))
         }

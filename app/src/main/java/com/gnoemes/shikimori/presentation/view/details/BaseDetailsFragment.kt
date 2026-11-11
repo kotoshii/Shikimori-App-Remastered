@@ -47,6 +47,8 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
     //the blurred poster's height from the layout, its least
     private var backgroundHeight = 0
     private var toolbarShown = false
+    //whether the characters search row is open (showCharacterSearch); the page's own views start it closed
+    private var characterSearchShown = false
 
     //the title on the toolbar's own background once the head has scrolled up under the toolbar, as when
     //the collapsing header the head was part of had collapsed (P7-T5 13.1)
@@ -152,27 +154,42 @@ abstract class BaseDetailsFragment<Presenter : BaseDetailsPresenter<View, *>, Vi
             applyAppStyle(startPaddingDp = 16, closeButton = false)
         }
 
+        //the row's state is the presenter's, so a rebuilt page shows it as it was (P10-T2 Q16)
+        characterSearchShown = false
         with(binding.charactersLayout) {
-            searchBtn.onClick {
-                searchView.isIconified = false
-                searchView.post {
-                    TransitionManager.beginDelayedTransition(root, Fade())
-                    contentLabelView.gone()
-                    searchBtn.gone()
-                    searchView.visible()
-                    closeBtn.visible()
-                }
-            }
-            closeBtn.onClick {
-                TransitionManager.beginDelayedTransition(root, Fade())
+            searchBtn.onClick { getPresenter().onCharacterSearchOpened() }
+            closeBtn.onClick { getPresenter().onCharacterSearchClosed() }
+        }
+    }
+
+    //comes again with every new text, so only what differs is changed: while typing, the field already
+    //shows the text (setting it again would move the cursor to the end) and the row is open
+    override fun showCharacterSearch(text: String?) {
+        with(binding.charactersLayout) {
+            //first: closing with a text still in the field (isIconified below) would clear it and open the keyboard
+            if (searchView.query.toString() != text.orEmpty()) searchView.setQuery(text.orEmpty(), false)
+            val shown = text != null
+            if (shown == characterSearchShown) return
+            characterSearchShown = shown
+            TransitionManager.beginDelayedTransition(root, Fade())
+            if (shown) {
+                contentLabelView.gone()
+                searchBtn.gone()
+                searchView.visible()
+                closeBtn.visible()
+            } else {
+                hideSoftInput()
                 contentLabelView.visible()
                 searchBtn.visible()
-                searchView.setQuery("", false)
                 searchView.gone()
                 closeBtn.gone()
                 searchView.isIconified = true
             }
         }
+    }
+
+    override fun focusCharacterSearch() {
+        binding.charactersLayout.searchView.isIconified = false
     }
 
     override fun onUpdateRate(rate: UserRate) {
