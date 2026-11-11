@@ -15,14 +15,14 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
-import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
+import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
 
-class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, SortDialog.SortCallback {
+class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), FilterView, FilterCallback, ChoiceDialog.ChoiceCallback {
 
     @InjectPresenter
     lateinit var filterPresenter: FilterPresenter
@@ -36,6 +36,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
         private const val SORTS_KEY = "SORTS_KEY"
+        private const val SORT_REQUEST = "SORT_REQUEST"
 
         /** The sheet; with the [categories] and [sorts] when the catalog has them, so it opens filled. */
         fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?,
@@ -88,7 +89,9 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         presenter.onNestedFilterCallback(key, appliedFilters)
     }
 
-    override fun onSortClicked(key: String) = presenter.onSortPicked(key)
+    override fun onChoiceClicked(requestKey: String, key: String) {
+        if (requestKey == SORT_REQUEST) presenter.onSortPicked(key)
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // GETTERS
@@ -131,7 +134,8 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
 
     //the sort sheet «Списки» uses: titled, the current sort marked (BUGS #16b)
     override fun showSortFilters(items: List<FilterItem>, chosen: String) {
-        SortDialog.newInstance(items.map { SortDialog.Sort(it.value!!, it.localizedText!!, it.value == chosen) })
+        ChoiceDialog.newInstance(SORT_REQUEST, getString(R.string.sort),
+                items.map { ChoiceDialog.Choice(it.value!!, it.localizedText!!, it.value == chosen) })
                 .show(childFragmentManager, "SortsTag")
     }
 

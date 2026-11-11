@@ -38,7 +38,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.EditRateFragment
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateAdapter
 import com.gnoemes.shikimori.presentation.view.rates.adapter.RateItemTouchHelperCallback
-import com.gnoemes.shikimori.presentation.view.common.fragment.SortDialog
+import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
@@ -47,7 +47,7 @@ import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.google.android.material.internal.NavigationMenuView
 import javax.inject.Inject
 
-class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, SortDialog.SortCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
+class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), RateView, EditRateFragment.RateDialogCallback, ChoiceDialog.ChoiceCallback, TabRootFragment, RateStatusDialog.RateStatusCallback {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -78,6 +78,7 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     companion object {
         private const val DRAWER_KEY = "DRAWER_KEY"
+        private const val SORT_REQUEST = "SORT_REQUEST"
         fun newInstance(data: RateNavigationData?) = RateFragment().withArgs {
             putParcelable(AppExtras.ARGUMENT_RATE_DATA, data)
         }
@@ -273,7 +274,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
     }
 
     //a sort's key in the sort sheet is its order number
-    override fun onSortClicked(key: String) {
+    override fun onChoiceClicked(requestKey: String, key: String) {
+        if (requestKey != SORT_REQUEST) return
         RateSort.values().find { it.order.toString() == key }?.let { getPresenter().onSortChanged(it) }
     }
 
@@ -313,7 +315,8 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
 
     override fun showSortDialog(sorts: List<Triple<RateSort, String, Boolean>>) {
         hideSoftInput()
-        val dialog = SortDialog.newInstance(sorts.map { (sort, text, isSelected) -> SortDialog.Sort(sort.order.toString(), text, isSelected) })
+        val dialog = ChoiceDialog.newInstance(SORT_REQUEST, getString(R.string.sort),
+                sorts.map { (sort, text, isSelected) -> ChoiceDialog.Choice(sort.order.toString(), text, isSelected) })
         dialog.show(childFragmentManager, "SortDialog")
     }
 

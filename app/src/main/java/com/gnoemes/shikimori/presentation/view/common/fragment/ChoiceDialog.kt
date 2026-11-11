@@ -14,16 +14,24 @@ import com.gnoemes.shikimori.utils.withArgs
 import kotlinx.parcelize.Parcelize
 
 /**
- * A sort picker: «Сортировка», the sorts, the current one marked. «Списки» and the catalog's filter
- * sheet both open it; it takes plain items, so each keeps its own sort type (BUGS #16b: the catalog's
- * list had no title and did not mark the current sort).
+ * A "pick one" sheet: a title, the choices, the current one marked. A tap answers the fragment that
+ * opened it ([ChoiceCallback]) and closes the sheet. It takes plain items, so each caller keeps its own
+ * types: the sorts of «Списки» and of the catalog's filter sheet (BUGS #16b), what the catalog searches
+ * (P10-T2). The [requestKey] tells a caller with more than one picker which one answered.
  */
-class SortDialog : BaseBottomSheetDialogFragment() {
+class ChoiceDialog : BaseBottomSheetDialogFragment() {
 
     companion object {
-        private const val SORTS_KEY = "SORTS_KEY"
-        fun newInstance(sorts: List<Sort>) = SortDialog()
-                .withArgs { putParcelableArray(SORTS_KEY, sorts.toTypedArray()) }
+        private const val REQUEST_KEY = "REQUEST_KEY"
+        private const val TITLE_KEY = "TITLE_KEY"
+        private const val CHOICES_KEY = "CHOICES_KEY"
+
+        fun newInstance(requestKey: String, title: String, choices: List<Choice>) = ChoiceDialog()
+                .withArgs {
+                    putString(REQUEST_KEY, requestKey)
+                    putString(TITLE_KEY, title)
+                    putParcelableArray(CHOICES_KEY, choices.toTypedArray())
+                }
     }
 
     override fun onAttach(context: Context) {
@@ -38,25 +46,24 @@ class SortDialog : BaseBottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val sorts = arguments?.getParcelableArray(SORTS_KEY)?.map { it as Sort }!!
+        val requestKey = arguments?.getString(REQUEST_KEY)!!
+        val choices = arguments?.getParcelableArray(CHOICES_KEY)?.map { it as Choice }!!
 
-        with(binding.toolbar) {
-            setTitle(R.string.sort)
-        }
+        binding.toolbar.title = arguments?.getString(TITLE_KEY)
 
         binding.navView.apply {
             setItemBackgroundResource(R.drawable.selector_item_menu_background_accent)
             itemTextColor = context.colorStateList(R.color.selector_item_menu_text_color_accent)
             //an item's id is its place in the list
             setNavigationItemSelectedListener { menu ->
-                (parentFragment as? SortCallback)?.onSortClicked(sorts[menu.itemId].key)
+                (parentFragment as? ChoiceCallback)?.onChoiceClicked(requestKey, choices[menu.itemId].key)
                 dismiss()
                 true
             }
             menu.apply {
-                sorts.forEachIndexed { index, sort -> add(0, index, index, sort.text) }
+                choices.forEachIndexed { index, choice -> add(0, index, index, choice.text) }
                 setGroupCheckable(0, true, true)
-                setCheckedItem(sorts.indexOfFirst { it.isSelected }.coerceAtLeast(0))
+                setCheckedItem(choices.indexOfFirst { it.isSelected }.coerceAtLeast(0))
             }
         }
     }
@@ -67,15 +74,15 @@ class SortDialog : BaseBottomSheetDialogFragment() {
 
     override fun getDialogLayout(): Int = R.layout.dialog_menu
 
-    /** A sort: the [key] the caller knows it by, the [text] shown, and whether it is the current one. */
+    /** A choice: the [key] the caller knows it by, the [text] shown, and whether it is the current one. */
     @Parcelize
-    data class Sort(
+    data class Choice(
             val key: String,
             val text: String,
             val isSelected: Boolean
     ) : Parcelable
 
-    interface SortCallback {
-        fun onSortClicked(key: String)
+    interface ChoiceCallback {
+        fun onChoiceClicked(requestKey: String, key: String)
     }
 }
