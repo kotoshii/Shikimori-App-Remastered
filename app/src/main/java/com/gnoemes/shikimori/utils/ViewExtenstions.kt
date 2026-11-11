@@ -147,9 +147,15 @@ fun View.color(@ColorRes colorRes: Int): Int = context.color(colorRes)
  * Hides the keyboard when it types into this fragment. Found by the fragment's own view, so a screen
  * and a bottom sheet work alike: a sheet is a window of its own, and the activity's focus is not in it
  * (BUGS #27).
+ *
+ * The field it typed into lets go of the focus too. Left focused, AppCompat's search field asks for the
+ * keyboard again whenever its window gets the focus back: a sheet closing, a rotation - after a search
+ * was sent or a sheet opened, the keyboard came back (P10-T2 Q13).
  */
 fun Fragment.hideSoftInput() {
-    val window = view?.windowToken ?: return
+    val root = view ?: return
+    root.findFocus()?.clearFocus()
+    val window = root.windowToken ?: return
     context?.inputMethodManager()?.hideSoftInputFromWindow(window, 0)
 }
 
