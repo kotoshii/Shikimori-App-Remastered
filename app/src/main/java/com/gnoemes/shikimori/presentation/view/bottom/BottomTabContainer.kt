@@ -75,7 +75,12 @@ class BottomTabContainer : MvpFragment(), RouterProvider, BackButtonListener, Ha
         super.onPause()
     }
 
+    //only the tab's first screen acts. A screen of the same kind opened on top of it - a catalog from a
+    //genre chip, another user's list - acted in its place, and the tab did not go back (P10-T2 Q12). The
+    //first screen is put without a back stack entry (SupportFragmentNavigator.replace), and every screen
+    //opened over it adds one
     override fun invokeTabRootAction(): Boolean {
+        if (childFM.backStackEntryCount > 0) return false
         val fragment = childFM.findFragmentById(R.id.fragment_container)
         return fragment?.let {
             if (it is TabRootFragment) {
