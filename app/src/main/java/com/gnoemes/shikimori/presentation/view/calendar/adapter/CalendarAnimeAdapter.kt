@@ -2,12 +2,11 @@ package com.gnoemes.shikimori.presentation.view.calendar.adapter
 
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorRes
 import androidx.recyclerview.widget.RecyclerView
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ItemCalendarAnimeBinding
 import com.gnoemes.shikimori.entity.calendar.presentation.CalendarAnimeItem
-import com.gnoemes.shikimori.entity.rates.domain.RateStatus
+import com.gnoemes.shikimori.utils.badgeColorRes
 import com.gnoemes.shikimori.utils.iconRes
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
@@ -59,22 +58,12 @@ class CalendarAnimeAdapter(
 
                 if (item.status != null) {
                     binding.rateView.setIconResource(item.status.iconRes)
-                    binding.rateView.setIconTintResource(getRateColor(item.status))
+                    binding.rateView.setIconTintResource(item.status.badgeColorRes)
                 }
 
                 binding.rateView.visibleIf { item.status != null }
                 binding.seasonLastView.visibleIf { item.isLast }
             }
-        }
-
-        @ColorRes
-        private fun getRateColor(status: RateStatus) = when (status) {
-            RateStatus.WATCHING -> R.color.rate_default_dark
-            RateStatus.PLANNED -> R.color.rate_default_dark
-            RateStatus.REWATCHING -> R.color.rate_default_dark
-            RateStatus.COMPLETED -> R.color.rate_watched_dark
-            RateStatus.ON_HOLD -> R.color.rate_on_hold_dark
-            RateStatus.DROPPED -> R.color.rate_dropped_dark
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.utils
 
+import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.gnoemes.shikimori.R
@@ -16,6 +17,16 @@ val RateStatus.iconRes: Int
         RateStatus.COMPLETED -> R.drawable.ic_check
         RateStatus.ON_HOLD -> R.drawable.ic_pause_rate
         RateStatus.DROPPED -> R.drawable.ic_close
+    }
+
+/** The status icon's colour on a poster's round badge: the calendar's cards and the catalog's. */
+@get:ColorRes
+val RateStatus.badgeColorRes: Int
+    get() = when (this) {
+        RateStatus.WATCHING, RateStatus.PLANNED, RateStatus.REWATCHING -> R.color.rate_default_dark
+        RateStatus.COMPLETED -> R.color.rate_watched_dark
+        RateStatus.ON_HOLD -> R.color.rate_on_hold_dark
+        RateStatus.DROPPED -> R.color.rate_dropped_dark
     }
 
 /** «Смотрю», «Читаю», «Просмотрено»…: the status name for anime, or for manga and ranobe. */
