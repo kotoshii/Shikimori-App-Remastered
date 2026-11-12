@@ -285,6 +285,19 @@ class SearchFragment : BasePaginationFragment<Any, SearchPresenter, SearchView>(
 
     override fun showFilterButton() = binding.fab.show()
     override fun hideFilterButton() = binding.fab.hide()
+    //the empty message and the error view do not scroll, so a bar that had slid away with the list could not come
+    //back over them, and the field's text - maybe why nothing was found - was out of sight (P10-T3 Q23)
+    //the base fragment's, not a view interface's default
+    override fun showEmptyView() {
+        super<BasePaginationFragment>.showEmptyView()
+        binding.appBarLayout.setExpanded(true)
+    }
+
+    override fun showNetworkView() {
+        super<BasePaginationFragment>.showNetworkView()
+        binding.appBarLayout.setExpanded(true)
+    }
+
     override fun setSimpleEmptyText() {
         screenEmptyView?.setText(R.string.search_need_query)
     }
