@@ -70,6 +70,8 @@ class SearchPresenter @Inject constructor(
     private var statuses: Map<Long, RateStatus> = emptyMap()
     //a new list was asked for (newList) and has not come yet: it starts at the top when it comes
     private var newListPending = false
+    //whether the list on screen was asked with 18+ titles (allowR18Content: the setting, and signed in)
+    private var listWithR18: Boolean? = null
 
     //characters and people: a new search drops the answer still coming for the old one, as the paginator
     //does for the titles
@@ -102,13 +104,20 @@ class SearchPresenter @Inject constructor(
     }
 
     //back from a title page, where the user may have changed a status; and back to the app. The stored
-    //settings too: a backup restored in the settings while the catalog was away (P10-T3 Q17)
+    //settings too: a backup restored in the settings while the catalog was away (P10-T3 Q17). And 18+
+    //switched, or the user signed in or out, meanwhile: the list and the filter sheet's genres are for what
+    //may be shown, so both are read again (Q21)
     override fun onViewReattached() {
         settingsSource.catalogSettings.takeIf { it != settings }?.let { applySettings(it) }
+        if (listWithR18 != null && listWithR18 != settingsSource.allowR18Content) {
+            newList()
+            readFilterSheetAhead()
+        }
         loadStatuses()
     }
 
     override fun loadData() {
+        listWithR18 = settingsSource.allowR18Content
         if (isPagination()) loadWithPaginator()
         else loadSimple()
     }
@@ -137,6 +146,7 @@ class SearchPresenter @Inject constructor(
     //the list again, the statuses stay. Characters and people keep the list shown under the spinner, as the
     //paged kinds do (BUGS #66)
     private fun reloadList() {
+        listWithR18 = settingsSource.allowR18Content
         if (isPagination()) loadWithPaginator()
         else loadSimple(refresh = true)
     }
