@@ -254,6 +254,11 @@ class SearchFragment : BasePaginationFragment<Any, SearchPresenter, SearchView>(
     //the window's width, which in split screen is not the display's; the list fills it
     private fun listWidthDp(): Int = resources.configuration.screenWidthDp
 
+    override fun scrollToTop() {
+        defaultList.recyclerView.scrollToPosition(0)
+        binding.appBarLayout.setExpanded(true)
+    }
+
     //the field says what it searches, as on «Списки»
     override fun selectType(newTypePos: Int) {
         binding.toolbarCard.searchView.queryHint = resources.getStringArray(R.array.search_types)[newTypePos]

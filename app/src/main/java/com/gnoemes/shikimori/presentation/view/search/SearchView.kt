@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.search
 
 import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy
+import com.arellomobile.mvp.viewstate.strategy.OneExecutionStateStrategy
 import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
@@ -38,6 +39,10 @@ interface SearchView : BasePaginationView {
     /** The «Отображение» sheet with [settings]; the status switch is usable only when [signedIn]. */
     @StateStrategyType(SkipStrategy::class)
     fun showSettingsSheet(settings: CatalogSettings, signedIn: Boolean)
+
+    /** A new list has come: its top, and the bar back (P10-T3 Q18, Q20). Once, when the view is there. */
+    @StateStrategyType(OneExecutionStateStrategy::class)
+    fun scrollToTop()
 
     fun showFilterButton()
 

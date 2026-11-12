@@ -68,6 +68,8 @@ class SearchPresenter @Inject constructor(
     private var shown: List<Any> = emptyList()
     //the user's list statuses for the type shown, by title id: the cards' badges
     private var statuses: Map<Long, RateStatus> = emptyMap()
+    //a new list was asked for (newList) and has not come yet: it starts at the top when it comes
+    private var newListPending = false
 
     //characters and people: a new search drops the answer still coming for the old one, as the paginator
     //does for the titles
@@ -124,8 +126,16 @@ class SearchPresenter @Inject constructor(
         loadStatuses()
     }
 
-    //a new search, filter or type: the list again, the statuses stay. Characters and people keep the list
-    //shown under the spinner, as the paged kinds do (BUGS #66)
+    //a new search, filters (and a sort), or a type: a new list, which starts at the top (P10-T3 Q18) - when it
+    //comes, so the old list stays still under the spinner meanwhile; scrolled as the search began, the old list
+    //jumped up first (Q20). A pull, a next page or a changed setting keep the place
+    private fun newList() {
+        newListPending = true
+        reloadList()
+    }
+
+    //the list again, the statuses stay. Characters and people keep the list shown under the spinner, as the
+    //paged kinds do (BUGS #66)
     private fun reloadList() {
         if (isPagination()) loadWithPaginator()
         else loadSimple(refresh = true)
@@ -136,12 +146,16 @@ class SearchPresenter @Inject constructor(
         if (request.isEmpty()) {
             simpleLoad.cancel()
             shown = emptyList()
+            newListPending = false
             //emptied, not only hidden, as the paged kinds' empty result (Q22)
             viewState.apply { showData(emptyList()); showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
         } else simpleLoad.start {
             getSimpleRequestFactory(request)
                     .appendLoadingLogic(viewState, refresh)
-                    .subscribe({ showData(true, it) }, loadErrors(overContent = refresh))
+                    .subscribe({ showData(true, it) }, {
+                        newListPending = false
+                        loadErrors(overContent = refresh)(it)
+                    })
         }
     }
 
@@ -153,11 +167,29 @@ class SearchPresenter @Inject constructor(
     override fun showData(show: Boolean, data: List<Any>) {
         shown = data.toList()
         super.showData(show, cards())
+        if (show && newListPending) {
+            newListPending = false
+            viewState.scrollToTop()
+        }
     }
 
+    //a new list that found nothing or failed stops waiting for its top: a later page must not jump up
     override fun showEmptyView(show: Boolean) {
-        if (show) shown = emptyList()
+        if (show) {
+            shown = emptyList()
+            newListPending = false
+        }
         super.showEmptyView(show)
+    }
+
+    override fun showError(throwable: Throwable) {
+        newListPending = false
+        super.showError(throwable)
+    }
+
+    override fun showEmptyError(show: Boolean, throwable: Throwable?) {
+        if (show) newListPending = false
+        super.showEmptyError(show, throwable)
     }
 
     private fun cards(): List<Any> = converter.convert(shown, settings, statuses)
@@ -261,7 +293,7 @@ class SearchPresenter @Inject constructor(
         //the sheet's filters are the old type's; the field's text stays, searched in the new type (P10-T2 Q2)
         filters.clear()
         takeFieldText()
-        reloadList()
+        newList()
         loadStatuses()
         readFilterSheetAhead()
         showFilterIcon()
@@ -292,7 +324,7 @@ class SearchPresenter @Inject constructor(
     fun onFilterSelected(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         filters = appliedFilters
         takeFieldText()
-        reloadList()
+        newList()
         showFilterIcon()
     }
 
@@ -321,7 +353,7 @@ class SearchPresenter @Inject constructor(
     fun onQuerySearch(query: String?) {
         typedSearch.cancel()
         this.query = query
-        reloadList()
+        newList()
     }
 
     //every change of the field's text, sent back so a rebuilt screen (a rotation) shows it, sent or not
@@ -338,13 +370,13 @@ class SearchPresenter @Inject constructor(
         when {
             text.isBlank() -> if (query != null) {
                 query = null
-                reloadList()
+                newList()
             }
             settings.searchAsYouType && text.trim() != query?.trim() -> typedSearch.start {
                 Completable.timer(TYPED_SEARCH_DELAY_MS, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
                         .subscribe {
                             query = text
-                            reloadList()
+                            newList()
                         }
             }
         }
