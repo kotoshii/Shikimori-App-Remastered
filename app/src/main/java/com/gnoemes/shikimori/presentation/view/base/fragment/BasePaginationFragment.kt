@@ -1,6 +1,7 @@
 package com.gnoemes.shikimori.presentation.view.base.fragment
 
 import android.os.Bundle
+import android.view.ViewTreeObserver
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -25,16 +26,25 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
     protected open val nextPageListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
+            askNextPageNearEnd(recyclerView)
+        }
+    }
 
-            val manager = (recyclerView.layoutManager as LinearLayoutManager)
-            val visibleItemPosition = manager.findLastCompletelyVisibleItemPosition() + Constants.DEFAULT_LIMIT / 2
-            val itemCount = manager.itemCount
+    //the same check after every layout of the list too: a list whose rows all fit on the screen cannot scroll,
+    //so the scroll listener alone never asked for more - a tablet with small catalog cards stopped at 100 of
+    //them, its swipes only sliding the bar away (P10-T3 Q24). A layout also follows the spinner row's posted
+    //removal, which the check waits for
+    private val nextPageOnLayout = ViewTreeObserver.OnGlobalLayoutListener { listView?.let(::askNextPageNearEnd) }
 
-            //not while «Повторить» ends the list: RecyclerView calls this after a layout too, with no
-            //scroll, so a failed page would be asked for again and again
-            if (!adapter.isProgress() && !adapter.isPageError() && visibleItemPosition >= itemCount) {
-                getPresenter().loadNextPage()
-            }
+    //the end of the list within half a page of the screen's last row: the next page. Not while the spinner or
+    //«Повторить» ends the list: RecyclerView calls the scroll listener after a layout too, with no scroll, so
+    //a failed page would be asked for again and again. Not for a list with nothing on screen (hidden, or empty)
+    private fun askNextPageNearEnd(recyclerView: RecyclerView) {
+        if (recyclerView.childCount == 0) return
+        val manager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+        val visibleItemPosition = manager.findLastCompletelyVisibleItemPosition() + Constants.DEFAULT_LIMIT / 2
+        if (!adapter.isProgress() && !adapter.isPageError() && visibleItemPosition >= manager.itemCount) {
+            getPresenter().loadNextPage()
         }
     }
 
@@ -43,10 +53,12 @@ abstract class BasePaginationFragment<Items : Any, Presenter : BasePaginationPre
 
         refreshView?.setOnRefreshListener { getPresenter().onRefresh() }
         adapter.onRetryPage = { getPresenter().loadNextPage() }
+        listView?.viewTreeObserver?.addOnGlobalLayoutListener(nextPageOnLayout)
     }
 
     override fun onDestroyView() {
         listView?.removeOnScrollListener(nextPageListener)
+        listView?.viewTreeObserver?.removeOnGlobalLayoutListener(nextPageOnLayout)
         super.onDestroyView()
     }
 
