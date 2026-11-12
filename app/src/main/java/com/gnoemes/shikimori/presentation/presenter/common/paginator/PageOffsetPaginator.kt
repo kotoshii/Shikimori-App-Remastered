@@ -51,6 +51,10 @@ class PageOffsetPaginator<T>(
 
     private inner class EMPTY_PROGRESS : State<T> {
 
+        //a new request while the first page loads (the catalog's text, typed on): the old one is dropped and
+        //the new one asked. It was ignored, so the list came for the old text (P10-T3)
+        override fun refresh() = loadPage(defaultPage)
+
         override fun newData(page: Page<T>) {
             if (page.items.isNotEmpty()) {
                 currentState = stateAfter(page)
@@ -131,6 +135,9 @@ class PageOffsetPaginator<T>(
     }
 
     private inner class REFRESH : State<T> {
+
+        //as EMPTY_PROGRESS: the newest request wins, its spinner already shows
+        override fun refresh() = loadPage(defaultPage)
 
         override fun newData(page: Page<T>) {
             if (page.items.isNotEmpty()) {
