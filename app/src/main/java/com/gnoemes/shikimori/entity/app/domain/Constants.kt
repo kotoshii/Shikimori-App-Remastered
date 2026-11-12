@@ -28,6 +28,8 @@ object Constants {
     //the most friends the api sends in one request
     const val MAX_FRIENDS_LIMIT = 100
 
+    //the most titles /api/animes, /api/mangas and /api/ranobe send in one request (more is cut to 50, live
+    //2026-11-12): the catalog's page size, and the chronology's ids per request
     const val MAX_ANIME_LIMIT = 50
 
     const val EXIT_TIMEOUT = 3L * 1000

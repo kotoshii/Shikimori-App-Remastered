@@ -16,8 +16,9 @@ interface SearchInteractor {
 
     fun loadPersonListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Person>>
 
-    fun loadAnimeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<Page<Anime>>
+    //a page of the catalog is the most the api sends: fewer requests while scrolling (P10-T3, the user's call)
+    fun loadAnimeListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, page: Int, limit: Int = Constants.MAX_ANIME_LIMIT): Single<Page<Anime>>
 
     /** [type] MANGA or RANOBE. */
-    fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int = Constants.DEFAULT_LIMIT): Single<Page<Manga>>
+    fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int = Constants.MAX_ANIME_LIMIT): Single<Page<Manga>>
 }
