@@ -43,6 +43,9 @@ class GlideImageLoader @Inject constructor(
                 .into(target)
     }
 
+    //a list's poster, at the size the view is laid out at: one size per poster in a list, so a poster
+    //scrolled back into view comes from memory. It was asked at half the measured size, and at full size
+    //by a view not measured yet - two sizes of one poster in memory, and every one blurry (P10-T3 Q13)
     override fun setImageListItem(image: ImageView, url: String?) {
         val target = PictureTarget(image).apply { waitForLayout() }
         GlideApp.with(image)
@@ -50,7 +53,6 @@ class GlideImageLoader @Inject constructor(
                 .dontAnimate()
                 .centerCrop()
                 .load(url)
-                .override(image.measuredWidth / 2, image.measuredHeight / 2)
                 .listener(target)
                 .into(target)
     }

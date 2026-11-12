@@ -9,9 +9,7 @@ import com.bumptech.glide.Registry
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.DecodeFormat
-import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
-import com.bumptech.glide.load.engine.cache.LruResourceCache
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.bitmap.BitmapTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
@@ -30,8 +28,10 @@ class ShikimoriGlideModule : AppGlideModule() {
             setDefaultRequestOptions(RequestOptions().format(DecodeFormat.PREFER_RGB_565))
             setDefaultTransitionOptions(Bitmap::class.java, BitmapTransitionOptions.withCrossFade())
             setLogLevel(Log.DEBUG)
-            setBitmapPool(LruBitmapPool((5L * 1024 * 1024)))
-            setMemoryCache(LruResourceCache(5L * 1024 * 1024))
+            //the memory cache and the bitmap pool are Glide's own, sized by the device (MemorySizeCalculator:
+            //about two screens of pixels, less on a low-memory phone). They were 5 MB each: about 16 list
+            //posters, so one scrolled a few rows away was decoded again from the disk when it came back, its
+            //place empty meanwhile (P10-T3 Q13; seen in Glide's log)
         }
     }
 
