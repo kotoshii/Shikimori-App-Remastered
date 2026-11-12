@@ -27,9 +27,15 @@ abstract class BasePaginationAdapter : BaseAdapter<Any>() {
 
     //the end row stays where it is, so only the rows before it are compared. A list with no rows
     //drops it: it ended the rows that were there (a type switch in «Поиск» showed it at the top until
-    //its posted hide came)
+    //its posted hide came). An emptied list drops every row at once, with no fade: on a hidden list the
+    //fade waited and played when the list showed again, the old rows with it (P10-T3 Q19, Q22)
     override fun bindItems(newItems: List<Any>) {
-        val endRow = items.lastOrNull()?.takeIf { isEndRow(it) && newItems.isNotEmpty() }
+        if (newItems.isEmpty()) {
+            items.clear()
+            notifyDataSetChanged()
+            return
+        }
+        val endRow = items.lastOrNull()?.takeIf { isEndRow(it) }
         val oldData = if (endRow != null) items.filterNot { isEndRow(it) } else items.toList()
 
         items.clear()

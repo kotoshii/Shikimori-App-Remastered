@@ -58,7 +58,10 @@ abstract class BasePaginationPresenter<Items : Any, View : BasePaginationView> :
         viewState.showContent(show)
     }
 
+    //an empty result empties the list as well as hiding it: hidden with its old rows, the list showed them again
+    //when a pull on the empty result brought it back while page 1 loaded (P10-T3 Q22)
     override fun showEmptyView(show: Boolean) {
+        if (show) viewState.showData(emptyList())
         viewState.showContent(!show)
         if (show) viewState.showEmptyView()
         else viewState.hideEmptyView()
