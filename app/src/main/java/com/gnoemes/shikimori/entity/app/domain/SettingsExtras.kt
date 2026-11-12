@@ -73,6 +73,16 @@ object SettingsExtras {
     const val MANGA_GENRES_V2 = "MANGA_GENRES_V2"
 
     const val CHRONOLOGY_TYPE = "CHRONOLOGY_TYPE"
+
+    //«Поиск»'s «Отображение» sheet (CatalogSettings): not on the settings screen
+    const val CATALOG_COLUMNS = "CATALOG_COLUMNS"
+    const val CATALOG_SHOW_TYPE = "CATALOG_SHOW_TYPE"
+    const val CATALOG_SHOW_STATUS = "CATALOG_SHOW_STATUS"
+    const val CATALOG_SHOW_COUNT = "CATALOG_SHOW_COUNT"
+    const val CATALOG_SHOW_SCORE = "CATALOG_SHOW_SCORE"
+    const val CATALOG_SHOW_NAME = "CATALOG_SHOW_NAME"
+    const val CATALOG_SHOW_YEAR = "CATALOG_SHOW_YEAR"
+
     const val SORT_KEY_PART = "rate_sort"
     const val ORDER_KEY_PART = "rate_order"
 }

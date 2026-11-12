@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
+import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.entity.common.domain.Page
@@ -21,4 +22,9 @@ interface SearchInteractor {
 
     /** [type] MANGA or RANOBE. */
     fun loadMangaListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?, type: Type, page: Int, limit: Int = Constants.MAX_ANIME_LIMIT): Single<Page<Manga>>
+
+    /** The signed-in user's list statuses for [type] (ANIME, MANGA or RANOBE), by title id; empty for a guest, with no request. */
+    fun getMyStatuses(type: Type): Single<Map<Long, RateStatus>>
+
+    fun isSignedIn(): Boolean
 }

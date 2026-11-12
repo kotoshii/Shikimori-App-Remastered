@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--«Поиск»'s bar: «Отображение», after the field's ✕, shown while typing too - it changes only how the
+list looks, not the search (P10-T3 Q3)-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/item_catalog_settings"
+        android:icon="@drawable/ic_options"
+        android:title="@string/catalog_settings_title"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="always" />
+
+</menu>

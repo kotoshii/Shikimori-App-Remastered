@@ -1,53 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--a catalog card (P10-T3), as the calendar's and the site's: the poster in its own shape, with the kind
+(top left), the user's status (top right) and the score (bottom right) on it; the name and a line under
+it. The sizes that follow the card's width are set in code (CatalogCardLook), the values here are 2 in a
+row's. The bottom margin makes the rows 12dp apart: the grid's
+gap is 8dp both ways-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/cardView"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="0dp"
-    app:cardPreventCornerOverlap="false">
+    android:layout_marginBottom="4dp"
+    android:foreground="?attr/selectableItemBackground"
+    tools:ignore="SmallSp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
+        app:layout_constraintDimensionRatio="H,225:318"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:importantForAccessibility="no"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!--its end stops 4dp before the status badge, so the two never overlap; a kind too long for
+            the room is cut with «…». With no badge it may use the whole width (P10-T3 Q8)-->
+            <TextView
+                android:id="@+id/typeView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_marginRight="4dp"
+                android:background="@drawable/background_protector_right"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:paddingLeft="6dp"
+                android:paddingTop="4dp"
+                android:paddingRight="6dp"
+                android:paddingBottom="4dp"
+                android:textColor="@color/colorOnProtector"
+                android:textSize="14sp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintEnd_toStartOf="@+id/rateView"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_goneMarginEnd="0dp"
+                app:layout_goneMarginRight="0dp"
+                tools:text="TV Сериал" />
+
+            <!--the calendar's badge: a 32dp circle, its 24dp icon, 8dp from the corner (smaller cards scale it,
+            CatalogCardLook)-->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/rateView"
+                style="@style/CircleButtonStyle"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:clickable="false"
+                android:enabled="false"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:visibility="gone"
+                app:backgroundTint="?attr/colorPrimary"
+                app:elevation="0dp"
+                app:iconSize="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeWidth="0dp"
+                tools:icon="@drawable/ic_play_rate"
+                tools:iconTint="@color/rate_default_dark"
+                tools:visibility="visible" />
+
+            <!--the site's chip: a dark see-through pill, a star and the score-->
+            <TextView
+                android:id="@+id/scoreView"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_marginEnd="7dp"
+                android:layout_marginRight="7dp"
+                android:layout_marginBottom="7dp"
+                android:background="@drawable/background_catalog_score"
+                android:drawablePadding="2dp"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:paddingLeft="7dp"
+                android:paddingRight="7dp"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="8.32"
+                tools:visibility="visible" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/nameView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:foreground="?selectableItemBackgroundBorderless">
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
+        tools:text="Реинкарнация безработного: История о приключениях в другом мире" />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/image_search_height"
-            android:minWidth="@dimen/image_search_width"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/descriptionView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nameView"
+        app:layout_goneMarginTop="4dp"
+        tools:text="2021  •  11 эп." />
 
-        <TextView
-            android:id="@+id/typeView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/background_protector_right"
-            android:padding="4dp"
-            android:textColor="@color/colorOnProtector"
-            app:layout_constraintStart_toStartOf="@+id/imageView"
-            app:layout_constraintTop_toTopOf="@+id/imageView"
-            tools:text="TV Сериал" />
-
-        <TextView
-            android:id="@+id/nameView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@color/colorTextProtector"
-            android:gravity="center"
-            android:padding="4dp"
-            android:textColor="@color/colorOnProtector"
-            app:layout_constraintBottom_toBottomOf="@+id/imageView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="Алиса или Алиса: Брат-сисконщик и сёстры близняшки" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-</com.google.android.material.card.MaterialCardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

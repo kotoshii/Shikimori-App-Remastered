@@ -95,7 +95,9 @@
     <color name="text_code_block_background">#263238</color>
     <color name="text_ban">#ff4136</color>
 
-    <color name="colorTextProtector">#96000000</color>
+    <!--the catalog card's kind label (background_protector_right): 72% black, darker since P10-T3 so it
+    reads on light posters (59% before)-->
+    <color name="colorTextProtector">#B8000000</color>
     <color name="colorTextProtectorVariant">#de000000</color>
     <color name="colorOnProtector">#DEffffff</color>
     <color name="colorOnProtectorVariant">#ffffff</color>

@@ -15,8 +15,8 @@ import com.gnoemes.shikimori.databinding.FragmentSearchBinding
 import com.gnoemes.shikimori.entity.app.domain.AppExtras
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.domain.CatalogSettings
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
-import com.gnoemes.shikimori.entity.search.presentation.SearchItem
 import com.gnoemes.shikimori.entity.search.presentation.SearchNavigationData
 import com.gnoemes.shikimori.presentation.presenter.search.SearchPresenter
 import com.gnoemes.shikimori.presentation.view.base.adapter.BasePaginationAdapter
@@ -24,6 +24,7 @@ import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationFragm
 import com.gnoemes.shikimori.presentation.view.base.fragment.RouterProvider
 import com.gnoemes.shikimori.presentation.view.base.fragment.TabRootFragment
 import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
+import com.gnoemes.shikimori.presentation.view.search.adapter.CatalogCardLook
 import com.gnoemes.shikimori.presentation.view.search.adapter.SearchAdapter
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterCallback
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterFragment
@@ -35,8 +36,10 @@ import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
 import javax.inject.Inject
+import kotlin.math.max
 
-class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, SearchView>(), SearchView, FilterCallback, ChoiceDialog.ChoiceCallback, HasSupportFragmentInjector, TabRootFragment {
+class SearchFragment : BasePaginationFragment<Any, SearchPresenter, SearchView>(), SearchView, FilterCallback, ChoiceDialog.ChoiceCallback,
+        CatalogSettingsDialog.Callback, HasSupportFragmentInjector, TabRootFragment {
 
     @Inject
     lateinit var imageLoader: ImageLoader
@@ -71,6 +74,13 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
     companion object {
         private const val TYPE_REQUEST = "TYPE_REQUEST"
         private const val TYPE_SHEET_TAG = "typeSheet"
+        private const val SETTINGS_SHEET_TAG = "catalogSettingsSheet"
+
+        //the grid (P10-T3): the column count is chosen for an upright phone this wide, the list's sides
+        //match the search bar's, and the cards are this far apart
+        private const val PHONE_WIDTH_DP = 360
+        private const val SIDE_DP = 16
+        private const val GAP_DP = 8
 
         fun newInstance(data: SearchNavigationData?) = SearchFragment().withArgs { putParcelable(AppExtras.ARGUMENT_SEARCH_DATA, data) }
     }
@@ -94,6 +104,12 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
             setNavigationIcon(R.drawable.ic_chevron_down)
             setNavigationContentDescription(R.string.search_type_title)
             setNavigationOnClickListener { getPresenter().onTypeClicked() }
+            //«Отображение», after the field's ✕ (P10-T3 Q3)
+            inflateMenu(R.menu.menu_search)
+            setOnMenuItemClickListener {
+                if (it.itemId == R.id.item_catalog_settings) getPresenter().onSettingsClicked()
+                true
+            }
         }
 
         with(binding.toolbarCard.searchView) {
@@ -102,21 +118,27 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         }
 
         with(defaultList.recyclerView) {
-            val spanCount = context.calculateColumns(R.dimen.image_search_width)
             adapter = this@SearchFragment.adapter
-            layoutManager = GridLayoutManager(context, spanCount).apply {
-                //the spinner and «Повторить» take the whole row: in one cell the spinner sat on the
-                //left, and «Повторить»'s text did not fit
-                spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int =
-                            if (searchAdapter.isEndRowAt(position)) spanCount else 1
-                }
+            //the count comes with the settings (showSettings)
+            val grid = GridLayoutManager(context, CatalogSettings.MIN_COLUMNS)
+            //the spinner and «Повторить» take the whole row: in one cell the spinner sat on the
+            //left, and «Повторить»'s text did not fit. The count of now: a changed setting changes it
+            grid.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int =
+                        if (searchAdapter.isEndRowAt(position)) grid.spanCount else 1
             }
+            layoutManager = grid
             setHasFixedSize(true)
-            addItemDecoration(GridItemDecorator(context.dimen(R.dimen.margin_small).toInt()))
-            //the first row starts below the bar, as on «Списки», and the rows scroll on under it
+            //every card gets half the gap on each side, so all are the same width; the list's own padding
+            //makes up the rest of the sides. A wider margin on the end cards alone made them narrower
+            //than the middle ones
+            val gap = context.dp(GAP_DP)
+            val halfGap = gap / 2
+            addItemDecoration(GridItemDecorator(gap, halfGap))
+            //the first row starts below the bar, as on «Списки», and the rows scroll on under it. 12dp below the
+            //bar (with the first row's own half gap), as the rows are apart: it was 8 (the user's device test, 2026-11-12)
             clipToPadding = false
-            updatePadding(top = context.dp(64))
+            updatePadding(left = context.dp(SIDE_DP) - halfGap, top = context.dp(68), right = context.dp(SIDE_DP) - halfGap)
             addOnScrollListener(nextPageListener)
         }
 
@@ -175,6 +197,8 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         if (requestKey == TYPE_REQUEST) getPresenter().onTypeChanged(key.toInt())
     }
 
+    override fun onCatalogSettingsChanged(settings: CatalogSettings) = getPresenter().onSettingsChanged(settings)
+
     ///////////////////////////////////////////////////////////////////////////
     // MVP
     ///////////////////////////////////////////////////////////////////////////
@@ -198,6 +222,37 @@ class SearchFragment : BasePaginationFragment<SearchItem, SearchPresenter, Searc
         ChoiceDialog.newInstance(TYPE_REQUEST, getString(R.string.search_type_title), choices)
                 .show(childFragmentManager, TYPE_SHEET_TAG)
     }
+
+    override fun showSettingsSheet(settings: CatalogSettings, signedIn: Boolean) {
+        if (childFragmentManager.findFragmentByTag(SETTINGS_SHEET_TAG) != null) return
+        hideSoftInput()
+        CatalogSettingsDialog.newInstance(settings, signedIn).show(childFragmentManager, SETTINGS_SHEET_TAG)
+    }
+
+    //the chosen count is for an upright phone: there a card is this wide, and every screen fits as many
+    //cards of that width as it can, never fewer than chosen. So a phone on its side, a tablet or a wide
+    //window keep phone-sized cards and show more in a row (P10-T3)
+    override fun showSettings(settings: CatalogSettings) {
+        val list = defaultList.recyclerView
+        val grid = list.layoutManager as? GridLayoutManager ?: return
+        val columns = columnsFor(settings.columns)
+        if (grid.spanCount != columns) {
+            grid.spanCount = columns
+            list.invalidateItemDecorations()
+        }
+        searchAdapter.setLook(CatalogCardLook.of(cardWidthDp(columns)))
+    }
+
+    private fun columnsFor(chosen: Int): Int {
+        val leastWidth = (PHONE_WIDTH_DP - 2 * SIDE_DP - (chosen - 1) * GAP_DP) / chosen.toFloat()
+        val fits = ((listWidthDp() - 2 * SIDE_DP + GAP_DP) / (leastWidth + GAP_DP)).toInt()
+        return max(chosen, fits)
+    }
+
+    private fun cardWidthDp(columns: Int): Float = (listWidthDp() - 2 * SIDE_DP - (columns - 1) * GAP_DP) / columns.toFloat()
+
+    //the window's width, which in split screen is not the display's; the list fills it
+    private fun listWidthDp(): Int = resources.configuration.screenWidthDp
 
     //the field says what it searches, as on «Списки»
     override fun selectType(newTypePos: Int) {

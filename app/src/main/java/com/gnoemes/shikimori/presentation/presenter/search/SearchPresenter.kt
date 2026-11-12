@@ -2,14 +2,16 @@ package com.gnoemes.shikimori.presentation.presenter.search
 
 import android.util.Log
 import com.arellomobile.mvp.InjectViewState
+import com.gnoemes.shikimori.data.local.preference.SettingsSource
 import com.gnoemes.shikimori.domain.search.SearchInteractor
 import com.gnoemes.shikimori.domain.search.filter.FilterInteractor
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
 import com.gnoemes.shikimori.entity.common.domain.SearchConstants
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.rates.domain.RateStatus
+import com.gnoemes.shikimori.entity.search.domain.CatalogSettings
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
-import com.gnoemes.shikimori.entity.search.presentation.SearchItem
 import com.gnoemes.shikimori.entity.search.presentation.SearchPayload
 import com.gnoemes.shikimori.presentation.presenter.base.BasePaginationPresenter
 import com.gnoemes.shikimori.presentation.presenter.search.converter.SearchViewModelConverter
@@ -21,12 +23,22 @@ import io.reactivex.functions.BiFunction
 import javax.inject.Inject
 
 //TODO studios
+/**
+ * The catalog. Its list holds the titles (or characters, people) as loaded, and draws them as cards
+ * with the «Отображение» settings and the user's list statuses (P10-T3), so a changed setting or a
+ * status read later draws the cards on screen again, with no request.
+ */
 @InjectViewState
 class SearchPresenter @Inject constructor(
         private val interactor: SearchInteractor,
         private val converter: SearchViewModelConverter,
-        private val filterInteractor: FilterInteractor
-) : BasePaginationPresenter<SearchItem, SearchView>() {
+        private val filterInteractor: FilterInteractor,
+        private val settingsSource: SettingsSource
+) : BasePaginationPresenter<Any, SearchView>() {
+
+    companion object {
+        private const val TAG = "CatalogSearch"
+    }
 
     //the filter sheet's lists, read ahead, so the sheet opens with them (P7-T5 Test 81)
     private var sheetCategories: List<FilterCategory>? = null
@@ -44,14 +56,26 @@ class SearchPresenter @Inject constructor(
     //type switch or «Применить» searches it (Q14)
     private var fieldText = ""
 
+    private var settings: CatalogSettings = settingsSource.catalogSettings
+
+    //the list on screen as loaded, drawn again when the settings or the statuses change
+    private var shown: List<Any> = emptyList()
+    //the user's list statuses for the type shown, by title id: the cards' badges
+    private var statuses: Map<Long, RateStatus> = emptyMap()
+
+    private val statusLoad = loadSlot()
+
     private val supportsPagination = listOf(Type.ANIME, Type.MANGA, Type.RANOBE)
 
     override fun initData() {
+        viewState.showSettings(settings)
+
         if (searchPayload != null) {
             onPayloadSearch()
         }
 
         loadData()
+        loadStatuses()
         readFilterSheetAhead()
         viewState.selectType(getTypePos(type))
         viewState.setDefaultEmptyText()
@@ -61,6 +85,13 @@ class SearchPresenter @Inject constructor(
         viewState.showQuery(fieldText)
     }
 
+    //back from a title page, where the user may have changed a status; and back to the app. The stored
+    //settings too: a backup restored in the settings while the catalog was away (P10-T3 Q17)
+    override fun onViewReattached() {
+        settingsSource.catalogSettings.takeIf { it != settings }?.let { applySettings(it) }
+        loadStatuses()
+    }
+
     override fun loadData() {
         if (isPagination()) loadWithPaginator()
         else loadSimple()
@@ -68,18 +99,30 @@ class SearchPresenter @Inject constructor(
 
     //the list again: the first load also applied the search it was opened with, which would reset the
     //filters chosen since
-    override fun onRetry() = loadData()
+    override fun onRetry() {
+        loadData()
+        loadStatuses()
+    }
 
-    //characters and people keep the list shown under the spinner, as the paged kinds do (BUGS #66)
+    //the user's pull: the list again, and the statuses on it
     override fun onRefresh() {
-        if (isPagination()) super.onRefresh()
+        reloadList()
+        loadStatuses()
+    }
+
+    //a new search, filter or type: the list again, the statuses stay. Characters and people keep the list
+    //shown under the spinner, as the paged kinds do (BUGS #66)
+    private fun reloadList() {
+        if (isPagination()) loadWithPaginator()
         else loadSimple(refresh = true)
     }
 
     private fun loadSimple(refresh: Boolean = false) {
         val request = requestFilters()
         if (request.isEmpty()) {
-            viewState.apply { showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
+            shown = emptyList()
+            //emptied, not only hidden, as the paged kinds' empty result (Q22)
+            viewState.apply { showData(emptyList()); showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
         } else {
             getSimpleRequestFactory(request)
                     .appendLoadingLogic(viewState, refresh)
@@ -90,6 +133,43 @@ class SearchPresenter @Inject constructor(
 
     private fun loadWithPaginator() {
         super.loadData()
+    }
+
+    //every list and page comes here, as loaded: drawn as cards with the settings and the statuses
+    override fun showData(show: Boolean, data: List<Any>) {
+        shown = data.toList()
+        super.showData(show, cards())
+    }
+
+    override fun showEmptyView(show: Boolean) {
+        if (show) shown = emptyList()
+        super.showEmptyView(show)
+    }
+
+    private fun cards(): List<Any> = converter.convert(shown, settings, statuses)
+
+    //the cards on screen again, after a setting or the statuses changed
+    private fun redraw() {
+        if (shown.isNotEmpty()) viewState.showData(cards())
+    }
+
+    /**
+     * The user's statuses, for the badges: one request with the user's whole list of this type
+     * (CODE_CONVENTIONS.md §10). None for a guest (no request), for characters and people, or with the
+     * badge hidden. A failed read leaves the cards without badges; the list stays.
+     */
+    private fun loadStatuses() {
+        if (!settings.showStatus || !isPagination()) {
+            statusLoad.cancel()
+            return
+        }
+        statusLoad.start {
+            interactor.getMyStatuses(type)
+                    .subscribe({
+                        statuses = it
+                        redraw()
+                    }, { Log.w(TAG, "the list statuses were not read", it) })
+        }
     }
 
     fun onFilterClicked() {
@@ -117,17 +197,17 @@ class SearchPresenter @Inject constructor(
         if (isPagination()) super.loadNextPage()
     }
 
-    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<SearchItem>> {
+    override fun getPaginatorRequestFactory(): (Int) -> Single<Page<Any>> {
         return when (type) {
-            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(requestFilters(), page).map { it.map(converter::apply) } }
-            else -> { page: Int -> interactor.loadMangaListWithFilters(requestFilters(), type, page).map { it.map(converter::apply) } }
+            Type.ANIME -> { page: Int -> interactor.loadAnimeListWithFilters(requestFilters(), page).map { it.map<Any> { titles -> titles } } }
+            else -> { page: Int -> interactor.loadMangaListWithFilters(requestFilters(), type, page).map { it.map<Any> { titles -> titles } } }
         }
     }
 
-    private fun getSimpleRequestFactory(request: HashMap<String, MutableList<FilterItem>>): Single<List<SearchItem>> {
+    private fun getSimpleRequestFactory(request: HashMap<String, MutableList<FilterItem>>): Single<List<Any>> {
         return when (type) {
-            Type.CHARACTER -> interactor.loadCharacterListWithFilters(request).map(converter)
-            else -> interactor.loadPersonListWithFilters(request).map(converter)
+            Type.CHARACTER -> interactor.loadCharacterListWithFilters(request).map<List<Any>> { it }
+            else -> interactor.loadPersonListWithFilters(request).map<List<Any>> { it }
         }
     }
 
@@ -149,6 +229,9 @@ class SearchPresenter @Inject constructor(
         this.type = newType
 
         destroyPaginator()
+        shown = emptyList()
+        //the old type's: anime and manga ids are separate namespaces
+        statuses = emptyMap()
 
         viewState.apply {
             selectType(newTypePos)
@@ -163,7 +246,8 @@ class SearchPresenter @Inject constructor(
         //the sheet's filters are the old type's; the field's text stays, searched in the new type (P10-T2 Q2)
         filters.clear()
         takeFieldText()
-        onRefresh()
+        reloadList()
+        loadStatuses()
         readFilterSheetAhead()
         showFilterIcon()
     }
@@ -193,7 +277,7 @@ class SearchPresenter @Inject constructor(
     fun onFilterSelected(appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         filters = appliedFilters
         takeFieldText()
-        onRefresh()
+        reloadList()
         showFilterIcon()
     }
 
@@ -220,7 +304,7 @@ class SearchPresenter @Inject constructor(
     //the keyboard's search key; the field's text came already (onQueryTextChanged)
     fun onQuerySearch(query: String?) {
         this.query = query
-        onRefresh()
+        reloadList()
     }
 
     //every change of the field's text, sent back so a rebuilt screen (a rotation) shows it, sent or not
@@ -233,8 +317,27 @@ class SearchPresenter @Inject constructor(
         viewState.showQuery(text)
         if (text.isBlank() && query != null) {
             query = null
-            onRefresh()
+            reloadList()
         }
+    }
+
+    fun onSettingsClicked() = viewState.showSettingsSheet(settings, interactor.isSignedIn())
+
+    //a change in the «Отображение» sheet, applied at once: the grid behind the sheet changes as the user
+    //picks, with no «Применить» (P10-T3)
+    fun onSettingsChanged(newSettings: CatalogSettings) {
+        if (newSettings == settings) return
+        settingsSource.catalogSettings = newSettings
+        val statusSwitched = newSettings.showStatus != settings.showStatus
+        applySettings(newSettings)
+        if (statusSwitched) loadStatuses()
+    }
+
+    //the grid and the cards in [newSettings]; the statuses are its caller's
+    private fun applySettings(newSettings: CatalogSettings) {
+        settings = newSettings
+        viewState.showSettings(newSettings)
+        redraw()
     }
 
     private fun onStudioSearch(studioId: Long, name: String?) {

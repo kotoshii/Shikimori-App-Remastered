@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.data.local.preference
 
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
+import com.gnoemes.shikimori.entity.search.domain.CatalogSettings
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 
@@ -34,6 +35,9 @@ interface SettingsSource {
     val rateSwipeToRightAction : RateSwipeAction
 
     var chronologyType : ChronologyType
+
+    /** How «Поиск» shows its list; written by its «Отображение» sheet (P10-T3). */
+    var catalogSettings: CatalogSettings
 
     val hideAnime365: Boolean
 

@@ -16,8 +16,9 @@ import com.gnoemes.shikimori.utils.labelRes
 import javax.inject.Inject
 
 /**
- * A title's type label and the line under its name on the cards of «Похожее», «Хронология» and the
- * list, written once: «Онгоинг  •  TV Сериал  •  5/12 эп.», «2019  •  TV Сериал  •  24 эп.».
+ * A title's type label and the line under its name on the cards of «Похожее», «Хронология», the list
+ * and the catalog, written once: «Онгоинг  •  TV Сериал  •  5/12 эп.», «2019  •  TV Сериал  •  24 эп.»;
+ * the catalog's without the type, «2019  •  24 эп.».
  */
 class TitleTextConverter @Inject constructor(
         private val context: Context
@@ -29,34 +30,55 @@ class TitleTextConverter @Inject constructor(
     /** «Манга», «Ранобэ», «Ваншот»…; null for an unknown kind. */
     fun typeLabel(type: MangaType): String? = type.labelRes?.let { context.getString(it) }
 
-    /** Status, start year (as the site shows it), type, episodes. */
-    fun describe(anime: Anime): CharSequence {
+    /**
+     * Which parts [describe] writes: the release status with the start year, the type, the episodes or
+     * chapters. The catalog leaves out the type, which its poster shows, and lets the user hide the others
+     * (P10-T3).
+     */
+    data class Parts(
+            val statusAndYear: Boolean = true,
+            val type: Boolean = true,
+            val count: Boolean = true
+    ) {
+        companion object {
+            val ALL = Parts()
+        }
+    }
+
+    /** Status, start year (as the site shows it), type, episodes; only the [parts] asked for. */
+    fun describe(anime: Anime, parts: Parts = Parts.ALL): CharSequence {
         val line = Line()
-        line.addStatus(anime.status, true)
-        if (anime.status != Status.ONGOING) line.add(anime.dateAired?.year?.toString())
-        line.add(typeLabel(anime.type))
+        if (parts.statusAndYear) {
+            line.addStatus(anime.status, true)
+            if (anime.status != Status.ONGOING) line.add(anime.dateAired?.year?.toString())
+        }
+        if (parts.type) line.add(typeLabel(anime.type))
 
         //a count of 0 is one the api does not know, so it is not shown; an announcement's planned count reads as
         //every other, «12 эп.» - it was a bare «12» (P10-T3 Q15, Q16)
-        val episodeShort = context.getString(R.string.episode_short)
-        when {
-            anime.type == AnimeType.MOVIE -> Unit
-            anime.status == Status.ONGOING -> line.add("${anime.episodesAired}/${anime.episodes.dashIfZero()} $episodeShort")
-            anime.episodes != 0 -> line.add("${anime.episodes} $episodeShort")
+        if (parts.count) {
+            val episodeShort = context.getString(R.string.episode_short)
+            when {
+                anime.type == AnimeType.MOVIE -> Unit
+                anime.status == Status.ONGOING -> line.add("${anime.episodesAired}/${anime.episodes.dashIfZero()} $episodeShort")
+                anime.episodes != 0 -> line.add("${anime.episodes} $episodeShort")
+            }
         }
         return line.text
     }
 
-    /** Status, start year, type, chapters. */
-    fun describe(manga: Manga): CharSequence {
+    /** Status, start year, type, chapters; only the [parts] asked for. */
+    fun describe(manga: Manga, parts: Parts = Parts.ALL): CharSequence {
         val line = Line()
-        line.addStatus(manga.status, false)
-        if (manga.status != Status.ONGOING) line.add(manga.dateAired?.year?.toString())
-        line.add(typeLabel(manga.type))
+        if (parts.statusAndYear) {
+            line.addStatus(manga.status, false)
+            if (manga.status != Status.ONGOING) line.add(manga.dateAired?.year?.toString())
+        }
+        if (parts.type) line.add(typeLabel(manga.type))
 
         //as the anime's: 0 chapters is not known, whatever the status (a finished or paused ranobe read «0 глав»),
         //and an announcement's count has its word (P10-T3 Q15, Q16)
-        if (manga.chapters != 0) line.add(chapters(manga.chapters))
+        if (parts.count && manga.chapters != 0) line.add(chapters(manga.chapters))
         return line.text
     }
 

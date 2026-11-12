@@ -1,10 +1,13 @@
 package com.gnoemes.shikimori.domain.search
 
+import com.gnoemes.shikimori.data.repository.rates.RatesRepository
 import com.gnoemes.shikimori.data.repository.search.SearchRepository
+import com.gnoemes.shikimori.data.repository.user.UserRepository
 import com.gnoemes.shikimori.entity.anime.domain.Anime
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.domain.Manga
+import com.gnoemes.shikimori.entity.rates.domain.RateStatus
 import com.gnoemes.shikimori.entity.roles.domain.Character
 import com.gnoemes.shikimori.entity.roles.domain.Person
 import com.gnoemes.shikimori.utils.applyErrorHandlerAndSchedulers
@@ -14,7 +17,9 @@ import javax.inject.Inject
 
 class SearchInteractorImpl @Inject constructor(
         private val repository: SearchRepository,
-        private val queryBuilder: SearchQueryBuilder
+        private val queryBuilder: SearchQueryBuilder,
+        private val ratesRepository: RatesRepository,
+        private val userRepository: UserRepository
 ) : SearchInteractor {
 
     override fun loadCharacterListWithFilters(filters: HashMap<String, MutableList<FilterItem>>?): Single<List<Character>> =
@@ -41,4 +46,12 @@ class SearchInteractorImpl @Inject constructor(
                     .map { Page.exact(it, limit) }
                     .applyErrorHandlerAndSchedulers()
 
+    //the shared way to put the user's statuses on a list of titles (CODE_CONVENTIONS.md §10): one request
+    //with the user's whole list of that kind
+    override fun getMyStatuses(type: Type): Single<Map<Long, RateStatus>> =
+            ratesRepository.getMyRates(type)
+                    .map { rates -> rates.mapNotNull { (id, rate) -> rate.status?.let { id to it } }.toMap() }
+                    .applyErrorHandlerAndSchedulers()
+
+    override fun isSignedIn(): Boolean = userRepository.isSignedIn()
 }

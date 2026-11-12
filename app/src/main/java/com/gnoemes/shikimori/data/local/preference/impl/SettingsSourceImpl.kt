@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.di.app.annotations.SettingsQualifier
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.chronology.ChronologyType
 import com.gnoemes.shikimori.entity.rates.domain.RateSwipeAction
+import com.gnoemes.shikimori.entity.search.domain.CatalogSettings
 import com.gnoemes.shikimori.entity.series.domain.PlayerType
 import com.gnoemes.shikimori.entity.series.domain.TranslationType
 import com.gnoemes.shikimori.utils.putBoolean
@@ -89,6 +90,31 @@ class SettingsSourceImpl @Inject constructor(
             ChronologyType.values().find { it.ordinal == type } ?: ChronologyType.MAIN
         }
         set(value) = prefs.putInt(SettingsExtras.CHRONOLOGY_TYPE, value.ordinal)
+
+    override var catalogSettings: CatalogSettings
+        get() {
+            val default = CatalogSettings()
+            return CatalogSettings(
+                    columns = prefs.getInt(SettingsExtras.CATALOG_COLUMNS, default.columns)
+                            .coerceIn(CatalogSettings.MIN_COLUMNS, CatalogSettings.MAX_COLUMNS),
+                    showType = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_TYPE, default.showType),
+                    showStatus = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_STATUS, default.showStatus),
+                    showCount = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_COUNT, default.showCount),
+                    showScore = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_SCORE, default.showScore),
+                    showName = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_NAME, default.showName),
+                    showYear = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_YEAR, default.showYear)
+            )
+        }
+        //one write for the whole set
+        set(value) = prefs.edit()
+                .putInt(SettingsExtras.CATALOG_COLUMNS, value.columns)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_TYPE, value.showType)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_STATUS, value.showStatus)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_COUNT, value.showCount)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_SCORE, value.showScore)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_NAME, value.showName)
+                .putBoolean(SettingsExtras.CATALOG_SHOW_YEAR, value.showYear)
+                .apply()
 
     override var seenHostings: Set<String>
         get() = prefs.getStringSet(SettingsExtras.SEEN_HOSTINGS, emptySet()).orEmpty()

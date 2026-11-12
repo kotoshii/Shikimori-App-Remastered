@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--the catalog's «Отображение» sheet (P10-T3), under the shared sheet bar: the cards' size and the parts of a
+card. Each change applies at once. It scrolls where the screen is too
+low for it (a phone on its side)-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/CatalogSettingsHeaderStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="@string/catalog_settings_size" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingTop="10dp"
+            android:paddingRight="16dp">
+
+            <!--2, 3 and 4 in a row on a phone held upright-->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sizeLarge"
+                style="@style/CatalogColumnButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/catalog_settings_size_large" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sizeMedium"
+                style="@style/CatalogColumnButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:text="@string/catalog_settings_size_medium" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sizeSmall"
+                style="@style/CatalogColumnButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/catalog_settings_size_small" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingTop="8dp"
+            android:paddingRight="16dp"
+            android:text="@string/catalog_settings_size_hint"
+            android:textColor="?attr/colorOnPrimarySecondary"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:background="?attr/colorDivider" />
+
+        <TextView
+            style="@style/CatalogSettingsHeaderStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="4dp"
+            android:text="@string/catalog_settings_card" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/typeSwitch"
+            style="@style/CatalogSettingsSwitchStyle"
+            android:text="@string/catalog_settings_type" />
+
+        <!--as the switch rows, with a line under the name for a guest, who has no list: it says why the row
+        is greyed out (P10-T3 Test 2h). The whole row turns the switch-->
+        <LinearLayout
+            android:id="@+id/statusRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingTop="8dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/statusTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/catalog_settings_status"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/statusGuestHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/catalog_settings_status_guest"
+                    android:textColor="?attr/colorOnPrimarySecondary"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/statusSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false" />
+
+        </LinearLayout>
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/countSwitch"
+            style="@style/CatalogSettingsSwitchStyle"
+            android:text="@string/catalog_settings_count" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/scoreSwitch"
+            style="@style/CatalogSettingsSwitchStyle"
+            android:text="@string/catalog_settings_score" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/nameSwitch"
+            style="@style/CatalogSettingsSwitchStyle"
+            android:text="@string/catalog_settings_name" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/yearSwitch"
+            style="@style/CatalogSettingsSwitchStyle"
+            android:text="@string/catalog_settings_year" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

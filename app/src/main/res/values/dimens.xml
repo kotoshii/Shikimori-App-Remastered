@@ -18,8 +18,6 @@
     <dimen name="image_rate_height">120dp</dimen>
     <dimen name="image_rate_width">96dp</dimen>
 
-    <dimen name="image_search_height">235dp</dimen>
-    <dimen name="image_search_width">175dp</dimen>
 
     <dimen name="image_favorite_height">104dp</dimen>
     <dimen name="image_favorite_width">76dp</dimen>

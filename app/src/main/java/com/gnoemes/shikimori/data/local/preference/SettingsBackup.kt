@@ -64,6 +64,13 @@ class SettingsBackup @Inject constructor(
                 Key(SettingsExtras.PLAYER_IS_AUTO_PIP, Kind.BOOLEAN),
 
                 Key(SettingsExtras.CHRONOLOGY_TYPE, Kind.INT),
+                Key(SettingsExtras.CATALOG_COLUMNS, Kind.INT),
+                Key(SettingsExtras.CATALOG_SHOW_TYPE, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SHOW_STATUS, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SHOW_COUNT, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SHOW_SCORE, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SHOW_NAME, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SHOW_YEAR, Kind.BOOLEAN),
                 Key(SettingsExtras.SORT_KEY_PART + "_${Type.ANIME.name}", Kind.INT),
                 Key(SettingsExtras.SORT_KEY_PART + "_${Type.MANGA.name}", Kind.INT),
                 Key(SettingsExtras.ORDER_KEY_PART + "_${Type.ANIME.name}", Kind.BOOLEAN),

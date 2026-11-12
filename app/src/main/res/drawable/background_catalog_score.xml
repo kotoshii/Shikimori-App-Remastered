@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--the catalog card's score chip, as the site's (.collection_score: rgba(16, 20, 26, 0.55), round), but
+72% instead of 55%, as the kind label, so it reads on light posters (P10-T3, 2026-11-12)-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="#B810141A" />
+
+    <corners android:radius="999dp" />
+
+</shape>

@@ -5,6 +5,7 @@ import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.domain.CatalogSettings
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.view.base.fragment.BasePaginationView
 
@@ -29,6 +30,14 @@ interface SearchView : BasePaginationView {
      */
     @StateStrategyType(AddToEndSingleStrategy::class)
     fun showQuery(query: String)
+
+    /** The «Отображение» settings the grid is drawn with: its column count (P10-T3). */
+    @StateStrategyType(AddToEndSingleStrategy::class)
+    fun showSettings(settings: CatalogSettings)
+
+    /** The «Отображение» sheet with [settings]; the status switch is usable only when [signedIn]. */
+    @StateStrategyType(SkipStrategy::class)
+    fun showSettingsSheet(settings: CatalogSettings, signedIn: Boolean)
 
     fun showFilterButton()
 

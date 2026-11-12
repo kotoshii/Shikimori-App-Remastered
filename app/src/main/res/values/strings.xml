@@ -210,8 +210,6 @@
     <string name="calendar_empty_description">Измените запрос или попробуйте найти более позднюю дату выхода на странице тайтла.</string>
     <string name="similar_empty_description">Ничего не найдено</string>
 
-    <string name="episodes_format">\n[%s из %s]</string>
-    <string name="volumes_format">\n[%s-%s]</string>
     <string name="episode_number">%d эпизод</string>
     <string name="episode_short">эп.</string>
     <string name="minute_short">мин</string>
@@ -293,6 +291,22 @@
     <string name="search_need_query">Введите имя для поиска</string>
     <!--the catalog's type sheet: not «Тип», the filter sheet's row of TV Сериал, Фильм… (P10-T2 Q5)-->
     <string name="search_type_title">Что искать</string>
+    <!--the catalog's «Отображение» sheet, opened from the search bar (P10-T3)-->
+    <string name="catalog_settings_title">Отображение</string>
+    <!--a size, not a count: a wider screen fits more cards of it in a row (P10-T3 Q11)-->
+    <string name="catalog_settings_size">Размер карточек</string>
+    <string name="catalog_settings_size_large">Крупные</string>
+    <string name="catalog_settings_size_medium">Средние</string>
+    <string name="catalog_settings_size_small">Мелкие</string>
+    <string name="catalog_settings_size_hint">На телефоне 2, 3 или 4 в ряду</string>
+    <string name="catalog_settings_card">Показывать на карточке</string>
+    <string name="catalog_settings_type">Тип</string>
+    <string name="catalog_settings_status">Статус в списке</string>
+    <string name="catalog_settings_status_guest">Доступно после входа в аккаунт</string>
+    <string name="catalog_settings_count">Эпизоды и главы</string>
+    <string name="catalog_settings_score">Оценка</string>
+    <string name="catalog_settings_name">Название</string>
+    <string name="catalog_settings_year">Год и статус</string>
 
     <string name="duration_small">&lt; 10 мин.</string>
     <string name="duration_medium">&lt; 30 мин.</string>
