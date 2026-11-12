@@ -16,7 +16,7 @@ import com.gnoemes.shikimori.utils.withArgs
 
 /**
  * «Поиск»'s «Отображение» sheet (P10-T3): the cards' size («Крупные · Средние · Мелкие»: 2, 3 or 4 in a row
- * on a phone held upright, more on a wider screen - Q11), and which parts of a card show. Each change goes to the catalog at once ([Callback]), so the grid behind the
+ * on a phone held upright, more on a wider screen - Q11), which parts of a card show, and search as you type. Each change goes to the catalog at once ([Callback]), so the grid behind the
  * sheet changes as the user picks; there is no «Применить». It opens with the catalog's settings and keeps
  * its own through a rotation. A guest's «Статус в списке» is greyed out: a guest has no list.
  */
@@ -66,6 +66,7 @@ class CatalogSettingsDialog : BaseBottomSheetDialogFragment() {
         binding.scoreSwitch.isChecked = settings.showScore
         binding.nameSwitch.isChecked = settings.showName
         binding.yearSwitch.isChecked = settings.showYear
+        binding.liveSwitch.isChecked = settings.searchAsYouType
         //a guest has no list: the row is greyed out and does nothing, and the line under it says why
         val signedIn = arguments?.getBoolean(SIGNED_IN_KEY) == true
         binding.statusTitle.setUsable(signedIn)
@@ -86,7 +87,9 @@ class CatalogSettingsDialog : BaseBottomSheetDialogFragment() {
         binding.scoreSwitch.onChecked { change(settings.copy(showScore = it)) }
         binding.nameSwitch.onChecked { change(settings.copy(showName = it)) }
         binding.yearSwitch.onChecked { change(settings.copy(showYear = it)) }
+        binding.liveSwitch.onChecked { change(settings.copy(searchAsYouType = it)) }
         binding.statusRow.setOnClickListener { binding.statusSwitch.toggle() }
+        binding.liveRow.setOnClickListener { binding.liveSwitch.toggle() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -18,8 +18,11 @@ import com.gnoemes.shikimori.presentation.presenter.search.converter.SearchViewM
 import com.gnoemes.shikimori.presentation.view.search.SearchView
 import com.gnoemes.shikimori.presentation.presenter.base.appendLoadingLogic
 import com.gnoemes.shikimori.entity.common.domain.Page
+import io.reactivex.Completable
 import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 //TODO studios
@@ -38,6 +41,9 @@ class SearchPresenter @Inject constructor(
 
     companion object {
         private const val TAG = "CatalogSearch"
+        //search as you type: the pause after the last letter (P10-T3 Q7 b; the site waits 250 ms, but on a
+        //phone the gap between letters is often longer, so the list would change under the typing)
+        private const val TYPED_SEARCH_DELAY_MS = 500L
     }
 
     //the filter sheet's lists, read ahead, so the sheet opens with them (P7-T5 Test 81)
@@ -63,11 +69,19 @@ class SearchPresenter @Inject constructor(
     //the user's list statuses for the type shown, by title id: the cards' badges
     private var statuses: Map<Long, RateStatus> = emptyMap()
 
+    //characters and people: a new search drops the answer still coming for the old one, as the paginator
+    //does for the titles
+    private val simpleLoad = loadSlot()
     private val statusLoad = loadSlot()
+    //the pause before a search as you type; the next letter starts it again
+    private val typedSearch = loadSlot()
 
     private val supportsPagination = listOf(Type.ANIME, Type.MANGA, Type.RANOBE)
 
     override fun initData() {
+        //a text the field brought back after Android killed the app, reported before this: the field is
+        //emptied below, so its search must not run
+        typedSearch.cancel()
         viewState.showSettings(settings)
 
         if (searchPayload != null) {
@@ -120,14 +134,14 @@ class SearchPresenter @Inject constructor(
     private fun loadSimple(refresh: Boolean = false) {
         val request = requestFilters()
         if (request.isEmpty()) {
+            simpleLoad.cancel()
             shown = emptyList()
             //emptied, not only hidden, as the paged kinds' empty result (Q22)
             viewState.apply { showData(emptyList()); showContent(false); setSimpleEmptyText(); showEmptyView(); onHideLoading() }
-        } else {
+        } else simpleLoad.start {
             getSimpleRequestFactory(request)
                     .appendLoadingLogic(viewState, refresh)
                     .subscribe({ showData(true, it) }, loadErrors(overContent = refresh))
-                    .addToDisposables()
         }
     }
 
@@ -229,6 +243,7 @@ class SearchPresenter @Inject constructor(
         this.type = newType
 
         destroyPaginator()
+        simpleLoad.cancel()
         shown = emptyList()
         //the old type's: anime and manga ids are separate namespaces
         statuses = emptyMap()
@@ -283,8 +298,9 @@ class SearchPresenter @Inject constructor(
 
     //a list reloaded by the user's choice (a type, «Применить») searches what the field shows, sent with
     //the keyboard's key or not: a text typed and not sent stayed in the field while the list ignored it
-    //(P10-T2 Q14)
+    //(P10-T2 Q14). A search still waiting for a pause in typing is this one
     private fun takeFieldText() {
+        typedSearch.cancel()
         query = fieldText.takeIf { it.isNotBlank() }
     }
 
@@ -301,23 +317,36 @@ class SearchPresenter @Inject constructor(
         showFilterIcon()
     }
 
-    //the keyboard's search key; the field's text came already (onQueryTextChanged)
+    //the keyboard's search key, at once, whatever the pause; the field's text came already (onQueryTextChanged)
     fun onQuerySearch(query: String?) {
+        typedSearch.cancel()
         this.query = query
         reloadList()
     }
 
     //every change of the field's text, sent back so a rebuilt screen (a rotation) shows it, sent or not
     //(P10-T2 Q18). The same text again (a restored field, or one set by showQuery) changes nothing. An
-    //empty or blank field (its ✕, or the text deleted) drops the search: the keyboard's search key does
-    //nothing on it, so this is how a search is dropped
+    //empty or blank field (its ✕, or the text deleted) drops the search at once: the keyboard's search key
+    //does nothing on it, so this is how a search is dropped. Any other text is searched after a pause in
+    //typing, unless «Искать при вводе» is off or the list already shows it (P10-T3 Q7 b; the site searches
+    //as you type too, any length). Each letter starts the pause again
     fun onQueryTextChanged(text: String) {
         if (text == fieldText) return
         fieldText = text
         viewState.showQuery(text)
-        if (text.isBlank() && query != null) {
-            query = null
-            reloadList()
+        typedSearch.cancel()
+        when {
+            text.isBlank() -> if (query != null) {
+                query = null
+                reloadList()
+            }
+            settings.searchAsYouType && text.trim() != query?.trim() -> typedSearch.start {
+                Completable.timer(TYPED_SEARCH_DELAY_MS, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                        .subscribe {
+                            query = text
+                            reloadList()
+                        }
+            }
         }
     }
 
@@ -337,6 +366,7 @@ class SearchPresenter @Inject constructor(
     private fun applySettings(newSettings: CatalogSettings) {
         settings = newSettings
         viewState.showSettings(newSettings)
+        if (!newSettings.searchAsYouType) typedSearch.cancel()
         redraw()
     }
 

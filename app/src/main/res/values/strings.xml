@@ -307,6 +307,9 @@
     <string name="catalog_settings_score">Оценка</string>
     <string name="catalog_settings_name">Название</string>
     <string name="catalog_settings_year">Год и статус</string>
+    <string name="catalog_settings_live">Искать при вводе</string>
+    <!--what it gives, not how: the short wait after the last letter read as a delay added to the search-->
+    <string name="catalog_settings_live_summary">Результаты появляются по мере набора, без кнопки поиска</string>
 
     <string name="duration_small">&lt; 10 мин.</string>
     <string name="duration_medium">&lt; 30 мин.</string>

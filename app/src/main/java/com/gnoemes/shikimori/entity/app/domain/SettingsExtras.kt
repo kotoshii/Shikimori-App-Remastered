@@ -82,6 +82,7 @@ object SettingsExtras {
     const val CATALOG_SHOW_SCORE = "CATALOG_SHOW_SCORE"
     const val CATALOG_SHOW_NAME = "CATALOG_SHOW_NAME"
     const val CATALOG_SHOW_YEAR = "CATALOG_SHOW_YEAR"
+    const val CATALOG_SEARCH_AS_YOU_TYPE = "CATALOG_SEARCH_AS_YOU_TYPE"
 
     const val SORT_KEY_PART = "rate_sort"
     const val ORDER_KEY_PART = "rate_order"

@@ -102,7 +102,8 @@ class SettingsSourceImpl @Inject constructor(
                     showCount = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_COUNT, default.showCount),
                     showScore = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_SCORE, default.showScore),
                     showName = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_NAME, default.showName),
-                    showYear = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_YEAR, default.showYear)
+                    showYear = prefs.getBoolean(SettingsExtras.CATALOG_SHOW_YEAR, default.showYear),
+                    searchAsYouType = prefs.getBoolean(SettingsExtras.CATALOG_SEARCH_AS_YOU_TYPE, default.searchAsYouType)
             )
         }
         //one write for the whole set
@@ -114,6 +115,7 @@ class SettingsSourceImpl @Inject constructor(
                 .putBoolean(SettingsExtras.CATALOG_SHOW_SCORE, value.showScore)
                 .putBoolean(SettingsExtras.CATALOG_SHOW_NAME, value.showName)
                 .putBoolean(SettingsExtras.CATALOG_SHOW_YEAR, value.showYear)
+                .putBoolean(SettingsExtras.CATALOG_SEARCH_AS_YOU_TYPE, value.searchAsYouType)
                 .apply()
 
     override var seenHostings: Set<String>

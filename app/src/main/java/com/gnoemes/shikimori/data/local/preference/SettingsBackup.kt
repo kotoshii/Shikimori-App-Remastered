@@ -71,6 +71,7 @@ class SettingsBackup @Inject constructor(
                 Key(SettingsExtras.CATALOG_SHOW_SCORE, Kind.BOOLEAN),
                 Key(SettingsExtras.CATALOG_SHOW_NAME, Kind.BOOLEAN),
                 Key(SettingsExtras.CATALOG_SHOW_YEAR, Kind.BOOLEAN),
+                Key(SettingsExtras.CATALOG_SEARCH_AS_YOU_TYPE, Kind.BOOLEAN),
                 Key(SettingsExtras.SORT_KEY_PART + "_${Type.ANIME.name}", Kind.INT),
                 Key(SettingsExtras.SORT_KEY_PART + "_${Type.MANGA.name}", Kind.INT),
                 Key(SettingsExtras.ORDER_KEY_PART + "_${Type.ANIME.name}", Kind.BOOLEAN),

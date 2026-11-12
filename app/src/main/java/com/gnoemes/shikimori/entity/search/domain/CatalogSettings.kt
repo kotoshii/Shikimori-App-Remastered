@@ -26,7 +26,9 @@ data class CatalogSettings(
         /** The name under the poster. */
         val showName: Boolean = true,
         /** The start year, or «Онгоинг»/«Анонс», on the line under the name. */
-        val showYear: Boolean = true
+        val showYear: Boolean = true,
+        /** Search after a short pause in typing, not only on the keyboard's search key. */
+        val searchAsYouType: Boolean = true
 ) : Parcelable {
 
     companion object {
