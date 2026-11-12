@@ -36,12 +36,13 @@ class TitleTextConverter @Inject constructor(
         if (anime.status != Status.ONGOING) line.add(anime.dateAired?.year?.toString())
         line.add(typeLabel(anime.type))
 
+        //a count of 0 is one the api does not know, so it is not shown; an announcement's planned count reads as
+        //every other, «12 эп.» - it was a bare «12» (P10-T3 Q15, Q16)
         val episodeShort = context.getString(R.string.episode_short)
         when {
             anime.type == AnimeType.MOVIE -> Unit
-            anime.status == Status.ANONS -> if (anime.episodes != 0) line.add("${anime.episodes}")
             anime.status == Status.ONGOING -> line.add("${anime.episodesAired}/${anime.episodes.dashIfZero()} $episodeShort")
-            else -> line.add("${anime.episodes} $episodeShort")
+            anime.episodes != 0 -> line.add("${anime.episodes} $episodeShort")
         }
         return line.text
     }
@@ -53,11 +54,9 @@ class TitleTextConverter @Inject constructor(
         if (manga.status != Status.ONGOING) line.add(manga.dateAired?.year?.toString())
         line.add(typeLabel(manga.type))
 
-        when (manga.status) {
-            Status.ANONS -> if (manga.chapters != 0) line.add("${manga.chapters}")
-            Status.ONGOING -> if (manga.chapters != 0) line.add(chapters(manga.chapters))
-            else -> line.add(chapters(manga.chapters))
-        }
+        //as the anime's: 0 chapters is not known, whatever the status (a finished or paused ranobe read «0 глав»),
+        //and an announcement's count has its word (P10-T3 Q15, Q16)
+        if (manga.chapters != 0) line.add(chapters(manga.chapters))
         return line.text
     }
 
