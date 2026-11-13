@@ -45,7 +45,8 @@ class FilterChipAdapter(
 
         init {
             binding.chip.onClick { selectCallback.invoke(type, item) }
-            binding.chip.setOnLongClickListener { invertCallback.invoke(type, item); true }
+            //a one-value filter has no exclusion: no long press, so no buzz for nothing
+            if (!type.singleValue) binding.chip.setOnLongClickListener { invertCallback.invoke(type, item); true }
         }
 
         fun bind(item: FilterViewModel) {

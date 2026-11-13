@@ -50,8 +50,10 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         viewState.onFiltersAccepted(appliedFilters)
     }
 
-    //a long press excludes a chip, and on an excluded one makes it a normal pick again - it did nothing
+    //a long press excludes a chip, and on an excluded one makes it a normal pick again - it did nothing.
+    //A one-value filter takes no exclusion
     open fun onFilterInverted(type: FilterType, item: FilterViewModel) {
+        if (type.singleValue) return
         when (item.state) {
             FilterViewModel.STATE.INVERTED -> includeAgain(type.value, FilterItem(type.value, item.value, item.text))
             else -> invertOrAddNew(type.value, FilterItem(type.value, item.value, item.text))
@@ -59,10 +61,13 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
         onFiltersChanged()
     }
 
+    //a tap picks a chip or drops it; in a one-value filter a new pick replaces the old one
     open fun onFilterSelected(type: FilterType, item: FilterViewModel) {
-        when (item.state) {
-            FilterViewModel.STATE.DEFAULT -> addToSelected(type.value, FilterItem(type.value, item.value, item.text))
-            else -> removeFromSelected(type.value, FilterItem(type.value, item.value, item.text))
+        val filter = FilterItem(type.value, item.value, item.text)
+        when {
+            item.state != FilterViewModel.STATE.DEFAULT -> removeFromSelected(type.value, filter)
+            type.singleValue -> appliedFilters[type.value] = mutableListOf(filter)
+            else -> addToSelected(type.value, filter)
         }
         onFiltersChanged()
     }

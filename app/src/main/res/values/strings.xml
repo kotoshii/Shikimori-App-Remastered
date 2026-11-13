@@ -346,6 +346,7 @@
     <string name="filter_seasons">Сезоны</string>
     <string name="filter_studio">Студия</string>
     <string name="filter_origin">Первоисточник</string>
+    <string name="filter_score">Оценка</string>
     <!-- the anime «Первоисточник» chips: the api's `origin` values in the site's words (2026-11-13) -->
     <string name="origin_original">Оригинал</string>
     <string name="origin_manga">Манга</string>

@@ -45,7 +45,8 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.ANIME)),
             FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION, Type.ANIME)),
             FilterCategory(FilterType.AGE_RATING, getAgeRatingString(), getFilters(FilterType.AGE_RATING, Type.ANIME)),
-            FilterCategory(FilterType.ORIGIN, context.getString(R.string.filter_origin), getFilters(FilterType.ORIGIN, Type.ANIME))
+            FilterCategory(FilterType.ORIGIN, context.getString(R.string.filter_origin), getFilters(FilterType.ORIGIN, Type.ANIME)),
+            scoreCategory()
     )
 
     override fun getMangaFilters(): List<FilterCategory> = listOfNotNull(
@@ -53,7 +54,8 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.MANGA)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.MANGA)),
             rateCategory(Type.MANGA),
-            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.MANGA))
+            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.MANGA)),
+            scoreCategory()
     )
 
     override fun getRanobeFilters(): List<FilterCategory> = listOfNotNull(
@@ -61,8 +63,17 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.RANOBE)),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.RANOBE)),
             rateCategory(Type.RANOBE),
-            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.RANOBE))
+            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.RANOBE)),
+            scoreCategory()
     )
+
+    /**
+     * «Оценка»: the api's score at least N, one choice («6+»…«9+», P10-T4 Q7). The api takes 1-9, but below
+     * 6 a chip removes almost nothing beyond the titles with no score. The same for every type.
+     */
+    private fun scoreCategory(): FilterCategory =
+            FilterCategory(FilterType.SCORE, context.getString(R.string.filter_score),
+                    (6..9).map { convert(FilterType.SCORE.value, "$it", "$it+") }.toMutableList())
 
     //«Список» filters by the signed-in user's own list; a guest has none to filter by (BUGS #15)
     private fun rateCategory(type: Type): FilterCategory? =
