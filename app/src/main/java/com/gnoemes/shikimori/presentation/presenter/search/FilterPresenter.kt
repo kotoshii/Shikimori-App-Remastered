@@ -26,6 +26,12 @@ open class FilterPresenter @Inject constructor(
     private val sortItems = mutableListOf<FilterItem>()
     /** The sorts, when the catalog had them loaded already. */
     var handedSorts: List<FilterItem>? = null
+    /**
+     * Whether «Применить» will search a text: shikimori then orders by match and ignores the sort
+     * (CATALOG.md §5), so the sort button says so and cannot be used (P10-T4 Q8). The chosen sort is
+     * kept, for when the text is gone.
+     */
+    var searching = false
 
     override fun initData() {
         loadSortFilters()
@@ -75,6 +81,7 @@ open class FilterPresenter @Inject constructor(
             appliedFilters[SearchConstants.ORDER]?.firstOrNull()?.value ?: SearchConstants.DEFAULT_ORDER.toString()
 
     private fun showSort() {
+        if (searching) return viewState.showSortBySearch()
         val chosen = chosenSort()
         val item = sortItems.find { it.value == chosen } ?: sortItems.firstOrNull() ?: return
         viewState.setSortFilterText(item.localizedText!!)

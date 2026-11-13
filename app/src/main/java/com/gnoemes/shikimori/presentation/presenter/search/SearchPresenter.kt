@@ -228,8 +228,9 @@ class SearchPresenter @Inject constructor(
         }
     }
 
+    //«Применить» searches the field's text (takeFieldText), so a text there means the sort will not apply
     fun onFilterClicked() {
-        viewState.showFilter(type, filters, sheetCategories, sheetSorts)
+        viewState.showFilter(type, filters, sheetCategories, sheetSorts, fieldText.isNotBlank())
     }
 
     //for the type shown; a sheet opened before they come loads them itself

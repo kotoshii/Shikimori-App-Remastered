@@ -29,20 +29,28 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
 
     @ProvidePresenter
     fun providePresenter(): FilterPresenter = presenterProvider.get().withArguments()
-            .apply { handedSorts = arguments?.getParcelableArrayList(SORTS_KEY) }
+            .apply {
+                handedSorts = arguments?.getParcelableArrayList(SORTS_KEY)
+                searching = arguments?.getBoolean(SEARCHING_KEY) ?: false
+            }
 
     companion object {
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
         private const val SORTS_KEY = "SORTS_KEY"
+        private const val SEARCHING_KEY = "SEARCHING_KEY"
         private const val SORT_REQUEST = "SORT_REQUEST"
 
-        /** The sheet; with the [categories] and [sorts] when the catalog has them, so it opens filled. */
+        /**
+         * The sheet; with the [categories] and [sorts] when the catalog has them, so it opens filled.
+         * [searching]: «Применить» will search a text, so the sort does not apply.
+         */
         fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?,
-                        categories: List<FilterCategory>?, sorts: List<FilterItem>?) =
+                        categories: List<FilterCategory>?, sorts: List<FilterItem>?, searching: Boolean) =
                 withFilters(FilterFragment(), type, filters, categories).apply {
                     arguments?.putParcelableArrayList(SORTS_KEY, sorts?.let { ArrayList(it) })
+                    arguments?.putBoolean(SEARCHING_KEY, searching)
                 }
     }
 
@@ -141,5 +149,10 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
 
     override fun setSortFilterText(text: String) {
         binding.filterBottom.sortBtn.text = text
+    }
+
+    override fun showSortBySearch() {
+        binding.filterBottom.sortBtn.setText(R.string.catalog_sort_by_search)
+        binding.filterBottom.sortBtn.setUsable(false)
     }
 }

@@ -19,7 +19,7 @@ interface SearchView : BasePaginationView {
     fun setDefaultEmptyText()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?)
+    fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?, searching: Boolean)
 
     /** The sheet of what to search, the current type ([currentPos]) marked. */
     @StateStrategyType(SkipStrategy::class)

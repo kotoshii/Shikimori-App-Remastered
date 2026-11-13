@@ -14,6 +14,9 @@ interface FilterView : BaseFilterView {
 
     fun setSortFilterText(text : String)
 
+    /** The sort button while a search text is on: «По совпадению», not usable. */
+    fun showSortBySearch()
+
     @StateStrategyType(SkipStrategy::class)
     fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?)
 

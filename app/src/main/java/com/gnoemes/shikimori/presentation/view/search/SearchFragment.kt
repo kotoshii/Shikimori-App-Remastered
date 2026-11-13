@@ -203,12 +203,12 @@ class SearchFragment : BasePaginationFragment<Any, SearchPresenter, SearchView>(
     // MVP
     ///////////////////////////////////////////////////////////////////////////
 
-    override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?) {
+    override fun showFilter(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?, sorts: List<FilterItem>?, searching: Boolean) {
         hideSoftInput()
         val tag = "filterDialog"
         val fragment = fragmentManager?.findFragmentByTag(tag)
         if (fragment == null) {
-            val filter = FilterFragment.newInstance(type, filters, categories, sorts)
+            val filter = FilterFragment.newInstance(type, filters, categories, sorts, searching)
             filter.setTargetFragment(this, 42)
             postViewAction { filter.show(fragmentManager!!, tag) }
         }

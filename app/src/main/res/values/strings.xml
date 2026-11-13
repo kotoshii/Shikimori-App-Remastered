@@ -285,6 +285,16 @@
     <string name="sort_score">По оценке</string>
     <string name="sort_popularity">По популярности</string>
     <string name="sort_name">По названию</string>
+    <!-- the catalog's own sorts. Not «Списки»' strings: there «По оценке» (sort_score) is the user's own
+         score and «По дате добавления» (sort_date_added) the day a title went into the list. Here `ranked`
+         is the rating rank, `id_desc` the newest on shikimori first, `ranked_random` a shuffle that stays
+         the same all day (P10-T4) -->
+    <string name="catalog_sort_rating">По рейтингу</string>
+    <string name="catalog_sort_volumes">По числу томов</string>
+    <string name="catalog_sort_random">Случайно</string>
+    <string name="catalog_sort_newest">По дате добавления</string>
+    <!-- the sort button while a search text is on: shikimori then orders by match and ignores the sort -->
+    <string name="catalog_sort_by_search">По совпадению</string>
     <!--what a screen reader says for the «Списки» menu button-->
     <string name="rate_drawer_open">Открыть список статусов</string>
     <string name="rate_drawer_close">Закрыть список статусов</string>
@@ -555,11 +565,13 @@
     </string-array>
 
     <string-array name="anime_search_sort">
-        <item>@string/sort_score</item>
+        <item>@string/catalog_sort_rating</item>
         <item>@string/sort_popularity</item>
         <item>@string/sort_episodes_watched</item>
         <item>@string/sort_date</item>
         <item>@string/sort_name</item>
+        <item>@string/catalog_sort_random</item>
+        <item>@string/catalog_sort_newest</item>
     </string-array>
 
     <string-array name="anime_search_sort_values">
@@ -568,22 +580,30 @@
         <item>episodes</item>
         <item>aired_on</item>
         <item>name</item>
+        <item>ranked_random</item>
+        <item>id_desc</item>
     </string-array>
 
     <string-array name="manga_search_sort">
-        <item>@string/sort_score</item>
+        <item>@string/catalog_sort_rating</item>
         <item>@string/sort_popularity</item>
         <item>@string/sort_chapters_readed</item>
+        <item>@string/catalog_sort_volumes</item>
         <item>@string/sort_date</item>
         <item>@string/sort_name</item>
+        <item>@string/catalog_sort_random</item>
+        <item>@string/catalog_sort_newest</item>
     </string-array>
 
     <string-array name="manga_search_sort_values">
         <item>ranked</item>
         <item>popularity</item>
         <item>chapters</item>
+        <item>volumes</item>
         <item>aired_on</item>
         <item>name</item>
+        <item>ranked_random</item>
+        <item>id_desc</item>
     </string-array>
 
     <string-array name="duration">
