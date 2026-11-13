@@ -38,33 +38,35 @@ class FilterSourceImpl @Inject constructor(
     }
 
     override fun getAnimeFilters(): List<FilterCategory> = listOfNotNull(
-            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, true)),
-            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, true)),
-            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, true)),
-            rateCategory(true),
-            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, true)),
-            FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION)),
-            FilterCategory(FilterType.AGE_RATING, getAgeRatingString(), getFilters(FilterType.AGE_RATING))
+            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.ANIME)),
+            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.ANIME)),
+            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.ANIME)),
+            rateCategory(Type.ANIME),
+            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.ANIME)),
+            FilterCategory(FilterType.DURATION, getDurationString(), getFilters(FilterType.DURATION, Type.ANIME)),
+            FilterCategory(FilterType.AGE_RATING, getAgeRatingString(), getFilters(FilterType.AGE_RATING, Type.ANIME)),
+            FilterCategory(FilterType.ORIGIN, context.getString(R.string.filter_origin), getFilters(FilterType.ORIGIN, Type.ANIME))
     )
 
     override fun getMangaFilters(): List<FilterCategory> = listOfNotNull(
-            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
-            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
-            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            rateCategory(false),
-            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND))
+            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.MANGA)),
+            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.MANGA)),
+            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.MANGA)),
+            rateCategory(Type.MANGA),
+            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.MANGA))
     )
 
     override fun getRanobeFilters(): List<FilterCategory> = listOfNotNull(
-            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE)),
-            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON)),
-            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS)),
-            rateCategory(false)
+            FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.RANOBE)),
+            FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.RANOBE)),
+            FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.RANOBE)),
+            rateCategory(Type.RANOBE),
+            FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.RANOBE))
     )
 
     //«Список» filters by the signed-in user's own list; a guest has none to filter by (BUGS #15)
-    private fun rateCategory(anime: Boolean): FilterCategory? =
-            if (userSource.isSignedIn()) FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, anime))
+    private fun rateCategory(type: Type): FilterCategory? =
+            if (userSource.isSignedIn()) FilterCategory(FilterType.RATE, getRateStatusString(), getFilters(FilterType.RATE, type))
             else null
 
     override fun getAnimeSortFilters(): List<FilterItem> =
@@ -77,15 +79,18 @@ class FilterSourceImpl @Inject constructor(
                     .zip(getList(R.array.manga_search_sort_values))
                     .map { (name, value) -> FilterItem(SearchConstants.ORDER, value, name) }
 
-    private fun getFilters(type: FilterType, isAnime: Boolean = false): MutableList<FilterItem> {
-        return when (type) {
+    //the chips of one row for one catalog type; manga and ranobe differ only in «Тип»
+    private fun getFilters(filter: FilterType, type: Type): MutableList<FilterItem> {
+        val isAnime = type == Type.ANIME
+        return when (filter) {
             FilterType.GENRE -> getGenres(isAnime)
             FilterType.SEASON -> getSeasons(isAnime)
             FilterType.STATUS -> getStatuses(isAnime)
             FilterType.RATE -> getRates(isAnime)
-            FilterType.KIND -> getKinds(isAnime)
+            FilterType.KIND -> getKinds(type)
             FilterType.DURATION -> getDurations()
             FilterType.AGE_RATING -> getAgeRatings()
+            FilterType.ORIGIN -> getOrigins()
             else -> mutableListOf()
         }
     }
@@ -105,23 +110,54 @@ class FilterSourceImpl @Inject constructor(
     /**
      * The «Тип» chips, in the site's words and order: the same words as the cards. «TV: 12 серий»,
      * «TV: 24 серии», «TV: 48+ серий» narrow «TV Сериал» by its episode count, as on the site; they are
-     * values of the api's `kind` filter, not kinds of a title.
+     * values of the api's `kind` filter, not kinds of a title. Ranobe has its own two kinds, «Ранобэ» and
+     * «Новелла» (`/api/ranobe?kind=novel` works, though the docs do not list it; CATALOG.md §1).
      */
-    private fun getKinds(anime: Boolean): MutableList<FilterItem> {
-        val kinds = if (anime) listOf(
-                AnimeType.TV.type to AnimeType.TV.labelRes,
-                AnimeType.TV_13.type to R.string.type_tv_13,
-                AnimeType.TV_24.type to R.string.type_tv_24,
-                AnimeType.TV_48.type to R.string.type_tv_48
-        ) + listOf(AnimeType.MOVIE, AnimeType.OVA, AnimeType.ONA, AnimeType.SPECIAL, AnimeType.TV_SPECIAL, AnimeType.MUSIC, AnimeType.PV, AnimeType.CM)
-                .map { it.type to it.labelRes }
-        else listOf(MangaType.MANGA, MangaType.MANHWA, MangaType.MANHUA, MangaType.ONE_SHOT, MangaType.DOUJIN)
-                .map { it.type to it.labelRes }
+    private fun getKinds(type: Type): MutableList<FilterItem> {
+        val kinds = when (type) {
+            Type.ANIME -> listOf(
+                    AnimeType.TV.type to AnimeType.TV.labelRes,
+                    AnimeType.TV_13.type to R.string.type_tv_13,
+                    AnimeType.TV_24.type to R.string.type_tv_24,
+                    AnimeType.TV_48.type to R.string.type_tv_48
+            ) + listOf(AnimeType.MOVIE, AnimeType.OVA, AnimeType.ONA, AnimeType.SPECIAL, AnimeType.TV_SPECIAL, AnimeType.MUSIC, AnimeType.PV, AnimeType.CM)
+                    .map { it.type to it.labelRes }
+            Type.RANOBE -> listOf(MangaType.LIGHT_NOVEL, MangaType.NOVEL)
+                    .map { it.type to it.labelRes }
+            else -> listOf(MangaType.MANGA, MangaType.MANHWA, MangaType.MANHUA, MangaType.ONE_SHOT, MangaType.DOUJIN)
+                    .map { it.type to it.labelRes }
+        }
         return kinds
                 .mapNotNull { (value, label) -> label?.let { convert(FilterType.KIND.value, value, context.getString(it)) } }
                 .toMutableList()
     }
 
+
+    /**
+     * The anime «Первоисточник» chips: the api's `origin` values in the site's words and order (live
+     * 2026-11-13). The api also takes `unknown`, which the site does not offer. Anime only: manga and
+     * ranobe answer 422 (CATALOG.md §1).
+     */
+    private fun getOrigins(): MutableList<FilterItem> = listOf(
+            "original" to R.string.origin_original,
+            "manga" to R.string.origin_manga,
+            "web_manga" to R.string.origin_web_manga,
+            "four_koma_manga" to R.string.origin_four_koma_manga,
+            "light_novel" to R.string.origin_light_novel,
+            "novel" to R.string.origin_novel,
+            "web_novel" to R.string.origin_web_novel,
+            "visual_novel" to R.string.origin_visual_novel,
+            "game" to R.string.origin_game,
+            "card_game" to R.string.origin_card_game,
+            "book" to R.string.origin_book,
+            "picture_book" to R.string.origin_picture_book,
+            "radio" to R.string.origin_radio,
+            "music" to R.string.origin_music,
+            "mixed_media" to R.string.origin_mixed_media,
+            "other" to R.string.origin_other
+    )
+            .map { (value, label) -> convert(FilterType.ORIGIN.value, value, context.getString(label)) }
+            .toMutableList()
 
     private fun getRates(anime: Boolean): MutableList<FilterItem> =
             RateStatus.values()

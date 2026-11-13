@@ -335,6 +335,24 @@
     <string name="filter_season_invalid">Не похоже на сезон. Например: summer_2027, 2027, 2016_2024, 201x</string>
     <string name="filter_seasons">Сезоны</string>
     <string name="filter_studio">Студия</string>
+    <string name="filter_origin">Первоисточник</string>
+    <!-- the anime «Первоисточник» chips: the api's `origin` values in the site's words (2026-11-13) -->
+    <string name="origin_original">Оригинал</string>
+    <string name="origin_manga">Манга</string>
+    <string name="origin_web_manga">Веб-манга</string>
+    <string name="origin_four_koma_manga">Ёнкома</string>
+    <string name="origin_light_novel">Ранобэ</string>
+    <string name="origin_novel">Роман</string>
+    <string name="origin_web_novel">Веб-новелла</string>
+    <string name="origin_visual_novel">Визуальная новелла</string>
+    <string name="origin_game">Игра</string>
+    <string name="origin_card_game">Карточная игра</string>
+    <string name="origin_book">Книга</string>
+    <string name="origin_picture_book">Книга с картинками</string>
+    <string name="origin_radio">Радио</string>
+    <string name="origin_music">Музыка</string>
+    <string name="origin_mixed_media">Более одного</string>
+    <string name="origin_other">Другое</string>
     <!--<string name="filter_custom_seasons_hint"><![CDATA[<p>Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение. Примеры:</p><br><p><b>1983</b> - 1983 год</p><br><p><b>winter_2016</b> - Зима 2016 года</p><br><p><b>2003_2015</b> - с 2003 по 2015 год</p><br><p><b>!2013</b> - кроме 2013 года</p><br><p><b>!summer_2001</b> - кроме Лета 2001 года</p>]]></string>-->
     <string name="filter_custom_seasons_hint"><![CDATA[Позволяет выделить и исключить введённый год и сезон в каком-то году. Вводить нужно на английском. Ключевые слова для сезонов: зима - winter, весна - spring, лето - summer, осень - fall. Восклицательный знак даёт исключение.
     <br>

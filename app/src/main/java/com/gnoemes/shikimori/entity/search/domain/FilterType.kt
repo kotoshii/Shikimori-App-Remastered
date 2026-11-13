@@ -11,5 +11,7 @@ enum class FilterType(val value : String) {
     SCORE("score"),
     STUDIO("studio"),
     AGE_RATING("rating"),
+    //anime only: what the anime was made from (manga, light novel, game...)
+    ORIGIN("origin"),
 
 }
