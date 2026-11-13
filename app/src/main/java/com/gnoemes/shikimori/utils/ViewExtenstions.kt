@@ -37,10 +37,14 @@ inline fun View.visibleIf(block: () -> Boolean) {
     if (block()) visible() else gone()
 }
 
-/** A control that cannot be used now stays in its place, greyed out, rather than going away. */
+/**
+ * A control that cannot be used now stays in its place, greyed out, rather than going away. Half faded, so
+ * it still reads: at 30% its text was barely visible and an outlined button lost its border (the user,
+ * 2026-11-14).
+ */
 fun View.setUsable(usable: Boolean) {
     isEnabled = usable
-    alpha = if (usable) 1f else 0.3f
+    alpha = if (usable) 1f else 0.5f
 }
 
 inline fun View.onClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL, crossinline l: (v: View) -> Unit) {
