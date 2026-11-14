@@ -111,7 +111,8 @@ open class FilterPresenter @Inject constructor(
         appliedFilters[type.value]?.let { own[type.value] = it }
         //the panel gets the categories too, so it opens with its content (P7-T5 Test 80)
         when (type) {
-            FilterType.GENRE -> viewState.showGenresDialog(super.type, own, categories)
+            //the same chip panel, in sections for genres, one block for licensors
+            FilterType.GENRE, FilterType.LICENSOR -> viewState.showChipPanel(super.type, type, own, categories)
             FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own, categories)
             //its list is its own, from the api
             FilterType.STUDIO, FilterType.PUBLISHER -> viewState.showCompaniesDialog(super.type, own)

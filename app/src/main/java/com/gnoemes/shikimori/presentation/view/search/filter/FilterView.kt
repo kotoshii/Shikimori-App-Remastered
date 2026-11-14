@@ -4,6 +4,7 @@ import com.arellomobile.mvp.viewstate.strategy.SkipStrategy
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFilterView
 
@@ -18,7 +19,8 @@ interface FilterView : BaseFilterView {
     fun showSortBySearch()
 
     @StateStrategyType(SkipStrategy::class)
-    fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?)
+    //the chip panel for «Жанр» or «Лицензия» ([filterType])
+    fun showChipPanel(type: Type, filterType: FilterType, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?)
 
     @StateStrategyType(SkipStrategy::class)
     fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?)

@@ -44,6 +44,8 @@ class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConver
             //the list and the chosen ones are the panel's; the row has the count, as «Жанр» (P10-T4). Until
             //P10-T4 a title page's studio had a row of its own at the top, with its chip (BUGS #13)
             FilterType.STUDIO, FilterType.PUBLISHER -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
+            //its chips are in the panel the genres use (P10-T4)
+            FilterType.LICENSOR -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = false, hasSelectAll = false)
         }
     }
@@ -76,8 +78,18 @@ class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConver
                         convertFilter(it, statuses.first, statuses.second)
                     }
 
-            if (filters.isEmpty()) null else FilterGenreSection(titleRes, filters)
+            if (filters.isEmpty()) null else FilterGenreSection(titleRes, FilterType.GENRE, filters)
         }
+    }
+
+    //all the chips in one block with no title: the chip panel opened for «Лицензия»
+    override fun convertSection(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any> {
+        val applied = appliedFilters[category.filterType.value]
+        val filters = category.filters.map {
+            val statuses = getAppliedStatus(it, applied)
+            convertFilter(it, statuses.first, statuses.second)
+        }
+        return listOf(FilterGenreSection(null, category.filterType, filters))
     }
 
     override fun convertSeasons(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<FilterViewModel> {

@@ -18,7 +18,7 @@ class FilterGenreAdapter(
 
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean = when {
         //sections are told apart by their title, so swapping anime for manga rebinds them
-        oldItem is FilterGenreSection && newItem is FilterGenreSection -> oldItem.titleRes == newItem.titleRes
+        oldItem is FilterGenreSection && newItem is FilterGenreSection -> oldItem.type == newItem.type && oldItem.titleRes == newItem.titleRes
         else -> false
     }
 

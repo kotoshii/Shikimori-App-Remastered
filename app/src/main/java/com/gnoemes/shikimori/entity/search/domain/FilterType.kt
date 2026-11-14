@@ -19,6 +19,8 @@ enum class FilterType(val value : String, val singleValue: Boolean = false) {
     STUDIO("studio"),
     //manga and ranobe: the magazine or publisher. Several mean all at once, as studios do
     PUBLISHER("publisher"),
+    //who licensed the title in Russia: the name itself, exact; several mean any of them
+    LICENSOR("licensor"),
     AGE_RATING("rating"),
     //anime only: what the anime was made from (manga, light novel, game...)
     ORIGIN("origin");

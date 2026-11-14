@@ -346,6 +346,9 @@
     <string name="filter_seasons">Сезоны</string>
     <string name="filter_studio">Студия</string>
     <string name="filter_publisher">Издатель</string>
+    <string name="filter_licensor">Лицензия</string>
+    <!-- the licensor chip `any`, in the site's words -->
+    <string name="filter_licensor_any">Лицензировано (любой)</string>
     <!-- the «Студии» / «Издатели» panel. Several chosen mean all at once in the api, unlike the site (P10-T4 Q5) -->
     <string name="filter_studios">Студии</string>
     <string name="filter_publishers">Издатели</string>

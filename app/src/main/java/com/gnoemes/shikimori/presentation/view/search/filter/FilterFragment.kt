@@ -38,6 +38,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
     companion object {
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
+        private const val LICENSORS_TAG = "licensorsFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
         private const val COMPANIES_TAG = "companiesFilterDialog"
         private const val SORTS_KEY = "SORTS_KEY"
@@ -92,6 +93,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
     override fun onFiltersSelected(tag: String?, appliedFilters: HashMap<String, MutableList<FilterItem>>) {
         val key = when (tag) {
             GENRES_TAG -> FilterType.GENRE.value
+            LICENSORS_TAG -> FilterType.LICENSOR.value
             SEASONS_TAG -> FilterType.SEASON.value
             COMPANIES_TAG -> FilterType.companyFor(presenter.type).value
             else -> null
@@ -121,12 +123,13 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         adapter.bindItems(items)
     }
 
-    override fun showGenresDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
-        val fragment = fragmentManager?.findFragmentByTag(GENRES_TAG)
+    override fun showChipPanel(type: Type, filterType: FilterType, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?) {
+        val tag = if (filterType == FilterType.LICENSOR) LICENSORS_TAG else GENRES_TAG
+        val fragment = fragmentManager?.findFragmentByTag(tag)
         if (fragment == null) {
-            val filter = FilterGenresFragment.newInstance(type, filters, categories)
+            val filter = FilterGenresFragment.newInstance(type, filterType, filters, categories)
             filter.setTargetFragment(this, 43)
-            postViewAction { filter.show(fragmentManager!!, GENRES_TAG) }
+            postViewAction { filter.show(fragmentManager!!, tag) }
         }
     }
 

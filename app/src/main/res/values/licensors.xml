@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--the catalog's «Лицензия» chips: the licensor names the site's catalog pages offer, in their order, for
+    /animes, /mangas and /ranobe (read 2026-11-14). The api has no list of them (CATALOG.md §7), and takes
+    the name itself, exact and case-sensitive, as `licensor`. «Лицензировано (любой)» (`any`) is added in
+    code. tools/check_licensors.py, in the Live check, fails when the site's lists stop matching these.-->
+<resources>
+
+    <string-array name="licensors_anime" translatable="false">
+        <item>Crunchyroll</item>
+        <item>DEEP</item>
+        <item>Wakanim</item>
+        <item>Netflix</item>
+        <item>2x2</item>
+        <item>FAN</item>
+        <item>MC Entertainment</item>
+        <item>VK</item>
+        <item>Амедиатека</item>
+        <item>CLS Media</item>
+        <item>Русский Репортаж</item>
+        <item>Иви</item>
+        <item>Reanimedia</item>
+        <item>Ракета Релизинг</item>
+        <item>Пионер</item>
+        <item>Кинологистика</item>
+        <item>Мега-Аниме</item>
+        <item>RUSCICO</item>
+        <item>Экспонента</item>
+        <item>Cinema Prestige</item>
+        <item>RWV</item>
+        <item>XL Media</item>
+        <item>Вольга</item>
+        <item>Первый ТВЧ</item>
+        <item>Централ Партнершип</item>
+        <item>All Media Company</item>
+        <item>Capella Film</item>
+        <item>Megalicense</item>
+        <item>CP Digital</item>
+        <item>Иноекино</item>
+        <item>Синема Галэкси</item>
+        <item>Magic Film Company</item>
+        <item>World Pictures</item>
+        <item>Парадиз</item>
+        <item>Ten Letters</item>
+        <item>АКМ</item>
+        <item>ВГТРК</item>
+        <item>Премиум Фильм</item>
+        <item>Cinemaus Studio</item>
+        <item>MEGOGO Distribution</item>
+        <item>YouTube</item>
+        <item>Кинеко</item>
+        <item>Люксор</item>
+        <item>Наше Кино</item>
+        <item>Global Film</item>
+        <item>Japan Foundation</item>
+        <item>MDfilm</item>
+        <item>RVISION STUDIO</item>
+        <item>Vereteno</item>
+        <item>Атмосфера Кино</item>
+        <item>Двадцатый Век Фокс СНГ</item>
+        <item>Каропрокат</item>
+        <item>Каскад фильм</item>
+        <item>Кинолэнд</item>
+        <item>Комикс-Арт</item>
+        <item>Маурис филм</item>
+        <item>Мосфильм</item>
+        <item>Мультиландия</item>
+        <item>ННТВ</item>
+        <item>Русский фильм</item>
+        <item>СБ Фильм</item>
+    </string-array>
+
+    <string-array name="licensors_manga" translatable="false">
+        <item>Фабрика комиксов</item>
+        <item>Истари Комикс</item>
+        <item>Литрес</item>
+        <item>Alt Graph</item>
+        <item>XL Media</item>
+        <item>Мой Комикс</item>
+        <item>Азбука-Аттикус</item>
+        <item>Комильфо</item>
+        <item>Бумажный фонарик</item>
+        <item>АСТ</item>
+        <item>Комикс-Арт</item>
+        <item>Палма Пресс</item>
+        <item>МИФ</item>
+        <item>Кислород</item>
+        <item>Эксмо</item>
+        <item>ДМК Пресс</item>
+        <item>MANGA Plus</item>
+        <item>Reanimedia</item>
+        <item>Росмэн</item>
+        <item>Communication Asia Co.</item>
+        <item>Строки</item>
+        <item>Сакура-пресс</item>
+        <item>Фантастика</item>
+        <item>Like Book</item>
+        <item>Marshmallow Books</item>
+        <item>Терлецки Комикс</item>
+        <item>DEEP</item>
+        <item>Freedom</item>
+        <item>Русское издательство манги</item>
+        <item>Лисий Лес</item>
+        <item>Terra Fantastica</item>
+        <item>Си Джи Пресс</item>
+        <item>Popcorn Books</item>
+        <item>Бамбук</item>
+        <item>Библейская лига</item>
+        <item>Бомбора</item>
+        <item>Бумкнига</item>
+        <item>КомФедерация</item>
+    </string-array>
+
+    <string-array name="licensors_ranobe" translatable="false">
+        <item>Истари Комикс</item>
+        <item>АСТ</item>
+        <item>Азбука-Аттикус</item>
+        <item>XL Media</item>
+        <item>Reanimedia</item>
+        <item>Эксмо</item>
+        <item>Inspiria</item>
+        <item>МИФ</item>
+        <item>Кислород</item>
+        <item>Лисий Лес</item>
+        <item>Бумажный фонарик</item>
+        <item>Комильфо</item>
+        <item>Амфора</item>
+        <item>Like Book</item>
+        <item>Fanzon</item>
+        <item>Freedom</item>
+        <item>Питер</item>
+        <item>Рипол-классик</item>
+    </string-array>
+
+</resources>

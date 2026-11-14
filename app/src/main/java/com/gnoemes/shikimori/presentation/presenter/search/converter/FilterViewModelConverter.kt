@@ -11,6 +11,9 @@ interface FilterViewModelConverter  {
 
     fun convertGenres(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any>
 
+    /** The category's chips as one untitled block, for the chip panel opened for another row than «Жанр». */
+    fun convertSection(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any>
+
     fun convertSeasons(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<FilterViewModel>
 
     fun convertCustomSeasons(appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any>

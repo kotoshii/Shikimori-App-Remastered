@@ -11,11 +11,14 @@ import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.utils.dimen
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.onLongPress
+import com.gnoemes.shikimori.utils.visibleIf
 import com.google.android.material.chip.Chip
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 /**
- * A titled block of genre chips - demographic, genres or themes.
+ * A titled block of genre chips - demographic, genres or themes - or the untitled block of the panel
+ * opened for «Лицензия»; the chips' clicks go out with the section's type.
  *
  * ⚠️ The chips are inflated straight into a `FlexboxLayout` rather than bound by a nested
  * RecyclerView, which is what the removed `item_filter_genre_section` and its delegate did. That
@@ -47,14 +50,15 @@ class FilterGenreSectionAdapterDelegate(
         private val normalPadding by lazy { itemView.context.dimen(R.dimen.margin_normal) }
 
         fun bind(item: FilterGenreSection) {
-            binding.categoryNameView.setText(item.titleRes)
+            binding.categoryNameView.visibleIf { item.titleRes != null }
+            item.titleRes?.let { binding.categoryNameView.setText(it) }
 
             with(binding.chipContainer) {
                 //rebound wholesale: a section only changes when a filter is applied or the content
                 //type is switched, and both replace every chip in it
                 removeAllViews()
 
-                item.filters.forEach { filter -> addView(createChip(this, filter)) }
+                item.filters.forEach { filter -> addView(createChip(this, item.type, filter)) }
             }
         }
 
@@ -63,7 +67,7 @@ class FilterGenreSectionAdapterDelegate(
          * `FilterChipAdapter` applies - kept in step with it deliberately, so a chip looks and
          * behaves the same wherever it appears.
          */
-        private fun createChip(parent: ViewGroup, filter: FilterViewModel): Chip {
+        private fun createChip(parent: ViewGroup, type: FilterType, filter: FilterViewModel): Chip {
             val chip = parent.inflate(R.layout.item_chip_filter) as Chip
 
             chip.text = filter.text
@@ -81,8 +85,8 @@ class FilterGenreSectionAdapterDelegate(
                 }
             }
 
-            chip.onClick { selectCallback.invoke(FilterType.GENRE, filter) }
-            chip.setOnLongClickListener { invertCallback.invoke(FilterType.GENRE, filter); true }
+            chip.onClick { selectCallback.invoke(type, filter) }
+            chip.onLongPress { invertCallback.invoke(type, filter) }
 
             return chip
         }

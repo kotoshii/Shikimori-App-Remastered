@@ -41,6 +41,7 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.ANIME)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.ANIME)),
             companyCategory(Type.ANIME),
+            licensorCategory(Type.ANIME),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.ANIME)),
             rateCategory(Type.ANIME),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.ANIME)),
@@ -54,6 +55,7 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.MANGA)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.MANGA)),
             companyCategory(Type.MANGA),
+            licensorCategory(Type.MANGA),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.MANGA)),
             rateCategory(Type.MANGA),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.MANGA)),
@@ -64,6 +66,7 @@ class FilterSourceImpl @Inject constructor(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.RANOBE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.RANOBE)),
             companyCategory(Type.RANOBE),
+            licensorCategory(Type.RANOBE),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.RANOBE)),
             rateCategory(Type.RANOBE),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.RANOBE)),
@@ -79,6 +82,22 @@ class FilterSourceImpl @Inject constructor(
         val filter = FilterType.companyFor(type)
         val name = if (filter == FilterType.STUDIO) R.string.filter_studio else R.string.filter_publisher
         return FilterCategory(filter, context.getString(name), mutableListOf())
+    }
+
+    /**
+     * «Лицензия»: «Лицензировано (любой)» (`any`), then the licensors the site's catalog page offers for the
+     * type, in its order (`res/values/licensors.xml`; the api has no list, CATALOG.md §7). The value is the
+     * name itself. With the other rows that open a panel (P10-T4).
+     */
+    private fun licensorCategory(type: Type): FilterCategory {
+        val names = when (type) {
+            Type.ANIME -> R.array.licensors_anime
+            Type.RANOBE -> R.array.licensors_ranobe
+            else -> R.array.licensors_manga
+        }
+        val items = listOf(convert(FilterType.LICENSOR.value, "any", context.getString(R.string.filter_licensor_any))) +
+                getList(names).map { convert(FilterType.LICENSOR.value, it, it) }
+        return FilterCategory(FilterType.LICENSOR, context.getString(R.string.filter_licensor), items.toMutableList())
     }
 
     /**

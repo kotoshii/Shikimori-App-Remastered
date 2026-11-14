@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.FragmentFilterGenresBinding
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import com.gnoemes.shikimori.presentation.presenter.search.FilterGenresPresenter
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
@@ -23,11 +24,20 @@ class FilterGenresFragment : BaseFilterDialogFragment<FilterGenresPresenter, Fil
 
     @ProvidePresenter
     fun providePresenter(): FilterGenresPresenter = presenterProvider.get().withArguments()
+            .apply { filterType = this@FilterGenresFragment.filterType }
 
     companion object {
-        fun newInstance(type: Type, filters: HashMap<String, MutableList<FilterItem>>?, categories: List<FilterCategory>?) =
-                withFilters(FilterGenresFragment(), type, filters, categories)
+        private const val FILTER_TYPE_KEY = "FILTER_TYPE_KEY"
+
+        /** The chip panel for [filterType]: «Жанры», or «Лицензия» (P10-T4). */
+        fun newInstance(type: Type, filterType: FilterType, filters: HashMap<String, MutableList<FilterItem>>?, categories: List<FilterCategory>?) =
+                withFilters(FilterGenresFragment(), type, filters, categories).apply {
+                    arguments?.putSerializable(FILTER_TYPE_KEY, filterType)
+                }
     }
+
+    private val filterType: FilterType
+        get() = arguments?.getSerializable(FILTER_TYPE_KEY) as? FilterType ?: FilterType.GENRE
 
     private val binding by viewBinding(FragmentFilterGenresBinding::bind)
 
@@ -39,7 +49,7 @@ class FilterGenresFragment : BaseFilterDialogFragment<FilterGenresPresenter, Fil
         super.onViewCreated(view, savedInstanceState)
 
         with(binding.appBarLayout.toolbar) {
-            setTitle(R.string.filters_genres)
+            setTitle(if (filterType == FilterType.GENRE) R.string.filters_genres else R.string.filter_licensor)
             addBackButton(R.drawable.ic_close) { onBackPressed() }
         }
 
