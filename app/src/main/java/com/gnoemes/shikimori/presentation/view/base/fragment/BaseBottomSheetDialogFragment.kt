@@ -3,10 +3,12 @@ package com.gnoemes.shikimori.presentation.view.base.fragment
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
@@ -86,8 +88,19 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
         val context = dialog.context
 
         bottomSheet = dialog.findViewById(R.id.design_bottom_sheet)!!
-        if (peekHeight != -1) {
-            dialog.window?.statusBarColor = Color.TRANSPARENT
+        //every sheet's status bar shows the dimmed screen behind it. Only the sheets with a peek height did:
+        //the full-screen ones («Фильтры», «Студии», «Эпизоды») kept the theme's colour, so two panels
+        //opened from the same sheet coloured the status bar differently (P10-T4 Q18)
+        dialog.window?.statusBarColor = Color.TRANSPARENT
+        //that strip is dark in every theme, so its icons are light: the light theme's dark icons, which the
+        //sheet's window takes from the theme (windowLightStatusBar), were barely readable on it (P10-T4 Test 49)
+        //Android 11 and up; the older flag before it (core 1.1 has no compat call for this)
+        val sheetWindow = dialog.window
+        if (sheetWindow != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            sheetWindow.insetsController?.setSystemBarsAppearance(0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS)
+        } else if (sheetWindow != null) {
+            val decor = sheetWindow.decorView
+            decor.systemUiVisibility = decor.systemUiVisibility and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
         }
 
         bottomSheet.background = context.drawable(windowBackground)
@@ -96,6 +109,7 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
         val border = context.dimenAttr(R.attr.themeStrokeWidth)
         if (border > 0) bottomSheet.foreground = TopEdgeBorderDrawable(context.colorAttr(R.attr.colorDivider),
                 border.toFloat(), context.dimen(R.dimen.sheet_corner_radius))
+        clipToRoundedTop(bottomSheet, context.dimen(R.dimen.sheet_corner_radius))
 
         if (peekHeight == -1) bottomSheet.layoutParams = bottomSheet.layoutParams.apply { height = ViewGroup.LayoutParams.MATCH_PARENT }
         else BottomSheetBehavior.from(bottomSheet).peekHeight = peekHeight
@@ -120,6 +134,22 @@ abstract class BaseBottomSheetDialogFragment : MvpDialogFragment() {
         }
     }
 
+
+    /**
+     * The sheet's content is clipped to its rounded top corners, so a layout that paints its own background
+     * («Фильтры», «Эпизоды», «Ссылки», «Статистика») cannot square them: only the sheets that painted none
+     * showed the background's corners (P10-T4 Q19). Before Android 13 a view clips only to a round rect with
+     * four equal corners, so the shape reaches one radius below the sheet, and its bottom corners fall
+     * outside it.
+     */
+    private fun clipToRoundedTop(sheet: android.view.View, radius: Float) {
+        sheet.outlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height + radius.toInt(), radius)
+            }
+        }
+        sheet.clipToOutline = true
+    }
 
     protected open fun expandDialog() {
         BottomSheetBehavior.from(bottomSheet).state = BottomSheetBehavior.STATE_EXPANDED
