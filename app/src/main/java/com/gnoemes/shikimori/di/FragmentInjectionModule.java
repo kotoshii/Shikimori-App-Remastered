@@ -35,6 +35,7 @@ import com.gnoemes.shikimori.presentation.view.person.PersonFragment;
 import com.gnoemes.shikimori.presentation.view.rates.RateFragment;
 import com.gnoemes.shikimori.presentation.view.search.SearchFragment;
 import com.gnoemes.shikimori.presentation.view.search.filter.FilterFragment;
+import com.gnoemes.shikimori.presentation.view.search.filter.companies.FilterCompaniesFragment;
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment;
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment;
 import com.gnoemes.shikimori.presentation.view.series.SeriesFragment;
@@ -136,6 +137,9 @@ public interface FragmentInjectionModule {
 
     @ContributesAndroidInjector(modules = FilterModule.class)
     FilterSeasonsFragment filterSeasonsFragment();
+
+    @ContributesAndroidInjector(modules = FilterModule.class)
+    FilterCompaniesFragment filterCompaniesFragment();
 
     @BottomChildScope
     @ContributesAndroidInjector(modules = SeriesModule.class)

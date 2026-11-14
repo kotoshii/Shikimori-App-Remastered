@@ -113,6 +113,8 @@ open class FilterPresenter @Inject constructor(
         when (type) {
             FilterType.GENRE -> viewState.showGenresDialog(super.type, own, categories)
             FilterType.SEASON -> viewState.showSeasonsDialog(super.type, own, categories)
+            //its list is its own, from the api
+            FilterType.STUDIO, FilterType.PUBLISHER -> viewState.showCompaniesDialog(super.type, own)
             else -> Unit
         }
     }

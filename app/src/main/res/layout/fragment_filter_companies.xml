@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--the «Студии» / «Издатели» panel: the bar, the field, a line on how several work, the chosen ones as
+tags, then the long list, which takes the rest of the height. Focusable itself, so the field takes no
+focus, and the keyboard does not open, until it is tapped-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/layout_filter_nested_toolbar" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:imeOptions="actionSearch|flagNoExtractUi"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        app:closeIcon="@drawable/ic_close"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@android:color/transparent"
+        app:searchIcon="@drawable/ic_search" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorDivider" />
+
+    <TextView
+        android:id="@+id/hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="12dp"
+        android:textColor="?attr/colorOnPrimarySecondary"
+        android:textSize="14sp"
+        tools:text="@string/filter_studios_hint" />
+
+    <!--not a nested scrolling child: the sheet takes the first one it finds as the list it lets scroll, and
+    this one came first, so the long list under it could not be scrolled-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chosenList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:nestedScrollingEnabled="false"
+        android:layout_marginStart="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone"
+        tools:layoutManager="com.google.android.flexbox.FlexboxLayoutManager"
+        tools:listitem="@layout/item_chip_entry"
+        tools:visibility="visible" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorDivider" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            tools:listitem="@layout/item_filter_company" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <include layout="@layout/layout_default_placeholders" />
+
+    </FrameLayout>
+
+</LinearLayout>

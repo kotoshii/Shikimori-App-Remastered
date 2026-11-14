@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.common.data.FranchiseResponse
 import com.gnoemes.shikimori.entity.common.data.LinkResponse
 import com.gnoemes.shikimori.entity.common.data.RelatedResponse
 import com.gnoemes.shikimori.entity.common.data.RolesResponse
+import com.gnoemes.shikimori.entity.studio.StudioResponse
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -39,4 +40,8 @@ interface AnimeApi {
 
     @GET("/api/animes/{id}/screenshots")
     fun getScreenshots(@Path("id") animeId: Long): Single<List<ScreenshotResponse>>
+
+    //every studio in one answer, with no search or paging (CATALOG.md §7): the catalog's «Студии» panel
+    @GET("/api/studios")
+    fun getStudios(): Single<List<StudioResponse>>
 }

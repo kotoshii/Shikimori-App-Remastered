@@ -2,12 +2,14 @@ package com.gnoemes.shikimori.data.repository.search
 
 import com.gnoemes.shikimori.data.local.services.FilterSource
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
+import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import io.reactivex.Single
 import javax.inject.Inject
 
 class FilterRepositoryImpl @Inject constructor(
-        private val source: FilterSource
+        private val source: FilterSource,
+        private val companySource: FilterCompanySource
 ) : FilterRepository {
 
     //fromCallable, not just: the lists are built when subscribed, on the io scheduler - the first
@@ -18,4 +20,8 @@ class FilterRepositoryImpl @Inject constructor(
 
     override fun getAnimeSortFilters(): Single<List<FilterItem>> = Single.fromCallable { source.getAnimeSortFilters() }
     override fun getMangaSortFilters(): Single<List<FilterItem>> = Single.fromCallable { source.getMangaSortFilters() }
+
+    override fun getCompanies(filter: FilterType): Single<List<FilterItem>> = companySource.get(filter)
+
+    override fun getKeptCompanies(filter: FilterType): List<FilterItem>? = companySource.kept(filter)
 }

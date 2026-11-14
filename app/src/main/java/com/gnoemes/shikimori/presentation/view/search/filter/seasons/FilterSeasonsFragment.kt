@@ -37,7 +37,9 @@ class FilterSeasonsFragment : BaseFilterDialogFragment<FilterSeasonsPresenter, F
     private val binding by viewBinding(FragmentFilterSeasonsBinding::bind)
 
     private val simpleAdapter by lazy { FilterChipAdapter(FilterType.SEASON, presenter::onFilterInverted, presenter::onFilterSelected) }
-    private val customAdapter by lazy { FilterSeasonsAdapter(presenter::onNewCustomFilter, presenter::onRemoveCustomFilter) }
+    private val customAdapter by lazy {
+        FilterSeasonsAdapter(presenter::onNewCustomFilter, presenter::onRemoveCustomFilter) { presenter.onTagInverted(FilterType.SEASON, it) }
+    }
 
     override val isTall: Boolean = true
 

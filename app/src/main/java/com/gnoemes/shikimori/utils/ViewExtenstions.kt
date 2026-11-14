@@ -55,6 +55,19 @@ inline fun View.onClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL, cross
     })
 }
 
+/**
+ * A long press that ends the press as it fires. A Material chip builds a new ripple background whenever its
+ * size changes (an icon shown or hidden: `Chip.onChipDrawableSizeChange`), and a chip redrawn by its own long
+ * press, with the finger still down, played its ripple again (P10-T4 Test 38).
+ */
+inline fun View.onLongPress(crossinline action: () -> Unit) {
+    setOnLongClickListener {
+        it.isPressed = false
+        action()
+        true
+    }
+}
+
 inline fun Toolbar.onMenuClick(mills: Long = Constants.DEFAULT_DEBOUNCE_INTERVAL, crossinline l: (item: MenuItem?) -> Boolean) {
     setOnMenuItemClickListener(object : DebouncedOnMenuClickListener(mills) {
         override fun onDebouncedClick(v: MenuItem?): Boolean = l.invoke(v)

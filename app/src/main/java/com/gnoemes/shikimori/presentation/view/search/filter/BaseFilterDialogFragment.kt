@@ -33,6 +33,10 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
                 }
     }
 
+    /** The catalog type it was opened for: anime, manga or ranobe. */
+    protected val catalogType: Type
+        get() = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
+
     /** The genre and season panels open almost full height; the sheet itself does not. */
     protected open val isTall: Boolean = false
 
@@ -47,7 +51,7 @@ abstract class BaseFilterDialogFragment<P : BaseFilterPresenter<V>, V : BaseFilt
      */
     @Suppress("UNCHECKED_CAST")
     protected fun P.withArguments(): P = apply {
-        type = arguments?.getSerializable(TYPE_KEY) as? Type ?: Type.ANIME
+        type = catalogType
         val filters = arguments?.getSerializable(FILTERS_KEY) as? HashMap<String, MutableList<FilterItem>>
         appliedFilters = HashMap(filters.orEmpty().mapValues { it.value.toMutableList() })
         categories = arguments?.getParcelableArrayList(CATEGORIES_KEY)

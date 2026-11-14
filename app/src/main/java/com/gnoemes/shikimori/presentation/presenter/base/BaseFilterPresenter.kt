@@ -5,6 +5,7 @@ import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
+import com.gnoemes.shikimori.entity.search.presentation.FilterEntryViewModel
 import com.gnoemes.shikimori.entity.search.presentation.FilterViewModel
 import com.gnoemes.shikimori.presentation.view.base.fragment.BaseFilterView
 import io.reactivex.Single
@@ -62,6 +63,13 @@ abstract class BaseFilterPresenter<View : BaseFilterView>(
     }
 
     //a tap picks a chip or drops it; in a one-value filter a new pick replaces the old one
+    //a long press on a tag (a typed season, a chosen studio) works as on a chip: it excludes the tag, or takes
+    //an excluded one back
+    fun onTagInverted(type: FilterType, tag: FilterEntryViewModel) {
+        val state = if (tag.excluded) FilterViewModel.STATE.INVERTED else FilterViewModel.STATE.SELECTED
+        onFilterInverted(type, FilterViewModel(state, tag.value, tag.text))
+    }
+
     open fun onFilterSelected(type: FilterType, item: FilterViewModel) {
         val filter = FilterItem(type.value, item.value, item.text)
         when {

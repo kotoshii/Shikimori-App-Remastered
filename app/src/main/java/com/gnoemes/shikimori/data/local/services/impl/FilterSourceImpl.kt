@@ -40,6 +40,7 @@ class FilterSourceImpl @Inject constructor(
     override fun getAnimeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.ANIME)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.ANIME)),
+            companyCategory(Type.ANIME),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.ANIME)),
             rateCategory(Type.ANIME),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.ANIME)),
@@ -52,6 +53,7 @@ class FilterSourceImpl @Inject constructor(
     override fun getMangaFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.MANGA)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.MANGA)),
+            companyCategory(Type.MANGA),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.MANGA)),
             rateCategory(Type.MANGA),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.MANGA)),
@@ -61,11 +63,23 @@ class FilterSourceImpl @Inject constructor(
     override fun getRanobeFilters(): List<FilterCategory> = listOfNotNull(
             FilterCategory(FilterType.GENRE, getGenreString(), getFilters(FilterType.GENRE, Type.RANOBE)),
             FilterCategory(FilterType.SEASON, getSeasonString(), getFilters(FilterType.SEASON, Type.RANOBE)),
+            companyCategory(Type.RANOBE),
             FilterCategory(FilterType.STATUS, getStatusString(), getFilters(FilterType.STATUS, Type.RANOBE)),
             rateCategory(Type.RANOBE),
             FilterCategory(FilterType.KIND, getTypeString(), getFilters(FilterType.KIND, Type.RANOBE)),
             scoreCategory()
     )
+
+    /**
+     * «Студия» for anime, «Издатель» for manga and ranobe, after «Сезон», with the other rows that open a
+     * panel: no chips of its own, as the list (some 1900 names) is loaded by its panel
+     * (FilterCompanySource); the row shows how many are chosen, as «Жанр» does (P10-T4).
+     */
+    private fun companyCategory(type: Type): FilterCategory {
+        val filter = FilterType.companyFor(type)
+        val name = if (filter == FilterType.STUDIO) R.string.filter_studio else R.string.filter_publisher
+        return FilterCategory(filter, context.getString(name), mutableListOf())
+    }
 
     /**
      * «Оценка»: the api's score at least N, one choice («6+»…«9+», P10-T4 Q7). The api takes 1-9, but below

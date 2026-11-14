@@ -22,4 +22,8 @@ interface FilterView : BaseFilterView {
 
     @StateStrategyType(SkipStrategy::class)
     fun showSeasonsDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>, categories: List<FilterCategory>?)
+
+    /** The «Студии» panel for anime, «Издатели» for manga and ranobe. */
+    @StateStrategyType(SkipStrategy::class)
+    fun showCompaniesDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>)
 }

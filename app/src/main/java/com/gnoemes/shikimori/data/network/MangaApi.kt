@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.common.data.RolesResponse
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.entity.manga.data.MangaDetailsResponse
 import com.gnoemes.shikimori.entity.manga.data.MangaResponse
+import com.gnoemes.shikimori.entity.publisher.PublisherResponse
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -43,4 +44,8 @@ interface MangaApi {
 
     @GET("/api/{kind}/{id}/external_links")
     fun getLinks(@Path("kind") kind: String, @Path("id") id: Long): Single<List<LinkResponse>>
+
+    //every publisher in one answer, as /api/studios: the «Издатели» panel, for manga and ranobe alike
+    @GET("/api/publishers")
+    fun getPublishers(): Single<List<PublisherResponse>>
 }

@@ -6,12 +6,13 @@ import com.gnoemes.shikimori.presentation.view.common.adapter.BaseAdapter
 
 class FilterSeasonsAdapter(
         private val inputCallback: (String) -> Boolean,
-        private val closeCallback: (FilterEntryViewModel) -> Unit
+        private val closeCallback: (FilterEntryViewModel) -> Unit,
+        private val longPressCallback: (FilterEntryViewModel) -> Unit
 ) : BaseAdapter<Any>() {
 
     init {
         delegatesManager.apply {
-            addDelegate(FilterEntryAdapterDelegate(closeCallback))
+            addDelegate(FilterEntryAdapterDelegate(closeCallback, longPressCallback))
             addDelegate(FilterSeasonInputAdapterDelegate(inputCallback))
         }
     }

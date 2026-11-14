@@ -7,10 +7,13 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ItemChipEntryBinding
 import com.gnoemes.shikimori.entity.search.presentation.FilterEntryViewModel
 import com.gnoemes.shikimori.utils.inflate
+import com.gnoemes.shikimori.utils.onLongPress
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
+/** A tag: ✕ removes it; a long press excludes it or takes it back, as on the filter chips (P10-T4). */
 class FilterEntryAdapterDelegate(
-        private val closeCallback: (FilterEntryViewModel) -> Unit
+        private val closeCallback: (FilterEntryViewModel) -> Unit,
+        private val longPressCallback: (FilterEntryViewModel) -> Unit
 ) : AbsListItemAdapterDelegate<FilterEntryViewModel, Any, FilterEntryAdapterDelegate.ViewHolder>() {
 
     override fun isForViewType(item: Any, items: MutableList<Any>, position: Int): Boolean =
@@ -31,11 +34,15 @@ class FilterEntryAdapterDelegate(
 
         init {
             binding.chip.setOnCloseIconClickListener { closeCallback.invoke(item) }
+            binding.chip.onLongPress { longPressCallback.invoke(item) }
         }
 
         fun bind(item: FilterEntryViewModel) {
             this.item = item
-            binding.chip.text = item.value
+            binding.chip.text = item.text
+            //an excluded studio or publisher: the filter chips' − before the name
+            binding.chip.isChipIconVisible = item.excluded
+            if (item.excluded) binding.chip.setChipIconResource(R.drawable.ic_minus)
         }
     }
 }

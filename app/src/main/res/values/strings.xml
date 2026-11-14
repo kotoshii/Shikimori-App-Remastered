@@ -345,6 +345,14 @@
     <string name="filter_season_invalid">Не похоже на сезон. Например: summer_2027, 2027, 2016_2024, 201x</string>
     <string name="filter_seasons">Сезоны</string>
     <string name="filter_studio">Студия</string>
+    <string name="filter_publisher">Издатель</string>
+    <!-- the «Студии» / «Издатели» panel. Several chosen mean all at once in the api, unlike the site (P10-T4 Q5) -->
+    <string name="filter_studios">Студии</string>
+    <string name="filter_publishers">Издатели</string>
+    <string name="filter_studios_hint">Найдутся тайтлы, где есть все выбранные студии сразу. Долгое нажатие исключает.</string>
+    <string name="filter_publishers_hint">Найдутся тайтлы, где есть все выбранные издатели сразу. Долгое нажатие исключает.</string>
+    <string name="filter_studio_search_hint">Название студии</string>
+    <string name="filter_publisher_search_hint">Название издателя</string>
     <string name="filter_origin">Первоисточник</string>
     <string name="filter_score">Оценка</string>
     <!-- the anime «Первоисточник» chips: the api's `origin` values in the site's words (2026-11-13) -->

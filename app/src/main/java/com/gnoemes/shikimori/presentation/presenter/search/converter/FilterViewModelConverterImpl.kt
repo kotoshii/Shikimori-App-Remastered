@@ -1,6 +1,5 @@
 package com.gnoemes.shikimori.presentation.presenter.search.converter
 
-import android.content.Context
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.common.domain.GenreV2
@@ -8,32 +7,27 @@ import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.*
 import javax.inject.Inject
 
-class FilterViewModelConverterImpl @Inject constructor(
-        private val context: Context
-) : FilterViewModelConverter {
+class FilterViewModelConverterImpl @Inject constructor() : FilterViewModelConverter {
 
-    override fun convert(filters: List<FilterCategory>, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any> {
-        val items = mutableListOf<Any>()
-        studioRow(appliedFilters)?.let { items.add(it) }
-        filters.forEach { items.add(convertCategory(it, appliedFilters)) }
-
-        return items
-    }
+    override fun convert(filters: List<FilterCategory>, appliedFilters: HashMap<String, MutableList<FilterItem>>): List<Any> =
+            filters.map { convertCategory(it, appliedFilters) }
 
     /**
-     * A studio comes only from a title page's studio tag (picking one here is P10-T1), so its row is
-     * there only while one is on: the sheet showed nothing, and the limit could not be seen or removed
-     * on its own (BUGS #13). Its chips work as any row's: a tap or ✕ removes, a long press excludes.
+     * The chosen studios or publishers as tags, from the filters alone: each came with its name (from the
+     * panel's list, or with a title page's studio), so they show before the list loads and when it failed
+     * (P10-T4 Q11). An excluded one keeps its name and gets the − mark.
      */
-    private fun studioRow(appliedFilters: HashMap<String, MutableList<FilterItem>>): FilterWithButtonsViewModel? {
-        val studios = appliedFilters[FilterType.STUDIO.value]?.takeIf { it.isNotEmpty() } ?: return null
-        val chips = studios.map {
-            val value = it.value!!
-            val state = if (value.startsWith("!")) FilterViewModel.STATE.INVERTED else FilterViewModel.STATE.SELECTED
-            FilterViewModel(state, value, it.localizedText ?: value.removePrefix("!"))
-        }
-        return FilterWithButtonsViewModel(context.getString(R.string.filter_studio), FilterType.STUDIO, chips, hasInvert = false, hasSelectAll = false)
-    }
+    override fun convertChosen(chosen: List<FilterItem>?): List<FilterEntryViewModel> =
+            chosen.orEmpty().map {
+                val value = it.value!!
+                FilterEntryViewModel(value, it.localizedText ?: value.removePrefix("!"), excluded = value.startsWith("!"))
+            }
+
+    override fun convertCompanies(items: List<FilterItem>, chosen: List<FilterItem>?): List<FilterViewModel> =
+            items.map {
+                val statuses = getAppliedStatus(it, chosen)
+                convertFilter(it, statuses.first, statuses.second)
+            }
 
     private fun convertCategory(category: FilterCategory, appliedFilters: HashMap<String, MutableList<FilterItem>>): Any {
         val applied = appliedFilters[category.filterType.value]
@@ -47,6 +41,9 @@ class FilterViewModelConverterImpl @Inject constructor(
             FilterType.GENRE -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             FilterType.SEASON -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             FilterType.RATE -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = true, hasSelectAll = true)
+            //the list and the chosen ones are the panel's; the row has the count, as «Жанр» (P10-T4). Until
+            //P10-T4 a title page's studio had a row of its own at the top, with its chip (BUGS #13)
+            FilterType.STUDIO, FilterType.PUBLISHER -> FilterNestedViewModel(category.categoryLocalized, category.filterType, items, applied.size())
             else -> FilterWithButtonsViewModel(category.categoryLocalized, category.filterType, items, hasInvert = false, hasSelectAll = false)
         }
     }
@@ -97,14 +94,14 @@ class FilterViewModelConverterImpl @Inject constructor(
         return (appliedFilters[FilterType.SEASON.value]
                 ?.asSequence()
                 ?.filter { it.localizedText.isNullOrBlank() }
-                ?.map { FilterEntryViewModel(it.value!!) }
+                ?.map { FilterEntryViewModel(it.value!!, it.value.removePrefix("!"), excluded = it.value.startsWith("!")) }
                 ?.map { it as Any }
                 ?.toMutableList()
                 ?: mutableListOf())
                 .apply { add(FilterEntryInput(size == 0)) }
     }
 
-    private fun getAppliedStatus(checkItem: FilterItem, applied: MutableList<FilterItem>?): Pair<Boolean, Boolean> {
+    private fun getAppliedStatus(checkItem: FilterItem, applied: List<FilterItem>?): Pair<Boolean, Boolean> {
         val item = applied?.find { checkItem.value?.equals(it.value?.replace("!", ""))!! }
         return Pair(item != null, item != null && item.value!!.contains("!"))
     }

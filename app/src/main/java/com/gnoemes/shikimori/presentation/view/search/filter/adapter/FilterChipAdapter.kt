@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.utils.clearAndAddAll
 import com.gnoemes.shikimori.utils.dimen
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.onLongPress
 
 class FilterChipAdapter(
         private val type: FilterType,
@@ -46,7 +47,7 @@ class FilterChipAdapter(
         init {
             binding.chip.onClick { selectCallback.invoke(type, item) }
             //a one-value filter has no exclusion: no long press, so no buzz for nothing
-            if (!type.singleValue) binding.chip.setOnLongClickListener { invertCallback.invoke(type, item); true }
+            if (!type.singleValue) binding.chip.onLongPress { invertCallback.invoke(type, item) }
         }
 
         fun bind(item: FilterViewModel) {

@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.domain.search.filter
 
 import com.gnoemes.shikimori.entity.common.domain.FilterItem
 import com.gnoemes.shikimori.entity.common.domain.Type
+import com.gnoemes.shikimori.entity.search.domain.FilterType
 import com.gnoemes.shikimori.entity.search.presentation.FilterCategory
 import io.reactivex.Single
 
@@ -18,4 +19,10 @@ interface FilterInteractor {
 
     /** The sorts of [type]. */
     fun getSortFilters(type: Type): Single<List<FilterItem>>
+
+    /** The studios ([FilterType.STUDIO]) or publishers ([FilterType.PUBLISHER]) to pick from, by name. */
+    fun getCompanies(filter: FilterType): Single<List<FilterItem>>
+
+    /** The same list when it is kept in memory already, else null: read at once, on the calling thread. */
+    fun getKeptCompanies(filter: FilterType): List<FilterItem>?
 }

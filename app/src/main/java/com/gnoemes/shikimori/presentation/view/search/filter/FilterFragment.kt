@@ -18,6 +18,7 @@ import com.gnoemes.shikimori.presentation.presenter.search.FilterPresenter
 import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
 import com.gnoemes.shikimori.presentation.view.search.filter.BaseFilterDialogFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.adapter.FilterAdapter
+import com.gnoemes.shikimori.presentation.view.search.filter.companies.FilterCompaniesFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.genres.FilterGenresFragment
 import com.gnoemes.shikimori.presentation.view.search.filter.seasons.FilterSeasonsFragment
 import com.gnoemes.shikimori.utils.*
@@ -38,6 +39,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         private const val HINT_KEY = "HINT_KEY"
         private const val GENRES_TAG = "genresFilterDialog"
         private const val SEASONS_TAG = "seasonsFilterDialog"
+        private const val COMPANIES_TAG = "companiesFilterDialog"
         private const val SORTS_KEY = "SORTS_KEY"
         private const val SEARCHING_KEY = "SEARCHING_KEY"
         private const val SORT_REQUEST = "SORT_REQUEST"
@@ -91,6 +93,7 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
         val key = when (tag) {
             GENRES_TAG -> FilterType.GENRE.value
             SEASONS_TAG -> FilterType.SEASON.value
+            COMPANIES_TAG -> FilterType.companyFor(presenter.type).value
             else -> null
         }
 
@@ -133,6 +136,15 @@ class FilterFragment : BaseFilterDialogFragment<FilterPresenter, FilterView>(), 
             val filter = FilterSeasonsFragment.newInstance(type, filters, categories)
             filter.setTargetFragment(this, 44)
             postViewAction { filter.show(fragmentManager!!, SEASONS_TAG) }
+        }
+    }
+
+    override fun showCompaniesDialog(type: Type, filters: HashMap<String, MutableList<FilterItem>>) {
+        val fragment = fragmentManager?.findFragmentByTag(COMPANIES_TAG)
+        if (fragment == null) {
+            val filter = FilterCompaniesFragment.newInstance(type, filters)
+            filter.setTargetFragment(this, 45)
+            postViewAction { filter.show(fragmentManager!!, COMPANIES_TAG) }
         }
     }
 
