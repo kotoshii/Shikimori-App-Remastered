@@ -61,7 +61,9 @@ public interface ApiModule {
 
     @Singleton
     @Provides
-    static CommentApi bindCommentsApi(Retrofit retrofit) {
+    //with the token: the api answers a guest 404 for the comments of 18+ and private clubs' topics, so
+    //without it their members could not read them either (BUGS #116)
+    static CommentApi bindCommentsApi(@AuthCommonApi Retrofit retrofit) {
         return retrofit.create(CommentApi.class);
     }
 
