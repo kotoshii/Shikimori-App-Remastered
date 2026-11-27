@@ -71,8 +71,11 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //the manifest pins portrait for phones; the TV mode keeps the screen's landscape instead
-        if (isTvUi) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        //the orientation is pinned here rather than in the manifest: a manifest's portrait started
+        //the activity vertical on TVs for a moment before the landscape request was applied - the
+        //launch flash. Phones get the same portrait this way, the TV mode keeps the landscape
+        requestedOrientation = if (isTvUi) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         super.onCreate(savedInstanceState)
 
         val shikimori = intent?.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) != null

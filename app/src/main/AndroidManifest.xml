@@ -63,13 +63,11 @@
 
         <activity
             android:name=".presentation.view.auth.AuthActivity"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.view.settings.SettingsActivity"
-            android:label="@string/more_settings"
-            android:screenOrientation="portrait" />
+            android:label="@string/more_settings" />
 
         <activity
             android:name=".presentation.view.player.web.WebPlayerActivity"
