@@ -16,6 +16,7 @@ import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.entity.main.BottomScreens
+import com.gnoemes.shikimori.presentation.view.common.fragment.AppModeDialogFragment
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
@@ -70,7 +71,15 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
+        askAppModeOnce()
         showChangelogIfRequested()
+    }
+
+    //the first thing the app wants to know: where it is used, see AppModeExtensions. A restored
+    //instance brings its own dialog back, so a second one would stack on top of it
+    private fun askAppModeOnce() {
+        if (hasStoredAppMode || restoring) return
+        AppModeDialogFragment().show(supportFragmentManager, AppModeDialogFragment.TAG)
     }
 
     override fun onResume() {

@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">Shikigami</string>
+
+    <!--первый запуск и настройка: где приложение будет использоваться, см AppModeExtensions-->
+    <string name="app_mode_title">Где будете пользоваться приложением?</string>
+    <string name="app_mode_message">От режима зависит масштаб интерфейса и работа с пультом. Поменять можно позже в «Оформление».</string>
+    <string name="app_mode_message_tv">Похоже, это Android TV — рекомендуем режим «Android TV». Поменять можно позже в «Оформление».</string>
+    <string name="app_mode_tv">Android TV</string>
+    <string name="app_mode_mobile">Телефон</string>
     <string name="appBarFixScrollingFooterBehavior">com.gnoemes.shikimori.utils.widgets.FixScrollingFooterBehavior</string>
     <string name="download_notification_channel">Загрузки</string>
     <string name="download_notification_progress">Загрузка…</string>
