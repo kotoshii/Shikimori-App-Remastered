@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.common.presentation.FrameItem
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -41,6 +42,7 @@ abstract class BaseFrameContentAdaterDelegate(
         private lateinit var item: FrameItem
 
         init {
+            itemView.bindTvFocus()
             binding.container.onClick { onClick(item); onClickIndexed(item, adapterPosition) }
         }
 

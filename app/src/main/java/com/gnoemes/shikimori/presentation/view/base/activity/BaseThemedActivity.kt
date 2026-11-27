@@ -1,19 +1,27 @@
 package com.gnoemes.shikimori.presentation.view.base.activity
 
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import com.gnoemes.shikimori.entity.app.domain.SettingsExtras
 import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
 import com.gnoemes.shikimori.utils.getThemeSharedPreferences
+import com.gnoemes.shikimori.utils.isTvUi
 import com.gnoemes.shikimori.utils.setTheme
 import com.gnoemes.shikimori.utils.themeHandler
+import com.gnoemes.shikimori.utils.withTvTextScale
 
 
 abstract class BaseThemedActivity : MvpActivity() {
 
     protected open var applyTheme: Boolean = true
     private val recreateRunnable by lazy { Runnable { recreate() } }
+
+    override fun attachBaseContext(newBase: Context) {
+        //the TV mode reads from a seat: every sp in every screen scales with the base context
+        super.attachBaseContext(if (newBase.isTvUi) newBase.withTvTextScale() else newBase)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (applyTheme) setTheme(recreateRunnable)

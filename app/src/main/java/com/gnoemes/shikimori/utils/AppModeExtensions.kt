@@ -38,3 +38,16 @@ val Context.isTvDevice: Boolean
 /** The interface actually shown - the mode the user picked, not what the device says. */
 val Context.isTvUi: Boolean
     get() = appMode == AppMode.TV
+
+/** How far the TV mode scales all text up (the 10-foot UI is read from a seat, not the palm). */
+private const val TV_TEXT_SCALE = 1.15f
+
+/**
+ * The base context of an activity, with the text scaled up. Call from `attachBaseContext` when the
+ * mode is TV; it scales every sp in every screen at once, the way the system's font size does.
+ */
+fun Context.withTvTextScale(): Context {
+    val config = Configuration(resources.configuration)
+    config.fontScale = TV_TEXT_SCALE
+    return createConfigurationContext(config)
+}

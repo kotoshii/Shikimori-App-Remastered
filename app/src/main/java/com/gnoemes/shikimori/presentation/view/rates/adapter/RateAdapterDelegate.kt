@@ -12,6 +12,7 @@ import com.gnoemes.shikimori.entity.rates.presentation.RateViewModel
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -39,6 +40,9 @@ class RateAdapterDelegate(
         private lateinit var item: RateViewModel
 
         init {
+            //the row keeps its buttons individually focusable: the card body is one target, the
+            //play and edit buttons are theirs (on the row root the D-pad would stop at the row)
+            binding.container.bindTvFocus()
             with(itemView) {
                 binding.playBtn.onClick { callback.invoke(DetailsAction.WatchOnline(item.id)) }
                 binding.container.onClick { navigationCallback.invoke(item.type, item.contentId) }

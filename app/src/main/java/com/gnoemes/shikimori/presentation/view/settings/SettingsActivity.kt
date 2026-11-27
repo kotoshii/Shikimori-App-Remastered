@@ -1,5 +1,6 @@
 package com.gnoemes.shikimori.presentation.view.settings
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -38,6 +39,11 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
 
     private val binding by viewBinding(R.layout.activity_settings, ActivitySettingsBinding::bind)
+
+    override fun attachBaseContext(newBase: Context) {
+        //this activity does not go through BaseThemedActivity, so the TV text scale comes here too
+        super.attachBaseContext(if (newBase.isTvUi) newBase.withTvTextScale() else newBase)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)

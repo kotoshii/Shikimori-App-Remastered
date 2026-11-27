@@ -16,6 +16,9 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="textAppearanceHeadline6">@style/ToolbarTextAppearance</item>
 
+        <!--resolved lazily, so it lands on whatever accent color the ascent overlay brings (TvFocus)-->
+        <item name="colorFocusBorder">?attr/colorSecondary</item>
+
         <item name="md_corner_radius">8dp</item>
         <item name="md_color_button_text">?attr/colorSecondary</item>
         <item name="android:popupMenuStyle">@style/PopupMenuTheme</item>
@@ -289,6 +292,13 @@
     <style name="AscentStyle.Purple" parent="AscentStyle">
         <item name="colorSecondary">@color/colorSecondary_purple</item>
         <item name="colorSecondaryTransparent">@color/colorSecondary_purple_transparent</item>
+    </style>
+
+    <!--applied by Activity.setTheme (ThemeExtensions) only in the TV mode: from a couch the phone's faint
+    grey highlight is invisible, so ripples and focused states take the accent tint instead-->
+    <style name="TvFocusOverlay">
+        <item name="android:colorControlHighlight">?attr/colorSecondaryTransparent</item>
+        <item name="android:colorControlActivated">?attr/colorSecondary</item>
     </style>
 
 </resources>

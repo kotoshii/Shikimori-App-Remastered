@@ -103,6 +103,9 @@ fun Activity.setTheme(recreationRunnable: Runnable? = null) {
 
     theme.applyStyle(getCurrentAscentTheme, true)
 
+    //after the ascent, so its accent answers the overlay's ?attr references (TvFocus.kt)
+    if (isTvUi) theme.applyStyle(R.style.TvFocusOverlay, true)
+
     matchSplashToTheme()
 }
 
