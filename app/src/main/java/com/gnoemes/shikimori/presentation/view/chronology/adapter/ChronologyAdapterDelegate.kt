@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.chronology.ChronologyViewModel
 import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 
@@ -34,7 +35,9 @@ class ChronologyAdapterDelegate(
         private lateinit var item: ChronologyViewModel
 
         init {
+            binding.container.bindTvFocus()
             binding.container.onClick { navigationCallback.invoke(item.type, item.id) }
+            binding.statusRateBtn.bindTvFocus()
             binding.statusRateBtn.onClick { callback.invoke(item.id) }
         }
 

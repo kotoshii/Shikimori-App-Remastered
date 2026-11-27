@@ -35,12 +35,14 @@ class AppModeDialogFragment : DialogFragment() {
         return context!!.materialDialog().show {
             title(R.string.app_mode_title)
             message(if (recommendTv) R.string.app_mode_message_tv else R.string.app_mode_message)
+            //material-dialogs auto-focuses its first (left) button, so the recommendation goes there:
+            //a user pressing OK right away gets the suggested mode
             if (recommendTv) {
-                positiveButton(R.string.app_mode_tv) { save(AppMode.TV) }
-                negativeButton(R.string.app_mode_mobile) { save(AppMode.MOBILE) }
-            } else {
-                positiveButton(R.string.app_mode_mobile) { save(AppMode.MOBILE) }
                 negativeButton(R.string.app_mode_tv) { save(AppMode.TV) }
+                positiveButton(R.string.app_mode_mobile) { save(AppMode.MOBILE) }
+            } else {
+                negativeButton(R.string.app_mode_mobile) { save(AppMode.MOBILE) }
+                positiveButton(R.string.app_mode_tv) { save(AppMode.TV) }
             }
         }
     }

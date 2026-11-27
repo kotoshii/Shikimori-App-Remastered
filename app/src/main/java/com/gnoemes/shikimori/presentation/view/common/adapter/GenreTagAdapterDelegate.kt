@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsTagItem
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.google.android.material.chip.Chip
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -37,6 +38,7 @@ class GenreTagAdapterDelegate(
         private lateinit var item: DetailsTagItem
 
         init {
+            itemView.bindTvFocus()
             itemView.onClick { callback.invoke(DetailsAction.GenreClicked(item.raw as GenreV2)) }
         }
 

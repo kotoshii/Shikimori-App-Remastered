@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.common.domain.Link
 import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 class LinkAdapter(
@@ -45,7 +46,9 @@ class LinkAdapter(
             private lateinit var item: Link
 
             init {
+                binding.container.bindTvFocus()
                 binding.container.onClick { callback.invoke(DetailsAction.Link(item.url, false)) }
+                binding.sharingBtn.bindTvFocus()
                 binding.sharingBtn.onClick { callback.invoke(DetailsAction.Link(item.url, true)) }
             }
 

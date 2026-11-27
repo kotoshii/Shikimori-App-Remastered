@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.presentation.InfoClickableItem
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
@@ -35,6 +36,7 @@ class InfoClickableAdapterDelegate(
         private lateinit var item: InfoClickableItem
 
         init {
+            binding.container.bindTvFocus()
             binding.container.onClick { navigationCallback.invoke(item.type, item.id) }
         }
 
