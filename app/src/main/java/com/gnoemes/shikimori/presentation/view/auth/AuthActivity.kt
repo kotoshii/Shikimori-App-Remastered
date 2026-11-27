@@ -3,6 +3,7 @@ package com.gnoemes.shikimori.presentation.view.auth
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.webkit.WebResourceRequest
@@ -21,6 +22,7 @@ import com.gnoemes.shikimori.presentation.presenter.auth.AuthPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
 import com.gnoemes.shikimori.utils.gone
 import com.gnoemes.shikimori.utils.ifNotNull
+import com.gnoemes.shikimori.utils.isTvUi
 import com.gnoemes.shikimori.utils.putString
 import com.gnoemes.shikimori.utils.visible
 import ru.terrakok.cicerone.Navigator
@@ -69,6 +71,8 @@ class AuthActivity : BaseActivity<AuthPresenter, AuthView>(), AuthView {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //the manifest pins portrait for phones; the TV mode keeps the screen's landscape instead
+        if (isTvUi) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         super.onCreate(savedInstanceState)
 
         val shikimori = intent?.getSerializableExtra(AppExtras.ARGUMENT_AUTH_TYPE) != null

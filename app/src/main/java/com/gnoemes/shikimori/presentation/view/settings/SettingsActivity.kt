@@ -2,6 +2,7 @@ package com.gnoemes.shikimori.presentation.view.settings
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -46,6 +47,8 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //the manifest pins portrait for phones; the TV mode keeps the screen's landscape instead
+        if (isTvUi) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         AndroidInjection.inject(this)
         setTheme()
         super.onCreate(savedInstanceState)
