@@ -35,6 +35,7 @@ import com.gnoemes.shikimori.presentation.view.common.widget.CustomSpinner
 import com.gnoemes.shikimori.presentation.view.common.widget.ReSpinner
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.exoplayer.MediaSourceHelper
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -100,12 +101,17 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.ShikimoriAppTheme_Player)
         theme.applyStyle(getCurrentAscentTheme, true)
+        //the player theme skips the app's own (applyTheme false), so the TV focus tint comes here
+        if (isTvUi) theme.applyStyle(R.style.TvFocusOverlay, true)
         super.onCreate(savedInstanceState)
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
         binding.includedToolbar.toolbar.addBackButton(icon = R.drawable.ic_arrow_back_player) { onBackPressed() }
 
-        if (settingsSource.isOpenLandscape) requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        //the TV interface is landscape whatever the setting: a remote user cannot rotate the screen
+        requestedOrientation = if (isTvUi) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        else if (settingsSource.isOpenLandscape) ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
         rewindForward.forwardView.text = smallOffsetText
         rewindForward.forwardView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_forward, 0, 0)
@@ -126,6 +132,17 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
 
         playerBottom.pipView.visibleIf { screen.hasPip }
 
+        //the remote user reads the focus, not the ripple: every player control gets the TV outline
+        playerControls.prev.bindTvFocus()
+        playerControls.next.bindTvFocus()
+        playerControls.exoPlay.bindTvFocus()
+        playerControls.exoPause.bindTvFocus()
+        playerBottom.lockView.bindTvFocus()
+        playerBottom.rotationView.bindTvFocus()
+        playerBottom.pipView.bindTvFocus()
+        binding.includedToolbar.resolutionSpinnerView.bindTvFocus()
+        binding.includedToolbar.speedSpinnerView.bindTvFocus()
+
         playerControls.prev.onClick { presenter.loadPrevEpisode() }
         playerControls.next.onClick { presenter.loadNextEpisode() }
         playerBottom.rotationView.onClick { screen.toggleOrientation() }
@@ -138,6 +155,74 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
         super.onUserLeaveHint()
         if (settingsSource.isAutoPip)
             screen.enterPip()
+    }
+
+    /** Whether focus sits on a player control (or the toolbar), so the key belongs to it. */
+    private fun controlsHaveFocus(): Boolean {
+        val focused = currentFocus ?: return false
+        return focused !== binding.playerView &&
+                (focused.isChildOf(binding.playerView) || focused.isChildOf(binding.includedToolbar.root))
+    }
+
+    private fun View.isChildOf(parent: View): Boolean {
+        var node = this.parent
+        while (node is View) {
+            if (node === parent) return true
+            node = node.parent
+        }
+        return false
+    }
+
+    /**
+     * The remote drives the player; without this every key fell through to nothing, the controls
+     * being touch-only ([PlayerGestureHandler]). The focused control still gets its key first, so
+     * with the controller up the D-pad walks its buttons and OK presses them.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
+
+        return when (event.keyCode) {
+            KeyEvent.KEYCODE_BACK -> when {
+                controller.isLocked -> super.dispatchKeyEvent(event)
+                controller.isVisible -> {
+                    binding.playerView.hideController()
+                    true
+                }
+                else -> super.dispatchKeyEvent(event)
+            }
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> when {
+                controller.isLocked -> { controller.onLockedKey(); true }
+                !controller.isVisible -> { controller.showFromRemote(); true }
+                controlsHaveFocus() -> super.dispatchKeyEvent(event)
+                else -> { controller.togglePlayPause(); true }
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> when {
+                controller.isLocked -> { controller.onLockedKey(); true }
+                controller.isVisible -> super.dispatchKeyEvent(event)
+                else -> { controller.showFromRemote(); true }
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> when {
+                controller.isLocked -> { controller.onLockedKey(); true }
+                controlsHaveFocus() -> super.dispatchKeyEvent(event)
+                controller.isVisible -> { binding.playerView.hideController(); true }
+                else -> super.dispatchKeyEvent(event)
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_REWIND -> when {
+                controller.isLocked -> { controller.onLockedKey(); true }
+                event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && controlsHaveFocus() -> super.dispatchKeyEvent(event)
+                else -> { controller.onSeekTap(forward = false, big = event.keyCode == KeyEvent.KEYCODE_MEDIA_REWIND); true }
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> when {
+                controller.isLocked -> { controller.onLockedKey(); true }
+                event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && controlsHaveFocus() -> super.dispatchKeyEvent(event)
+                else -> { controller.onSeekTap(forward = true, big = event.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD); true }
+            }
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                controller.togglePlayPause()
+                true
+            }
+            else -> super.dispatchKeyEvent(event)
+        }
     }
 
     override fun onStart() {
@@ -384,6 +469,22 @@ class EmbeddedPlayerActivity : BaseActivity<EmbeddedPlayerPresenter, EmbeddedPla
             player.playWhenReady = true
             player.prepare(source)
         }
+
+        /** The controller up, with the focus on the visible play/pause button right away: the
+         * remote user must see where the control is from the first key. */
+        fun showFromRemote() {
+            binding.playerView.showController()
+            binding.playerView.post {
+                (if (player.playWhenReady) playerControls.exoPause else playerControls.exoPlay).requestFocus()
+            }
+        }
+
+        fun togglePlayPause() {
+            player.playWhenReady = !player.playWhenReady
+        }
+
+        /** Any key over the locked player shows the unlock hint, exactly as a locked touch does. */
+        fun onLockedKey() = onLockedTouch()
 
         fun updateTrack(source: MediaSource?) {
             player.playWhenReady = true
