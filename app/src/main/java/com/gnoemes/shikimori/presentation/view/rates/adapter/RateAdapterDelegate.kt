@@ -45,6 +45,9 @@ class RateAdapterDelegate(
             binding.container.bindTvFocus()
             binding.playBtn.bindTvFocus()
             binding.rateEditBtn.bindTvFocus()
+            //the poster repeats the body's click and has no focus visuals of its own: focusable, it
+            //caught the D-pad as an invisible target next to the outlined body
+            binding.imageView.isFocusable = false
             with(itemView) {
                 binding.playBtn.onClick { callback.invoke(DetailsAction.WatchOnline(item.id)) }
                 binding.container.onClick { navigationCallback.invoke(item.type, item.contentId) }

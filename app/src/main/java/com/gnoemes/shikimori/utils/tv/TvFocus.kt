@@ -8,6 +8,7 @@ import android.view.View
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.utils.colorAttr
 import com.gnoemes.shikimori.utils.dp
+import com.gnoemes.shikimori.utils.isDarkTheme
 import com.gnoemes.shikimori.utils.isTvUi
 
 //The TV mode's visible focus. With no pointer, the user only knows where they are from the visuals
@@ -36,7 +37,12 @@ private const val BORDER_CORE_DP = 3
 private const val BORDER_CORE_INSET_DP = 3
 
 private const val BORDER_RADIUS_DP = 8
+
+/** The bright core on the dark themes: white, near solid. */
 private const val BORDER_CORE_ALPHA = 230
+
+/** The dark themes read a white core; the light one's white surfaces swallow it, so it goes dark there. */
+private const val BORDER_CORE_DARK_ALPHA = 160
 
 /**
  * Marks the view as a D-pad target of the TV mode and gives it the grow, the lift and the outline
@@ -70,19 +76,21 @@ private fun View.applyTvFocusVisual(hasFocus: Boolean, scale: Float, restForegro
     foreground = if (hasFocus) tvFocusBorder() else restForeground
 }
 
-/** The outline, two layers: an accent glow on the view's edge and a bright core inside it. Fresh
- * each focus, so a theme or ascent change mid-screen is picked up rather than kept from the view's
- * first bind. */
+/** The outline, two layers: an accent glow on the view's edge and a bright core inside it - white on
+ * the dark themes, near-black on the light one, where white would vanish on white. Fresh each focus,
+ * so a theme or ascent change mid-screen is picked up rather than kept from the view's first bind. */
 private fun View.tvFocusBorder(): Drawable {
     val glow = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         cornerRadius = context.dp(BORDER_RADIUS_DP).toFloat()
         setStroke(context.dp(BORDER_GLOW_DP), context.colorAttr(R.attr.colorFocusBorder))
     }
+    val coreColor = if (context.isDarkTheme) Color.argb(BORDER_CORE_ALPHA, 255, 255, 255)
+    else Color.argb(BORDER_CORE_DARK_ALPHA, 0, 0, 0)
     val core = GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         cornerRadius = context.dp(BORDER_RADIUS_DP - BORDER_CORE_INSET_DP).toFloat()
-        setStroke(context.dp(BORDER_CORE_DP), Color.argb(BORDER_CORE_ALPHA, 255, 255, 255))
+        setStroke(context.dp(BORDER_CORE_DP), coreColor)
     }
     val inset = context.dp(BORDER_CORE_INSET_DP)
     return LayerDrawable(arrayOf(glow, core)).apply {
