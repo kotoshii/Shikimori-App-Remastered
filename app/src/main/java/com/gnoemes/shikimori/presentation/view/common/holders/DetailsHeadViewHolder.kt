@@ -7,6 +7,7 @@ import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsHeadItem
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 
 class DetailsHeadViewHolder(
         private val view: View,
@@ -20,7 +21,9 @@ class DetailsHeadViewHolder(
 
     init {
         with(binding.headContent) {
+            editRateBtn.bindTvFocus()
             editRateBtn.onClick { callback.invoke(DetailsAction.EditRate) }
+            statusRateBtn.bindTvFocus()
             statusRateBtn.onClick { callback.invoke(DetailsAction.RateStatusDialog) }
 
             ratingView.setEmptyDrawable(root.context.drawable(R.drawable.ic_small_star_empty)?.apply { tint(root.context!!.colorAttr(R.attr.colorOnPrimarySecondary)) })

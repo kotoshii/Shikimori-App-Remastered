@@ -11,11 +11,22 @@
     <!-- installing a downloaded release; the user must also allow this app as an install source -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- Android TV: installable and launchable on TV, without giving up anything on phones. The
+    touchscreen is declared optional so TV stores keep the app visible, and leanback so TV launchers
+    treat it as a first-class TV app (the banner below is their tile) -->
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
     <!-- label: the name under the launcher icon and in recent apps, set per build type in build.gradle
     (the release's is app_name); it replaces the label the drawer-behavior library sets on its own application -->
     <application
         android:name=".App"
         android:allowBackup="true"
+        android:banner="@drawable/tv_banner"
         android:fullBackupContent="@xml/backup_rules"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
@@ -35,6 +46,8 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!--the TV launcher's tile is built from the same entry point plus the banner-->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -50,13 +63,11 @@
 
         <activity
             android:name=".presentation.view.auth.AuthActivity"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".presentation.view.settings.SettingsActivity"
-            android:label="@string/more_settings"
-            android:screenOrientation="portrait" />
+            android:label="@string/more_settings" />
 
         <activity
             android:name=".presentation.view.player.web.WebPlayerActivity"

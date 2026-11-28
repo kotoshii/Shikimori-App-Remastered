@@ -6,6 +6,10 @@
     <string name="settings_theme">Оформление</string>
     <string name="settings_theme_summary">Темы, ночной режим</string>
 
+    <string name="settings_app_mode_title">Режим интерфейса</string>
+    <string name="settings_app_mode_summary">ТВ или телефон: масштаб интерфейса и работа с пультом</string>
+    <string name="settings_app_mode_key" translatable="false">APP_MODE</string>
+
     <string name="settings_content">Контент</string>
     <string name="settings_content_naming_title">Русские названия</string>
     <string name="settings_content_naming_key" translatable="false">IS_ROMADZI_NAMING</string>

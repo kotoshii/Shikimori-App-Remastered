@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
@@ -16,6 +17,7 @@ import com.gnoemes.shikimori.data.repository.app.AppUpdateSource
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.entity.main.BottomScreens
+import com.gnoemes.shikimori.presentation.view.common.fragment.AppModeDialogFragment
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.presentation.presenter.main.MainPresenter
 import com.gnoemes.shikimori.presentation.view.base.activity.BaseActivity
@@ -35,8 +37,11 @@ import javax.inject.Inject
 class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterProvider {
 
     companion object {
-        /** Set by the "Изменения" action of the update notification. */
+        /** Set by the «Изменения» action of the update notification. */
         const val EXTRA_SHOW_CHANGELOG = "EXTRA_SHOW_CHANGELOG"
+
+        /** Enough for the bottom bar's items to finish their own layout before taking focus. */
+        private const val TAB_FOCUS_DELAY = 300L
     }
 
     @InjectPresenter
@@ -70,7 +75,15 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         super.onCreate(savedInstanceState)
         initBottomNav()
         initContainer()
+        askAppModeOnce()
         showChangelogIfRequested()
+    }
+
+    //the first thing the app wants to know: where it is used, see AppModeExtensions. A restored
+    //instance brings its own dialog back, so a second one would stack on top of it
+    private fun askAppModeOnce() {
+        if (hasStoredAppMode || restoring) return
+        AppModeDialogFragment().show(supportFragmentManager, AppModeDialogFragment.TAG)
     }
 
     override fun onResume() {
@@ -99,6 +112,15 @@ class MainActivity : BaseActivity<MainPresenter, MainView>(), MainView, RouterPr
         }
 
         binding.bottomNav.navbarDivider.visibleIf { activeTheme != Theme.AMOLED }
+
+        //the remote starts here: the selected tab is focused, so DOWN lands in the tab's content and
+        //the toolbar waits one UP away. Without it the first key hit whichever toolbar icon the
+        //top-down traversal picked - on the empty rates screen that was the sort icon. The focus must
+        //wait for the items' own layout: a request made on the bar's layout gives the item zero
+        //bounds, and the focus search from a zero-sized view jumps anywhere
+        binding.bottomNav.root.postDelayed({
+            binding.bottomNav.root.findViewById<View>(binding.bottomNav.root.selectedItemId)?.requestFocus()
+        }, TAB_FOCUS_DELAY)
     }
 
     private fun initContainer() {

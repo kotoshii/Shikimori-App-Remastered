@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.utils.iconRes
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 
 class CalendarAnimeAdapter(
@@ -46,6 +47,7 @@ class CalendarAnimeAdapter(
         private lateinit var item: CalendarAnimeItem
 
         init {
+            binding.materialCardView.bindTvFocus()
             binding.materialCardView.onClick { callback.invoke(item.id) }
         }
 

@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.domain.Type
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 class UserClubAdapterDelegate(
@@ -34,6 +35,7 @@ class UserClubAdapterDelegate(
         private lateinit var item: UserClubViewModel
 
         init {
+            binding.container.bindTvFocus()
             binding.container.onClick { callback.invoke(Type.CLUB, item.id) }
         }
 

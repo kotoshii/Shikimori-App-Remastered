@@ -1,6 +1,8 @@
 package com.gnoemes.shikimori.presentation.view.settings
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -19,6 +21,7 @@ import com.gnoemes.shikimori.presentation.view.settings.fragments.SettingsFragme
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
+import com.gnoemes.shikimori.utils.tv.installTvFocusPaint
 import com.google.android.material.appbar.AppBarLayout
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -39,10 +42,22 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
 
     private val binding by viewBinding(R.layout.activity_settings, ActivitySettingsBinding::bind)
 
+    override fun attachBaseContext(newBase: Context) {
+        //this activity does not go through BaseThemedActivity, so the TV text scale comes here too
+        super.attachBaseContext(if (newBase.isTvUi) newBase.withTvTextScale() else newBase)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        //the orientation is pinned here rather than in the manifest: a manifest's portrait started
+        //the activity vertical on TVs for a moment before the landscape request was applied - the
+        //launch flash. Phones get the same portrait this way, the TV mode keeps the landscape
+        requestedOrientation = if (isTvUi) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         AndroidInjection.inject(this)
         setTheme()
         super.onCreate(savedInstanceState)
+        //this activity does not go through BaseThemedActivity, so the focus paint comes here too
+        if (isTvUi) window.installTvFocusPaint()
         setContentView(R.layout.activity_settings)
 
         binding.appBarLayout.toolbar.apply {

@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.common.presentation.DetailsAction
 import com.gnoemes.shikimori.entity.common.presentation.DetailsActionType
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 
 class ActionAdapterDelegate(
@@ -32,6 +33,7 @@ class ActionAdapterDelegate(
         private lateinit var item: DetailsActionType
 
         init {
+            binding.container.bindTvFocus()
             binding.container.onClick { callback.invoke(getClickAction(item)) }
         }
 

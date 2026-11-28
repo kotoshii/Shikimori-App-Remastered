@@ -2,4 +2,9 @@
 <resources>
     <!--a picture view's own look, noted by PictureTarget-->
     <item name="picture_original" type="id" />
+    <!--the TV focus paint (TvFocus.kt): a view wired with bindTvFocus paints itself, the window's
+    fallback layer skips it and covers every other focusable element on its own-->
+    <item name="tv_focus_bound" type="id" />
+    <item name="tv_focus_rest" type="id" />
+    <item name="tv_focus_paint_installed" type="id" />
 </resources>

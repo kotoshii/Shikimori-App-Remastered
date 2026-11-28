@@ -10,4 +10,10 @@
         android:key="@string/settings_theme_ascent_key"
         app:iconSpaceReserved="false" />
 
+    <Preference
+        android:key="@string/settings_app_mode_key"
+        android:title="@string/settings_app_mode_title"
+        android:summary="@string/settings_app_mode_summary"
+        app:iconSpaceReserved="false" />
+
 </PreferenceScreen>

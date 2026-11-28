@@ -25,6 +25,7 @@ import com.gnoemes.shikimori.presentation.view.user.holders.UserInfoViewHolder
 import com.gnoemes.shikimori.presentation.view.user.holders.UserRateViewHolder
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.google.android.material.appbar.AppBarLayout
 import javax.inject.Inject
 
@@ -78,7 +79,9 @@ class UserFragment : BaseFragment<UserPresenter, UserView>(), UserView {
 
         binding.appBarLayout.root.addOnOffsetChangedListener(appbarOffsetListener)
 
+        binding.authLayout.signUpBtn.bindTvFocus()
         binding.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
+        binding.authLayout.signInBtn.bindTvFocus()
         binding.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
         binding.authLayout.root.gone()
     }

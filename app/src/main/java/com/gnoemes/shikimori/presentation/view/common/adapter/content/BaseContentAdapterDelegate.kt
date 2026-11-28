@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.entity.common.presentation.ContentItem
 import com.gnoemes.shikimori.utils.images.ImageLoader
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 import com.hannesdorfmann.adapterdelegates4.AbsListItemAdapterDelegate
 import de.hdodenhof.circleimageview.CircleImageView
@@ -37,6 +38,7 @@ abstract class BaseContentAdapterDelegate(
         private lateinit var item: ContentItem
 
         init {
+            itemView.bindTvFocus()
             itemView.findViewById<View>(R.id.container).onClick { onClick(item) }
         }
 

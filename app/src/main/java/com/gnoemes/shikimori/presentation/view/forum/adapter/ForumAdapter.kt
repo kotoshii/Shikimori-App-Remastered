@@ -9,6 +9,7 @@ import com.gnoemes.shikimori.entity.forum.domain.Forum
 import com.gnoemes.shikimori.entity.forum.domain.ForumType
 import com.gnoemes.shikimori.utils.inflate
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 
 class ForumAdapter(
         private val callback: (ForumType) -> Unit
@@ -38,6 +39,7 @@ class ForumAdapter(
         private lateinit var item: Forum
 
         init {
+            binding.forumNameView.bindTvFocus()
             binding.forumNameView.onClick { callback.invoke(item.type) }
         }
 

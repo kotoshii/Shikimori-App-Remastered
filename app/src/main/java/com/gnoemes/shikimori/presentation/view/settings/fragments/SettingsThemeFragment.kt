@@ -11,6 +11,7 @@ import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.entity.app.domain.AscentTheme
 import com.gnoemes.shikimori.entity.app.domain.Theme
 import com.gnoemes.shikimori.entity.app.domain.ThemeExtras
+import com.gnoemes.shikimori.presentation.view.common.fragment.AppModeDialogFragment
 import com.gnoemes.shikimori.presentation.view.common.widget.preferences.AscentPreference
 import com.gnoemes.shikimori.presentation.view.common.widget.preferences.ThemePreference
 import com.gnoemes.shikimori.presentation.view.settings.ToolbarCallback
@@ -34,6 +35,17 @@ class SettingsThemeFragment : BaseSettingsFragment(), Toolbar.OnMenuItemClickLis
         }
 
         ascentPreference.setAscentStyle(context!!.getCurrentAscentTheme)
+
+        //the mode choice is the same dialog the first launch shows; the summary keeps up with it
+        preference(R.string.settings_app_mode_key)?.apply {
+            summary = getString(R.string.settings_app_mode_summary) + " · " + getString(
+                    if (context!!.isTvUi) R.string.app_mode_tv else R.string.app_mode_mobile)
+            setOnPreferenceClickListener { showAppModeDialog(); true }
+        }
+    }
+
+    private fun showAppModeDialog() {
+        AppModeDialogFragment().show(childFragmentManager, AppModeDialogFragment.TAG)
     }
 
     private fun showTimeDialog(initValue: Int, action: (Int) -> Unit) {

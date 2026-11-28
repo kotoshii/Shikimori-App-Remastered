@@ -40,5 +40,4 @@ app/release/output-metadata.json
 
 CLAUDE.md
 .claude/
-
-
+.zcode/

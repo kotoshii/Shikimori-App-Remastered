@@ -158,6 +158,26 @@
     <color name="colorSecondary_purple">#e358fb</color>
     <color name="colorSecondary_purple_transparent">#1fe358fb</color>
 
+    <!--the TV mode's focus fill: the accents at 35%, strong enough to read from a couch on every
+    theme (the 12% transparents above are invisible). See TvFocusOverlay-->
+    <color name="colorSecondary_red_focus">#59ef5350</color>
+    <color name="colorSecondary_orange_focus">#59ff7043</color>
+    <color name="colorSecondary_yellow_focus">#59f9a825</color>
+    <color name="colorSecondary_green_focus">#5943a047</color>
+    <color name="colorSecondary_cyan_focus">#5900bcd4</color>
+    <color name="colorSecondary_blue_focus">#592196f3</color>
+    <color name="colorSecondary_purple_focus">#59e358fb</color>
+
+    <!--and the light theme's fill: 50%, pale peach on white still reads as nothing (the dark
+    themes keep the 35% above, which the user confirmed readable)-->
+    <color name="colorSecondary_red_fill_light">#80ef5350</color>
+    <color name="colorSecondary_orange_fill_light">#80ff7043</color>
+    <color name="colorSecondary_yellow_fill_light">#80f9a825</color>
+    <color name="colorSecondary_green_fill_light">#8043a047</color>
+    <color name="colorSecondary_cyan_fill_light">#8000bcd4</color>
+    <color name="colorSecondary_blue_fill_light">#802196f3</color>
+    <color name="colorSecondary_purple_fill_light">#80e358fb</color>
+
     <color name="status_anons">#ff2d58</color>
     <color name="status_ongoing">#0088ff</color>
     <!--the site's colours for these two manga statuses (b-anime_status_tag.sass)-->

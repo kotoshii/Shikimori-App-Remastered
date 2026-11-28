@@ -14,6 +14,7 @@ import com.gnoemes.shikimori.databinding.ViewThemePreferenceBinding
 import com.gnoemes.shikimori.entity.app.domain.Constants
 import com.gnoemes.shikimori.utils.dp
 import com.gnoemes.shikimori.utils.onClick
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.visibleIf
 import org.joda.time.LocalTime
 
@@ -46,6 +47,9 @@ class ThemePreference @JvmOverloads constructor(context: Context,
         super.onBindViewHolder(holder)
         holder.itemView.isClickable = false
         with(ViewThemePreferenceBinding.bind(holder.itemView)) {
+            defaultThemeView.bindTvFocus()
+            darkThemeView.bindTvFocus()
+            amoledThemeView.bindTvFocus()
             defaultThemeView.onClick { onDefaultClicked() }
             darkThemeView.onClick { onDarkClicked() }
             amoledThemeView.onClick { onAmoledClicked() }
@@ -53,7 +57,9 @@ class ThemePreference @JvmOverloads constructor(context: Context,
             darkThemeView.setOnLongClickListener { onDarkLongClick() }
             amoledThemeView.setOnLongClickListener { onAmoledLongClick() }
 
+            nightTimeStartContainer.bindTvFocus()
             nightTimeStartContainer.onClick { nightTimeStartClickListener?.onClick(it) }
+            nightTimeEndContainer.bindTvFocus()
             nightTimeEndContainer.onClick { nightTimeEndClickListener?.onClick(it) }
 
             when (theme) {

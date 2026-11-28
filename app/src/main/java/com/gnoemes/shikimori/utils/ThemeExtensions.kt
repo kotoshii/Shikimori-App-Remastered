@@ -103,6 +103,13 @@ fun Activity.setTheme(recreationRunnable: Runnable? = null) {
 
     theme.applyStyle(getCurrentAscentTheme, true)
 
+    //after the ascent, so its accent answers the overlay's ?attr references (TvFocus.kt). The light
+    //theme's white surfaces swallow the 35% fill the dark themes read fine, so it takes the 50% one
+    if (isTvUi) {
+        val overlay = if (activeTheme == Theme.DEFAULT) R.style.TvFocusOverlay_Light else R.style.TvFocusOverlay
+        theme.applyStyle(overlay, true)
+    }
+
     matchSplashToTheme()
 }
 
