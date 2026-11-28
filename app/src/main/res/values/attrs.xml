@@ -21,6 +21,9 @@
     <!--the outline drawn around the focused view in the TV mode; resolves to the ascent color-->
     <attr name="colorFocusBorder" format="color" />
 
+    <!--the fill drawn under the focused view in the TV mode; resolves to the ascent color at 35%-->
+    <attr name="colorFocusFill" format="color" />
+
     <attr name="colorRateDefault" format="color" />
     <attr name="colorRateWatched" format="color" />
     <attr name="colorRateOnHold" format="color" />

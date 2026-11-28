@@ -8,6 +8,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.gnoemes.shikimori.R
 import com.gnoemes.shikimori.databinding.ViewAscentPreferenceBinding
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 
 class AscentPreference @JvmOverloads constructor(context: Context,
                                                  attrs: AttributeSet? = null,
@@ -32,6 +33,15 @@ class AscentPreference @JvmOverloads constructor(context: Context,
         super.onBindViewHolder(holder)
         holder.itemView.isClickable = false
         with(ViewAscentPreferenceBinding.bind(holder.itemView)) {
+            //every chip is its own D-pad target: on a remote the whole row reads as a strip of
+            //outlined circles, the focused one grown (TvFocus)
+            redView.bindTvFocus()
+            orangeView.bindTvFocus()
+            yellowView.bindTvFocus()
+            greenView.bindTvFocus()
+            cyanView.bindTvFocus()
+            blueView.bindTvFocus()
+            purpleView.bindTvFocus()
             var id = getIdFromStyle(ascentStyle)
             chipGroup.check(id)
             chipGroup.setOnCheckedChangeListener { group, checkedId ->
