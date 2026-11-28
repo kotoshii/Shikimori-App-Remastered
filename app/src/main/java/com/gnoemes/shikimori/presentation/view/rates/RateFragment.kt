@@ -42,6 +42,7 @@ import com.gnoemes.shikimori.presentation.view.common.fragment.ChoiceDialog
 import com.gnoemes.shikimori.presentation.view.rates.status.RateStatusDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.tv.bindTvFocus
 import com.gnoemes.shikimori.utils.widgets.OverlapHeaderScrollingBehavior
 import com.gnoemes.shikimori.utils.widgets.VerticalSpaceItemDecorator
 import com.google.android.material.internal.NavigationMenuView
@@ -152,7 +153,9 @@ class RateFragment : BasePaginationFragment<Rate, RatePresenter, RateView>(), Ra
         screenEmptyView?.setText(R.string.rate_empty)
         binding.rateEmptyView.root.gone()
 
+        binding.authLayout.signInBtn.bindTvFocus()
         binding.authLayout.signInBtn.onClick { getPresenter().onSignIn() }
+        binding.authLayout.signUpBtn.bindTvFocus()
         binding.authLayout.signUpBtn.onClick { getPresenter().onSignUp() }
 
         binding.authLayout.titleView.setText(R.string.rate_empty_list)

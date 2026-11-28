@@ -149,6 +149,10 @@ class SearchFragment : BasePaginationFragment<Any, SearchPresenter, SearchView>(
         defaultList.refreshLayout.setProgressViewOffset(false, context!!.dp(24), context!!.dp(96))
 
         binding.fab.setOnClickListener { getPresenter().onFilterClicked() }
+
+        //the bar's focusableInTouchMode is a touch hack (the field must not take the open's focus); on
+        //a remote it is a dead end: the focus search out of the grid lands on the bar and stops there
+        if (context!!.isTvUi) binding.appBarLayout.isFocusable = false
     }
 
     //the bar back if it slid away, and the field ready to type in (P10-T2 Q3)

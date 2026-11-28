@@ -9,6 +9,7 @@ import android.text.Spanned
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import com.gnoemes.shikimori.utils.images.ImageLoader
+import com.gnoemes.shikimori.utils.isTvUi
 import com.gnoemes.shikimori.utils.widgets.ShikimoriLinkMovementMethod
 
 /**
@@ -58,6 +59,10 @@ class ShikimoriTextView @JvmOverloads constructor(
         setTextIsSelectable(true)
         //one per view (CODE_CONVENTIONS.md §12); set after the line above, which sets its own
         movementMethod = ShikimoriLinkMovementMethod()
+        //a selectable text is a focus target, and a D-pad caught by a description's paragraph
+        //cannot leave it: in the TV mode the text is not a control, so it steps out of the focus
+        //search entirely (a remote user has no use for the text cursor or the inline links)
+        if (context.isTvUi) passPlainTaps()
     }
 
     /**
