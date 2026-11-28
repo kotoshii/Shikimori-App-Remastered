@@ -10,6 +10,7 @@ import com.gnoemes.shikimori.utils.getThemeSharedPreferences
 import com.gnoemes.shikimori.utils.isTvUi
 import com.gnoemes.shikimori.utils.setTheme
 import com.gnoemes.shikimori.utils.themeHandler
+import com.gnoemes.shikimori.utils.tv.installTvFocusPaint
 import com.gnoemes.shikimori.utils.withTvTextScale
 
 
@@ -26,6 +27,9 @@ abstract class BaseThemedActivity : MvpActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         if (applyTheme) setTheme(recreateRunnable)
         super.onCreate(savedInstanceState)
+        //the window paints whatever takes focus (TvFocus.kt), wired views or not: every screen of
+        //the BaseActivity family - main, auth, both players - runs through this one onCreate
+        if (isTvUi) window.installTvFocusPaint()
         getThemeSharedPreferences().registerOnSharedPreferenceChangeListener(themeChangeListener)
     }
 

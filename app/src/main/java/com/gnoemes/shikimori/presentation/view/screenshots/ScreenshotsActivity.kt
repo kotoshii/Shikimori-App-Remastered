@@ -19,6 +19,7 @@ import com.gnoemes.shikimori.entity.download.DownloadFileData
 import com.gnoemes.shikimori.presentation.view.base.activity.MvpActivity
 import com.gnoemes.shikimori.presentation.view.screenshots.adapter.ScreenshotPagerAdapter
 import com.gnoemes.shikimori.utils.*
+import com.gnoemes.shikimori.utils.tv.installTvFocusPaint
 
 
 class ScreenshotsActivity : MvpActivity() {
@@ -49,6 +50,8 @@ class ScreenshotsActivity : MvpActivity() {
         setTheme(R.style.ShikimoriAppTheme_Screenshots)
         theme.applyStyle(getCurrentAscentTheme, true)
         super.onCreate(savedInstanceState)
+        //this activity does not go through BaseThemedActivity, so the focus paint comes here too
+        if (isTvUi) window.installTvFocusPaint()
         setContentView(R.layout.activity_screenshots)
 
         binding.toolbar.run {

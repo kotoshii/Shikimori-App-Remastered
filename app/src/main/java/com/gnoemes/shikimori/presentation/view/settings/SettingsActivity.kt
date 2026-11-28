@@ -21,6 +21,7 @@ import com.gnoemes.shikimori.presentation.view.settings.fragments.SettingsFragme
 import com.gnoemes.shikimori.presentation.view.update.ChangelogDialog
 import com.gnoemes.shikimori.utils.*
 import com.gnoemes.shikimori.utils.navigation.startOutsideActivity
+import com.gnoemes.shikimori.utils.tv.installTvFocusPaint
 import com.google.android.material.appbar.AppBarLayout
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -55,6 +56,8 @@ class SettingsActivity : MvpActivity(), PreferenceFragmentCompat.OnPreferenceSta
         AndroidInjection.inject(this)
         setTheme()
         super.onCreate(savedInstanceState)
+        //this activity does not go through BaseThemedActivity, so the focus paint comes here too
+        if (isTvUi) window.installTvFocusPaint()
         setContentView(R.layout.activity_settings)
 
         binding.appBarLayout.toolbar.apply {

@@ -8,6 +8,7 @@ import com.gnoemes.shikimori.entity.app.domain.AppMode
 import com.gnoemes.shikimori.utils.isTvDevice
 import com.gnoemes.shikimori.utils.materialDialog
 import com.gnoemes.shikimori.utils.setAppMode
+import com.gnoemes.shikimori.utils.tv.installTvFocusPaint
 
 /**
  * Where the app is used, asked once at first launch and again from the «Оформление» settings
@@ -48,4 +49,10 @@ class AppModeDialogFragment : DialogFragment() {
     }
 
     private fun save(mode: AppMode) = context!!.setAppMode(mode)
+
+    //this dialog is not on the shared MvpDialogFragment base, so its window asks for the paint itself
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.installTvFocusPaint()
+    }
 }

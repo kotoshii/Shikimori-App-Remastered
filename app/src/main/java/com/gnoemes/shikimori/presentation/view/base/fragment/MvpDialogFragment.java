@@ -1,8 +1,10 @@
 package com.gnoemes.shikimori.presentation.view.base.fragment;
 
+import android.app.Dialog;
 import android.os.Bundle;
 
 import com.arellomobile.mvp.MvpDelegate;
+import com.gnoemes.shikimori.utils.tv.TvFocusKt;
 
 import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.fragment.app.Fragment;
@@ -23,6 +25,18 @@ public class MvpDialogFragment extends AppCompatDialogFragment {
         super.onCreate(savedInstanceState);
 
         getMvpDelegate().onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        //dialogs live in their own window, so the activity's focus paint does not reach them:
+        //install it here - every dialog and bottom sheet of the app goes through this base
+        Dialog dialog = getDialog();
+        if (dialog != null && dialog.getWindow() != null) {
+            TvFocusKt.installTvFocusPaint(dialog.getWindow());
+        }
     }
 
     public void onResume() {
